@@ -1,0 +1,123 @@
+import Phaser from 'phaser';
+import { GAME_HEIGHT } from '../config/constants';
+import { PALETTE } from '../config/palette';
+import { EventBus } from '../systems/EventBus';
+import { Banner } from '../ui/Banner';
+import { BossBar } from '../ui/BossBar';
+import { ComboDisplay } from '../ui/ComboDisplay';
+import { HealthDisplay } from '../ui/HealthDisplay';
+import { Letterbox } from '../ui/Letterbox';
+import { OmnitrixDial } from '../ui/OmnitrixDial';
+import { PromptBar } from '../ui/PromptBar';
+import { StatsCorner } from '../ui/StatsCorner';
+import { pixelText } from '../ui/text';
+import { getAlien, hasAlien } from '../aliens/registry';
+import { PLAYER } from '../config/player';
+import { TEX } from './preload/assetKeys';
+import { SCENES } from './SceneKeys';
+
+/** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
+export class UIScene extends Phaser.Scene {
+  private dial!: OmnitrixDial;
+  private health!: HealthDisplay;
+  private bossBar!: BossBar;
+  private banner!: Banner;
+  private prompts!: PromptBar;
+  private combo!: ComboDisplay;
+  private stats!: StatsCorner;
+  private letterbox!: Letterbox;
+  private vignette!: Phaser.GameObjects.Image;
+  private hp: number = PLAYER.maxHealth;
+  private alien = false;
+  private dead = false;
+
+  constructor() {
+    super(SCENES.ui);
+  }
+
+  create(): void {
+    this.dead = false;
+    this.alien = false;
+    this.vignette = this.add.image(0, 0, TEX.vignette).setOrigin(0, 0).setScale(2).setTint(PALETTE.enemy).setAlpha(0);
+    this.dial = new OmnitrixDial(this, 30, 32);
+    this.health = new HealthDisplay(this, 58, 12, PLAYER.maxHealth);
+    this.stats = new StatsCorner(this, 3);
+    this.combo = new ComboDisplay(this);
+    this.bossBar = new BossBar(this, GAME_HEIGHT - 20);
+    this.prompts = new PromptBar(this);
+    this.banner = new Banner(this);
+    this.letterbox = new Letterbox(this);
+
+    const on = EventBus.on.bind(EventBus);
+    on('hud:visible', (p) => {
+      this.health.setVisible(p.visible);
+      this.stats.setVisible(p.visible);
+      if (p.omnitrix !== undefined) this.dial.setVisible(p.omnitrix && p.visible, false);
+    }, this);
+    on('omnitrix:acquired', () => this.dial.setVisible(true, true), this);
+    on('omnitrix:tick', (t) => this.dial.setTick(t), this);
+    on('omnitrix:denied', (p) => {
+      this.dial.deny();
+      this.popText(p.reason === 'jammed' ? 'JAMMED!' : 'RECHARGING!', p.reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy);
+    }, this);
+    on('omnitrix:warning', (p) => this.popText(String(p.secondsLeft), PALETTE.enemy, 2), this);
+    on('omnitrix:ready', () => {
+      this.dial.pop();
+      this.popText('READY!', PALETTE.omnitrix);
+    }, this);
+    on('omnitrix:dial', () => this.dial.pop(), this);
+    on('alien:transformed', (p) => {
+      this.alien = true;
+      this.dial.pop();
+      const color = hasAlien(p.alienId) ? getAlien(p.alienId).color : PALETTE.omnitrix;
+      this.banner.alienName(p.name, color, p.first);
+    }, this);
+    on('alien:reverted', (p) => {
+      this.alien = false;
+      this.dial.pop();
+      const text = p.reason === 'timeout' ? 'TIME OUT!' : p.reason === 'damage' ? 'SHIELD BROKEN!' : p.reason === 'jammed' ? 'SIGNAL JAMMED!' : 'REVERTED';
+      this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy);
+    }, this);
+    on('hud:omnitrixSymbol', (p) => this.banner.omnitrixSymbol(p.color, p.big), this);
+    on('player:health', (p) => {
+      this.hp = p.hp;
+      this.health.setHealth(p.hp, p.delta);
+      if (p.delta < 0) this.cameras.main.shake(120, 0.004);
+    }, this);
+    on('player:formHealth', (p) => this.health.setForm(p.hp, p.max, p.visible, p.delta), this);
+    on('player:died', () => (this.dead = true), this);
+    on('combo:update', (p) => this.combo.set(p.count, this.time.now), this);
+    on('combo:drop', (p) => this.combo.drop(p.count), this);
+    on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards), this);
+    on('card:collected', (p) => this.stats.cardPop(p.found - 1), this);
+    on('hud:prompt', (p) => this.prompts.add(p.id, p.text, p.priority), this);
+    on('hud:promptClear', (p) => this.prompts.clear(p.id), this);
+    on('hud:banner', (p) => this.banner.show(p), this);
+    on('hud:letterbox', (p) => this.letterbox.set(p.visible), this);
+    on('boss:show', (p) => this.bossBar.show(p.name), this);
+    on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
+    on('boss:hide', () => this.bossBar.hide(), this);
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
+  }
+
+  private popText(text: string, color: number, scale = 1): void {
+    const t = pixelText(this, 58, 44, text, { color, scale });
+    t.setAlpha(0);
+    this.tweens.add({ targets: t, alpha: 1, y: 40, duration: 120 });
+    this.tweens.add({ targets: t, alpha: 0, y: 32, delay: 700, duration: 300, onComplete: () => t.destroy() });
+  }
+
+  override update(_time: number, delta: number): void {
+    const now = this.time.now;
+    this.dial.update(delta, now);
+    this.health.update(delta, now);
+    this.bossBar.update(delta, now);
+    this.prompts.update(now);
+    this.combo.update(delta, now);
+
+    const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
+    const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;
+    this.vignette.setAlpha(this.vignette.alpha + (target - this.vignette.alpha) * Math.min(1, delta / 200));
+  }
+}
