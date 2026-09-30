@@ -12,7 +12,7 @@ export const SCOUT = {
   hp: 2,
   moveSpeed: 72,
   hoverOffsetX: 112,
-  hoverOffsetY: -84,
+  hoverOffsetY: -70,
   aggroRange: 320,
   fireIntervalMs: [1700, 2500] as const,
   firstShotDelayMs: 900,

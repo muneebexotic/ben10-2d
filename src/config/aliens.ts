@@ -27,6 +27,8 @@ export const HEATBLAST = {
     muzzleY: -5,
     recoil: 26,
     spreadDeg: 2.5,
+    assistConeDeg: 34,
+    assistRange: 340,
   },
   burst: {
     minChargeMs: 120,

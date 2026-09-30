@@ -43,7 +43,7 @@ export const CAMERA = {
   deadzoneHeight: 56,
   lookAhead: 42,
   lookAheadLerp: 0.04,
-  verticalOffset: 28,
+  verticalOffset: 62,
   transformZoom: 1.32,
   transformZoomMs: 520,
 } as const;
@@ -52,11 +52,11 @@ export const LIGHTING = {
   /** Lightmap is rendered at 1/scale resolution and stretched; lights are soft so this is invisible. */
   scale: 2,
   margin: 96,
-  ambientForest: 0x4a5488,
-  ambientCamp: 0x56608f,
-  ambientRavine: 0x3f5a8a,
-  ambientCrash: 0x5a3f66,
-  ambientAlarm: 0x7a2a3a,
+  ambientForest: 0x6068a4,
+  ambientCamp: 0x6c76ac,
+  ambientRavine: 0x5670a6,
+  ambientCrash: 0x74547e,
+  ambientAlarm: 0x8a3444,
   ambientBlendMs: 900,
 } as const;
 
