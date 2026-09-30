@@ -22,11 +22,13 @@ Guardrails:
 
 ## Stack
 
-- Phaser 3 (Arcade Physics)
+- Phaser 4 (Arcade Physics, WebGL renderer)
 - TypeScript (strict mode)
 - Vite
 - Vitest for unit tests on game logic
 - Deployed on Vercel
+
+Always use the latest stable versions of the stack and dependencies. Phaser 4 differs from Phaser 3 in several APIs (tint modes, render textures need `render()`, FX are now filters). Check `node_modules/phaser/skills/` (especially `v3-to-v4-migration`) before using an API from memory.
 
 ## Commands
 
