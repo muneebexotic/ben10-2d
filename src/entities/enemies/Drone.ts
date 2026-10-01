@@ -22,6 +22,7 @@ export interface DroneWorld {
   /** World y of the first solid surface below (x, y), or the level floor. */
   groundBelow(x: number, y: number): number;
   isSolid(x: number, y: number): boolean;
+  isWater(x: number, y: number): boolean;
   onKilled(drone: Drone): void;
 }
 

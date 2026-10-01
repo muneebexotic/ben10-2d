@@ -105,6 +105,7 @@ export class UIScene extends Phaser.Scene {
     on('boss:hide', () => this.bossBar.hide(), this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
+    EventBus.emit('hud:ready');
   }
 
   private popText(text: string, color: number, scale = 1): void {

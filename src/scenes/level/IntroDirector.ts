@@ -70,6 +70,11 @@ export class IntroDirector {
     return this.phase === 'done';
   }
 
+  /** True while the opening cinematic hides the HUD. */
+  get inOpening(): boolean {
+    return this.phase === 'opening';
+  }
+
   private once(step: string): boolean {
     if (this.steps.has(step)) return false;
     this.steps.add(step);
@@ -80,7 +85,6 @@ export class IntroDirector {
     this.player.controlsEnabled = false;
     EventBus.emit('hud:letterbox', { visible: true });
     EventBus.emit('hud:visible', { visible: false });
-    EventBus.emit('hud:banner', { title: 'CHAPTER 1', subtitle: this.level.name, color: PALETTE.omnitrix, durationMs: 2400, style: 'soft' });
   }
 
   update(realDt: number, controls: Controls): void {
@@ -112,6 +116,10 @@ export class IntroDirector {
       this.meteors = [];
       this.endOpening();
       return;
+    }
+    // Emitted a beat in, so the HUD scene exists even on the very first launch.
+    if (this.t > 150 && this.once('title')) {
+      EventBus.emit('hud:banner', { title: 'CHAPTER 1', subtitle: this.level.name, color: PALETTE.omnitrix, durationMs: 2200, style: 'soft' });
     }
     if (this.t > 700 && this.once('meteor1')) this.launchMeteor(cam, PALETTE.omnitrix, 1, 900);
     if (this.t > 1150 && this.once('meteor2')) this.launchMeteor(cam, PALETTE.enemy, 1.8, 1000);

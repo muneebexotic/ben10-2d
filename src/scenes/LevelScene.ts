@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { BOSS } from '../config/boss';
 import { COMBO, DEPTH, FX, LIGHTING, PHYSICS, TILE } from '../config/constants';
 import { getDifficulty } from '../config/difficulty';
 import { PALETTE } from '../config/palette';
@@ -96,6 +97,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   create(data: LevelStartData): void {
+    EventBus.emit('hud:reset');
     this.drones = [];
     this.barricades = [];
     this.checkpoints = [];
@@ -219,18 +221,17 @@ export class LevelScene extends Phaser.Scene {
     if (resuming) {
       this.player.setInvulnerable(PLAYER.respawnInvulnMs);
       this.giveOmnitrix(true);
-      EventBus.emit('hud:visible', { visible: true, omnitrix: true });
-      EventBus.emit('hud:letterbox', { visible: false });
     }
-    EventBus.emit('hud:reset');
-    EventBus.emit('boss:hide');
-    this.emitHealth(0);
-    this.emitFormHealth(0);
-    EventBus.emit('stats:update', this.statsPayload());
+    this.syncHud();
+    // The HUD scene may be created after this scene (first launch); it asks for state when ready.
+    EventBus.on('hud:ready', () => this.syncHud(), this);
     music.setIntensity(0);
     music.play('forest');
 
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdown());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      EventBus.offContext(this);
+      this.shutdown();
+    });
     if (launchParams().debug) {
       this.physics.world.createDebugGraphic();
       this.debugText = pixelText(this, 4, 40, '', { color: PALETTE.omnitrix, scrollFactor: 0, depth: 999 });
@@ -252,7 +253,7 @@ export class LevelScene extends Phaser.Scene {
     }
     if (this.checkpointId) {
       const cp = checkpointsFor(this.level).find((c) => c.id === this.checkpointId) ?? this.level.entities.find((e) => e.type === 'checkpoint' && e.id === this.checkpointId);
-      if (cp && cp.type === 'checkpoint') return { x: cp.x * TILE + TILE / 2, y: cp.y * TILE };
+      if (cp && cp.type === 'checkpoint') return { x: cp.x * TILE + TILE / 2 + 18, y: cp.y * TILE };
       this.checkpointId = null;
     }
     return { x: this.level.playerStart.x * TILE + TILE / 2, y: this.level.playerStart.y * TILE };
@@ -290,7 +291,8 @@ export class LevelScene extends Phaser.Scene {
         return x > v.x + m && x < v.right - m && y > v.y + m && y < v.bottom - m;
       },
       groundBelow: (x, y) => this.world.groundBelow(x, y),
-      isSolid: (x, y) => this.world.isSolid(x, y),
+      isSolid: (x, y) => this.world.isSolid(x, y) || this.world.isOneWay(x, y),
+      isWater: (x, y) => this.world.inWater(x, y),
       onKilled: (d) => this.onDroneKilled(d),
     };
   }
@@ -392,7 +394,7 @@ export class LevelScene extends Phaser.Scene {
     this.decor.update(this.cameras.main, this.lighting, this.gameNow);
     this.world.update(realDt);
     this.speech.update(this.player.x, this.player.y - (this.player.isAlien ? 38 : 30), realDt);
-    this.tutorial.update(realDt, this.player.x, this.player.isAlien);
+    if (!this.intro.cinematic) this.tutorial.update(realDt, this.player.x, this.player.isAlien);
     this.updateLighting(realDt);
     this.debug();
   }
@@ -593,6 +595,22 @@ export class LevelScene extends Phaser.Scene {
   }
 
   // ------------------------------------------------------------ HUD helpers
+
+  /** Pushes the full current state to the HUD (it only learns things through events). */
+  private syncHud(): void {
+    EventBus.emit('hud:letterbox', { visible: this.intro.cinematic || (this.arena.started && !this.arena.fighting && !this.arena.boss?.defeated) });
+    if (!this.intro.inOpening) EventBus.emit('hud:visible', { visible: true, omnitrix: this.omni.acquired });
+    else EventBus.emit('hud:visible', { visible: false });
+    this.emitHealth(0);
+    this.emitFormHealth(0);
+    EventBus.emit('stats:update', this.statsPayload());
+    if (this.arena.fighting && this.arena.boss) {
+      EventBus.emit('boss:show', { name: BOSS.name, subtitle: BOSS.subtitle });
+      EventBus.emit('boss:health', { ratio: this.arena.boss.hp / BOSS.maxHp, phase: this.arena.boss.phase });
+    } else {
+      EventBus.emit('boss:hide');
+    }
+  }
 
   private statsPayload() {
     return {

@@ -50,6 +50,8 @@ export interface GameEvents {
   'boss:hide': undefined;
   'level:complete': { stats: RunStats };
   'hud:reset': undefined;
+  /** The HUD scene finished creating and wants the current state. */
+  'hud:ready': undefined;
   'audio:muted': { muted: boolean };
 }
 

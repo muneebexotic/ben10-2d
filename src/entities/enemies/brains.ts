@@ -139,15 +139,17 @@ export class StrikerBrain implements DroneBrain {
         d.vx = Math.cos(d.aim) * STRIKER.diveSpeed;
         d.vy = Math.sin(d.aim) * STRIKER.diveSpeed;
         w.fx.trail('red', d.x, d.y, 2);
-        const reached = d.y >= d.lockY || Math.hypot(d.lockX - d.x, d.lockY - d.y) < 8;
-        if (reached || w.isSolid(d.x, d.y + 8) || d.stateT > 1200) {
+        // Keep diving through the target until it hits ground or water: a miss ends embedded and helpless.
+        if (d.y >= d.lockY) d.aim = Math.PI / 2;
+        const splash = w.isWater(d.x, d.y + 6);
+        if (w.isSolid(d.x, d.y + 8) || splash || d.stateT > 1400) {
           d.vx = 0;
           d.vy = 0;
           d.setState('stuck');
           d.sprite.setAngle(d.aim > Math.PI / 2 ? -25 : 25);
-          w.fx.burst('dust', d.x, d.y + 6, 8);
+          w.fx.burst(splash ? 'splash' : 'dust', d.x, d.y + 6, 10);
           w.fx.burst('red', d.x, d.y + 4, 6);
-          playSfx('land', 1.2);
+          playSfx(splash ? 'splash' : 'land', 1.2);
         }
         break;
       }

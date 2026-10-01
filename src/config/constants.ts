@@ -52,10 +52,10 @@ export const LIGHTING = {
   /** Lightmap is rendered at 1/scale resolution and stretched; lights are soft so this is invisible. */
   scale: 2,
   margin: 96,
-  ambientForest: 0x6068a4,
-  ambientCamp: 0x6c76ac,
-  ambientRavine: 0x5670a6,
-  ambientCrash: 0x74547e,
+  ambientForest: 0x707ab4,
+  ambientCamp: 0x7c86bc,
+  ambientRavine: 0x6882b6,
+  ambientCrash: 0x86668e,
   ambientAlarm: 0x8a3444,
   ambientBlendMs: 900,
 } as const;
