@@ -1,6 +1,8 @@
 export const DRONE_SHARED = {
   /** Drones sleep until the camera gets this close, and never fire from off-screen. */
   wakeDistance: 420,
+  /** Grace period after a drone notices Ben before it may attack. */
+  wakeDelayMs: [1100, 1700] as const,
   onScreenMargin: 10,
   contactDamage: 1,
   hitFlashMs: 80,
@@ -15,7 +17,6 @@ export const SCOUT = {
   hoverOffsetY: -70,
   aggroRange: 320,
   fireIntervalMs: [1700, 2500] as const,
-  firstShotDelayMs: 900,
   telegraphMs: 650,
   aimLockMs: 190,
   laserSpeed: 210,
@@ -49,7 +50,6 @@ export const GUNNER = {
   hoverOffsetY: -72,
   aggroRange: 330,
   fireIntervalMs: [2300, 3000] as const,
-  firstShotDelayMs: 1200,
   telegraphMs: 820,
   aimLockMs: 220,
   spreadDeg: 17,

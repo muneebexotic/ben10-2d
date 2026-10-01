@@ -12,6 +12,8 @@ const ROLL = HUMAN_COMBAT.roll;
 class HumanAbilities implements FormAbilities {
   private punchT = -1;
   private punchReadyAt = 0;
+  /** Presses during a punch are queued briefly so mashing feels responsive. */
+  private punchBufferedUntil = 0;
   private punchLanded = false;
   private rollLeft = 0;
   private rollDir: 1 | -1 = 1;
@@ -36,13 +38,15 @@ class HumanAbilities implements FormAbilities {
       ctx.notify('roll');
     }
 
+    if (ctx.inputEnabled && controls.attackPressed) this.punchBufferedUntil = ctx.now + PUNCH.bufferMs;
     if (this.punchT >= 0) {
       this.punchT += dt;
       const activeStart = PUNCH.startupMs;
       const activeEnd = PUNCH.startupMs + PUNCH.activeMs;
       if (this.punchT >= activeStart && this.punchT < activeEnd) this.resolvePunch(ctx);
       if (this.punchT >= activeEnd + 90) this.punchT = -1;
-    } else if (ctx.inputEnabled && controls.attackPressed && ctx.now >= this.punchReadyAt && this.rollLeft <= 0) {
+    } else if (ctx.inputEnabled && ctx.now < this.punchBufferedUntil && ctx.now >= this.punchReadyAt && this.rollLeft <= 0) {
+      this.punchBufferedUntil = 0;
       this.punchT = 0;
       this.punchLanded = false;
       this.punchReadyAt = ctx.now + PUNCH.cooldownMs;

@@ -38,6 +38,11 @@ export class PromptBar {
     this.refresh();
   }
 
+  clearAll(): void {
+    this.prompts.length = 0;
+    this.refresh();
+  }
+
   private refresh(): void {
     const top = [...this.prompts].sort((a, b) => b.priority - a.priority)[0];
     if (!top) {

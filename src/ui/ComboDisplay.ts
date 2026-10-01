@@ -27,6 +27,10 @@ export class ComboDisplay {
     this.hideAt = now + 2400;
   }
 
+  hide(): void {
+    this.root.setVisible(false).setAlpha(1).setX(GAME_WIDTH - 10);
+  }
+
   drop(count: number): void {
     if (!this.root.visible) return;
     this.label.setText(`x${count} DONE`);

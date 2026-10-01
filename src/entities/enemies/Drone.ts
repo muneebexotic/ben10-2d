@@ -139,7 +139,8 @@ export class Drone implements Damageable, Hazard {
       const cx = w.view.centerX;
       if (Math.abs(this.x - cx) < DRONE_SHARED.wakeDistance && Math.abs(this.y - w.view.centerY) < 320) {
         this.awake = true;
-        this.nextActionAt = w.now + 600 + Math.random() * 500;
+        const [lo, hi] = DRONE_SHARED.wakeDelayMs;
+        this.nextActionAt = w.now + lo + Math.random() * (hi - lo);
       } else {
         this.bob(w.now);
         return;

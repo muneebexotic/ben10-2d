@@ -31,6 +31,15 @@ export class LevelWorld {
       if (ONE_WAY_FRAMES.includes(tile.index)) tile.setCollision(false, false, true, false);
     });
 
+    // Carved tunnels and alcoves get a dark back wall so they read as caves, not floating blocks.
+    const caves = scene.add.graphics().setDepth(DEPTH.decorBack - 1);
+    for (const c of data.carves) {
+      caves.fillStyle(0x120c14, 1);
+      caves.fillRect(c.x * TILE, c.y * TILE, c.w * TILE, c.h * TILE);
+      caves.fillStyle(0x1e1622, 1);
+      for (let x = c.x * TILE; x < (c.x + c.w) * TILE; x += 12) caves.fillRect(x + ((x / 12) % 2) * 5, c.y * TILE + 2, 3, c.h * TILE - 4);
+    }
+
     for (const w of data.water) {
       const sprite = scene.add
         .tileSprite(w.x * TILE, w.surface * TILE + 4, w.w * TILE, w.depth * TILE, TEX.water)

@@ -274,6 +274,9 @@ export class Player implements PlayerHandle {
   /** Set by the Level: true when the body is standing on a one-way platform. */
   onPlatform: ((player: Player) => boolean) | null = null;
 
+  /** Set by the Level: false where respawning would be unsafe (e.g. under water). */
+  isSafeSpot: ((x: number, feetY: number) => boolean) | null = null;
+
   /** After physics: move the sprite to the body and pick an animation. */
   syncVisual(dtMs: number, visualNow: number): void {
     if (!this.dead) this.pickAnimation();
@@ -344,6 +347,7 @@ export class Player implements PlayerHandle {
     this.safeTimer -= dtMs;
     if (!grounded || this.safeTimer > 0) return;
     this.safeTimer = PLAYER.safeGroundEveryMs;
+    if (this.isSafeSpot && !this.isSafeSpot(this.x, this.y)) return;
     this.lastSafe.x = this.x;
     this.lastSafe.y = this.y;
   }

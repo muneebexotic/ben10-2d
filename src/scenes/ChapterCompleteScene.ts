@@ -66,7 +66,8 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.add.image(0, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
     this.add.tileSprite(0, 0, GAME_WIDTH, 200, TEX.stars).setOrigin(0, 0);
     this.rays = this.add.image(GAME_WIDTH / 2, 70, TEX.rays).setScale(5).setAlpha(0.14).setTint(PALETTE.omnitrix).setBlendMode(Phaser.BlendModes.ADD);
-    this.add.rectangle(GAME_WIDTH / 2, 196, 380, 214, PALETTE.ink, 0.75).setStrokeStyle(1, PALETTE.omnitrixDark);
+    this.add.rectangle(GAME_WIDTH / 2, 176, 420, 200, PALETTE.ink, 0.78).setStrokeStyle(1, PALETTE.omnitrixDark);
+    this.add.rectangle(452, 176, 1, 176, PALETTE.omnitrixDark, 0.6);
 
     pixelText(this, GAME_WIDTH / 2, 28, 'CHAPTER 1 COMPLETE', { scale: 3, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
     pixelText(this, GAME_WIDTH / 2, 52, CHAPTER_1.name, { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.white });
@@ -80,12 +81,13 @@ export class ChapterCompleteScene extends Phaser.Scene {
       { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'DEATHS', value: () => String(s.deaths), highlight: s.deaths === 0 ? 'FLAWLESS!' : undefined },
       { label: 'SUMO SLAMMERS', value: () => `${s.cardsFound.length} / ${s.totalCards}`, highlight: s.cardsFound.length === s.totalCards ? 'ALL FOUND!' : undefined },
+      { label: 'SCORE', value: () => String(this.score), count: { to: Math.max(0, this.score), format: (n) => String(Math.round(n)) } },
     ];
 
-    const x0 = GAME_WIDTH / 2 - 176;
-    const x1 = GAME_WIDTH / 2 + 60;
+    const x0 = 126;
+    const x1 = 330;
     rows.forEach((row, i) => {
-      const y = 104 + i * 18;
+      const y = 88 + i * 22;
       this.time.delayedCall(500 + i * 280, () => this.revealRow(row, x0, x1, y));
     });
 
@@ -120,6 +122,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     }
     if (row.highlight) {
       const h = pixelText(this, x1 + 8, y, row.highlight, { color: PALETTE.gold });
+      h.setOrigin(0, 0);
       h.setScale(2).setAlpha(0);
       this.tweens.add({ targets: h, scale: 1, alpha: 1, duration: 300, delay: 350, ease: 'Back.easeOut' });
     }
@@ -127,10 +130,10 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
   private stampRank(): void {
     const color = RANK_COLOR[this.rank];
-    const x = GAME_WIDTH / 2 + 150;
-    const y = 150;
-    pixelText(this, x, y - 44, 'RANK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
-    const glow = this.add.image(x, y, TEX.soft).setScale(8).setTint(color).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD);
+    const x = 492;
+    const y = 160;
+    pixelText(this, x, 96, 'RANK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    const glow = this.add.image(x, y, TEX.light).setScale(2.2).setTint(color).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD);
     const letter = pixelText(this, x, y, this.rank, { scale: 8, originX: 0.5, originY: 0.5, color });
     letter.setScale(3).setAlpha(0).setAngle(-20);
     this.tweens.add({
@@ -158,20 +161,20 @@ export class ChapterCompleteScene extends Phaser.Scene {
         }
       },
     });
-    pixelText(this, x, y + 46, RANK_LINE[this.rank], { originX: 0.5, originY: 0.5, color: PALETTE.cream, maxWidth: 150, align: 'center' });
+    pixelText(this, x, y + 52, RANK_LINE[this.rank], { originX: 0.5, originY: 0, color: PALETTE.cream, maxWidth: 70, align: 'center' });
     if (this.outcome.newBestRank && this.outcome.record.clears > 1) {
-      pixelText(this, x, y + 64, 'NEW BEST RANK!', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+      pixelText(this, x, y - 50, 'NEW BEST!', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     }
     music.play('victory');
   }
 
   private showFooter(): void {
     this.ready = true;
-    pixelText(this, GAME_WIDTH / 2, 318, 'NEXT: CHAPTER 2  -  ROAD TRIP', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
-    pixelText(this, GAME_WIDTH / 2, 330, 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    pixelText(this, GAME_WIDTH / 2, 300, 'NEXT: CHAPTER 2  -  ROAD TRIP', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    pixelText(this, GAME_WIDTH / 2, 313, 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     const prompt = pixelText(this, GAME_WIDTH / 2, 348, '[ENTER] PLAY AGAIN    [C] COPY SCORE    [ESC] TITLE', { originX: 0.5, originY: 0.5, color: PALETTE.white });
     this.tweens.add({ targets: prompt, alpha: 0.5, yoyo: true, repeat: -1, duration: 700 });
-    this.copied = pixelText(this, GAME_WIDTH / 2, 302, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    this.copied = pixelText(this, GAME_WIDTH / 2, 330, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
   }
 
   private shareText(): string {

@@ -94,7 +94,7 @@ function frameFor(grid: TileGrid, x: number, y: number): number {
   if (rock) return n > 0.75 ? FRAME.ROCK_VAR : FRAME.ROCK;
   let depth = 0;
   while (depth < 4 && isSolidCell(cellAt(grid, x, y - depth - 1))) depth++;
-  if (depth >= 4) return n > 0.8 ? FRAME.DIRT_VAR : FRAME.DIRT_DEEP;
+  if (depth >= 4) return FRAME.DIRT_DEEP;
   return n > 0.72 ? FRAME.DIRT_VAR : FRAME.DIRT;
 }
 

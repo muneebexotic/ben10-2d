@@ -49,6 +49,7 @@ export interface GameEvents {
   'boss:health': { ratio: number; phase: number };
   'boss:hide': undefined;
   'level:complete': { stats: RunStats };
+  'hud:reset': undefined;
   'audio:muted': { muted: boolean };
 }
 

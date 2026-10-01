@@ -86,6 +86,12 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('player:formHealth', (p) => this.health.setForm(p.hp, p.max, p.visible, p.delta), this);
     on('player:died', () => (this.dead = true), this);
+    on('hud:reset', () => {
+      this.dead = false;
+      this.alien = false;
+      this.prompts.clearAll();
+      this.combo.hide();
+    }, this);
     on('combo:update', (p) => this.combo.set(p.count, this.time.now), this);
     on('combo:drop', (p) => this.combo.drop(p.count), this);
     on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards), this);

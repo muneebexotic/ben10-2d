@@ -67,6 +67,7 @@ export class TransformSequence {
       player.squash(1.55, 0.6);
 
       cam.flash(opts.first ? 320 : 200, 120, 255, 110, true);
+      this.shockwaveDistortion(opts.first ? 1.32 : 1.2);
       fx.rays(px, py, PALETTE.omnitrix, opts.first ? 240 : 170, opts.first ? 900 : 600);
       fx.ring(px, py, PALETTE.omnitrixGlow, 90, 420);
       fx.ring(px, py, alien.color, 60, 520);
@@ -109,6 +110,21 @@ export class TransformSequence {
     music.setIntensity(0);
     const line = reason === 'jammed' ? 'HEY! GIVE IT BACK!' : pick(HUMAN_FORM.quips.revert);
     this.d.speech.show(line, 1500);
+  }
+
+  /** Brief barrel-distortion pulse: the screen itself bulges with the transformation. */
+  private shockwaveDistortion(amount: number): void {
+    const cam = this.d.scene.cameras.main;
+    const barrel = cam.filters?.internal.addBarrel(1);
+    if (!barrel) return;
+    this.d.scene.tweens.add({
+      targets: barrel,
+      amount,
+      duration: 110,
+      yoyo: true,
+      ease: 'Quad.easeOut',
+      onComplete: () => cam.filters?.internal.remove(barrel),
+    });
   }
 
   private zoomTo(zoom: number, ms: number, ease: string): void {

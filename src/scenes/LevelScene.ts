@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { COMBO, DEPTH, FX, LIGHTING, PHYSICS, TILE } from '../config/constants';
 import { getDifficulty } from '../config/difficulty';
 import { PALETTE } from '../config/palette';
+import { PLAYER } from '../config/player';
 import { aliensUnlockedBy } from '../aliens/registry';
 import type { AbilityAction, FxApi } from '../aliens/types';
 import { CHAPTER_1 } from '../levels/chapter1';
@@ -117,6 +118,7 @@ export class LevelScene extends Phaser.Scene {
     this.physics.world.checkCollision.down = false;
     this.cameras.main.setBounds(0, 0, this.world.widthPx, this.world.heightPx);
     this.cameras.main.setBackgroundColor(PALETTE.sky0);
+    this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f);
 
     const bossSpawn = this.level.entities.find((e) => e.type === 'boss');
     this.parallax = new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx);
@@ -144,12 +146,15 @@ export class LevelScene extends Phaser.Scene {
       notify: (a) => this.onAbility(a),
       damageMultiplier: getDifficulty().damageTakenMultiplier,
     });
+    if (launchParams().god) this.player.setInvulnerable(1e9);
+    this.player.isSafeSpot = (x, y) => !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
     this.combat.setPlayer(this.player);
     this.physics.add.collider(this.player.zone, this.world.layer, undefined, (_a, tile) => this.processTile(tile as Phaser.Tilemaps.Tile));
 
     this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech });
     this.omni = new OmnitrixController(aliensUnlockedBy(this.level.chapter), this.player, this.sequence, this.fx);
+    this.omni.transformations = this.stats.transformations;
     this.tutorial = new Tutorial(this.level);
 
     this.droneWorld = this.createDroneWorld();
@@ -204,10 +209,12 @@ export class LevelScene extends Phaser.Scene {
     });
 
     if (resuming) {
+      this.player.setInvulnerable(PLAYER.respawnInvulnMs);
       this.giveOmnitrix(true);
       EventBus.emit('hud:visible', { visible: true, omnitrix: true });
       EventBus.emit('hud:letterbox', { visible: false });
     }
+    EventBus.emit('hud:reset');
     EventBus.emit('boss:hide');
     this.emitHealth(0);
     this.emitFormHealth(0);
@@ -230,6 +237,11 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private resolveStart(): { x: number; y: number } {
+    if (this.checkpointId?.startsWith('@')) {
+      const tx = Number(this.checkpointId.slice(1));
+      const x = tx * TILE + TILE / 2;
+      return { x, y: this.world.groundBelow(x, 0) };
+    }
     if (this.checkpointId) {
       const cp = checkpointsFor(this.level).find((c) => c.id === this.checkpointId) ?? this.level.entities.find((e) => e.type === 'checkpoint' && e.id === this.checkpointId);
       if (cp && cp.type === 'checkpoint') return { x: cp.x * TILE + TILE / 2, y: cp.y * TILE };
@@ -359,6 +371,7 @@ export class LevelScene extends Phaser.Scene {
     if (dropped >= COMBO.showAt) EventBus.emit('combo:drop', { count: dropped });
 
     if (this.state === 'play' && !this.intro.cinematic) this.stats.timeMs += realDt;
+    this.stats.transformations = this.omni.transformations;
     this.statsTimer -= realDt;
     if (this.statsTimer <= 0) {
       this.statsTimer = 100;
@@ -524,6 +537,7 @@ export class LevelScene extends Phaser.Scene {
     this.state = 'dead';
     this.stats.deaths++;
     this.time2.slowMo(0.3, 900, 300);
+    this.cameras.main.filters?.internal.addColorMatrix().colorMatrix.desaturate();
     playSfx('revert');
     music.setIntensity(0);
     EventBus.emit('player:died');

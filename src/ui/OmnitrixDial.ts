@@ -13,7 +13,6 @@ export class OmnitrixDial {
   private readonly glow: Phaser.GameObjects.Image;
   private readonly icon: Phaser.GameObjects.Image;
   private readonly status: Phaser.GameObjects.BitmapText;
-  private readonly keys: Phaser.GameObjects.BitmapText;
   private tick: OmnitrixTick | null = null;
   private shakeLeft = 0;
   private popScale = 1;
@@ -25,8 +24,7 @@ export class OmnitrixDial {
     this.ring = scene.add.graphics();
     this.icon = scene.add.image(0, 0, TEX.iconHeatblast).setTint(PALETTE.omnitrix);
     this.status = pixelText(scene, 0, R + 6, '', { originX: 0.5, originY: 0, color: PALETTE.omnitrix });
-    this.keys = pixelText(scene, R + 4, R - 4, 'T', { color: PALETTE.uiDim }).setAlpha(0.8);
-    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, this.status, this.keys]).setVisible(false);
+    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, this.status]).setVisible(false);
   }
 
   setVisible(visible: boolean, animate: boolean): void {
@@ -115,6 +113,5 @@ export class OmnitrixDial {
     this.status.setText(status).setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : t.state === 'active' ? PALETTE.fire1 : PALETTE.omnitrix);
     if (t.state === 'ready' && !t.jammed) this.status.setAlpha(0.7 + Math.sin(now * 0.008) * 0.3);
     else this.status.setAlpha(1);
-    this.keys.setVisible(t.state === 'ready' && !t.jammed);
   }
 }

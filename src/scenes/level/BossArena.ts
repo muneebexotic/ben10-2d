@@ -94,7 +94,7 @@ export class BossArena {
     }
     playSfx('gateDown', 0.8, 1.4);
 
-    camera.lockTo((this.left + this.right) / 2, this.floorY - 140);
+    camera.lockTo((this.left + this.right) / 2, this.floorY - 112);
     this.hazards = new BossHazards(scene, this.floorY, this.d.fx, this.d.lighting, this.d.telegraph);
     for (const h of this.hazards.all()) combat.addHazard(h);
 
