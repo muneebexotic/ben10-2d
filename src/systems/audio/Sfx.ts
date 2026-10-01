@@ -76,6 +76,48 @@ const RECIPES = {
   laserCharge: (v, p) => A.tone({ type: 'sine', freq: 300 * p, freqEnd: 1200 * p, duration: 0.5, volume: 0.05 * v }),
   diveLock: (v) => A.tone({ type: 'sawtooth', freq: 500, freqEnd: 1500, duration: 0.55, volume: 0.05 * v, filter: { type: 'lowpass', freq: 2200 } }),
   dive: (v) => A.noise({ duration: 0.3, volume: 0.15 * v, filter: 'bandpass', freq: 3000, freqEnd: 800, q: 2 }),
+  droneDown: (v) => {
+    A.tone({ type: 'square', freq: 700, freqEnd: 90, duration: 0.35, volume: 0.08 * v });
+    A.noise({ duration: 0.2, volume: 0.15 * v, filter: 'bandpass', freq: 1500, q: 4 });
+  },
+  grab: (v) => {
+    A.noise({ duration: 0.08, volume: 0.2 * v, filter: 'lowpass', freq: 1800 });
+    A.tone({ type: 'square', freq: 160, freqEnd: 240, duration: 0.1, volume: 0.12 * v });
+  },
+  throw: (v, p) => {
+    A.noise({ duration: 0.25, volume: 0.25 * v, filter: 'bandpass', freq: 500 * p, freqEnd: 2200 * p, q: 1 });
+    A.tone({ type: 'sine', freq: 180 * p, freqEnd: 90, duration: 0.15, volume: 0.25 * v });
+  },
+  armorTink: (v, p) => {
+    A.tone({ type: 'triangle', freq: 1900 * p, duration: 0.12, volume: 0.08 * v });
+    A.tone({ type: 'square', freq: 2850 * p, duration: 0.05, volume: 0.04 * v });
+  },
+  armorCrack: (v) => {
+    A.noise({ duration: 0.18, volume: 0.35 * v, filter: 'highpass', freq: 1200, freqEnd: 400 });
+    A.tone({ type: 'square', freq: 220, freqEnd: 80, duration: 0.12, volume: 0.18 * v });
+  },
+  armorBreak: (v) => {
+    A.noise({ duration: 0.6, volume: 0.45 * v, filter: 'lowpass', freq: 5000, freqEnd: 200 });
+    A.tone({ type: 'square', freq: 400, freqEnd: 60, duration: 0.4, volume: 0.15 * v });
+    for (const [i, n] of [76, 72, 69].entries()) A.tone({ type: 'triangle', freq: midiToFreq(n), duration: 0.12, volume: 0.06 * v, when: A.now + 0.1 + i * 0.06 });
+  },
+  ramCharge: (v) => A.tone({ type: 'sawtooth', freq: 60, freqEnd: 180, duration: 0.7, volume: 0.12 * v, filter: { type: 'lowpass', freq: 700 } }),
+  cannon: (v) => {
+    A.tone({ type: 'sine', freq: 140, freqEnd: 50, duration: 0.3, volume: 0.4 * v });
+    A.noise({ duration: 0.2, volume: 0.25 * v, filter: 'lowpass', freq: 2000, freqEnd: 300 });
+  },
+  buzz: (v) => A.tone({ type: 'sawtooth', freq: 180, freqEnd: 420, duration: 0.4, volume: 0.06 * v, detune: 25, filter: { type: 'bandpass', freq: 900, q: 3 } }),
+  hornetDash: (v) => A.noise({ duration: 0.25, volume: 0.18 * v, filter: 'bandpass', freq: 4200, freqEnd: 1400, q: 3 }),
+  dummyHit: (v, p) => {
+    A.tone({ type: 'square', freq: 320 * p, freqEnd: 180 * p, duration: 0.08, volume: 0.1 * v });
+    A.tone({ type: 'triangle', freq: 1200 * p, duration: 0.06, volume: 0.05 * v });
+    A.noise({ duration: 0.05, volume: 0.12 * v, filter: 'highpass', freq: 2500 });
+  },
+  rockBreak: (v) => {
+    A.noise({ duration: 0.5, volume: 0.45 * v, filter: 'lowpass', freq: 2200, freqEnd: 120 });
+    A.tone({ type: 'sine', freq: 110, freqEnd: 40, duration: 0.35, volume: 0.4 * v });
+  },
+  whiff: (v) => A.noise({ duration: 0.08, volume: 0.1 * v, filter: 'bandpass', freq: 2600, freqEnd: 5200, q: 2 }),
   droneHit: (v, p) => {
     A.tone({ type: 'square', freq: 520 * p, freqEnd: 260 * p, duration: 0.06, volume: 0.1 * v });
     A.noise({ duration: 0.05, volume: 0.12 * v, filter: 'highpass', freq: 2500 });

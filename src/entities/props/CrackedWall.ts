@@ -13,6 +13,20 @@ import { breaksCrackedWall } from '../../levels/secrets';
 /** The silhouette floats this far above the wall top, clear of Ben's speech bubble. */
 const HINT_RISE = 72;
 
+/** The alien that can break the wall, once it is on the dial. */
+export interface WallBreaker {
+  name: string;
+  icon: string;
+  color: number;
+}
+
+export interface CrackedWallOptions {
+  /** Reforms this long after breaking (Training). */
+  rebuildMs?: number;
+  /** Set when the alien that can break it is on the dial: the hint names it instead of a locked silhouette. */
+  breaker?: WallBreaker | null;
+}
+
 /**
  * A cracked rock slab with something golden behind it. Touching it shows the
  * silhouette of the alien who could break it: a promise for later chapters.
@@ -27,6 +41,7 @@ export class CrackedWall implements Damageable {
   private hintLeft = 0;
   private hintCooldown = 0;
   private shownOnce = false;
+  private rebuildLeft = 0;
   onBroken: (() => void) | null = null;
   /** Called the first time the silhouette appears this run. */
   onFirstTease: (() => void) | null = null;
@@ -38,16 +53,19 @@ export class CrackedWall implements Damageable {
     ty: number,
     th: number,
     private readonly fx: Fx,
+    private readonly opts: CrackedWallOptions = {},
   ) {
     const h = th * TILE;
     this.rect = { x: tx * TILE, y: ty * TILE, w: TILE, h };
     this.body = scene.physics.add.staticImage(tx * TILE + TILE / 2, ty * TILE + h / 2, TEX.crackedWall).setDepth(DEPTH.props);
     this.body.setDisplaySize(TILE, h).refreshBody();
 
-    const glow = scene.add.image(0, 0, TEX.light).setTint(PALETTE.omnitrix).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setScale(1.4);
-    const silhouette = scene.add.image(0, 0, TEX.lockedAlien).setTint(PALETTE.omnitrix);
-    const label = pixelText(scene, 0, 30, 'LOCKED ALIEN', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
-    const sub = pixelText(scene, 0, 41, 'TOO TOUGH... FOR NOW', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    const breaker = opts.breaker ?? null;
+    const color = breaker ? breaker.color : PALETTE.omnitrix;
+    const glow = scene.add.image(0, 0, TEX.light).setTint(color).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setScale(1.4);
+    const silhouette = breaker ? scene.add.image(0, 4, breaker.icon).setTint(color).setScale(2) : scene.add.image(0, 0, TEX.lockedAlien).setTint(PALETTE.omnitrix);
+    const label = pixelText(scene, 0, 30, breaker ? `${breaker.name} CAN SMASH THIS!` : 'LOCKED ALIEN', { originX: 0.5, originY: 0.5, color });
+    const sub = pixelText(scene, 0, 41, breaker ? 'ONLY SMASH HITS CRACK IT' : 'TOO TOUGH... FOR NOW', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     this.hint = scene.add
       .container(this.rect.x - 6, this.rect.y - HINT_RISE, [glow, silhouette, label, sub])
       .setDepth(DEPTH.worldUi)
@@ -82,12 +100,29 @@ export class CrackedWall implements Damageable {
     if (this.hp <= 0) {
       this.alive = false;
       this.body.disableBody(true, true);
+      this.rebuildLeft = this.opts.rebuildMs ?? 0;
+      this.hintLeft = 0;
+      this.hint.setVisible(false);
+      playSfx('rockBreak');
       this.fx.burst('debris', this.rect.x + 8, this.rect.y + this.rect.h / 2, 30);
       this.fx.burst('gold', this.rect.x + 24, this.rect.y + this.rect.h - 8, 20);
       this.onBroken?.();
       return 'killed';
     }
     return 'hit';
+  }
+
+  /** Training walls reform: the hologram re-renders the slab. */
+  private rebuild(): void {
+    this.alive = true;
+    this.hp = SECRETS.crackedWallHp;
+    const r = this.rect;
+    this.body.enableBody(true, r.x + TILE / 2, r.y + r.h / 2, true, true);
+    this.body.setDisplaySize(TILE, r.h).refreshBody();
+    this.body.setAlpha(0);
+    this.scene.tweens.add({ targets: this.body, alpha: 1, duration: 300 });
+    this.fx.burst('green', r.x + 8, r.y + r.h / 2, 16);
+    this.fx.ring(r.x + 8, r.y + r.h / 2, PALETTE.omnitrix, 24, 300);
   }
 
   /** Ben is pressed against the wall (or hit it). */
@@ -110,7 +145,13 @@ export class CrackedWall implements Damageable {
   }
 
   update(dtMs: number, lighting: Lighting, now: number): void {
-    if (!this.alive) return;
+    if (!this.alive) {
+      if (this.rebuildLeft > 0) {
+        this.rebuildLeft -= dtMs;
+        if (this.rebuildLeft <= 0) this.rebuild();
+      }
+      return;
+    }
     this.hintCooldown = Math.max(0, this.hintCooldown - dtMs);
     // Gold glints through the cracks.
     lighting.add(this.rect.x + 8, this.rect.y + this.rect.h / 2, 26 + Math.sin(now * 0.004) * 4, PALETTE.gold, 0.45);
