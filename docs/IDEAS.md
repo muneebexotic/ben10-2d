@@ -10,6 +10,7 @@ Proposals for features or changes outside the current milestone. Items move to *
 - **Vilgax hologram:** a short, skippable red hologram at the boss arena where Vilgax demands the Omnitrix. Plays once per run.
 - **Hidden Ultimate teaser / Four Arms wall:** a cracked wall by the cliff checkpoint seals a vault with a fourth card. Touching it shows a locked four-armed silhouette. Only `'smash'` hits break it. Since Milestone 2, Four Arms' hits are smash damage and the card counts toward the chapter total of 4.
 - **Mobile touch controls** (pulled forward from Milestone 6): stick, buttons, Omnitrix dial button, landscape handling, auto-pause, frame-rate governor.
+- **Dial misfire comedy** (Milestone 3): record scratch, a reaction line for every alien pair, plus a sepia freeze-frame close-up, a double take and a WANTED/GOT card.
 
 Built within Milestone 2 (not proposed beforehand, recorded here for reference):
 
@@ -18,11 +19,19 @@ Built within Milestone 2 (not proposed beforehand, recorded here for reference):
 - **TOO SLOW!:** XLR8 dashing through an enemy shot slows time and resets the dash.
 - **Downed drones:** knockdown hits ground drones so Four Arms can lift and throw them.
 
+Built within Milestone 3 (not proposed beforehand, recorded here for reference):
+
+- **Misfire outs:** after a misfire the next swap is half price and can't misfire (FIX), or the first KO as the wrong alien refunds +2 s (IMPROVISED!).
+- **Training MISFIRES switch:** OFF / 10% / 25% / CHAOS (100%).
+- **Mid-chapter Continue:** checkpoints, deaths and Save & Quit store the run; CONTINUE drops straight back in.
+- **Per-difficulty medals** on Chapter Select (best rank on Easy, Normal and Hard).
+- **Chapter reveal:** after a first clear the next chapter's title decodes letter by letter.
+- **No-shame difficulty tip** on the game over screen after a few deaths.
+
 ## Deferred (approved for later)
 
 | Idea | Target |
 |---|---|
-| **Dial misfire comedy:** a record-scratch sound and a unique reaction line per alien pair when a wrong transform happens. | Milestone 3 (wrong transforms go live) |
 | **Gwen and Grandpa Max cameos** in the Chapter 1 intro (e.g. Gwen: "Great, now you're even MORE annoying"). | Milestone 5 |
 | **Achievements** (Pyromaniac, Deflector, Smoothie Addict, Untouchable, Speed Demon, Perfectionist...). | After 3 chapters exist |
 | **Card album:** a title-screen page of collected Sumo Slammers cards with flavour text. | After 3 chapters exist |
@@ -62,6 +71,16 @@ Built within Milestone 2 (not proposed beforehand, recorded here for reference):
 
 - **Hold-to-transform** alternative and **remappable keys** (left over from the original accessibility proposal).
 - **Colour-blind safe telegraphs:** add a shape cue (stripes or chevrons) to red danger zones so they don't rely on colour alone.
+
+### Core systems (from Milestone 3)
+
+- **Misfire log:** a page (Chapter Select or the pause menu) collecting every misfire reaction line you've triggered, "JOKES FOUND 7/12", growing with every alien. Rewards experimenting on Hard and in Training's CHAOS mode.
+- **Misfire clip:** the misfire freeze-frame is the most clippable moment in the game. When the Milestone 7 auto-clip lands, save the last few seconds around every misfire automatically, with the WANTED/GOT card burned in.
+- **Omnitrix Master:** an S rank on all three difficulties for a chapter turns its card gold on Chapter Select and adds a badge to the share line.
+- **One-tap "make it easier"** on the game over screen after many deaths (instead of only a tip pointing to Settings).
+- **Save code:** export a file as a short text code and import it on another device (no accounts, works offline), until cloud saves exist.
+- **Timed-run marker:** a small HUD icon showing the run counts for best times (full run, one difficulty), so speedrunners know before the end.
+- **Hard Remix tie-in:** when Chapter 1 Hard Remix is built (Deferred), it plugs into the per-difficulty bests and medals already in place.
 
 ### Virality
 

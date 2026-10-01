@@ -36,7 +36,7 @@ Mobile (built early, in the Chapter 1 polish pass): a floating thumb stick on th
 - Dial through unlocked aliens with Q/E, press T to transform.
 - **Transform timer:** alien lasts X seconds (by difficulty). Watch beeps and flashes red in the last 5 seconds.
 - **Cooldown:** after timing out, Ben is human for Y seconds. Watch shows red.
-- **Wrong transformation:** chance (by difficulty) that the Omnitrix gives a random different alien. Show a big comedic reaction ("Aw man, not this guy!").
+- **Wrong transformation:** chance (by difficulty) that the Omnitrix gives a random different alien. Show a big comedic reaction ("Aw man, not this guy!"). Mid-transformation swaps misfire too, at half the chance, never into the alien Ben already is. Never during the tutorial transform, story intros or boss entrances. After a misfire the next swap is a cheap, guaranteed fix, or the first KO as the wrong alien earns time back.
 - Transform effect: green flash, brief invulnerability, short camera zoom.
 - Taking heavy damage as an alien can force an early revert.
 
@@ -102,7 +102,7 @@ Mobile (built early, in the Chapter 1 polish pass): a floating thumb stick on th
 | Damage taken | x0.5 | x1 | x1.5 |
 | Checkpoints | Frequent | Normal | Sparse |
 
-All values live in one config file so they can be tuned without touching logic.
+All values live in one config file so they can be tuned without touching logic. Hard also changes how enemies fight (less rest between attacks, faster wake-up, shorter punish windows, the boss rages earlier) while telegraphs stay the same length on every difficulty. Difficulty belongs to a save file and can be changed any time in Settings; best times are kept per difficulty.
 
 ## Enemies (initial)
 
