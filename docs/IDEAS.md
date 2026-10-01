@@ -1,38 +1,51 @@
 # Ideas
 
-Proposals for features or changes outside the current milestone. Awaiting approval.
+Proposals for features or changes outside the current milestone. Items move to **Done** when built and to **Deferred** when approved for a later milestone.
 
-## High priority
+## Done
 
-- **Accessibility options (Milestone 3 menus):** a "reduce flashing" toggle (camera flashes, transform emblem, alarm lights), a screen shake slider, a hold-to-transform alternative, and remappable keys. The transform and boss effects are bright; this matters for photosensitive players.
-- **Gamepad support:** Phaser's gamepad plugin maps cleanly onto `InputMap`. It's cheap and makes the game feel like a console game on desktop.
-- **Real playtest tuning pass:** record anonymous run stats (time per section, deaths per section, transform uptime) in a dev build to tune boss HP, drone density and jammer ravine difficulty.
+- **Accessibility options** (Chapter 1 polish pass): Reduce Flashing toggle (transform emblem, camera flashes, alarm lights, boss and HUD blinks), a 0–100% screen shake slider, a Settings screen from the title and pause menus, saved via SaveSystem, prefers-reduced-motion as the default. *Hold-to-transform and remappable keys from the original proposal are still open (see Proposed).*
+- **Perfect transform:** transform in a short window around a drone or boss attack for a bigger shockwave that turns enemy shots around, a slow-motion beat, a gold PERFECT! stamp and +3 s of alien time. Window in `config/omnitrix.ts`, timing logic unit tested.
+- **Speedrun splits:** a split at every checkpoint and the boss kill against your fastest time there, gold when ahead, saved per chapter.
+- **Vilgax hologram:** a short, skippable red hologram at the boss arena where Vilgax demands the Omnitrix. Plays once per run.
+- **Hidden Ultimate teaser / Four Arms wall:** a cracked wall by the cliff checkpoint seals a vault with a fourth card. Touching it shows a locked four-armed silhouette. Only `'smash'` hits break it, and the card only counts once Four Arms is on the dial (Milestone 2 hook).
+- **Mobile touch controls** (pulled forward from Milestone 6): stick, buttons, Omnitrix dial button, landscape handling, auto-pause, frame-rate governor.
 
-## Virality
+## Deferred (approved for later)
 
-- **Auto-clip the transform:** keep a rolling canvas recording and offer "SAVE CLIP" right after the first transform and after the boss kill. Both are the most shareable moments. (Viral layer milestone, but the hook points already exist: `alien:transformed`, boss death.)
-- **Share card image:** generate a PNG on Chapter Complete (rank letter, time, Heatblast portrait, card count) for one-tap sharing, instead of text only.
-- **Speedrun splits:** show split times at each checkpoint against your best, and go gold when ahead. All the data is already in `RunStats`.
-- **"No-transform" challenge badge:** finish a section as human Ben only. It's the hardest flex and very clip-worthy.
+| Idea | Target |
+|---|---|
+| **Dial misfire comedy:** a record-scratch sound and a unique reaction line per alien pair when a wrong transform happens. | Milestone 3 (wrong transforms go live) |
+| **Gwen and Grandpa Max cameos** in the Chapter 1 intro (e.g. Gwen: "Great, now you're even MORE annoying"). | Milestone 5 |
+| **Achievements** (Pyromaniac, Deflector, Smoothie Addict, Untouchable, Speed Demon, Perfectionist...). | After 3 chapters exist |
+| **Card album:** a title-screen page of collected Sumo Slammers cards with flavour text. | After 3 chapters exist |
+| **Chapter 1 Hard Remix:** shorter timer, a Gunner wave in the ravine, a boss "overclock" phase 3. | After 3 chapters exist |
+| **Auto-clip the transform** (rolling canvas recording, SAVE CLIP after the first transform and the boss kill) and a **share card image** (rank, time, portrait, cards as a PNG). | Milestone 7 (viral layer) |
+| **Gamepad support** through Phaser's gamepad plugin feeding `InputMap`. | Later |
+| **Playtest stats** (time per section, deaths per section, transform uptime) to tune difficulty. | Dev builds only, never shipped |
 
-## Retention
+## Proposed (awaiting approval)
 
-- **Achievements:**
-  - Pyromaniac: burn every barricade.
-  - Deflector: parry 10 lasers.
-  - Smoothie Addict: drink every Mr. Smoothy.
-  - Untouchable: beat the boss without taking damage.
-  - Speed Demon: under 3:00.
-- **Card album:** a title-screen page showing collected Sumo Slammers cards with fun flavour text per card (show nostalgia).
-- **Chapter 1 Hard Remix** after the first clear: shorter timer, a Gunner wave in the ravine, and a boss "overclock" phase 3.
-- **Hidden Ultimate teaser:** a fourth secret in Chapter 1 that is only reachable with a later alien (for example a cracked wall for Four Arms) and shows a locked silhouette. It rewards replaying chapters after unlocks.
+### Retention and mastery
 
-## Story and characters (later milestones)
+- **"No-transform" challenge badge:** finish a section as human Ben only. The hardest flex and very clip-worthy.
+- **Ghost of your best run:** a translucent Ben replaying your fastest run (positions sampled every few frames). Pairs naturally with splits and makes "one more run" irresistible.
+- **Splits review on Chapter Complete:** every split with its delta and a "sum of best" possible time, so players see exactly where to save time.
+- **Perfect-transform counterplay on the boss:** a perfect transform during the slam's drop stuns the Hunter-Killer early. A reward for reading the boss, not a requirement.
 
-- **Gwen and Grandpa Max cameos in the Chapter 1 intro:** Gwen's commentary when the watch clamps on ("Great, now you're even MORE annoying"). Belongs to Milestone 5.
-- **Vilgax hologram** on the boss arena intro (a red projection that threatens Ben) to set up the season arc.
+### Mobile
 
-## Systems
+- **Fill wide phones:** switch the scale mode to EXPAND so 19.5:9 phones show more level instead of side bars (needs HUD anchoring to the screen edges).
+- **Haptics on Android:** short `navigator.vibrate` pulses on hits, perfect transforms and the boss kill (no iOS support), with a Settings toggle.
+- **Touch layout options:** button size slider and a left-handed mirror layout.
+- **Offline play:** a small service worker so the game loads with no connection after the first visit (fits the existing web manifest).
+- **Omnitrix radial dial:** once 3+ aliens exist, a long-press on the touch Omnitrix opens a radial picker instead of swiping through them one by one (Milestone 2+).
 
-- **Perfect transform:** pressing T within a short window right as a drone fires grants a stronger shockwave and a slow-mo "PERFECT!" banner. It adds mastery to the core mechanic. Changes Omnitrix feel, so it needs approval.
-- **Dial misfire comedy (Milestone 3):** when wrong transforms go live, play a record-scratch sound plus a unique reaction line per alien pair.
+### Accessibility
+
+- **Hold-to-transform** alternative and **remappable keys** (left over from the original accessibility proposal).
+- **Colour-blind safe telegraphs:** add a shape cue (stripes or chevrons) to red danger zones so they don't rely on colour alone.
+
+### Virality
+
+- **"Vilgax was here" share line:** the share text calls out perfect transforms and splits ("3 PERFECT transforms, gold at every split"), which makes scores more brag-worthy.

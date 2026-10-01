@@ -22,7 +22,7 @@ Guardrails:
 
 ## Stack
 
-- Phaser 4 (Arcade Physics, WebGL renderer)
+- Phaser 4 (currently 4.2.x; Arcade Physics, WebGL renderer)
 - TypeScript (strict mode)
 - Vite
 - Vitest for unit tests on game logic
@@ -43,7 +43,7 @@ Always use the latest stable versions of the stack and dependencies. Phaser 4 di
 src/
   main.ts
   config/        game config, difficulty.ts, constants
-  scenes/        Boot, Preload, Menu, ChapterSelect, Level, UI, Pause, GameOver
+  scenes/        Boot, Preload, Menu, ChapterSelect, Level, UI, Touch, Pause, Settings, GameOver
   aliens/        types.ts, registry.ts, one file per alien
   entities/      Player.ts, enemies/, bosses/
   systems/       Omnitrix.ts, SaveSystem.ts, EventBus.ts
@@ -61,6 +61,9 @@ docs/            GAME_DESIGN.md, PROGRESS.md, IDEAS.md
 - **Scenes communicate through `EventBus`**, not direct references (e.g. Level emits `alien:transformed`, UI listens).
 - **UI runs in its own scene** layered over the Level scene.
 - **Save data** uses localStorage via `SaveSystem`, wrapped in try/catch, with a version number for migrations.
+- **Accessibility:** every full-screen flash, camera shake and gameplay blink goes through `systems/Accessibility.ts` (`flashCamera`, `shakeCamera`, `blinkOn`) so Reduce Flashing and the shake slider always apply. Never call `cameras.main.flash/shake` directly.
+- **Input:** gameplay reads one `Controls` object from `InputMap`, which merges the keyboard and the on-screen touch controls (`systems/VirtualPad.ts`). Player-facing text that names a control uses tokens (`{T}`, `{J}`, `{K}`, `{JUMP}`, `{UP}`, `{MOVE}`...) rendered by `inputMode.format()`, so it reads correctly on keyboard and touch.
+- **Mobile is a first-class target:** check new UI and HUD at phone sizes (emulated landscape phones in headless Chromium) and keep thumbs clear of gameplay.
 
 ## Assets
 

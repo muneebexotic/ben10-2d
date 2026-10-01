@@ -2,6 +2,8 @@
 
 A 2D pixel-art side-scrolling action platformer based on the original Ben 10 series. Plays instantly in the browser on desktop and mobile.
 
+Tech: Phaser 4 (4.2.x, WebGL, Arcade Physics), TypeScript, Vite, Vitest, deployed on Vercel. See CLAUDE.md for the stack rules.
+
 ## Design Pillars
 
 1. **Instant fun:** player transforms within the first 10 seconds. No tutorial walls, teach through play.
@@ -26,7 +28,7 @@ Explore level > hit obstacle or enemy > pick the right alien > transform > timer
 | Transform | T |
 | Pause | Esc |
 
-Mobile: on-screen D-pad plus buttons (built in a later milestone).
+Mobile (built early, in the Chapter 1 polish pass): a floating thumb stick on the left, Jump / Attack / Special on the right, and a transform button styled like the Omnitrix (tap to transform, swipe to turn the dial). Landscape only; portrait shows a "turn your phone" screen.
 
 ## The Omnitrix System
 
@@ -128,5 +130,5 @@ Sumo Slammers cards as collectibles, Mr. Smoothy stands as health pickups, Rustb
 3. **Core systems:** wrong transforms, difficulty, save progress, pause, menus.
 4. **Story chapters:** 1 to 2 chapters per session.
 5. **Characters:** Gwen support/spells, Max and Rustbucket segments, Kevin bosses.
-6. **Mobile controls and polish.**
+6. **Mobile controls and polish.** (Touch controls, landscape handling and the frame-rate governor were pulled forward into the Chapter 1 polish pass; this milestone is now about polish across all chapters.)
 7. **Viral layer.**
