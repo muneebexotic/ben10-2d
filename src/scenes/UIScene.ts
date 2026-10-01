@@ -15,6 +15,7 @@ import { getAlien, hasAlien } from '../aliens/registry';
 import { PLAYER } from '../config/player';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { shakeCamera } from '../systems/Accessibility';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -82,7 +83,7 @@ export class UIScene extends Phaser.Scene {
     on('player:health', (p) => {
       this.hp = p.hp;
       this.health.setHealth(p.hp, p.delta);
-      if (p.delta < 0) this.cameras.main.shake(120, 0.004);
+      if (p.delta < 0) shakeCamera(this.cameras.main, 120, 0.004);
     }, this);
     on('player:formHealth', (p) => this.health.setForm(p.hp, p.max, p.visible, p.delta), this);
     on('player:died', () => (this.dead = true), this);

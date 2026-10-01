@@ -11,6 +11,7 @@ import { bindMuteKey } from '../systems/Settings';
 import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { flashCamera, shakeCamera } from '../systems/Accessibility';
 
 const RANK_COLOR: Record<Rank, number> = {
   S: PALETTE.gold,
@@ -145,8 +146,8 @@ export class ChapterCompleteScene extends Phaser.Scene {
       ease: 'Back.easeOut',
       onComplete: () => {
         playSfx('stamp');
-        this.cameras.main.shake(280, 0.012);
-        this.cameras.main.flash(200, 255, 255, 255);
+        shakeCamera(this.cameras.main, 280, 0.012);
+        flashCamera(this.cameras.main, 200, 255, 255, 255);
         this.tweens.add({ targets: glow, alpha: 0.5, duration: 200 });
         if (this.rank === 'S' || this.rank === 'A') {
           const burst = this.add.particles(x, y, TEX.spark, {

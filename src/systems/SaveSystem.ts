@@ -1,6 +1,6 @@
 import { RANK_ORDER, type Rank } from '../config/scoring';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const SAVE_KEY = 'ben10-omnitrix-summer';
 
 export interface ChapterRecord {
@@ -10,11 +10,24 @@ export interface ChapterRecord {
   bestScore: number | null;
   cards: string[];
   clears: number;
+  /** Fastest run time ever reached at each split (checkpoint id or 'finish'). */
+  bestSplits: Record<string, number>;
+}
+
+export type TouchMode = 'auto' | 'on' | 'off';
+
+/** Player options. `null` means "not chosen yet": follow the device (e.g. prefers-reduced-motion). */
+export interface SettingsData {
+  reduceFlashing: boolean | null;
+  /** Screen shake strength, 0..1. */
+  shake: number | null;
+  touchControls: TouchMode;
 }
 
 export interface SaveData {
   version: number;
   muted: boolean;
+  settings: SettingsData;
   chapters: Record<string, ChapterRecord>;
 }
 
@@ -28,6 +41,8 @@ export interface ChapterResult {
   rank: Rank;
   score: number;
   cards: string[];
+  /** False for practice runs (started mid-level with ?start=): only cards and clears are recorded. */
+  timed?: boolean;
 }
 
 export interface RecordOutcome {
@@ -37,12 +52,16 @@ export interface RecordOutcome {
   record: ChapterRecord;
 }
 
+export function createDefaultSettings(): SettingsData {
+  return { reduceFlashing: null, shake: null, touchControls: 'auto' };
+}
+
 export function createDefaultSave(): SaveData {
-  return { version: SAVE_VERSION, muted: false, chapters: {} };
+  return { version: SAVE_VERSION, muted: false, settings: createDefaultSettings(), chapters: {} };
 }
 
 export function createChapterRecord(): ChapterRecord {
-  return { completed: false, bestTimeMs: null, bestRank: null, bestScore: null, cards: [], clears: 0 };
+  return { completed: false, bestTimeMs: null, bestRank: null, bestScore: null, cards: [], clears: 0, bestSplits: {} };
 }
 
 /** Upgrades any older or partial save into the current shape. Unknown junk becomes a fresh save. */
@@ -51,6 +70,7 @@ export function migrateSave(raw: unknown): SaveData {
   const data = raw as Partial<SaveData> & Record<string, unknown>;
   const save = createDefaultSave();
   save.muted = typeof data.muted === 'boolean' ? data.muted : false;
+  save.settings = migrateSettings(data.settings);
 
   if (data.chapters && typeof data.chapters === 'object') {
     for (const [id, value] of Object.entries(data.chapters)) {
@@ -63,10 +83,30 @@ export function migrateSave(raw: unknown): SaveData {
         bestScore: typeof rec.bestScore === 'number' ? rec.bestScore : null,
         cards: Array.isArray(rec.cards) ? rec.cards.filter((c): c is string => typeof c === 'string') : [],
         clears: typeof rec.clears === 'number' ? rec.clears : rec.completed ? 1 : 0,
+        bestSplits: migrateSplits(rec.bestSplits),
       };
     }
   }
   return save;
+}
+
+function migrateSettings(raw: unknown): SettingsData {
+  const settings = createDefaultSettings();
+  if (!raw || typeof raw !== 'object') return settings;
+  const s = raw as Partial<Record<keyof SettingsData, unknown>>;
+  if (typeof s.reduceFlashing === 'boolean') settings.reduceFlashing = s.reduceFlashing;
+  if (typeof s.shake === 'number' && Number.isFinite(s.shake)) settings.shake = Math.min(1, Math.max(0, s.shake));
+  if (s.touchControls === 'on' || s.touchControls === 'off' || s.touchControls === 'auto') settings.touchControls = s.touchControls;
+  return settings;
+}
+
+function migrateSplits(raw: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const [id, value] of Object.entries(raw)) {
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) out[id] = value;
+  }
+  return out;
 }
 
 function isRank(value: unknown): value is Rank {
@@ -123,22 +163,44 @@ export class SaveSystem {
     this.save(data);
   }
 
+  setSettings(patch: Partial<SettingsData>): SettingsData {
+    const data = this.load();
+    data.settings = { ...data.settings, ...patch };
+    this.save(data);
+    return data.settings;
+  }
+
+  /** Stores a split if it beats the best one. Returns the previous best (null if none). */
+  recordSplit(chapterId: string, splitId: string, timeMs: number): number | null {
+    const data = this.load();
+    const record = data.chapters[chapterId] ?? createChapterRecord();
+    const previous = record.bestSplits[splitId] ?? null;
+    if (previous === null || timeMs < previous) {
+      record.bestSplits = { ...record.bestSplits, [splitId]: timeMs };
+      data.chapters[chapterId] = record;
+      this.save(data);
+    }
+    return previous;
+  }
+
   recordChapter(chapterId: string, result: ChapterResult): RecordOutcome {
     const data = this.load();
     const previous = data.chapters[chapterId] ?? createChapterRecord();
+    const timed = result.timed !== false;
 
-    const newBestTime = previous.bestTimeMs === null || result.timeMs < previous.bestTimeMs;
+    const newBestTime = timed && (previous.bestTimeMs === null || result.timeMs < previous.bestTimeMs);
     const newBestRank =
-      previous.bestRank === null || RANK_ORDER.indexOf(result.rank) > RANK_ORDER.indexOf(previous.bestRank);
+      timed && (previous.bestRank === null || RANK_ORDER.indexOf(result.rank) > RANK_ORDER.indexOf(previous.bestRank));
     const newCards = result.cards.filter((c) => !previous.cards.includes(c));
 
     const record: ChapterRecord = {
       completed: true,
       bestTimeMs: newBestTime ? result.timeMs : previous.bestTimeMs,
       bestRank: newBestRank ? result.rank : previous.bestRank,
-      bestScore: Math.max(previous.bestScore ?? -Infinity, result.score),
+      bestScore: timed ? Math.max(previous.bestScore ?? -Infinity, result.score) : previous.bestScore,
       cards: [...previous.cards, ...newCards],
       clears: previous.clears + 1,
+      bestSplits: previous.bestSplits,
     };
     data.chapters[chapterId] = record;
     this.save(data);

@@ -42,6 +42,7 @@ export class PauseScene extends Phaser.Scene {
     this.menu = new MenuList(this, 170, 130, [
       { label: 'RESUME', action: () => this.resume() },
       { label: 'RESTART CHECKPOINT', action: () => this.restart() },
+      { label: 'SETTINGS', action: () => this.openSettings() },
       { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute() },
       { label: 'QUIT TO TITLE', action: () => this.quit() },
     ], 20);
@@ -58,6 +59,11 @@ export class PauseScene extends Phaser.Scene {
     kb.on('keydown-P', () => this.resume());
     bindMuteKey(this);
     audio.musicBus?.gain.setTargetAtTime(0.1, audio.now, 0.05);
+  }
+
+  private openSettings(): void {
+    this.scene.launch(SCENES.settings, { returnTo: SCENES.pause });
+    this.scene.pause();
   }
 
   private resume(): void {

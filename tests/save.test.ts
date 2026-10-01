@@ -82,4 +82,50 @@ describe('SaveSystem', () => {
     expect(migrated.chapters.bad).toBeUndefined();
     expect(migrateSave('nope').chapters).toEqual({});
   });
+
+  it('upgrades a version 1 save: keeps progress, adds default settings and empty splits', () => {
+    const migrated = migrateSave({ version: 1, muted: false, chapters: { ch1: { completed: true, bestTimeMs: 200_000, bestRank: 'A', bestScore: 900, cards: ['c1'], clears: 3 } } });
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated.settings).toEqual({ reduceFlashing: null, shake: null, touchControls: 'auto' });
+    expect(migrated.chapters.ch1.bestSplits).toEqual({});
+    expect(migrated.chapters.ch1.clears).toBe(3);
+  });
+
+  it('sanitises settings and splits', () => {
+    const migrated = migrateSave({
+      settings: { reduceFlashing: 'yes', shake: 7, touchControls: 'sometimes' },
+      chapters: { ch1: { bestSplits: { 'cp-cliff': 61_000, junk: 'x', neg: -5 } } },
+    });
+    expect(migrated.settings).toEqual({ reduceFlashing: null, shake: 1, touchControls: 'auto' });
+    expect(migrated.chapters.ch1.bestSplits).toEqual({ 'cp-cliff': 61_000 });
+  });
+
+  it('saves settings changes', () => {
+    const storage = new MemoryStorage();
+    new SaveSystem(storage, 'k').setSettings({ reduceFlashing: true, shake: 0.3 });
+    const settings = new SaveSystem(storage, 'k').load().settings;
+    expect(settings).toEqual({ reduceFlashing: true, shake: 0.3, touchControls: 'auto' });
+  });
+
+  it('keeps only the fastest split and reports the previous best', () => {
+    const storage = new MemoryStorage();
+    const system = new SaveSystem(storage, 'k');
+    expect(system.recordSplit('ch1', 'cp-cliff', 70_000)).toBeNull();
+    expect(system.recordSplit('ch1', 'cp-cliff', 80_000)).toBe(70_000);
+    expect(system.recordSplit('ch1', 'cp-cliff', 65_000)).toBe(70_000);
+    expect(new SaveSystem(storage, 'k').getChapter('ch1').bestSplits['cp-cliff']).toBe(65_000);
+    // Splits alone do not mark the chapter complete, and a clear keeps them.
+    expect(system.getChapter('ch1').completed).toBe(false);
+    system.recordChapter('ch1', { timeMs: 200_000, rank: 'B', score: 800, cards: [] });
+    expect(system.getChapter('ch1').bestSplits['cp-cliff']).toBe(65_000);
+  });
+
+  it('practice runs never set best time, rank or score', () => {
+    const system = new SaveSystem(new MemoryStorage(), 'k');
+    const outcome = system.recordChapter('ch1', { timeMs: 30_000, rank: 'S', score: 1500, cards: ['c1'], timed: false });
+    expect(outcome.newBestTime).toBe(false);
+    expect(outcome.record.bestTimeMs).toBeNull();
+    expect(outcome.record.bestRank).toBeNull();
+    expect(outcome.record.cards).toEqual(['c1']);
+  });
 });

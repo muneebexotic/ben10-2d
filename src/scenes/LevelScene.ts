@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { BOSS } from '../config/boss';
 import { COMBO, DEPTH, FX, LIGHTING, PHYSICS, TILE } from '../config/constants';
 import { getDifficulty } from '../config/difficulty';
-import { PALETTE } from '../config/palette';
+import { lerpColor, PALETTE } from '../config/palette';
+import { ACCESSIBILITY } from '../config/accessibility';
 import { PLAYER } from '../config/player';
 import { aliensUnlockedBy } from '../aliens/registry';
 import type { AbilityAction, FxApi } from '../aliens/types';
@@ -43,6 +44,7 @@ import { checkpointsFor, spawnEntities } from './level/Spawner';
 import { TransformSequence } from './level/TransformSequence';
 import { Tutorial } from './level/Tutorial';
 import { SCENES } from './SceneKeys';
+import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
 
 export interface LevelStartData {
   checkpoint?: string | null;
@@ -411,10 +413,17 @@ export class LevelScene extends Phaser.Scene {
       if (light > 0) p.hasWatch ? this.lighting.add(p.x, p.centerY, light, 0xb8ffc8, 0.85) : this.lighting.add(p.x, p.centerY, light, 0xc8d0ff, 0.6);
     }
     const zone = this.world.ambientAt(p.x);
-    const ambient = this.alarm ? (Math.floor(this.gameNow / 500) % 2 ? LIGHTING.ambientAlarm : LIGHTING.ambientCrash) : AMBIENT[zone];
+    const ambient = this.alarm ? this.alarmAmbient() : AMBIENT[zone];
     this.lighting.setAmbient(ambient, this.alarm ? 250 : LIGHTING.ambientBlendMs);
     this.lighting.update(realDt);
     this.lighting.render(this.cameras.main);
+  }
+
+  /** Boss phase 2 alarm lights: a hard red strobe, or a slow gentle pulse with Reduce Flashing on. */
+  private alarmAmbient(): number {
+    if (!a11y.reduceFlashing) return blinkOn(this.gameNow, 500) ? LIGHTING.ambientCrash : LIGHTING.ambientAlarm;
+    const wave = (Math.sin((this.gameNow / ACCESSIBILITY.reducedAlarmPeriodMs) * Math.PI * 2) + 1) / 2;
+    return lerpColor(LIGHTING.ambientCrash, LIGHTING.ambientAlarm, wave * ACCESSIBILITY.reducedAlarmMix);
   }
 
   private updateProps(dt: number): void {
@@ -575,7 +584,7 @@ export class LevelScene extends Phaser.Scene {
     this.player.setInvulnerable(99999);
     this.projectiles.clear('enemy', true);
     for (const d of this.drones) if (d.alive) d.kill();
-    this.cameras.main.flash(600, 255, 255, 255, true);
+    flashCamera(this.cameras.main, 600, 255, 255, 255);
     this.fx.shake(FX.shakeHeavy * 1.5, 900);
     this.fx.ring(x, y, PALETTE.white, 300, 1000);
     music.stop(400);

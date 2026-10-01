@@ -12,6 +12,7 @@ import { EventBus } from '../../systems/EventBus';
 import { playSfx } from '../../systems/audio/Sfx';
 import { music } from '../../systems/audio/Music';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
+import { a11y, flashCamera } from '../../systems/Accessibility';
 
 export interface SequenceDeps {
   scene: Phaser.Scene;
@@ -66,7 +67,7 @@ export class TransformSequence {
       player.setInvulnerable(PLAYER.transformInvulnMs);
       player.squash(1.55, 0.6);
 
-      cam.flash(opts.first ? 320 : 200, 120, 255, 110, true);
+      flashCamera(cam, opts.first ? 320 : 200, 120, 255, 110);
       this.shockwaveDistortion(opts.first ? 1.32 : 1.2);
       fx.rays(px, py, PALETTE.omnitrix, opts.first ? 240 : 170, opts.first ? 900 : 600);
       fx.ring(px, py, PALETTE.omnitrixGlow, 90, 420);
@@ -99,7 +100,8 @@ export class TransformSequence {
     player.setInvulnerable(PLAYER.revertInvulnMs);
     player.squash(0.7, 1.35);
     const color = reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy;
-    scene.cameras.main.flash(160, reason === 'jammed' ? 110 : 255, reason === 'jammed' ? 180 : 60, reason === 'jammed' ? 255 : 60, true);
+    if (reason === 'jammed') flashCamera(scene.cameras.main, 160, 110, 180, 255);
+    else flashCamera(scene.cameras.main, 160, 255, 60, 60);
     fx.burst(reason === 'jammed' ? 'blue' : 'red', x, y, 24);
     fx.burst('green', x, y, 12);
     fx.burst('smoke', x, y, 8);
@@ -114,12 +116,15 @@ export class TransformSequence {
 
   /** Brief barrel-distortion pulse: the screen itself bulges with the transformation. */
   private shockwaveDistortion(amount: number): void {
+    // A whole-screen warp is motion, so it follows the screen shake setting.
+    const strength = (amount - 1) * a11y.shake;
+    if (strength <= 0.01) return;
     const cam = this.d.scene.cameras.main;
     const barrel = cam.filters?.internal.addBarrel(1);
     if (!barrel) return;
     this.d.scene.tweens.add({
       targets: barrel,
-      amount,
+      amount: 1 + strength,
       duration: 110,
       yoyo: true,
       ease: 'Quad.easeOut',

@@ -9,12 +9,13 @@ import { PauseScene } from './scenes/PauseScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { ChapterCompleteScene } from './scenes/ChapterCompleteScene';
 import { GalleryScene } from './scenes/GalleryScene';
+import { SettingsScene } from './scenes/SettingsScene';
 import { applySavedSettings } from './systems/Settings';
 
 applySavedSettings();
 
 const game = new Phaser.Game(
-  createGameConfig([BootScene, PreloadScene, MenuScene, LevelScene, UIScene, PauseScene, GameOverScene, ChapterCompleteScene, GalleryScene]),
+  createGameConfig([BootScene, PreloadScene, MenuScene, LevelScene, UIScene, PauseScene, GameOverScene, ChapterCompleteScene, GalleryScene, SettingsScene]),
 );
 
 if (import.meta.env.DEV) {

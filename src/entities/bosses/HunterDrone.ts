@@ -14,6 +14,7 @@ import type { Projectiles } from '../Projectiles';
 import type { Damageable, Hazard, Hit, HitResult, Rect } from '../types';
 import { ATTACKS, newAttack, type AttackKind, type AttackState } from './bossAttacks';
 import type { BossHazards } from './BossHazards';
+import { blinkOn } from '../../systems/Accessibility';
 
 export interface BossWorld {
   readonly now: number;
@@ -264,7 +265,7 @@ export class HunterDrone implements Damageable, Hazard {
   private updateTransition(): void {
     const cx = (this.w.arena.left + this.w.arena.right) / 2;
     this.setTarget(cx, this.hoverY - 10, 2);
-    this.eye = Math.floor(this.stateT / 90) % 2 ? 'charge' : 'vulnerable';
+    this.eye = blinkOn(this.stateT, 90) ? 'vulnerable' : 'charge';
     this.shake = 3;
     if (this.stateT > 700 && this.plates[0].visible) {
       // Armour blows off: phase 2 is faster and angrier.

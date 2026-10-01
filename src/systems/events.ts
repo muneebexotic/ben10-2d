@@ -1,4 +1,5 @@
 import type { OmnitrixState, RevertReason } from './Omnitrix';
+import type { TouchMode } from './SaveSystem';
 import type { RunStats } from './RunStats';
 
 export interface OmnitrixTick {
@@ -43,7 +44,6 @@ export interface GameEvents {
   'hud:banner': BannerPayload;
   'hud:letterbox': { visible: boolean };
   'hud:visible': { visible: boolean; omnitrix?: boolean };
-  'hud:flash': { color: number; alpha: number; durationMs: number };
   'hud:omnitrixSymbol': { color: number; big: boolean };
   'boss:show': { name: string; subtitle: string };
   'boss:health': { ratio: number; phase: number };
@@ -53,6 +53,7 @@ export interface GameEvents {
   /** The HUD scene finished creating and wants the current state. */
   'hud:ready': undefined;
   'audio:muted': { muted: boolean };
+  'settings:changed': { reduceFlashing: boolean; shake: number; touchControls: TouchMode };
 }
 
 export type GameEventName = keyof GameEvents;

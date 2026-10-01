@@ -10,6 +10,7 @@ import type { Controls } from '../../systems/InputMap';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { TEX } from '../preload/assetKeys';
+import { flashCamera } from '../../systems/Accessibility';
 
 type Phase = 'opening' | 'explore' | 'pod' | 'firstTransform' | 'done';
 
@@ -124,7 +125,7 @@ export class IntroDirector {
     if (this.t > 700 && this.once('meteor1')) this.launchMeteor(cam, PALETTE.omnitrix, 1, 900);
     if (this.t > 1150 && this.once('meteor2')) this.launchMeteor(cam, PALETTE.enemy, 1.8, 1000);
     if (this.t > 2150 && this.once('impact')) {
-      cam.flash(250, 255, 190, 150, true);
+      flashCamera(cam, 250, 255, 190, 150);
       this.fx.shake(FX.shakeHeavy, 450);
       playSfx('bigExplode', 0.6);
       this.fx.light(cam.worldView.right - 40, cam.worldView.y + 200, 260, PALETTE.fire2, 1400);
@@ -205,7 +206,7 @@ export class IntroDirector {
           item.destroy();
           this.watchItem = null;
           this.hooks.giveOmnitrix();
-          this.scene.cameras.main.flash(200, 120, 255, 110, true);
+          flashCamera(this.scene.cameras.main, 200, 120, 255, 110);
           this.fx.burst('green', p.x, p.centerY, 24);
           this.fx.shake(FX.shakeMedium, 200);
           playSfx('clamp');

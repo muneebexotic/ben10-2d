@@ -1,0 +1,158 @@
+import Phaser from 'phaser';
+import { ACCESSIBILITY } from '../config/accessibility';
+import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { PALETTE } from '../config/palette';
+import { a11y, flashCamera, prefersReducedMotion, shakeCamera } from '../systems/Accessibility';
+import { audio } from '../systems/audio/AudioEngine';
+import type { TouchMode } from '../systems/SaveSystem';
+import { bindMuteKey, getSettings, toggleMute, updateSettings } from '../systems/Settings';
+import { MenuList, type MenuItem } from '../ui/MenuList';
+import { pixelText } from '../ui/text';
+import { SCENES } from './SceneKeys';
+
+export interface SettingsData {
+  /** Scene to resume when the player backs out (title or pause). */
+  returnTo: string;
+}
+
+const TOUCH_MODES: TouchMode[] = ['auto', 'on', 'off'];
+const SEGMENTS = 10;
+
+/** Options overlay reachable from the title and pause menus. Every change is saved immediately. */
+export class SettingsScene extends Phaser.Scene {
+  private menu!: MenuList;
+  private returnTo: string = SCENES.menu;
+  private hint!: Phaser.GameObjects.BitmapText;
+  private bar!: Phaser.GameObjects.Graphics;
+  private shakeRow = -1;
+
+  constructor() {
+    super(SCENES.settings);
+  }
+
+  create(data: SettingsData): void {
+    this.returnTo = data.returnTo ?? SCENES.menu;
+    this.scene.bringToTop();
+    this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.95).setOrigin(0, 0);
+    pixelText(this, GAME_WIDTH / 2, 40, 'SETTINGS', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+
+    const items: MenuItem[] = [
+      {
+        label: () => `REDUCE FLASHING: ${a11y.reduceFlashing ? 'ON' : 'OFF'}`,
+        action: () => this.setFlashing(!a11y.reduceFlashing),
+        adjust: () => this.setFlashing(!a11y.reduceFlashing),
+        hint: 'SOFTENS SCREEN FLASHES AND SLOWS EVERY BLINKING LIGHT.',
+      },
+      {
+        label: () => `SCREEN SHAKE ${Math.round(a11y.shake * 100)}%`,
+        action: () => this.setShake(a11y.shake >= 0.999 ? 0 : a11y.shake + ACCESSIBILITY.shakeStep),
+        adjust: (dir) => this.setShake(a11y.shake + dir * ACCESSIBILITY.shakeStep),
+        hint: 'CAMERA SHAKE AND SCREEN WARPS ON HITS, SLAMS AND EXPLOSIONS.',
+      },
+      {
+        label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'),
+        action: () => toggleMute(),
+        adjust: () => toggleMute(),
+        hint: 'MUTE EVERYTHING. [M] ALSO WORKS ANYWHERE.',
+      },
+      {
+        label: () => `TOUCH CONTROLS: ${getSettings().touchControls.toUpperCase()}`,
+        action: () => this.cycleTouch(1),
+        adjust: (dir) => this.cycleTouch(dir),
+        hint: 'AUTO SHOWS THEM ON TOUCH SCREENS AND HIDES THEM WHEN YOU TYPE.',
+      },
+    ];
+    if (this.scale.fullscreen.available) {
+      items.push({
+        label: () => (this.scale.isFullscreen ? 'FULLSCREEN: ON' : 'FULLSCREEN: OFF'),
+        action: () => this.toggleFullscreen(),
+        hint: 'HIDES THE BROWSER BARS. GREAT ON PHONES.',
+      });
+    }
+    items.push({ label: 'BACK', action: () => this.back(), hint: '' });
+    this.shakeRow = 1;
+
+    this.hint = pixelText(this, GAME_WIDTH / 2, 300, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim, maxWidth: 560, align: 'center' });
+    this.bar = this.add.graphics();
+    this.menu = new MenuList(this, GAME_WIDTH / 2, 92, items, {
+      spacing: 28,
+      scale: 2,
+      rowWidth: 440,
+      onSelect: (_i, item) => this.hint.setText(item.hint ?? ''),
+    });
+
+    if (prefersReducedMotion() && getSettings().reduceFlashing === null) {
+      pixelText(this, GAME_WIDTH / 2, 318, 'YOUR DEVICE ASKS FOR REDUCED MOTION, SO THESE START TURNED DOWN.', {
+        originX: 0.5,
+        originY: 0.5,
+        color: PALETTE.gold,
+      });
+    }
+    const back = pixelText(this, GAME_WIDTH / 2, 342, '[ESC] BACK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    back.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.back());
+
+    const kb = this.input.keyboard!;
+    kb.on('keydown-ESC', () => this.back());
+    kb.on('keydown-P', () => this.back());
+    bindMuteKey(this);
+    this.events.on(Phaser.Scenes.Events.UPDATE, () => this.drawBar());
+  }
+
+  private setFlashing(on: boolean): void {
+    updateSettings({ reduceFlashing: on });
+    // Preview: the same flash the game uses, at the new strength.
+    flashCamera(this.cameras.main, 240, 120, 255, 110);
+  }
+
+  private setShake(value: number): void {
+    const v = Math.round(Math.min(1, Math.max(0, value)) * 10) / 10;
+    updateSettings({ shake: v });
+    shakeCamera(this.cameras.main, 260, 0.012);
+  }
+
+  private cycleTouch(dir: 1 | -1): void {
+    const i = TOUCH_MODES.indexOf(getSettings().touchControls);
+    updateSettings({ touchControls: TOUCH_MODES[(i + dir + TOUCH_MODES.length) % TOUCH_MODES.length] });
+  }
+
+  private toggleFullscreen(): void {
+    // Browsers only allow fullscreen from a key press or the *end* of a tap.
+    const pointer = this.input.activePointer;
+    const go = () => {
+      try {
+        this.scale.toggleFullscreen();
+      } catch {
+        // Not allowed here; the setting simply stays off.
+      }
+      this.time.delayedCall(250, () => this.menu.refresh());
+    };
+    if (pointer.isDown) this.input.once('pointerup', go);
+    else go();
+  }
+
+  private back(): void {
+    if (!this.scene.isActive()) return;
+    this.scene.resume(this.returnTo);
+    this.scene.stop();
+  }
+
+  private drawBar(): void {
+    const g = this.bar;
+    g.clear();
+    if (this.shakeRow < 0) return;
+    const text = this.menu.rowText(this.shakeRow);
+    const x0 = Math.round(text.x + text.width / 2 + 8);
+    const y0 = Math.round(text.y - 4);
+    const filled = Math.round(a11y.shake * SEGMENTS);
+    for (let i = 0; i < SEGMENTS; i++) {
+      g.fillStyle(PALETTE.ink, 1);
+      g.fillRect(x0 + i * 6 - 1, y0 - 1, 6, 10);
+      g.fillStyle(i < filled ? PALETTE.omnitrix : PALETTE.uiPanelLight, 1);
+      g.fillRect(x0 + i * 6, y0, 4, 8);
+    }
+  }
+
+  override update(time: number): void {
+    this.menu.update(time);
+  }
+}

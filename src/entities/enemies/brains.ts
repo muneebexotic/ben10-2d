@@ -3,6 +3,7 @@ import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
+import { blinkOn } from '../../systems/Accessibility';
 
 const rand = (range: readonly [number, number]) => range[0] + Math.random() * (range[1] - range[0]);
 
@@ -58,7 +59,7 @@ export class ScoutBrain implements DroneBrain {
       const t = d.stateT / SCOUT.telegraphMs;
       const locked = d.stateT >= SCOUT.telegraphMs - SCOUT.aimLockMs;
       const len = 420;
-      const alpha = locked ? 0.95 : 0.25 + 0.35 * t + (Math.floor(d.stateT / 60) % 2) * 0.15;
+      const alpha = locked ? 0.95 : 0.25 + 0.35 * t + (blinkOn(d.stateT, 60) ? 0 : 0.15);
       w.telegraph.dashed(d.x, d.y, d.x + Math.cos(d.aim) * len, d.y + Math.sin(d.aim) * len, PALETTE.enemy, alpha, d.stateT * 0.05, locked ? 2 : 1);
       w.lighting.add(d.x, d.y, 30 + t * 30, PALETTE.enemy, 1);
       if (d.stateT >= SCOUT.telegraphMs) {

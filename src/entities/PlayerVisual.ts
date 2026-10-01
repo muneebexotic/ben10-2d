@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { DEPTH, FX } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import type { FormDefinition } from '../aliens/types';
+import { blinkOn } from '../systems/Accessibility';
 
 /**
  * The player's sprite: animation, squash & stretch, damage flashes and glows.
@@ -88,7 +89,7 @@ export class PlayerVisual {
     this.flashLeft = Math.max(0, this.flashLeft - dtMs);
     if (this.flashLeft > 0) {
       s.setTint(this.flashColor).setTintMode(Phaser.TintModes.FILL);
-    } else if (this.warning && Math.floor(now / 160) % 2 === 0) {
+    } else if (this.warning && blinkOn(now, 160)) {
       s.setTint(PALETTE.enemy).setTintMode(Phaser.TintModes.ADD);
     } else if (this.glowAmount > 0.01) {
       const c = Phaser.Display.Color.IntegerToColor(this.glowColor);
@@ -97,6 +98,6 @@ export class PlayerVisual {
     } else {
       s.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     }
-    s.setAlpha(this.blink && Math.floor(now / 70) % 2 === 0 ? 0.35 : 1);
+    s.setAlpha(this.blink && blinkOn(now, 70) ? 0.35 : 1);
   }
 }

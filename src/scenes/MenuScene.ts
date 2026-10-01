@@ -12,6 +12,7 @@ import { MenuList } from '../ui/MenuList';
 import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { flashCamera } from '../systems/Accessibility';
 
 /** Title screen: night sky, the Omnitrix emblem, and Ben flipping into Heatblast on a loop. */
 export class MenuScene extends Phaser.Scene {
@@ -83,19 +84,20 @@ export class MenuScene extends Phaser.Scene {
       178,
       [
         { label: 'START', action: () => this.startGame() },
+        { label: 'SETTINGS', action: () => this.openSettings() },
         { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute() },
       ],
       22,
       2,
     );
-    this.hint = pixelText(this, GAME_WIDTH / 2, 226, 'ARROWS/WASD MOVE   SPACE JUMP   J ATTACK   K SPECIAL   T TRANSFORM', {
+    this.hint = pixelText(this, GAME_WIDTH / 2, 256, 'ARROWS/WASD MOVE   SPACE JUMP   J ATTACK   K SPECIAL   T TRANSFORM', {
       originX: 0.5,
       originY: 0.5,
       color: PALETTE.uiDim,
     });
 
     if (this.sys.game.device.input.touch && !this.sys.game.device.os.desktop) {
-      const note = pixelText(this, GAME_WIDTH / 2, 252, 'KEYBOARD NEEDED FOR NOW - TOUCH CONTROLS ARE COMING!', {
+      const note = pixelText(this, GAME_WIDTH / 2, 272, 'KEYBOARD NEEDED FOR NOW - TOUCH CONTROLS ARE COMING!', {
         originX: 0.5,
         originY: 0.5,
         color: PALETTE.gold,
@@ -108,13 +110,18 @@ export class MenuScene extends Phaser.Scene {
     if (audio.ready) music.play('title');
   }
 
+  private openSettings(): void {
+    this.scene.launch(SCENES.settings, { returnTo: SCENES.menu });
+    this.scene.pause();
+  }
+
   private startGame(): void {
     if (this.starting) return;
     this.starting = true;
     this.menu.enabled = false;
     audio.unlock();
     playSfx('transformBoom', 0.7);
-    this.cameras.main.flash(300, 120, 255, 110);
+    flashCamera(this.cameras.main, 300, 120, 255, 110);
     music.stop(300);
     this.cameras.main.fadeOut(500, 0, 0, 0);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start(SCENES.level, {}));
@@ -131,7 +138,7 @@ export class MenuScene extends Phaser.Scene {
     if (this.heroTimer <= 0) {
       this.heroAlien = !this.heroAlien;
       this.heroTimer = this.heroAlien ? 2600 : 2200;
-      this.cameras.main.flash(160, 120, 255, 110);
+      flashCamera(this.cameras.main, 160, 120, 255, 110);
       this.emblem.setAlpha(0.6);
       this.tweens.add({ targets: this.emblem, alpha: 0.22, duration: 600 });
       if (this.heroAlien) {

@@ -4,6 +4,7 @@ import { PALETTE as P } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import type { Lighting } from './Lighting';
 import type { TimeController } from './TimeController';
+import { shakeCamera } from './Accessibility';
 
 export type BurstKind =
   | 'spark'
@@ -117,7 +118,7 @@ export class Fx {
   }
 
   shake(intensity: number, durationMs = 180): void {
-    this.scene.cameras.main.shake(durationMs, intensity, true);
+    shakeCamera(this.scene.cameras.main, durationMs, intensity);
   }
 
   hitStop(ms: number): void {

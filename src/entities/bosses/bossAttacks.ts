@@ -3,6 +3,7 @@ import { FX } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { BossWorld, HunterDrone } from './HunterDrone';
+import { blinkOn } from '../../systems/Accessibility';
 
 export type AttackKind = 'volley' | 'slam' | 'summon' | 'beam' | 'rain';
 
@@ -92,7 +93,7 @@ const slam: AttackFn = (b, w, a, dt) => {
       if (!locked) a.x = Math.max(w.arena.left + 60, Math.min(w.arena.right - 60, w.player.x));
       b.setTarget(a.x, b.hoverY - 40, locked ? 0.5 : 6);
       const t = a.t / track;
-      const pulse = Math.floor(a.t / (locked ? 50 : 110)) % 2 === 0;
+      const pulse = blinkOn(a.t, locked ? 50 : 110);
       w.telegraph.rect(a.x - 44, floor - 3, 88, 3, PALETTE.enemy, pulse ? 0.9 : 0.35);
       w.telegraph.rect(a.x - 44, floor - 60, 88, 57, PALETTE.enemy, (pulse ? 0.12 : 0.05) * (0.5 + t));
       b.shake = 1 + t * 2;
@@ -151,7 +152,7 @@ const summon: AttackFn = (b, w, a) => {
   if (a.step === 0) {
     b.eye = 'closed';
     b.setTarget((w.arena.left + w.arena.right) / 2, b.hoverY - 20, 2);
-    if (Math.floor(a.t / 120) % 2 === 0) w.lighting.add(b.x, b.y + 26, 50, PALETTE.enemy, 1);
+    if (blinkOn(a.t, 120)) w.lighting.add(b.x, b.y + 26, 50, PALETTE.enemy, 1);
     if (a.t >= cfg.telegraphMs) next(a);
     return false;
   }
@@ -198,7 +199,7 @@ const beam: AttackFn = (b, w, a) => {
     const t = a.t / cfg.telegraphMs;
     // Three beats that speed up; the line turns solid white just before firing.
     const beat = t < 0.45 ? 200 : t < 0.8 ? 110 : 50;
-    const on = Math.floor(a.t / beat) % 2 === 0;
+    const on = blinkOn(a.t, beat);
     w.telegraph.line(from, beamY, to, beamY, t > 0.9 ? 0xffffff : PALETTE.enemy, on ? 0.95 : 0.3, t > 0.9 ? 3 : 1);
     w.telegraph.rect(Math.min(from, to), beamY - cfg.height / 2, Math.abs(to - from), cfg.height, PALETTE.enemy, 0.08 + t * 0.12);
     w.lighting.add(from, beamY, 40 + t * 60, PALETTE.enemy, 1);

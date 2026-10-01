@@ -8,4 +8,6 @@ export const SCENES = {
   gameOver: 'GameOver',
   chapterComplete: 'ChapterComplete',
   gallery: 'Gallery',
+  settings: 'Settings',
+  touch: 'Touch',
 } as const;

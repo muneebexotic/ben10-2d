@@ -4,6 +4,7 @@ import { PALETTE } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import type { BannerPayload } from '../systems/events';
 import { pixelText } from './text';
+import { a11y, shakeCamera } from '../systems/Accessibility';
 
 /** Big centre-screen moments: chapter titles, checkpoints, the alien name slam, the Omnitrix emblem flash. */
 export class Banner {
@@ -41,7 +42,7 @@ export class Banner {
     } else {
       c.setScale(2.4).setAlpha(0);
       this.scene.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 260, ease: 'Back.easeOut' });
-      this.scene.cameras.main.shake(180, 0.006);
+      shakeCamera(this.scene.cameras.main, 180, 0.006, false);
     }
     this.scene.tweens.add({
       targets: c,
@@ -88,10 +89,11 @@ export class Banner {
 
   omnitrixSymbol(color: number, big: boolean): void {
     const s = this.symbol;
-    s.setVisible(true).setTint(color).setAlpha(big ? 0.75 : 0.45).setScale(big ? 1.5 : 1).setAngle(0);
+    const soft = a11y.reduceFlashing;
+    s.setVisible(true).setTint(color).setAlpha(soft ? 0.2 : big ? 0.75 : 0.45).setScale(big ? 1.5 : 1).setAngle(0);
     this.scene.tweens.add({
       targets: s,
-      scale: big ? 7 : 4.5,
+      scale: soft ? 3 : big ? 7 : 4.5,
       alpha: 0,
       angle: 25,
       duration: big ? 700 : 420,

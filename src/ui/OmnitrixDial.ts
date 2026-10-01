@@ -3,6 +3,7 @@ import { PALETTE } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import type { OmnitrixTick } from '../systems/events';
 import { pixelText } from './text';
+import { blinkOn } from '../systems/Accessibility';
 
 const R = 20;
 
@@ -75,7 +76,7 @@ export class OmnitrixDial {
       color = PALETTE.jammer;
       fraction = 1;
       status = 'JAMMED';
-      iconColor = Math.floor(now / 120) % 2 ? PALETTE.jammer : PALETTE.jammerDark;
+      iconColor = blinkOn(now, 120) ? PALETTE.jammerDark : PALETTE.jammer;
       glowAlpha = 0.2;
     } else if (t.state === 'active') {
       fraction = t.timeRatio;
@@ -83,7 +84,7 @@ export class OmnitrixDial {
       status = `${secs}S`;
       iconColor = PALETTE.fire2;
       if (t.warning) {
-        const blink = Math.floor(now / 125) % 2 === 0;
+        const blink = blinkOn(now, 125);
         color = blink ? PALETTE.enemy : PALETTE.white;
         iconColor = blink ? PALETTE.enemy : PALETTE.fire1;
         glowAlpha = blink ? 0.6 : 0.2;

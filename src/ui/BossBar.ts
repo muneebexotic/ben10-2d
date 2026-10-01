@@ -3,6 +3,7 @@ import { GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import { pixelText } from './text';
+import { blinkOn } from '../systems/Accessibility';
 
 const W = 300;
 
@@ -55,8 +56,8 @@ export class BossBar {
     g.fillRect(x, 1, W, 6);
     g.fillStyle(PALETTE.white, 0.9);
     g.fillRect(x, 1, W * this.trail, 6);
-    const pulse = this.phase === 1 ? (Math.sin(now * 0.02) + 1) / 2 : 0;
-    g.fillStyle(this.phase === 1 ? (pulse > 0.5 ? PALETTE.enemy : PALETTE.fire3) : PALETTE.enemy, 1);
+    const pulse = this.phase === 1 && !blinkOn(now, 160);
+    g.fillStyle(pulse ? PALETTE.fire3 : PALETTE.enemy, 1);
     g.fillRect(x, 1, W * this.ratio, 6);
     g.fillStyle(PALETTE.enemyGlow, 0.6);
     g.fillRect(x, 1, W * this.ratio, 1);
