@@ -17,6 +17,7 @@ const LABELS: Record<string, Record<InputKind, string>> = {
   DIAL: { keyboard: '[Q]/[E]', touch: 'SWIPE THE OMNITRIX' },
   PAUSE: { keyboard: '[ESC]', touch: '[II]' },
   CONFIRM: { keyboard: '[ENTER]', touch: 'TAP' },
+  SKIP: { keyboard: 'ANY KEY: SKIP', touch: 'TAP: SKIP' },
 };
 
 export function formatControls(text: string, kind: InputKind): string {

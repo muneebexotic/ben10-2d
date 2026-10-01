@@ -145,6 +145,19 @@ const RECIPES = {
   },
   meteor: (v) => A.noise({ duration: 1.3, volume: 0.25 * v, filter: 'bandpass', freq: 3000, freqEnd: 300, q: 1.5, attack: 0.4 }),
   combo: (v, p) => A.tone({ type: 'triangle', freq: 880 * p, duration: 0.06, volume: 0.06 * v }),
+  holoOn: (v) => {
+    A.tone({ type: 'sawtooth', freq: 55, freqEnd: 220, duration: 0.7, volume: 0.12 * v, filter: { type: 'lowpass', freq: 900 } });
+    A.noise({ duration: 0.7, volume: 0.1 * v, filter: 'bandpass', freq: 1400, q: 5, attack: 0.25 });
+  },
+  holoOff: (v) => {
+    A.tone({ type: 'square', freq: 900, freqEnd: 40, duration: 0.32, volume: 0.1 * v });
+    A.noise({ duration: 0.18, volume: 0.15 * v, filter: 'highpass', freq: 3000 });
+  },
+  holoGlitch: (v) => A.noise({ duration: 0.07, volume: 0.1 * v, filter: 'bandpass', freq: 2600, q: 8 }),
+  voice: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 92 * p, freqEnd: 74 * p, duration: 0.075, volume: 0.1 * v, filter: { type: 'lowpass', freq: 650 } });
+    A.tone({ type: 'square', freq: 46 * p, duration: 0.07, volume: 0.05 * v });
+  },
   perfect: (v) => {
     A.noise({ duration: 0.22, volume: 0.18 * v, filter: 'highpass', freq: 5200 });
     A.tone({ type: 'square', freq: midiToFreq(88), duration: 0.1, volume: 0.09 * v, detune: 6 });

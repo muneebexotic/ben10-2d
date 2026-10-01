@@ -16,6 +16,8 @@ import { playSfx } from '../../systems/audio/Sfx';
 import { TEX } from '../preload/assetKeys';
 import type { CameraRig } from './CameraRig';
 import type { Combat } from './Combat';
+import type { Controls } from '../../systems/InputMap';
+import { VilgaxHologram } from './VilgaxHologram';
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
 
@@ -38,6 +40,11 @@ export interface ArenaDeps {
   onDefeated(x: number, y: number): void;
   threat(key: object, at: number): void;
   cancelThreat(key: object): void;
+  /** Ben's world speech bubble. */
+  say(text: string, ms: number): void;
+  /** The Vilgax hologram plays once per run. */
+  hologramSeen(): boolean;
+  onHologramSeen(): void;
 }
 
 /** Locks Ben into the crash site, runs the boss intro and hands the fight to the HunterDrone. */
@@ -45,6 +52,7 @@ export class BossArena {
   started = false;
   boss: HunterDrone | null = null;
   private hazards: BossHazards | null = null;
+  private hologram: VilgaxHologram | null = null;
   private readonly walls: Phaser.Physics.Arcade.Image[] = [];
   private readonly wallSprites: Phaser.GameObjects.Sprite[] = [];
   private readonly left: number;
@@ -64,10 +72,23 @@ export class BossArena {
     return this.started && this.boss !== null && !this.boss.defeated;
   }
 
-  update(dtMs: number): void {
+  /** True while the Vilgax hologram plays: the world holds still and the run timer pauses. */
+  get cinematic(): boolean {
+    return this.hologram !== null;
+  }
+
+  update(dtMs: number, realDtMs: number, controls: Controls): void {
     if (!this.started) {
       if (this.d.player.x >= this.spawn.triggerX * TILE && !this.d.player.dead) this.start();
       return;
+    }
+    if (this.hologram) {
+      this.hologram.update(realDtMs, controls);
+      if (this.hologram.done) {
+        this.hologram = null;
+        this.d.player.controlsEnabled = true;
+        this.beginBoss();
+      }
     }
     this.boss?.update(dtMs);
     this.hazards?.update(dtMs, this.d.now());
@@ -101,6 +122,25 @@ export class BossArena {
     camera.lockTo((this.left + this.right) / 2, this.floorY - 112);
     this.hazards = new BossHazards(scene, this.floorY, this.d.fx, this.d.lighting, this.d.telegraph);
     for (const h of this.hazards.all()) combat.addHazard(h);
+    EventBus.emit('hud:letterbox', { visible: true });
+    this.d.lighting.setAmbient(LIGHTING.ambientCrash, 600);
+
+    if (!d.hologramSeen()) {
+      d.onHologramSeen();
+      d.player.controlsEnabled = false;
+      d.player.setVelocityX(0);
+      music.stop(500);
+      this.hologram = new VilgaxHologram({ scene, fx: d.fx, lighting: d.lighting, say: (t, ms) => d.say(t, ms) }, (this.left + this.right) / 2, this.floorY);
+    } else {
+      this.beginBoss();
+    }
+  }
+
+  /** The Hunter-Killer drops in: boss bar, music, and the fight starts after its intro. */
+  private beginBoss(): void {
+    const d = this.d;
+    const { scene, combat } = d;
+    const hazards = this.hazards!;
 
     const world: BossWorld = {
       get now() {
@@ -110,7 +150,7 @@ export class BossArena {
       lighting: this.d.lighting,
       telegraph: this.d.telegraph,
       projectiles: this.d.projectiles,
-      hazards: this.hazards,
+      hazards,
       time: this.d.time,
       player: this.d.player,
       arena: { left: this.left + 8, right: this.right - 8, floorY: this.floorY, top: this.floorY - 16 * TILE },
@@ -135,7 +175,10 @@ export class BossArena {
     EventBus.emit('boss:health', { ratio: 1, phase: 0 });
     EventBus.emit('hud:letterbox', { visible: true });
     scene.time.delayedCall(BOSS.introMs - 400, () => EventBus.emit('hud:letterbox', { visible: false }));
-    this.d.lighting.setAmbient(LIGHTING.ambientCrash, 600);
+  }
+
+  destroy(): void {
+    if (this.hologram) EventBus.emit('hud:dialogClear');
   }
 
   private defeated(x: number, y: number): void {

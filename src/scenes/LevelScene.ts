@@ -228,6 +228,9 @@ export class LevelScene extends Phaser.Scene {
       onDefeated: (x, y) => this.onBossDefeated(x, y),
       threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),
       cancelThreat: (key) => this.perfect.cancel(key),
+      say: (text, ms) => this.speech.show(text, ms),
+      hologramSeen: () => this.stats.sawVilgax,
+      onHologramSeen: () => (this.stats.sawVilgax = true),
     });
 
     if (resuming) {
@@ -359,7 +362,8 @@ export class LevelScene extends Phaser.Scene {
     const realDt = Math.min(delta, PHYSICS.maxFrameMs);
     const controls = this.inputMap.read();
 
-    if (controls.pause && this.state === 'play' && !this.intro.cinematic) {
+    // During cinematics the pause button skips instead.
+    if (controls.pause && this.state === 'play' && !this.intro.cinematic && !this.arena.cinematic) {
       this.openPause();
       return;
     }
@@ -381,13 +385,15 @@ export class LevelScene extends Phaser.Scene {
     if (dt > 0) this.physics.world.update(time, dt);
     this.player.syncVisual(realDt * visual, this.gameNow);
 
+    // The Vilgax hologram holds the world (and the alien timer) still while he talks.
+    const worldDt = this.arena.cinematic ? 0 : dt;
     this.omni.jammed = this.jammer?.inField(this.player.x) ?? false;
     if (this.omni.jammed && this.player.isAlien && !this.player.dead) this.omni.forceRevert('jammed');
-    if (dt > 0) this.omni.update(dt);
+    if (worldDt > 0) this.omni.update(worldDt);
 
-    for (const d of this.drones) d.update(dt);
-    this.arena.update(dt);
-    this.projectiles.update(dt, (x, y) => this.world.isSolid(x, y), this.cameras.main.worldView);
+    for (const d of this.drones) d.update(worldDt);
+    this.arena.update(dt, realDt, controls);
+    this.projectiles.update(worldDt, (x, y) => this.world.isSolid(x, y), this.cameras.main.worldView);
     if (this.state === 'play') this.combat.update();
 
     this.updateProps(dt);
@@ -396,7 +402,7 @@ export class LevelScene extends Phaser.Scene {
     const dropped = this.combo.update(dt);
     if (dropped >= COMBO.showAt) EventBus.emit('combo:drop', { count: dropped });
 
-    if (this.state === 'play' && !this.intro.cinematic) this.stats.timeMs += realDt;
+    if (this.state === 'play' && !this.intro.cinematic && !this.arena.cinematic) this.stats.timeMs += realDt;
     this.stats.transformations = this.omni.transformations;
     this.stats.perfectTransforms = this.omni.perfects;
     this.perfect.prune(this.gameNow);
@@ -686,6 +692,7 @@ export class LevelScene extends Phaser.Scene {
 
   private shutdown(): void {
     this.intro?.destroy();
+    this.arena?.destroy();
     this.time2?.clearSlowMo();
     this.tweens.timeScale = 1;
     this.anims.globalTimeScale = 1;

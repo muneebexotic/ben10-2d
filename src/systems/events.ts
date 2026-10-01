@@ -46,6 +46,8 @@ export interface GameEvents {
   'hud:promptClear': { id: string };
   'hud:banner': BannerPayload;
   'hud:letterbox': { visible: boolean };
+  'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean };
+  'hud:dialogClear': undefined;
   'hud:visible': { visible: boolean; omnitrix?: boolean };
   'hud:omnitrixSymbol': { color: number; big: boolean };
   'boss:show': { name: string; subtitle: string };

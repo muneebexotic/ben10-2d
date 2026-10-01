@@ -18,6 +18,7 @@ import { SCENES } from './SceneKeys';
 import { shakeCamera } from '../systems/Accessibility';
 import { SplitDisplay } from '../ui/SplitDisplay';
 import { playSfx } from '../systems/audio/Sfx';
+import { DialogBox } from '../ui/DialogBox';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -30,6 +31,7 @@ export class UIScene extends Phaser.Scene {
   private stats!: StatsCorner;
   private letterbox!: Letterbox;
   private splits!: SplitDisplay;
+  private dialog!: DialogBox;
   private vignette!: Phaser.GameObjects.Image;
   private hp: number = PLAYER.maxHealth;
   private alien = false;
@@ -52,6 +54,7 @@ export class UIScene extends Phaser.Scene {
     this.banner = new Banner(this);
     this.letterbox = new Letterbox(this);
     this.splits = new SplitDisplay(this, 54);
+    this.dialog = new DialogBox(this);
 
     const on = EventBus.on.bind(EventBus);
     on('hud:visible', (p) => {
@@ -101,6 +104,7 @@ export class UIScene extends Phaser.Scene {
       this.dead = false;
       this.alien = false;
       this.prompts.clearAll();
+      this.dialog.clear();
       this.combo.hide();
     }, this);
     on('combo:update', (p) => this.combo.set(p.count, this.time.now), this);
@@ -116,6 +120,8 @@ export class UIScene extends Phaser.Scene {
     on('hud:promptClear', (p) => this.prompts.clear(p.id), this);
     on('hud:banner', (p) => this.banner.show(p), this);
     on('hud:letterbox', (p) => this.letterbox.set(p.visible), this);
+    on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip), this);
+    on('hud:dialogClear', () => this.dialog.clear(), this);
     on('boss:show', (p) => this.bossBar.show(p.name), this);
     on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
     on('boss:hide', () => this.bossBar.hide(), this);
@@ -140,6 +146,7 @@ export class UIScene extends Phaser.Scene {
     this.prompts.update(now);
     this.combo.update(delta, now);
     this.splits.update(now);
+    this.dialog.update(delta, now);
 
     const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
     const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;

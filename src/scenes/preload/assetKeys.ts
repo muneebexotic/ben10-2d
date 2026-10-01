@@ -24,6 +24,7 @@ import {
 } from './enemies';
 import * as fx from './effects';
 import * as props from './props';
+import * as story from './story';
 import * as ui from './uiArt';
 import * as world from './world';
 
@@ -105,6 +106,10 @@ export const TEX = {
   droneIcon: 'ui-drone',
   bossIcon: 'ui-boss',
   vignette: 'ui-vignette',
+  vilgax: 'story-vilgax',
+  holoProjector: 'story-projector',
+  crackedWall: 'prop-cracked-wall',
+  lockedAlien: 'ui-locked-alien',
 } as const;
 
 export type TextureKey = (typeof TEX)[keyof typeof TEX];
@@ -220,6 +225,10 @@ export const ASSETS: AssetDef[] = [
   one(TEX.droneIcon, 11, 8, ui.drawDroneIcon),
   one(TEX.bossIcon, 14, 10, ui.drawBossIcon),
   one(TEX.vignette, 320, 180, ui.drawVignette),
+  one(TEX.vilgax, story.VILGAX_SIZE.w, story.VILGAX_SIZE.h, story.drawVilgax),
+  one(TEX.holoProjector, 19, 10, story.drawHoloProjector),
+  one(TEX.crackedWall, 16, 48, story.drawCrackedWall),
+  one(TEX.lockedAlien, 42, 44, story.drawLockedSilhouette),
 ];
 
 export interface AnimDef {
