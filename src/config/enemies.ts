@@ -105,7 +105,7 @@ export const ARMORED = {
 } as const;
 
 /**
- * Hornet: a tiny, twitchy interceptor. It sidesteps fireballs, orbits Ben and
+ * Hornet: a tiny, twitchy interceptor. It kites Ben, sidesteps fireballs and
  * darts through him; XLR8's instant strikes and dash catch it best.
  */
 export const HORNET = {

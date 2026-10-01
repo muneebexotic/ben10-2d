@@ -8,8 +8,15 @@ Proposals for features or changes outside the current milestone. Items move to *
 - **Perfect transform:** transform in a short window around a drone or boss attack for a bigger shockwave that turns enemy shots around, a slow-motion beat, a gold PERFECT! stamp and +3 s of alien time. Window in `config/omnitrix.ts`, timing logic unit tested.
 - **Speedrun splits:** a split at every checkpoint and the boss kill against your fastest time there, gold when ahead, saved per chapter.
 - **Vilgax hologram:** a short, skippable red hologram at the boss arena where Vilgax demands the Omnitrix. Plays once per run.
-- **Hidden Ultimate teaser / Four Arms wall:** a cracked wall by the cliff checkpoint seals a vault with a fourth card. Touching it shows a locked four-armed silhouette. Only `'smash'` hits break it, and the card only counts once Four Arms is on the dial (Milestone 2 hook).
+- **Hidden Ultimate teaser / Four Arms wall:** a cracked wall by the cliff checkpoint seals a vault with a fourth card. Touching it shows a locked four-armed silhouette. Only `'smash'` hits break it. Since Milestone 2, Four Arms' hits are smash damage and the card counts toward the chapter total of 4.
 - **Mobile touch controls** (pulled forward from Milestone 6): stick, buttons, Omnitrix dial button, landscape handling, auto-pause, frame-rate governor.
+
+Built within Milestone 2 (not proposed beforehand, recorded here for reference):
+
+- **Omnitrix swap:** swap aliens mid-transformation for 3 s of alien time; each alien arrives with an entrance attack; perfect swaps.
+- **Tag-team combos:** each new form in a live combo lines up its icon on the counter and refunds 1.5 s.
+- **TOO SLOW!:** XLR8 dashing through an enemy shot slows time and resets the dash.
+- **Downed drones:** knockdown hits ground drones so Four Arms can lift and throw them.
 
 ## Deferred (approved for later)
 
@@ -39,7 +46,17 @@ Proposals for features or changes outside the current milestone. Items move to *
 - **Haptics on Android:** short `navigator.vibrate` pulses on hits, perfect transforms and the boss kill (no iOS support), with a Settings toggle.
 - **Touch layout options:** button size slider and a left-handed mirror layout.
 - **Offline play:** a small service worker so the game loads with no connection after the first visit (fits the existing web manifest).
-- **Omnitrix radial dial:** once 3+ aliens exist, a long-press on the touch Omnitrix opens a radial picker instead of swiping through them one by one (Milestone 2+).
+- **Omnitrix radial dial:** a long-press on the touch Omnitrix opens a radial picker instead of swiping through aliens one by one. With three aliens, swiping is still quick; worth building at five or more (Chapter 3+).
+
+### Aliens and switching (from Milestone 2)
+
+- **Training trials:** short per-alien challenges in Omnitrix Training with bronze/silver/gold medals, saved. XLR8: cross the pool and down three Hornets in 12 s. Four Arms: break an Armored Drone's plating with one punch chain. Swap: three tag teams in one combo. Teaches the counters and gives Training (and later Free Play) a reason to come back.
+- **Swap stats on Chapter Complete:** SWAPS and BEST TAG TEAM rows with a small score bonus, so switching mastery shows up in the rank and the share line.
+- **Revisit Chapter 1 with new aliens:** after Chapter 2, Chapter 1 gains alien-gated secrets (an XLR8 water route that saves seconds on the splits, a Four Arms boulder hiding a card). Replay value for speedrunners and completionists.
+- **Bowling throws:** a drone thrown by Four Arms that hits two more enemies pops STRIKE! with a slow-motion beat. A clip-worthy moment.
+- **Multi-cut freeze-frame:** when XLR8's dash cuts four or more enemies, a half-second comic-panel freeze with speed lines before they all burst.
+- **Chapter 2 encounter ideas:** Hornet swarms over a river (XLR8's showcase) and an Armored convoy on the runaway-truck chase that Four Arms throws off the road.
+- **Hunter-Killer in Training:** a boss rehearsal (or a boss rush in Free Play) so players can practise the swaps against a boss.
 
 ### Accessibility
 
