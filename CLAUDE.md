@@ -44,7 +44,7 @@ src/
   main.ts
   config/        game config, difficulty.ts, constants
   scenes/        Boot, Preload, Menu, ChapterSelect, Level, UI, Touch, Pause, Settings, GameOver
-  aliens/        types.ts, registry.ts, one file per alien
+  aliens/        types.ts, registry.ts, one folder per alien (src/aliens/<id>/) plus a numbers file in config/aliens/
   entities/      Player.ts, enemies/, bosses/
   systems/       Omnitrix.ts, SaveSystem.ts, EventBus.ts
   levels/        chapter data
