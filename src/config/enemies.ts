@@ -3,6 +3,8 @@ export const DRONE_SHARED = {
   wakeDistance: 420,
   /** Grace period after a drone notices Ben before it may attack. */
   wakeDelayMs: [1100, 1700] as const,
+  /** Drones never chase farther than this from where they spawned. */
+  leash: 260,
   onScreenMargin: 10,
   contactDamage: 1,
   hitFlashMs: 80,

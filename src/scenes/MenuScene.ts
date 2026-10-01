@@ -94,6 +94,15 @@ export class MenuScene extends Phaser.Scene {
       color: PALETTE.uiDim,
     });
 
+    if (this.sys.game.device.input.touch && !this.sys.game.device.os.desktop) {
+      const note = pixelText(this, GAME_WIDTH / 2, 252, 'KEYBOARD NEEDED FOR NOW - TOUCH CONTROLS ARE COMING!', {
+        originX: 0.5,
+        originY: 0.5,
+        color: PALETTE.gold,
+      });
+      this.tweens.add({ targets: note, alpha: 0.4, yoyo: true, repeat: -1, duration: 800 });
+    }
+
     bindMuteKey(this);
     bindAudioUnlock(this, () => music.play('title'));
     if (audio.ready) music.play('title');

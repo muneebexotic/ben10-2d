@@ -46,12 +46,17 @@ export class IntroDirector {
     private readonly speech: SpeechBubble,
     private readonly hooks: IntroHooks,
     skip: boolean,
+    skipOpening = false,
   ) {
     const podSpawn = level.entities.find((e) => e.type === 'pod')!;
     this.pod = scene.add.sprite(podSpawn.x * TILE + TILE / 2, podSpawn.y * TILE + 2, TEX.pod, 0).setOrigin(0.5, 1).setDepth(DEPTH.props);
     if (skip) {
       this.pod.setFrame(1);
       this.phase = 'done';
+    } else if (skipOpening) {
+      // Retrying after a death: no need to sit through the meteors again.
+      this.phase = 'explore';
+      EventBus.emit('hud:visible', { visible: true, omnitrix: false });
     } else {
       this.startOpening();
     }

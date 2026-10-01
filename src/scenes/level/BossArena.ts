@@ -34,6 +34,7 @@ export interface ArenaDeps {
   aliveAdds(): number;
   dropPickup(x: number, y: number): void;
   setAlarm(on: boolean): void;
+  onStart(left: number, right: number): void;
   onDefeated(x: number, y: number): void;
 }
 
@@ -93,6 +94,7 @@ export class BossArena {
       }
     }
     playSfx('gateDown', 0.8, 1.4);
+    d.onStart(this.left, this.right);
 
     camera.lockTo((this.left + this.right) / 2, this.floorY - 112);
     this.hazards = new BossHazards(scene, this.floorY, this.d.fx, this.d.lighting, this.d.telegraph);

@@ -19,6 +19,9 @@ export class OmnitrixController {
   jammed = false;
   transformations = 0;
   private deniedFlashUntil = 0;
+  onTransformed: ((alienId: string, first: boolean) => void) | null = null;
+  onReverted: ((reason: RevertReason) => void) | null = null;
+  onDenied: ((reason: 'cooldown' | 'jammed') => void) | null = null;
 
   constructor(
     unlocked: string[],
@@ -92,6 +95,7 @@ export class OmnitrixController {
           this.transformations++;
           const alien = getAlien(e.alienId);
           this.sequence.transform(alien, { first: this.transformations === 1, wrong: e.wrong });
+          this.onTransformed?.(e.alienId, this.transformations === 1);
           break;
         }
         case 'warning':
@@ -101,6 +105,7 @@ export class OmnitrixController {
         case 'reverted':
           this.sequence.revert(e.reason);
           EventBus.emit('alien:reverted', { alienId: e.alienId, reason: e.reason });
+          this.onReverted?.(e.reason);
           break;
         case 'ready':
           playSfx('ready');
@@ -120,5 +125,6 @@ export class OmnitrixController {
     playSfx(reason === 'jammed' ? 'jammed' : 'denied');
     if (reason === 'jammed') this.fx.burst('blue', this.player.x, this.player.centerY, 6);
     EventBus.emit('omnitrix:denied', { reason });
+    this.onDenied?.(reason);
   }
 }

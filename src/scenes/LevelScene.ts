@@ -155,6 +155,13 @@ export class LevelScene extends Phaser.Scene {
     this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech });
     this.omni = new OmnitrixController(aliensUnlockedBy(this.level.chapter), this.player, this.sequence, this.fx);
     this.omni.transformations = this.stats.transformations;
+    this.omni.onTransformed = () => this.tutorial.tip('fireball', '[J] FIREBALL  (HOLD [UP] TO AIM HIGH)', 7000, 5);
+    this.omni.onReverted = (reason) => {
+      if (reason !== 'jammed') this.tutorial.tip('human', 'HUMAN AGAIN! [J] PUNCH   [K] DODGE ROLL', 6000, 6);
+    };
+    this.omni.onDenied = (reason) => {
+      if (reason === 'cooldown') this.tutorial.tip('cooldown', 'OMNITRIX RECHARGING... HANG IN THERE!', 3000, 7);
+    };
     this.tutorial = new Tutorial(this.level);
 
     this.droneWorld = this.createDroneWorld();
@@ -187,7 +194,7 @@ export class LevelScene extends Phaser.Scene {
       spawnIntroDrones: () => this.spawnIntroDrones(),
       hasTransformed: () => this.omni.transformations > 0,
       onControlStart: () => undefined,
-    }, resuming);
+    }, resuming, data.stats !== undefined);
     this.intro.lightHook = (x, y, r, c, i) => this.lighting.add(x, y, r, c, i);
 
     this.arena = new BossArena(bossSpawn as Extract<LevelData['entities'][number], { type: 'boss' }>, {
@@ -205,6 +212,7 @@ export class LevelScene extends Phaser.Scene {
       aliveAdds: () => this.drones.filter((d) => d.alive && d.homeX < 0).length,
       dropPickup: (x, y) => this.dropSmoothy(x, y),
       setAlarm: (on) => (this.alarm = on),
+      onStart: (left, right) => this.clearArenaStragglers(left, right),
       onDefeated: (x, y) => this.onBossDefeated(x, y),
     });
 
@@ -494,6 +502,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private onDroneKilled(d: Drone): void {
+    if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
     this.stats.enemiesDefeated++;
     if (this.player.isAlien) this.killsAsAlien++;
     if (this.killsAsAlien >= 3 && this.player.isAlien) this.tutorial.tip('burst', 'HOLD [K], THEN RELEASE: FIRE BURST!', 6000, 4);
@@ -545,6 +554,13 @@ export class LevelScene extends Phaser.Scene {
       this.scene.pause();
       this.scene.launch(SCENES.gameOver, { checkpoint: this.checkpointId, stats: cloneRunStats(this.stats) });
     });
+  }
+
+  /** The boss's arrival shockwave wipes out stragglers that wandered into the arena. */
+  private clearArenaStragglers(left: number, right: number): void {
+    for (const d of this.drones) {
+      if (d.alive && d.homeX >= 0 && d.x > left - 40 && d.x < right + 40) d.kill();
+    }
   }
 
   private onBossDefeated(x: number, y: number): void {

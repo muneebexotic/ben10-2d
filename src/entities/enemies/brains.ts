@@ -1,4 +1,4 @@
-import { GUNNER, LASER, SCOUT, STRIKER } from '../../config/enemies';
+import { DRONE_SHARED, GUNNER, LASER, SCOUT, STRIKER } from '../../config/enemies';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
 import { playSfx } from '../../systems/audio/Sfx';
@@ -7,6 +7,8 @@ import type { Drone, DroneBrain, DroneWorld } from './Drone';
 const rand = (range: readonly [number, number]) => range[0] + Math.random() * (range[1] - range[0]);
 
 function steer(d: Drone, tx: number, ty: number, speed: number, gain = 2.2): void {
+  // Boss adds (homeX < 0) roam the arena; level drones stay near home so they never pile up behind Ben.
+  if (d.homeX >= 0) tx = Math.max(d.homeX - DRONE_SHARED.leash, Math.min(d.homeX + DRONE_SHARED.leash, tx));
   const dx = tx - d.x;
   const dy = ty - d.y;
   d.vx = Math.max(-speed, Math.min(speed, dx * gain));
@@ -36,7 +38,7 @@ export class ScoutBrain implements DroneBrain {
   readonly maxHp = SCOUT.hp;
   readonly body = SCOUT.body;
 
-  update(d: Drone, w: DroneWorld, dt: number): void {
+  update(d: Drone, w: DroneWorld): void {
     const p = w.player;
     if (d.state === 'idle') {
       if (Math.abs(p.x - d.x) > 24) d.side = d.x < p.x ? -1 : 1;
@@ -75,7 +77,6 @@ export class ScoutBrain implements DroneBrain {
         d.nextActionAt = w.now + rand(SCOUT.fireIntervalMs);
       }
     }
-    void dt;
   }
 
   harmful(): boolean {

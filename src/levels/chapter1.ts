@@ -20,9 +20,7 @@ export const CHAPTER_1: LevelData = {
 
   solids: [
     { material: 'rock', x: 0, top: 12, w: 2 },
-    { material: 'ground', x: 2, top: 26, w: 32 },
-    { material: 'ground', x: 34, top: 27, w: 6 },
-    { material: 'ground', x: 40, top: 26, w: 18 },
+    { material: 'ground', x: 2, top: 26, w: 56 },
     { material: 'ground', x: 58, top: 24, w: 12 },
     // Tunnel hill: grass cap over rock, tunnel carved below.
     { material: 'ground', x: 70, top: 12, w: 10, h: 2 },
@@ -79,8 +77,8 @@ export const CHAPTER_1: LevelData = {
     { type: 'decor', kind: 'campfire', x: 16, y: 26 },
     { type: 'decor', kind: 'tent', x: 21, y: 26, flip: true },
     { type: 'decor', kind: 'sign', x: 29, y: 26 },
-    { type: 'pod', x: 37, y: 27 },
-    { type: 'decor', kind: 'crater', x: 37, y: 27 },
+    { type: 'pod', x: 37, y: 26 },
+    { type: 'decor', kind: 'crater', x: 37, y: 26 },
 
     { type: 'drone', kind: 'scout', x: 63, y: 18 },
     { type: 'drone', kind: 'striker', x: 67, y: 16 },
