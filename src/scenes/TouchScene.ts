@@ -44,7 +44,6 @@ export class TouchScene extends Phaser.Scene {
     this.omnitrixVisible = false;
     this.levelRunning = true;
     pad.reset();
-    this.input.addPointer(3);
 
     const B = TOUCH.buttons;
     this.stick = new TouchStick(this);
