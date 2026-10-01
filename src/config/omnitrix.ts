@@ -26,3 +26,24 @@ export const PERFECT_TRANSFORM = {
   /** Before this many transforms (with no perfect yet) a tip explains the mechanic. */
   tipAfterTransforms: 2,
 } as const;
+
+/**
+ * Omnitrix swap: with a different alien on the dial, pressing transform while
+ * transformed swaps straight into it. It costs alien time, so the timer and
+ * cooldown still drive the loop; the payoff is that every alien arrives with an
+ * entrance attack.
+ */
+export const SWAP = {
+  enabled: true,
+  /** Alien time the swap uses up. Not allowed with less than this left. */
+  costMs: 3000,
+  /** Minimum time between transform/swap and the next swap. */
+  lockoutMs: 1200,
+  invulnMs: 450,
+  hitStopMs: 50,
+  slowMoScale: 0.35,
+  slowMoMs: 140,
+  /** Swap input is ignored for this long afterwards (prevents double taps). */
+  busyMs: 160,
+  quipChance: 0.4,
+} as const;

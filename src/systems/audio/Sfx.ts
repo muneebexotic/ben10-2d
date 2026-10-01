@@ -1,7 +1,9 @@
 import { AUDIO } from '../../config/audio';
 import { audio, midiToFreq } from './AudioEngine';
 
-type Recipe = (v: number, p: number) => void;
+/** A synthesized sound: `v` scales volume, `p` scales pitch. Aliens define their own in their audio module. */
+export type SoundRecipe = (v: number, p: number) => void;
+type Recipe = SoundRecipe;
 
 const A = audio;
 
@@ -44,6 +46,12 @@ const RECIPES = {
       A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.5, volume: 0.07 * v, when: A.now + i * 0.03, detune: 6 });
     }
     A.tone({ type: 'triangle', freq: midiToFreq(93), duration: 0.8, volume: 0.1 * v, when: A.now + 0.05 });
+  },
+  swap: (v) => {
+    A.tone({ type: 'square', freq: 520, freqEnd: 2100, duration: 0.09, volume: 0.07 * v });
+    A.tone({ type: 'sine', freq: 150, freqEnd: 55, duration: 0.22, volume: 0.4 * v, when: A.now + 0.05 });
+    A.noise({ duration: 0.1, volume: 0.16 * v, filter: 'highpass', freq: 3500, when: A.now + 0.04 });
+    A.tone({ type: 'triangle', freq: midiToFreq(88), duration: 0.18, volume: 0.06 * v, when: A.now + 0.06 });
   },
   revert: (v) => {
     A.tone({ type: 'sawtooth', freq: 900, freqEnd: 110, duration: 0.55, volume: 0.12 * v, filter: { type: 'lowpass', freq: 2500 } });
@@ -169,16 +177,18 @@ const RECIPES = {
 
 export type SfxName = keyof typeof RECIPES;
 
-const lastPlayed = new Map<SfxName, number>();
+const lastPlayed = new Map<SfxName | SoundRecipe, number>();
 
-export function playSfx(name: SfxName, volume = 1, pitch = 1): void {
+/** Plays a shared effect by name, or any sound recipe. Rapid repeats of the same sound are throttled. */
+export function playSfx(sound: SfxName | SoundRecipe, volume = 1, pitch = 1): void {
   if (!audio.ready || audio.muted) return;
   const now = performance.now();
-  const last = lastPlayed.get(name) ?? -Infinity;
+  const last = lastPlayed.get(sound) ?? -Infinity;
   if (now - last < AUDIO.sfxMinIntervalMs) return;
-  lastPlayed.set(name, now);
+  lastPlayed.set(sound, now);
   try {
-    (RECIPES[name] as Recipe)(volume, pitch);
+    const recipe: Recipe = typeof sound === 'function' ? sound : RECIPES[sound];
+    recipe(volume, pitch);
   } catch {
     // Audio is decoration; never let it break gameplay.
   }
@@ -209,7 +219,7 @@ export class ChargeHum {
       this.gain.gain.exponentialRampToValueAtTime(0.07, ctx.currentTime + 0.1);
       this.osc.connect(filter);
       this.osc2.connect(filter);
-      filter.connect(this.gain).connect(audio.sfxBus);
+      filter.connect(this.gain).connect(audio.loopBus);
       this.osc.start();
       this.osc2.start();
     } catch {

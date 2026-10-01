@@ -37,17 +37,6 @@ export function drawDialFrame(pc: PixelCanvas): void {
   }
 }
 
-/** Alien head icon for the dial, drawn in one colour so it can be tinted as a hologram. */
-export function drawHeatblastIcon(pc: PixelCanvas): void {
-  const flames = [3, 5, 4, 6, 5, 6, 4, 5, 3];
-  for (let i = 0; i < flames.length; i++) pc.vline(3 + i, 7 - flames[i], 6, P.white);
-  pc.rect(4, 6, 8, 8, P.white);
-  const ctx = pc.ctx;
-  ctx.clearRect(pc.ox + 5, pc.oy + 9, 2, 2);
-  ctx.clearRect(pc.ox + 9, pc.oy + 9, 2, 2);
-  ctx.clearRect(pc.ox + 6, pc.oy + 12, 4, 1);
-}
-
 export function drawBenIcon(pc: PixelCanvas): void {
   pc.rect(2, 3, 8, 8, P.skin0);
   pc.rect(2, 2, 8, 3, P.hair0).rect(2, 2, 2, 6, P.hair0);
@@ -109,23 +98,9 @@ export function drawTouchPunch(pc: PixelCanvas): void {
   pc.rect(0, 7, 2, 1, P.white).rect(0, 10, 2, 1, P.white);
 }
 
-export function drawTouchFire(pc: PixelCanvas): void {
-  pc.circle(9, 9, 4, P.white);
-  pc.poly([[5, 9], [0, 6], [2, 9], [0, 12]], P.white);
-  pc.px(10, 8, P.ink).px(9, 9, P.ink);
-}
-
 export function drawTouchRoll(pc: PixelCanvas): void {
   for (let a = 0.6; a < Math.PI * 1.8; a += 0.22) pc.rect(8 + Math.cos(a) * 5, 8 + Math.sin(a) * 5, 2, 2, P.white);
   pc.poly([[11, 1], [15, 5], [10, 6]], P.white);
-}
-
-export function drawTouchBurst(pc: PixelCanvas): void {
-  pc.circle(8, 8, 3, P.white);
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    pc.rect(8 + Math.cos(a) * 6, 8 + Math.sin(a) * 6, 2, 2, P.white);
-  }
 }
 
 export function drawTouchPause(pc: PixelCanvas): void {

@@ -1,5 +1,5 @@
 import { TILE } from '../../config/constants';
-import type { AbilityAction } from '../../aliens/types';
+import type { AbilityAction, FormTip } from '../../aliens/types';
 import type { LevelData, PromptZone } from '../../levels/types';
 import { EventBus } from '../../systems/EventBus';
 
@@ -15,7 +15,9 @@ export class Tutorial {
   private zone: PromptZone | null = null;
   private zoneText = '';
   private readonly timed: Timed[] = [];
-  private fireballs = 0;
+  private readonly actionCounts = new Map<AbilityAction, number>();
+  /** Alien tips that clear once an action was used enough. */
+  private readonly completions: Array<{ id: string; action: AbilityAction; count: number }> = [];
 
   constructor(private readonly level: LevelData) {}
 
@@ -38,9 +40,18 @@ export class Tutorial {
     this.timed.push({ id, left: ms });
   }
 
+  /** An alien's tip (from its definition): shown once, cleared early once the player has used the move. */
+  formTip(tip: FormTip): void {
+    if (tip.doneAfter && !this.completions.some((c) => c.id === tip.id)) {
+      this.completions.push({ id: tip.id, action: tip.doneAfter.action, count: tip.doneAfter.count });
+    }
+    this.tip(tip.id, tip.text, tip.ms, tip.priority);
+  }
+
   onAction(action: AbilityAction): void {
-    if (action === 'fireball' && ++this.fireballs >= 4) this.complete('fireball');
-    if (action === 'burst') this.complete('burst');
+    const count = (this.actionCounts.get(action) ?? 0) + 1;
+    this.actionCounts.set(action, count);
+    for (const c of this.completions) if (c.action === action && count >= c.count) this.complete(c.id);
     if (action === 'roll' || action === 'punch') this.complete('human');
     if (action === 'parry') this.complete('parry');
   }

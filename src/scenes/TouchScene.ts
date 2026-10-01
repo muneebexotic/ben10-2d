@@ -8,6 +8,7 @@ import { pad, stickDirections, type PadButton } from '../systems/VirtualPad';
 import { TouchButton, TouchDial, TouchStick } from '../ui/TouchControls';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { getForm, HUMAN_FORM } from '../aliens/registry';
 
 type ButtonId = 'jump' | 'attack' | 'special' | 'pause';
 
@@ -72,10 +73,10 @@ export class TouchScene extends Phaser.Scene {
     on('omnitrix:acquired', () => (this.omnitrixVisible = true), this);
     on('omnitrix:tick', (t) => this.dial.setTick(t), this);
     on('omnitrix:dial', (p) => this.dial.nudge(p.direction), this);
-    on('alien:transformed', () => this.setFormIcons(true), this);
-    on('alien:reverted', () => this.setFormIcons(false), this);
+    on('alien:transformed', (p) => this.setFormIcons(p.alienId), this);
+    on('alien:reverted', () => this.setFormIcons(HUMAN_FORM.id), this);
     on('hud:reset', () => {
-      this.setFormIcons(false);
+      this.setFormIcons(HUMAN_FORM.id);
       this.releaseAll();
     }, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -93,9 +94,11 @@ export class TouchScene extends Phaser.Scene {
     return mode === 'on' || (mode === 'auto' && inputMode.current === 'touch');
   }
 
-  private setFormIcons(alien: boolean): void {
-    this.buttons.attack.setIcon(alien ? TEX.touchFire : TEX.touchPunch);
-    this.buttons.special.setIcon(alien ? TEX.touchBurst : TEX.touchRoll);
+  /** ATTACK and SPECIAL show what they do in the current form (fist and roll, fireball and burst...). */
+  private setFormIcons(formId: string): void {
+    const icons = getForm(formId).touchIcons;
+    this.buttons.attack.setIcon(icons.attack);
+    this.buttons.special.setIcon(icons.special);
   }
 
   // ------------------------------------------------------------ Pointers

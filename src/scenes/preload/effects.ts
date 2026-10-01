@@ -213,3 +213,57 @@ export function drawWater(pc: PixelCanvas, frame: number): void {
 export function drawAfterimage(pc: PixelCanvas): void {
   pc.rect(0, 0, pc.width, pc.height, P.white);
 }
+
+/** Ground shockwave for player attacks: white so it tints to the alien's colour. 22x14, 3 frames. */
+export function drawWave(pc: PixelCanvas, frame: number): void {
+  const h = pc.height;
+  for (let x = 0; x < pc.width; x++) {
+    const env = 1 - Math.abs(x - pc.width / 2) / (pc.width / 2);
+    const peak = Math.round(h - 2 - Math.abs(Math.sin((x + frame * 3) * 0.45)) * (h - 4) * env);
+    pc.vline(x, peak, h - 1, x % 3 === frame % 3 ? 0xc8c8c8 : P.white);
+    pc.px(x, peak, P.white);
+  }
+  pc.rect(0, h - 2, pc.width, 2, 0x8a8a8a);
+}
+
+/** A thin speed line, bright at the head and fading along the tail. */
+export function drawStreak(pc: PixelCanvas): void {
+  for (let x = 0; x < pc.width; x++) {
+    const a = x / (pc.width - 1);
+    pc.rect(x, 0, 1, pc.height, P.white, a * a);
+  }
+}
+
+/** Jagged ground crack, dark with a hot rim. 48x12, drawn from the surface down. */
+export function drawCrack(pc: PixelCanvas): void {
+  const c = pc.width / 2;
+  const branches: Array<Array<[number, number]>> = [
+    [[c, 0], [c - 6, 2], [c - 11, 3], [c - 17, 6], [c - 23, 7]],
+    [[c, 0], [c + 5, 3], [c + 12, 2], [c + 17, 5], [c + 23, 6]],
+    [[c, 0], [c - 2, 4], [c + 1, 8], [c - 1, 11]],
+    [[c - 11, 3], [c - 13, 7], [c - 12, 10]],
+    [[c + 12, 2], [c + 14, 7]],
+  ];
+  for (const b of branches) {
+    for (let i = 0; i + 1 < b.length; i++) pc.line(b[i][0], b[i][1], b[i + 1][0], b[i + 1][1], P.ink, i === 0 ? 2 : 1);
+  }
+  pc.rect(c - 3, 0, 7, 1, 0x3a2420);
+  pc.px(c - 6, 1, P.fire3).px(c + 5, 2, P.fire3).px(c - 1, 5, P.fire2);
+}
+
+/** Hornet stinger needle. 9x3, pointing right. */
+export function drawNeedle(pc: PixelCanvas): void {
+  pc.rect(0, 1, 7, 1, P.enemy);
+  pc.rect(2, 0, 4, 3, P.enemyDark);
+  pc.rect(6, 1, 3, 1, P.white);
+  pc.px(1, 1, P.enemyGlow);
+}
+
+/** Armoured drone cannon shell: a heavy glowing slug. 10x10. */
+export function drawShell(pc: PixelCanvas): void {
+  pc.circle(5, 5, 4, P.metal1);
+  pc.circle(5, 5, 3, P.enemyDark);
+  pc.circle(5, 5, 2, P.enemy);
+  pc.px(4, 4, P.white).px(5, 4, P.enemyGlow);
+  pc.outline(P.ink);
+}

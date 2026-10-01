@@ -7,7 +7,7 @@ export interface Rect {
   h: number;
 }
 
-/** 'smash' is a heavy blow (Four Arms, Milestone 2): the only thing that breaks cracked walls. */
+/** 'smash' is a heavy blow (Four Arms): the only thing that breaks cracked walls and armour. */
 export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform' | 'smash';
 
 export interface Hit {
@@ -18,6 +18,8 @@ export interface Hit {
   y: number;
   knockback: number;
   heavy?: boolean;
+  /** Knocks drones out of the sky for this long (they can be picked up while down). */
+  stunMs?: number;
 }
 
 export type HitResult = 'none' | 'hit' | 'killed' | 'blocked';
@@ -32,6 +34,27 @@ export interface Damageable {
   accepts?(kind: HitKind): boolean;
   /** Enemies count toward stats and combos; props do not. */
   readonly countsAsEnemy: boolean;
+  /** Damage the last hit actually dealt after armour and multipliers (Training damage numbers). */
+  readonly lastDamage?: number;
+}
+
+/** Something a strong alien can pick up and throw: a stunned drone, a boulder. */
+export interface Liftable {
+  /** Can be picked up right now. */
+  readonly liftable: boolean;
+  /** Object height in pixels (how high it sits over the carrier's head). */
+  readonly height: number;
+  liftBox(out: Rect): boolean;
+  /** Picked up: stop behaving on its own. */
+  lift(): void;
+  /** Follows the carrier every frame. */
+  carry(x: number, bottomY: number, facing: 1 | -1): void;
+  /** In flight after a throw (Combat moves it). */
+  fly(x: number, y: number, angle: number): void;
+  /** The throw ended (hit something or the ground): break, explode, or settle. */
+  shatter(x: number, y: number): void;
+  /** Its own hurtbox, so a thrown drone never hits itself. */
+  readonly self?: Damageable;
 }
 
 /** Anything that hurts the player on contact. */

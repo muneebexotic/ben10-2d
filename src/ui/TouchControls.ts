@@ -3,6 +3,7 @@ import { TOUCH } from '../config/touch';
 import { PALETTE } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import type { OmnitrixTick } from '../systems/events';
+import { getAlien, hasAlien } from '../aliens/registry';
 import { pixelText } from './text';
 
 /** A round, semi-transparent thumb button with an icon and a small caption. */
@@ -129,8 +130,10 @@ export class TouchDial {
   private readonly icon: Phaser.GameObjects.Image;
   private readonly glow: Phaser.GameObjects.Image;
   private readonly chevrons: Phaser.GameObjects.BitmapText[];
+  private readonly swapLabel: Phaser.GameObjects.BitmapText;
   private tick: OmnitrixTick | null = null;
   private pressed = false;
+  private iconKey = '';
 
   constructor(
     scene: Phaser.Scene,
@@ -141,12 +144,13 @@ export class TouchDial {
     this.glow = scene.add.image(0, 0, TEX.soft).setScale(5).setBlendMode(Phaser.BlendModes.ADD).setTint(PALETTE.omnitrix).setAlpha(0.25);
     const frame = scene.add.image(0, 0, TEX.dialFrame).setScale((r * 2) / 44);
     this.ring = scene.add.graphics();
-    this.icon = scene.add.image(0, 0, TEX.iconHeatblast).setScale(1.5).setTint(PALETTE.omnitrix);
+    this.icon = scene.add.image(0, 0, TEX.iconBen).setScale(1.5).setTint(PALETTE.omnitrix);
     this.chevrons = [
       pixelText(scene, -r - 7, 0, '<', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix }),
       pixelText(scene, r + 7, 0, '>', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix }),
     ];
-    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, ...this.chevrons]);
+    this.swapLabel = pixelText(scene, 0, r + 7, 'SWAP!', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix }).setVisible(false);
+    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, ...this.chevrons, this.swapLabel]);
   }
 
   contains(px: number, py: number): number {
@@ -196,8 +200,18 @@ export class TouchDial {
     g.arc(0, 0, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * fraction, false);
     g.strokePath();
     const ready = !t || (t.state === 'ready' && !t.jammed);
-    this.icon.setTint(t?.state === 'active' ? PALETTE.fire2 : ready ? PALETTE.omnitrix : t?.jammed ? PALETTE.jammer : PALETTE.enemyDark);
-    this.glow.setTint(color).setAlpha(ready ? 0.3 + Math.sin(now * 0.006) * 0.12 : 0.12);
+    // The button shows the alien a tap would bring in: the dial's pick (also mid-transformation, for a swap).
+    const shownId = t ? (t.state === 'active' && !t.canSwap ? t.activeId : t.selectedId) : null;
+    const known = shownId !== null && hasAlien(shownId);
+    const key = known ? getAlien(shownId).hudIcon : TEX.iconBen;
+    if (key !== this.iconKey) {
+      this.icon.setTexture(key);
+      this.iconKey = key;
+    }
+    const alienColor = known ? getAlien(shownId).theme.color : PALETTE.omnitrix;
+    this.icon.setTint(t?.state === 'active' ? alienColor : ready ? PALETTE.omnitrix : t?.jammed ? PALETTE.jammer : PALETTE.enemyDark);
+    this.glow.setTint(t?.canSwap ? alienColor : color).setAlpha(ready || t?.canSwap ? 0.3 + Math.sin(now * 0.006) * 0.12 : 0.12);
+    this.swapLabel.setVisible(t?.canSwap === true).setTint(alienColor);
     for (const c of this.chevrons) c.setAlpha(0.35 + (this.pressed ? 0.4 : 0));
   }
 }

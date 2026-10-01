@@ -6,6 +6,8 @@ import type { Lighting } from './Lighting';
 import type { TimeController } from './TimeController';
 import { shakeCamera } from './Accessibility';
 import { quality } from './Quality';
+import { pixelText } from '../ui/text';
+import { FONT_SIZE } from '../ui/PixelFont';
 
 export type BurstKind =
   | 'spark'
@@ -91,6 +93,8 @@ type Pooled = Phaser.GameObjects.Image;
 export class Fx {
   private readonly emitters = new Map<BurstKind, Phaser.GameObjects.Particles.ParticleEmitter>();
   private readonly pool: Pooled[] = [];
+  private readonly cracks: Pooled[] = [];
+  private readonly texts: Phaser.GameObjects.BitmapText[] = [];
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -173,6 +177,67 @@ export class Fx {
       ease: 'Cubic.easeOut',
       onComplete: () => this.release(img),
     });
+  }
+
+  slowMo(scale: number, durationMs: number, recoverMs = 250): void {
+    this.time.slowMo(scale, durationMs, recoverMs);
+  }
+
+  /** Floating world text that rises and fades (pooled). */
+  popText(x: number, y: number, text: string, color: number, scale = 1): void {
+    let t = this.texts.find((it) => !it.visible);
+    if (!t) {
+      t = pixelText(this.scene, 0, 0, '', { originX: 0.5, originY: 1, depth: DEPTH.worldUi });
+      this.texts.push(t);
+    }
+    const label = t;
+    label.setText(text).setPosition(Math.round(x), Math.round(y)).setTint(color).setFontSize(FONT_SIZE * scale).setAlpha(1).setScale(1.6).setVisible(true);
+    this.scene.tweens.add({ targets: label, scale: 1, duration: 140, ease: 'Back.easeOut' });
+    this.scene.tweens.add({
+      targets: label,
+      y: y - 20,
+      alpha: 0,
+      delay: 260,
+      duration: 520,
+      ease: 'Quad.easeIn',
+      onComplete: () => label.setVisible(false),
+    });
+  }
+
+  /** A speed line that shoots backwards from (x, y): `dir` is the way the runner is moving. */
+  speedLine(x: number, y: number, dir: 1 | -1, color: number): void {
+    const img = this.take(TEX.streak, x, y, color, DEPTH.fx);
+    img.setOrigin(dir > 0 ? 1 : 0, 0.5).setFlipX(dir < 0).setScale(0.4, 1).setAlpha(0.9);
+    this.scene.tweens.add({
+      targets: img,
+      x: x - dir * (30 + Math.random() * 30),
+      scaleX: 1 + Math.random() * 0.8,
+      alpha: 0,
+      duration: 160 + Math.random() * 80,
+      ease: 'Quad.easeOut',
+      onComplete: () => {
+        img.setOrigin(0.5, 0.5).setFlipX(false);
+        this.release(img);
+      },
+    });
+  }
+
+  /** A crack decal on the ground that lingers, then fades. */
+  crack(x: number, feetY: number, size: number): void {
+    let img = this.cracks.find((c) => !c.visible);
+    if (!img) {
+      if (this.cracks.length >= FX.maxCracks) img = this.cracks.shift();
+      else img = this.scene.add.image(0, 0, TEX.crack);
+      if (!img) return;
+      this.cracks.push(img);
+    } else {
+      this.cracks.splice(this.cracks.indexOf(img), 1);
+      this.cracks.push(img);
+    }
+    this.scene.tweens.killTweensOf(img);
+    const k = 0.5 + size * 0.9;
+    img.setPosition(x, feetY - 1).setOrigin(0.5, 0).setScale(k * (Math.random() < 0.5 ? -1 : 1), Math.min(1.3, k)).setAlpha(1).setVisible(true).setDepth(DEPTH.terrain + 2);
+    this.scene.tweens.add({ targets: img, alpha: 0, delay: FX.crackLingerMs, duration: 700, onComplete: () => img.setVisible(false) });
   }
 
   /** Composite explosion: the workhorse for drone deaths and big hits. */

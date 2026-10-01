@@ -73,6 +73,9 @@ export const FX = {
   squashLand: { x: 1.3, y: 0.72 },
   stretchJump: { x: 0.74, y: 1.28 },
   squashRecover: 14,
+  /** Ground cracks (Four Arms): how many can exist and how long they stay. */
+  maxCracks: 10,
+  crackLingerMs: 2200,
 } as const;
 
 export const COMBO = {

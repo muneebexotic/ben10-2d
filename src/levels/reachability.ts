@@ -7,13 +7,14 @@ export interface Capabilities {
   jumpUp: number;
   jumpAcross: number;
   canBurn: boolean;
-  /** Can break cracked walls (Four Arms, Milestone 2). */
+  /** Can break cracked walls (smash hits). */
   canSmash: boolean;
+  /** Can run across water surfaces. */
+  canRunWater: boolean;
 }
 
-export const HUMAN_CAPS: Capabilities = { jumpUp: 3, jumpAcross: 4, canBurn: false, canSmash: false };
-/** Normal jump plus rocket jump. */
-export const HEATBLAST_CAPS: Capabilities = { jumpUp: 9, jumpAcross: 9, canBurn: true, canSmash: false };
+/** Each alien declares its own envelope in its definition (`reach`). */
+export const HUMAN_CAPS: Capabilities = { jumpUp: 3, jumpAcross: 4, canBurn: false, canSmash: false, canRunWater: false };
 
 export interface Pos {
   x: number;
@@ -40,16 +41,22 @@ function isWater(level: LevelData, x: number, y: number): boolean {
   return level.water.some((w) => x >= w.x && x < w.x + w.w && y >= w.surface);
 }
 
+/** The top row of a water span counts as a floor for forms that can run on water. */
+function isWaterSurface(level: LevelData, x: number, y: number): boolean {
+  return level.water.some((w) => x >= w.x && x < w.x + w.w && y === w.surface);
+}
+
 function isOpen(grid: TileGrid, blocked: Set<string>, x: number, y: number): boolean {
   if (x < 0 || x >= grid.width || y < 0) return false;
   const c = cellAt(grid, x, y);
   return (c === CELL.EMPTY || c === CELL.PLATFORM) && !blocked.has(`${x},${y}`);
 }
 
-export function isStandable(level: LevelData, grid: TileGrid, blocked: Set<string>, x: number, y: number): boolean {
+export function isStandable(level: LevelData, grid: TileGrid, blocked: Set<string>, x: number, y: number, caps?: Capabilities): boolean {
   if (!isOpen(grid, blocked, x, y) || !isOpen(grid, blocked, x, y - 1)) return false;
   if (cellAt(grid, x, y) === CELL.PLATFORM) return false;
   if (isWater(level, x, y)) return false;
+  if (caps?.canRunWater && isWaterSurface(level, x, y + 1)) return true;
   const below = cellAt(grid, x, y + 1);
   return isSolidCell(below) || below === CELL.PLATFORM || blocked.has(`${x},${y + 1}`);
 }
@@ -67,7 +74,7 @@ export function reachableFrom(level: LevelData, grid: TileGrid, start: Pos, caps
   const blocked = blockedCells(level, caps);
   const seen = new Set<string>();
   const queue: Pos[] = [];
-  if (isStandable(level, grid, blocked, start.x, start.y)) {
+  if (isStandable(level, grid, blocked, start.x, start.y, caps)) {
     seen.add(`${start.x},${start.y}`);
     queue.push(start);
   }
@@ -82,7 +89,7 @@ export function reachableFrom(level: LevelData, grid: TileGrid, start: Pos, caps
         const ny = y + dy;
         const key = `${nx},${ny}`;
         if (seen.has(key)) continue;
-        if (!isStandable(level, grid, blocked, nx, ny)) continue;
+        if (!isStandable(level, grid, blocked, nx, ny, caps)) continue;
         if (!pathClear(grid, blocked, x, y, nx, ny, dy)) continue;
         seen.add(key);
         queue.push({ x: nx, y: ny });

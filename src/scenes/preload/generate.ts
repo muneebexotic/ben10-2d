@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
-import { ANIMS, ASSETS, type AssetDef } from './assetKeys';
+import type { AssetDef } from './assetTypes';
+import { ALL_ANIMS, ALL_ASSETS } from './catalog';
 import { PixelCanvas } from './PixelCanvas';
 
 /** Queues real art files for any asset that has a `url`. Call from Preload.preload(). */
 export function queueAssetFiles(scene: Phaser.Scene): void {
-  for (const asset of ASSETS) {
+  for (const asset of ALL_ASSETS) {
     if (!asset.url) continue;
     scene.load.spritesheet(asset.key, asset.url, { frameWidth: asset.frameWidth, frameHeight: asset.frameHeight });
   }
@@ -12,7 +13,7 @@ export function queueAssetFiles(scene: Phaser.Scene): void {
 
 /** Generates placeholder art for every asset without a `url`. */
 export function generateAssets(scene: Phaser.Scene): void {
-  for (const asset of ASSETS) {
+  for (const asset of ALL_ASSETS) {
     if (asset.url || scene.textures.exists(asset.key)) continue;
     generate(scene, asset);
   }
@@ -37,7 +38,7 @@ function generate(scene: Phaser.Scene, asset: AssetDef): void {
 }
 
 export function createAnimations(scene: Phaser.Scene): void {
-  for (const anim of ANIMS) {
+  for (const anim of ALL_ANIMS) {
     if (scene.anims.exists(anim.key)) continue;
     scene.anims.create({
       key: anim.key,

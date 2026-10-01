@@ -12,10 +12,19 @@ export interface OmnitrixConfig {
   cooldownMs: number;
   warningMs: number;
   wrongTransformChance: number;
+  /** Alien time a mid-transformation swap costs (0 or missing: free). */
+  swapCostMs?: number;
+  /** Minimum time after a transform or swap before the next swap. */
+  swapLockoutMs?: number;
+  /** Swapping is off unless this is true. */
+  swapEnabled?: boolean;
 }
+
+export type SwapDenial = 'off' | 'notActive' | 'sameAlien' | 'lockout' | 'lowTime';
 
 export type OmnitrixEvent =
   | { type: 'transformed'; alienId: string; requestedId: string; wrong: boolean }
+  | { type: 'swapped'; fromId: string; alienId: string; requestedId: string; wrong: boolean; costMs: number }
   | { type: 'warning'; secondsLeft: number }
   | { type: 'reverted'; alienId: string; reason: RevertReason }
   | { type: 'ready' }
@@ -32,6 +41,8 @@ export class Omnitrix {
   private remainingMs = 0;
   private cooldownLeftMs = 0;
   private lastWarningSecond = -1;
+  private sinceChangeMs = 0;
+  private frozen = false;
 
   constructor(
     private config: OmnitrixConfig,
@@ -91,6 +102,15 @@ export class Omnitrix {
     this.config = config;
   }
 
+  /** Training: the alien timer stops draining (and swaps are free). */
+  setTimerFrozen(frozen: boolean): void {
+    this.frozen = frozen;
+  }
+
+  get timerFrozen(): boolean {
+    return this.frozen;
+  }
+
   isUnlocked(alienId: string): boolean {
     return this.unlocked.includes(alienId);
   }
@@ -124,12 +144,46 @@ export class Omnitrix {
     const requestedId = this.selectedAlien;
     if (!this.canTransform() || requestedId === null) return [];
 
-    const alienId = this.rollAlien(requestedId);
+    const alienId = this.rollAlien(requestedId, null);
     this._state = 'active';
     this.activeAlien = alienId;
     this.remainingMs = this.config.transformDurationMs;
     this.lastWarningSecond = -1;
+    this.sinceChangeMs = 0;
     return [{ type: 'transformed', alienId, requestedId, wrong: alienId !== requestedId }];
+  }
+
+  /** Why a swap would be refused right now, or null if it is allowed. */
+  swapDenial(): SwapDenial | null {
+    if (!this.config.swapEnabled) return 'off';
+    if (this._state !== 'active' || this.activeAlien === null) return 'notActive';
+    const selected = this.selectedAlien;
+    if (selected === null || selected === this.activeAlien) return 'sameAlien';
+    if (this.sinceChangeMs < (this.config.swapLockoutMs ?? 0)) return 'lockout';
+    if (!this.frozen && this.remainingMs <= (this.config.swapCostMs ?? 0)) return 'lowTime';
+    return null;
+  }
+
+  canSwap(): boolean {
+    return this.swapDenial() === null;
+  }
+
+  /**
+   * Swaps the active alien for the one on the dial without reverting. Costs
+   * alien time; the cooldown is untouched. Misfires never land on the alien
+   * you are swapping away from.
+   */
+  swap(): OmnitrixEvent[] {
+    const requestedId = this.selectedAlien;
+    const fromId = this.activeAlien;
+    if (!this.canSwap() || requestedId === null || fromId === null) return [];
+    const alienId = this.rollAlien(requestedId, fromId);
+    const costMs = this.frozen ? 0 : (this.config.swapCostMs ?? 0);
+    this.remainingMs -= costMs;
+    this.activeAlien = alienId;
+    this.sinceChangeMs = 0;
+    this.lastWarningSecond = -1;
+    return [{ type: 'swapped', fromId, alienId, requestedId, wrong: alienId !== requestedId, costMs }];
   }
 
   /** Adds alien time (the perfect transform reward). The ring can sit above full until it drains back. */
@@ -150,6 +204,8 @@ export class Omnitrix {
     const events: OmnitrixEvent[] = [];
 
     if (this._state === 'active') {
+      this.sinceChangeMs += dtMs;
+      if (this.frozen) return events;
       this.remainingMs -= dtMs;
       if (this.remainingMs <= 0) {
         const overflow = -this.remainingMs;
@@ -195,8 +251,8 @@ export class Omnitrix {
     return [{ type: 'ready' }];
   }
 
-  private rollAlien(requestedId: string): string {
-    const others = this.unlocked.filter((id) => id !== requestedId);
+  private rollAlien(requestedId: string, exclude: string | null): string {
+    const others = this.unlocked.filter((id) => id !== requestedId && id !== exclude);
     if (others.length === 0 || this.config.wrongTransformChance <= 0) return requestedId;
     if (this.rng() >= this.config.wrongTransformChance) return requestedId;
     const pick = Math.min(others.length - 1, Math.floor(this.rng() * others.length));

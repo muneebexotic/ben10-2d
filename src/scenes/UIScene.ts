@@ -11,7 +11,7 @@ import { OmnitrixDial } from '../ui/OmnitrixDial';
 import { PromptBar } from '../ui/PromptBar';
 import { StatsCorner } from '../ui/StatsCorner';
 import { pixelText } from '../ui/text';
-import { getAlien, hasAlien } from '../aliens/registry';
+import { getAlien, getForm, hasAlien } from '../aliens/registry';
 import { PLAYER } from '../config/player';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
@@ -67,19 +67,24 @@ export class UIScene extends Phaser.Scene {
     on('omnitrix:tick', (t) => this.dial.setTick(t), this);
     on('omnitrix:denied', (p) => {
       this.dial.deny();
-      this.popText(p.reason === 'jammed' ? 'JAMMED!' : 'RECHARGING!', p.reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy);
+      const text = p.reason === 'jammed' ? 'JAMMED!' : p.reason === 'lowTime' ? 'NOT ENOUGH TIME TO SWAP!' : 'RECHARGING!';
+      this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy);
     }, this);
     on('omnitrix:warning', (p) => this.popText(String(p.secondsLeft), PALETTE.enemy, 2), this);
     on('omnitrix:ready', () => {
       this.dial.pop();
       this.popText('READY!', PALETTE.omnitrix);
     }, this);
-    on('omnitrix:dial', () => this.dial.pop(), this);
+    on('omnitrix:dial', (p) => this.dial.turned(p.selectedId, p.direction), this);
     on('alien:transformed', (p) => {
       this.alien = true;
       this.dial.pop();
-      const color = hasAlien(p.alienId) ? getAlien(p.alienId).color : PALETTE.omnitrix;
-      this.banner.alienName(p.name, color, p.first);
+      if (!hasAlien(p.alienId)) return;
+      const theme = getAlien(p.alienId).theme;
+      this.banner.alienName(p.name, theme.color, { first: p.first, swap: p.swap, style: theme.slam });
+    }, this);
+    on('alien:swapStrike', (p) => {
+      if (hasAlien(p.alienId)) this.popText(p.hits > 1 ? `SWAP STRIKE X${p.hits}!` : 'SWAP STRIKE!', getAlien(p.alienId).theme.color);
     }, this);
     on('alien:reverted', (p) => {
       this.alien = false;
@@ -98,7 +103,7 @@ export class UIScene extends Phaser.Scene {
       this.health.setHealth(p.hp, p.delta);
       if (p.delta < 0) shakeCamera(this.cameras.main, 120, 0.004);
     }, this);
-    on('player:formHealth', (p) => this.health.setForm(p.hp, p.max, p.visible, p.delta), this);
+    on('player:formHealth', (p) => this.health.setForm(p.hp, p.max, p.visible, p.delta, getForm(p.formId).theme), this);
     on('player:died', () => (this.dead = true), this);
     on('hud:reset', () => {
       this.dead = false;

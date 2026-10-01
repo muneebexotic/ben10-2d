@@ -12,6 +12,8 @@ export class LevelWorld {
   readonly widthPx: number;
   readonly heightPx: number;
   private readonly waterSprites: Phaser.GameObjects.TileSprite[] = [];
+  /** Thin one-way floors on every water surface. The level only lets them collide for forms that run on water. */
+  readonly waterSurfaces: Phaser.Physics.Arcade.StaticGroup;
 
   constructor(
     scene: Phaser.Scene,
@@ -40,7 +42,16 @@ export class LevelWorld {
       for (let x = c.x * TILE; x < (c.x + c.w) * TILE; x += 12) caves.fillRect(x + ((x / 12) % 2) * 5, c.y * TILE + 2, 3, c.h * TILE - 4);
     }
 
+    this.waterSurfaces = scene.physics.add.staticGroup();
     for (const w of data.water) {
+      const top = w.surface * TILE;
+      const floor = scene.physics.add.staticImage(w.x * TILE + (w.w * TILE) / 2, top + 4, TEX.whitePx).setVisible(false);
+      floor.setDisplaySize(w.w * TILE, 8).refreshBody();
+      const body = floor.body as Phaser.Physics.Arcade.StaticBody;
+      body.checkCollision.down = false;
+      body.checkCollision.left = false;
+      body.checkCollision.right = false;
+      this.waterSurfaces.add(floor);
       const sprite = scene.add
         .tileSprite(w.x * TILE, w.surface * TILE + 4, w.w * TILE, w.depth * TILE, TEX.water)
         .setOrigin(0, 0)
@@ -75,6 +86,11 @@ export class LevelWorld {
     return this.data.water.some(
       (w) => x >= w.x * TILE && x < (w.x + w.w) * TILE && feetY > w.surface * TILE + 8,
     );
+  }
+
+  /** Feet resting on a water surface (running on water). */
+  onWaterSurface(x: number, feetY: number): boolean {
+    return this.data.water.some((w) => x >= w.x * TILE && x < (w.x + w.w) * TILE && Math.abs(feetY - w.surface * TILE) <= 3);
   }
 
   ambientAt(x: number): LevelData['ambience'][number]['ambient'] {

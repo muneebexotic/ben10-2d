@@ -5,7 +5,7 @@ import { getDifficulty } from '../config/difficulty';
 import { lerpColor, PALETTE } from '../config/palette';
 import { ACCESSIBILITY } from '../config/accessibility';
 import { PLAYER } from '../config/player';
-import { aliensUnlockedBy } from '../aliens/registry';
+import { aliensUnlockedBy, getAlien } from '../aliens/registry';
 import type { AbilityAction, FxApi } from '../aliens/types';
 import { CHAPTER_1 } from '../levels/chapter1';
 import type { DroneKind, LevelData } from '../levels/types';
@@ -28,6 +28,7 @@ import { Lighting } from '../systems/Lighting';
 import { cloneRunStats, createRunStats, type RunStats } from '../systems/RunStats';
 import { TimeController } from '../systems/TimeController';
 import { music } from '../systems/audio/Music';
+import { audio } from '../systems/audio/AudioEngine';
 import { playSfx } from '../systems/audio/Sfx';
 import { bindAudioUnlock, bindMuteKey } from '../systems/Settings';
 import { SpeechBubble } from '../ui/SpeechBubble';
@@ -100,7 +101,8 @@ export class LevelScene extends Phaser.Scene {
   private state: 'play' | 'dead' | 'complete' = 'play';
   private statsTimer = 0;
   private alarm = false;
-  private killsAsAlien = 0;
+  /** Kills per alien this run (advanced tips appear after a few). */
+  private readonly alienKills = new Map<string, number>();
   private debugText: Phaser.GameObjects.BitmapText | null = null;
   private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
   private vignette: Phaser.Filters.Controller | null = null;
@@ -121,7 +123,7 @@ export class LevelScene extends Phaser.Scene {
     this.gameNow = 0;
     this.state = 'play';
     this.alarm = false;
-    this.killsAsAlien = 0;
+    this.alienKills.clear();
     this.level = CHAPTER_1;
     // Starting mid-level without a run to continue (?start=) is practice: no best times or splits.
     this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(this.countCards(), !data.checkpoint);
@@ -148,14 +150,18 @@ export class LevelScene extends Phaser.Scene {
     this.fx = new Fx(this, this.lighting, this.time2);
     this.telegraph = new Telegraphs(this);
     this.projectiles = new Projectiles(this, this.fx, this.lighting);
-    this.combat = new Combat(this.projectiles, {
-      onTargetHit: (t, r, h) => this.onTargetHit(t, r, h),
-      onPlayerHurt: (o) => this.onPlayerHurt(o),
-      onParry: (n) => {
-        this.stats.parries += n;
-        this.bumpCombo(n);
+    this.combat = new Combat(
+      this.projectiles,
+      {
+        onTargetHit: (t, r, h) => this.onTargetHit(t, r, h),
+        onPlayerHurt: (o) => this.onPlayerHurt(o),
+        onParry: (n) => {
+          this.stats.parries += n;
+          this.bumpCombo(n);
+        },
       },
-    });
+      { isSolid: (x, y) => this.world.isSolid(x, y) },
+    );
     this.inputMap = new InputMap(this);
     this.speech = new SpeechBubble(this);
 
@@ -163,20 +169,25 @@ export class LevelScene extends Phaser.Scene {
     this.player = new Player(this, start.x, start.y, {
       combat: this.combat,
       fx: this.fxApi(),
+      world: { isSolid: (x, y) => this.world.isSolid(x, y), groundBelow: (x, y) => this.world.groundBelow(x, y) },
       notify: (a) => this.onAbility(a),
       damageMultiplier: getDifficulty().damageTakenMultiplier,
     });
     if (launchParams().god) this.player.setInvulnerable(1e9);
     this.player.isSafeSpot = (x, y) => !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
+    this.player.isWaterSurface = (x, y) => this.world.onWaterSurface(x, y);
     this.combat.setPlayer(this.player);
     this.physics.add.collider(this.player.zone, this.world.layer, undefined, (_a, tile) => this.processTile(tile as Phaser.Tilemaps.Tile));
+    // Water is a floor only for forms fast enough to run across it.
+    this.physics.add.collider(this.player.zone, this.world.waterSurfaces, undefined, () => this.player.canRunOnWater());
 
     this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech });
     this.omni = new OmnitrixController(this.aliens(), this.player, this.sequence, this.fx, this.perfect);
     this.omni.transformations = this.stats.transformations;
     this.omni.perfects = this.stats.perfectTransforms;
-    this.omni.onTransformed = () => this.tutorial.tip('fireball', '{J} FIREBALL  (HOLD {UP} TO AIM HIGH)', 7000, 5);
+    this.omni.onTransformed = (id) => this.onBecameAlien(id);
+    this.omni.onSwapped = (id) => this.onBecameAlien(id);
     this.omni.onReverted = (reason) => {
       if (reason !== 'jammed') this.tutorial.tip('human', 'HUMAN AGAIN! {J} PUNCH   {K} DODGE ROLL', 6000, 6);
     };
@@ -258,11 +269,13 @@ export class LevelScene extends Phaser.Scene {
     EventBus.on('system:pause', () => {
       if (this.state === 'play' && this.scene.isActive() && !this.intro.cinematic && !this.arena.cinematic) this.openPause();
     }, this);
+    music.setLayer(null);
     music.setIntensity(0);
     music.play('forest');
     bindAudioUnlock(this);
     bindMuteKey(this);
 
+    this.events.on(Phaser.Scenes.Events.RESUME, () => audio.setLoopsMuted(false));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       EventBus.offContext(this);
       this.shutdown();
@@ -305,10 +318,15 @@ export class LevelScene extends Phaser.Scene {
       trail: (k, x, y, n) => this.fx.trail(k, x, y, n),
       ring: (x, y, c, r, ms) => this.fx.ring(x, y, c, r, ms),
       flash: (x, y, c, r, ms) => this.fx.flash(x, y, c, r, ms),
+      rays: (x, y, c, r, ms) => this.fx.rays(x, y, c, r, ms),
       light: (x, y, r, c, ms) => this.fx.light(x, y, r, c, ms),
       frameLight: (x, y, r, c, i) => this.lighting.add(x, y, r, c, i),
       shake: (i, ms) => this.fx.shake(i, ms),
       hitStop: (ms) => this.fx.hitStop(ms),
+      slowMo: (scale, ms, recover) => this.fx.slowMo(scale, ms, recover),
+      popText: (x, y, text, color) => this.fx.popText(x, y, text, color),
+      speedLine: (x, y, dir, color) => this.fx.speedLine(x, y, dir, color),
+      crack: (x, y, size) => this.fx.crack(x, y, size),
     };
   }
 
@@ -417,8 +435,8 @@ export class LevelScene extends Phaser.Scene {
 
     for (const d of this.drones) d.update(worldDt);
     this.arena.update(dt, realDt, controls);
-    this.projectiles.update(worldDt, (x, y) => this.world.isSolid(x, y), this.cameras.main.worldView);
-    if (this.state === 'play') this.combat.update();
+    this.projectiles.update(worldDt, (x, y) => this.world.isSolid(x, y), this.cameras.main.worldView, (x, y) => this.world.groundBelow(x, y));
+    if (this.state === 'play') this.combat.update(worldDt);
 
     this.updateProps(dt);
     if (this.state === 'play') this.updateZones();
@@ -441,7 +459,7 @@ export class LevelScene extends Phaser.Scene {
     this.parallax.update(this.cameras.main, realDt);
     this.decor.update(this.cameras.main, this.lighting, this.gameNow);
     this.world.update(realDt);
-    this.speech.update(this.player.x, this.player.y - (this.player.isAlien ? 38 : 30), realDt);
+    this.speech.update(this.player.x, this.player.y - this.player.headHeight, realDt);
     if (!this.intro.cinematic) {
       const ready = this.omni.acquired && this.omni.omnitrix.state === 'ready' && !this.omni.jammed;
       this.tutorial.update(realDt, this.player.x, this.player.isAlien, ready);
@@ -548,6 +566,13 @@ export class LevelScene extends Phaser.Scene {
 
   private onAbility(action: AbilityAction): void {
     this.tutorial.onAction(action);
+    if (action === 'swapStrike' && this.player.isAlien) EventBus.emit('alien:swapStrike', { alienId: this.player.form.id, hits: 1 });
+  }
+
+  /** Transformed or swapped into an alien: its controls tip the first time this run. */
+  private onBecameAlien(alienId: string): void {
+    const tip = getAlien(alienId).tips.intro;
+    if (tip) this.tutorial.formTip(tip);
   }
 
   private onTargetHit(target: Damageable, result: HitResult, hit: Hit): void {
@@ -575,8 +600,12 @@ export class LevelScene extends Phaser.Scene {
     this.perfect.cancel(d);
     if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
     this.stats.enemiesDefeated++;
-    if (this.player.isAlien) this.killsAsAlien++;
-    if (this.killsAsAlien >= 3 && this.player.isAlien) this.tutorial.tip('burst', 'HOLD {K}, THEN RELEASE: FIRE BURST!', 6000, 4);
+    if (!this.player.isAlien) return;
+    const form = this.player.form;
+    const kills = (this.alienKills.get(form.id) ?? 0) + 1;
+    this.alienKills.set(form.id, kills);
+    const tip = form.tips.advanced;
+    if (tip && kills >= tip.afterKills) this.tutorial.formTip(tip);
   }
 
   private onPlayerHurt(outcome: DamageOutcome): void {
@@ -672,6 +701,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private openPause(): void {
+    audio.setLoopsMuted(true);
     this.scene.pause();
     this.scene.launch(SCENES.pause, { checkpoint: this.checkpointId, stats: cloneRunStats(this.stats) });
     this.inputMap.reset();
@@ -710,7 +740,7 @@ export class LevelScene extends Phaser.Scene {
 
   private emitFormHealth(delta: number): void {
     const p = this.player;
-    EventBus.emit('player:formHealth', { hp: p.formHp, max: p.form.maxFormHealth, visible: p.isAlien, delta });
+    EventBus.emit('player:formHealth', { hp: p.formHp, max: p.form.maxFormHealth, visible: p.isAlien, delta, formId: p.form.id });
   }
 
   private floatText(x: number, y: number, text: string, color: number): void {

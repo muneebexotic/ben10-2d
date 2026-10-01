@@ -1,5 +1,7 @@
-import type { MotorStats } from '../systems/PlatformerMotor';
+import type { FormFeel } from '../../aliens/types';
+import type { MotorStats } from '../../systems/PlatformerMotor';
 
+/** Heatblast: ranged fire, a charged burst and the rocket jump. */
 export const HEATBLAST_MOTOR: MotorStats = {
   runSpeed: 150,
   accelGround: 1700,
@@ -10,6 +12,16 @@ export const HEATBLAST_MOTOR: MotorStats = {
   coyoteMs: 95,
   jumpBufferMs: 130,
   jumpCutMultiplier: 0.45,
+};
+
+export const HEATBLAST_FEEL: FormFeel = {
+  stepMs: 230,
+  stepVolume: 1.4,
+  jumpPitch: 0.8,
+  knockbackScale: 1,
+  stunScale: 1,
+  gravityScale: 1,
+  emissive: true,
 };
 
 export const HEATBLAST = {
@@ -48,5 +60,13 @@ export const HEATBLAST = {
     blastRadius: 30,
     blastDamage: 2,
     glideMaxFall: 140,
+  },
+  /** Landing this hard (fraction of max fall speed) throws embers and shakes the camera. */
+  hardLandingImpact: 0.8,
+  /** Swap-in entrance: a ring of fire around Heatblast as he arrives. */
+  flameNova: {
+    radius: 64,
+    damage: 3,
+    knockback: 300,
   },
 } as const;

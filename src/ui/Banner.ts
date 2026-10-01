@@ -5,6 +5,8 @@ import { TEX } from '../scenes/preload/assetKeys';
 import type { BannerPayload } from '../systems/events';
 import { pixelText } from './text';
 import { a11y, shakeCamera } from '../systems/Accessibility';
+import { NAME_SLAM } from '../config/ui';
+import type { SlamStyle } from '../aliens/types';
 
 /** Big centre-screen moments: chapter titles, checkpoints, the alien name slam, the Omnitrix emblem flash. */
 export class Banner {
@@ -56,18 +58,38 @@ export class Banner {
     });
   }
 
-  /** "HEATBLAST!" slams in with speed streaks, then peels away. */
-  alienName(name: string, color: number, first: boolean): void {
+  /**
+   * The alien's name slams onto the screen in its own style: Heatblast's
+   * blazes in, XLR8's streaks across, Four Arms' drops and cracks the HUD.
+   * Swaps use a smaller, quicker version so fights keep flowing.
+   */
+  alienName(name: string, color: number, opts: { first: boolean; swap: boolean; style: SlamStyle }): void {
     this.current?.destroy();
+    const scale = opts.swap ? NAME_SLAM.swapScale : NAME_SLAM.scale;
+    const hold = opts.first ? NAME_SLAM.firstHoldMs : opts.swap ? NAME_SLAM.swapHoldMs : NAME_SLAM.holdMs;
+    const y = opts.first ? 110 : opts.swap ? 78 : 90;
+    const text = `${name}!`;
+    if (opts.style === 'blur') this.blurSlam(text, color, scale, hold, y);
+    else if (opts.style === 'quake') this.quakeSlam(text, color, scale, hold, y);
+    else this.blazeSlam(text, color, scale, hold, y, opts.first);
+  }
+
+  private finish(c: Phaser.GameObjects.Container): void {
+    if (this.current === c) this.current = null;
+    c.destroy();
+  }
+
+  /** Speed streaks behind a tilted slam that peels away (Heatblast). */
+  private blazeSlam(text: string, color: number, scale: number, hold: number, y: number, first: boolean): void {
     const streaks = this.scene.add.graphics();
     for (let i = 0; i < 12; i++) {
       streaks.fillStyle(i % 2 ? color : PALETTE.white, 0.5);
       const yy = -22 + Math.random() * 44;
       streaks.fillRect(-GAME_WIDTH / 2 + Math.random() * 60, yy, 120 + Math.random() * 300, 1);
     }
-    const shadow = pixelText(this.scene, 3, 3, `${name}!`, { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.ink });
-    const title = pixelText(this.scene, 0, 0, `${name}!`, { scale: 4, originX: 0.5, originY: 0.5, color });
-    const c = this.scene.add.container(GAME_WIDTH / 2, first ? 110 : 90, [streaks, shadow, title]).setDepth(450);
+    const shadow = pixelText(this.scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(this.scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color });
+    const c = this.scene.add.container(GAME_WIDTH / 2, y, [streaks, shadow, title]).setDepth(450);
     this.current = c;
     c.setScale(3.2).setAngle(-8).setAlpha(0);
     this.scene.tweens.add({ targets: c, scale: 1, angle: -3, alpha: 1, duration: 220, ease: 'Back.easeOut' });
@@ -77,13 +99,88 @@ export class Banner {
       x: GAME_WIDTH / 2 + 30,
       alpha: 0,
       scaleY: 0.2,
-      delay: first ? 1300 : 800,
+      delay: hold,
       duration: 250,
       ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /** Rockets in from the left with afterimages, brakes hard, then shoots off to the right (XLR8). */
+  private blurSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const lines = this.scene.add.graphics();
+    for (let i = 0; i < 18; i++) {
+      lines.fillStyle(i % 3 === 0 ? PALETTE.white : color, 0.35 + Math.random() * 0.4);
+      lines.fillRect(-GAME_WIDTH / 2 - 100 + Math.random() * GAME_WIDTH, -26 + Math.random() * 52, 40 + Math.random() * 180, 1);
+    }
+    const ghosts = [0.45, 0.25, 0.12].map((alpha) => pixelText(this.scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color }).setAlpha(alpha));
+    const shadow = pixelText(this.scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(this.scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.white });
+    title.setTint(PALETTE.white, PALETTE.white, color, color);
+    const c = this.scene.add.container(-GAME_WIDTH / 2, y, [lines, ...ghosts, shadow, title]).setDepth(450);
+    this.current = c;
+    title.setScale(title.scaleX * 1.8, title.scaleY);
+    this.scene.tweens.add({ targets: c, x: GAME_WIDTH / 2, duration: 150, ease: 'Expo.easeOut' });
+    this.scene.tweens.add({ targets: title, scaleX: title.scaleX / 1.8, duration: 260, ease: 'Back.easeOut' });
+    ghosts.forEach((g, i) => {
+      g.setX(-26 * (i + 1));
+      this.scene.tweens.add({ targets: g, x: 0, alpha: 0, duration: 260 + i * 80, ease: 'Quad.easeOut' });
+    });
+    this.scene.tweens.add({ targets: lines, x: -260, duration: hold + 300 });
+    this.scene.tweens.add({
+      targets: c,
+      x: GAME_WIDTH * 1.6,
+      delay: hold,
+      duration: 170,
+      ease: 'Expo.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /** Drops from above and lands like a boulder: the HUD shakes and cracks spread under the letters (Four Arms). */
+  private quakeSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const cracks = this.scene.add.graphics().setAlpha(0);
+    const shadow = pixelText(this.scene, 3, 4, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(this.scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color });
+    const half = title.width / 2;
+    cracks.lineStyle(2, PALETTE.ink, 0.9);
+    for (let i = 0; i < 7; i++) {
+      let cx = -half + (i / 6) * half * 2;
+      let cy = title.height / 2 - 2;
+      cracks.beginPath();
+      cracks.moveTo(cx, cy);
+      for (let k = 0; k < 4; k++) {
+        cx += (Math.random() - 0.5) * 16;
+        cy += 4 + Math.random() * 5;
+        cracks.lineTo(cx, cy);
+      }
+      cracks.strokePath();
+    }
+    cracks.fillStyle(color, 0.25).fillRect(-half - 8, title.height / 2 - 3, half * 2 + 16, 3);
+    const c = this.scene.add.container(GAME_WIDTH / 2, y - 120, [cracks, shadow, title]).setDepth(450);
+    this.current = c;
+    this.scene.tweens.add({
+      targets: c,
+      y,
+      duration: 190,
+      ease: 'Quad.easeIn',
       onComplete: () => {
-        if (this.current === c) this.current = null;
-        c.destroy();
+        shakeCamera(this.scene.cameras.main, 260, 0.016, false);
+        cracks.setAlpha(1);
+        title.setScale(title.scaleX * 1.25, title.scaleY * 0.6);
+        shadow.setScale(shadow.scaleX * 1.25, shadow.scaleY * 0.6);
+        this.scene.tweens.add({ targets: [title, shadow], scaleX: title.scaleX / 1.25, scaleY: title.scaleY / 0.6, duration: 260, ease: 'Back.easeOut' });
+        this.scene.tweens.add({ targets: cracks, alpha: 0, delay: 200, duration: 500 });
       },
+    });
+    this.scene.tweens.add({
+      targets: c,
+      alpha: 0,
+      y: y + 12,
+      delay: hold + 190,
+      duration: 260,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
     });
   }
 

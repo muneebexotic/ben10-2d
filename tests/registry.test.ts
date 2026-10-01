@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { aliensUnlockedBy, allAliens, getAlien, hasAlien, HUMAN_FORM } from '../src/aliens/registry';
-import { ANIMS, ASSETS, BARRICADE_SIZES, barricadeKey } from '../src/scenes/preload/assetKeys';
+import { BARRICADE_SIZES, barricadeKey } from '../src/scenes/preload/assetKeys';
+import { ALL_ANIMS as ANIMS, ALL_ASSETS as ASSETS } from '../src/scenes/preload/catalog';
 import { CHAPTER_1 } from '../src/levels/chapter1';
 
 describe('alien registry', () => {

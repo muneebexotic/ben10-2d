@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { PALETTE } from '../config/palette';
+import { DIAL_UI } from '../config/ui';
 import { TEX } from '../scenes/preload/assetKeys';
+import { getAlien, hasAlien } from '../aliens/registry';
 import type { OmnitrixTick } from '../systems/events';
 import { pixelText } from './text';
 import { blinkOn } from '../systems/Accessibility';
@@ -8,31 +10,64 @@ import { inputMode } from '../systems/InputMode';
 
 const R = 20;
 
-/** The watch face: timer ring (green draining / red in the last 5s / red refilling on cooldown) around a hologram of the selected alien. */
+function iconFor(id: string | null): string {
+  return id && hasAlien(id) ? getAlien(id).hudIcon : TEX.iconBen;
+}
+
+function colorFor(id: string | null): number {
+  return id && hasAlien(id) ? getAlien(id).theme.color : PALETTE.omnitrix;
+}
+
+/**
+ * The watch face: timer ring (green draining / red in the last 5s / red
+ * refilling on cooldown) around a hologram of the alien. Turning the dial
+ * flashes a row of every alien on it; while transformed, a badge shows the
+ * alien a swap would bring in.
+ */
 export class OmnitrixDial {
   private readonly root: Phaser.GameObjects.Container;
   private readonly ring: Phaser.GameObjects.Graphics;
   private readonly glow: Phaser.GameObjects.Image;
   private readonly icon: Phaser.GameObjects.Image;
   private readonly status: Phaser.GameObjects.BitmapText;
+  private readonly pips: Phaser.GameObjects.Graphics;
+  private readonly badge: Phaser.GameObjects.Container;
+  private readonly badgeIcon: Phaser.GameObjects.Image;
+  private readonly carousel: Phaser.GameObjects.Container;
+  private readonly carouselIcons: Phaser.GameObjects.Image[] = [];
+  private readonly carouselName: Phaser.GameObjects.BitmapText;
+  private carouselLeft = 0;
+  private carouselKey = '';
   private tick: OmnitrixTick | null = null;
   private shakeLeft = 0;
   private popScale = 1;
   private visible = false;
+  private shownIcon = '';
 
   constructor(private readonly scene: Phaser.Scene, private readonly x: number, private readonly y: number) {
     this.glow = scene.add.image(0, 0, TEX.soft).setScale(4.5).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setTint(PALETTE.omnitrix);
     const frame = scene.add.image(0, 0, TEX.dialFrame);
     this.ring = scene.add.graphics();
-    this.icon = scene.add.image(0, 0, TEX.iconHeatblast).setTint(PALETTE.omnitrix);
+    this.icon = scene.add.image(0, 0, TEX.iconBen).setTint(PALETTE.omnitrix);
     this.status = pixelText(scene, 0, R + 6, '', { originX: 0.5, originY: 0, color: PALETTE.omnitrix });
-    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, this.status]).setVisible(false);
+    this.pips = scene.add.graphics();
+
+    const badgeBg = scene.add.graphics();
+    badgeBg.fillStyle(PALETTE.ink, 0.9).fillCircle(0, 0, 8);
+    badgeBg.lineStyle(1, PALETTE.omnitrix, 1).strokeCircle(0, 0, 8);
+    this.badgeIcon = scene.add.image(0, 0, TEX.iconBen).setScale(0.6);
+    this.badge = scene.add.container(R - 2, R - 4, [badgeBg, this.badgeIcon]).setVisible(false);
+
+    this.carouselName = pixelText(scene, 0, DIAL_UI.carouselNameY, '', { originX: 0.5, originY: 0, color: PALETTE.white });
+    this.carousel = scene.add.container(0, 0, [this.carouselName]).setVisible(false);
+    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, this.status, this.pips, this.badge]).setVisible(false);
   }
 
   setVisible(visible: boolean, animate: boolean): void {
     if (visible === this.visible) return;
     this.visible = visible;
     this.root.setVisible(visible);
+    if (!visible) this.carousel.setVisible(false);
     if (visible && animate) {
       this.root.setScale(3).setAlpha(0);
       this.scene.tweens.add({ targets: this.root, scale: 1, alpha: 1, duration: 450, ease: 'Back.easeOut' });
@@ -51,6 +86,47 @@ export class OmnitrixDial {
     this.popScale = 1.35;
   }
 
+  /** The dial turned: slide the hologram over and flash the row of aliens. */
+  turned(selectedId: string, direction: 1 | -1): void {
+    this.pop();
+    if (this.tick?.state !== 'active') {
+      this.icon.setX(direction * 10).setAlpha(0.2);
+      this.scene.tweens.add({ targets: this.icon, x: 0, alpha: 1, duration: 160, ease: 'Back.easeOut' });
+    } else {
+      this.badge.setScale(1.6);
+      this.scene.tweens.add({ targets: this.badge, scale: 1, duration: 200, ease: 'Back.easeOut' });
+    }
+    this.showCarousel(selectedId);
+  }
+
+  private showCarousel(selectedId: string): void {
+    const list = this.tick?.unlocked ?? [selectedId];
+    const key = list.join(',');
+    if (key !== this.carouselKey) {
+      for (const img of this.carouselIcons) img.destroy();
+      this.carouselIcons.length = 0;
+      for (const id of list) {
+        const img = this.scene.add.image(0, 0, iconFor(id));
+        this.carousel.add(img);
+        this.carouselIcons.push(img);
+      }
+      this.carouselKey = key;
+    }
+    const span = (list.length - 1) * DIAL_UI.carouselSpacing;
+    const cx = Math.max(this.x, span / 2 + 10);
+    this.carousel.setPosition(cx, this.y + DIAL_UI.carouselY);
+    list.forEach((id, i) => {
+      const img = this.carouselIcons[i];
+      const selected = id === selectedId;
+      img.setPosition(i * DIAL_UI.carouselSpacing - span / 2, 0);
+      img.setScale(selected ? 1.25 : 0.8).setTint(selected ? colorFor(id) : PALETTE.uiDim).setAlpha(selected ? 1 : 0.55);
+    });
+    const name = hasAlien(selectedId) ? getAlien(selectedId).name : '';
+    this.carouselName.setText(name).setTint(colorFor(selectedId)).setX(0);
+    this.carousel.setVisible(this.visible).setAlpha(1);
+    this.carouselLeft = DIAL_UI.carouselMs;
+  }
+
   update(dtMs: number, now: number): void {
     const t = this.tick;
     if (!t || !this.visible) return;
@@ -58,6 +134,12 @@ export class OmnitrixDial {
     this.popScale += (1 - this.popScale) * Math.min(1, dtMs / 90);
     const sx = this.shakeLeft > 0 ? (Math.random() - 0.5) * 4 : 0;
     this.root.setPosition(this.x + sx, this.y).setScale(this.popScale);
+
+    if (this.carouselLeft > 0) {
+      this.carouselLeft -= dtMs;
+      if (this.carouselLeft < DIAL_UI.carouselFadeMs) this.carousel.setAlpha(Math.max(0, this.carouselLeft / DIAL_UI.carouselFadeMs));
+      if (this.carouselLeft <= 0) this.carousel.setVisible(false);
+    }
 
     const g = this.ring;
     g.clear();
@@ -67,6 +149,9 @@ export class OmnitrixDial {
     g.strokePath();
 
     const start = -Math.PI / 2;
+    const active = t.state === 'active';
+    const shownId = active ? t.activeId : t.selectedId;
+    const alienColor = colorFor(shownId);
     let color: number = PALETTE.omnitrix;
     let fraction = 1;
     let status = inputMode.current === 'touch' ? 'READY!' : 'READY [T]';
@@ -79,18 +164,16 @@ export class OmnitrixDial {
       status = 'JAMMED';
       iconColor = blinkOn(now, 120) ? PALETTE.jammerDark : PALETTE.jammer;
       glowAlpha = 0.2;
-    } else if (t.state === 'active') {
-      fraction = t.timeRatio;
-      const secs = Math.ceil(t.timeRemainingMs / 1000);
-      status = `${secs}S`;
-      iconColor = PALETTE.fire2;
+    } else if (active) {
+      fraction = t.frozen ? 1 : t.timeRatio;
+      status = t.frozen ? 'NO LIMIT' : `${Math.ceil(t.timeRemainingMs / 1000)}S`;
+      iconColor = alienColor;
+      color = PALETTE.omnitrix;
       if (t.warning) {
         const blink = blinkOn(now, 125);
         color = blink ? PALETTE.enemy : PALETTE.white;
-        iconColor = blink ? PALETTE.enemy : PALETTE.fire1;
+        iconColor = blink ? PALETTE.enemy : alienColor;
         glowAlpha = blink ? 0.6 : 0.2;
-      } else {
-        color = PALETTE.omnitrix;
       }
     } else if (t.state === 'cooldown') {
       fraction = t.cooldownProgress;
@@ -100,20 +183,53 @@ export class OmnitrixDial {
       glowAlpha = 0.12;
     }
 
+    const iconKey = iconFor(shownId);
+    if (iconKey !== this.shownIcon) {
+      this.icon.setTexture(iconKey);
+      this.shownIcon = iconKey;
+    }
+
     g.lineStyle(3, color, 1);
     g.beginPath();
     g.arc(0, 0, R, start, start + Math.PI * 2 * fraction, false);
     g.strokePath();
-    if (t.state === 'active' || t.state === 'cooldown') {
+    if ((active && !t.frozen) || t.state === 'cooldown') {
       const a = start + Math.PI * 2 * fraction;
       g.fillStyle(PALETTE.white, 1);
       g.fillCircle(Math.cos(a) * R, Math.sin(a) * R, 1.5);
     }
 
-    this.glow.setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' ? PALETTE.enemy : t.warning ? PALETTE.enemy : PALETTE.omnitrix).setAlpha(glowAlpha);
+    this.glow.setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : active ? alienColor : PALETTE.omnitrix).setAlpha(glowAlpha);
     this.icon.setTint(iconColor);
-    this.status.setText(status).setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : t.state === 'active' ? PALETTE.fire1 : PALETTE.omnitrix);
+    this.status.setText(status).setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : active ? alienColor : PALETTE.omnitrix);
     if (t.state === 'ready' && !t.jammed) this.status.setAlpha(0.7 + Math.sin(now * 0.008) * 0.3);
     else this.status.setAlpha(1);
+
+    this.updateBadge(t, now);
+    this.drawPips(t);
+  }
+
+  /** While transformed with a different alien on the dial: the swap target, pulsing when a swap is possible. */
+  private updateBadge(t: OmnitrixTick, now: number): void {
+    const show = t.state === 'active' && !t.jammed && t.selectedId !== null && t.selectedId !== t.activeId;
+    this.badge.setVisible(show);
+    if (!show) return;
+    this.badgeIcon.setTexture(iconFor(t.selectedId)).setTint(t.canSwap ? colorFor(t.selectedId) : PALETTE.uiDim);
+    this.badge.setAlpha(t.canSwap ? 0.8 + Math.sin(now * 0.012) * 0.2 : 0.5);
+  }
+
+  /** One dot per alien on the dial; the selected one is lit. */
+  private drawPips(t: OmnitrixTick): void {
+    const g = this.pips;
+    g.clear();
+    const n = t.unlocked.length;
+    if (n < 2 || this.carouselLeft > 0) return;
+    const index = t.selectedId ? t.unlocked.indexOf(t.selectedId) : -1;
+    const y = R + 17;
+    for (let i = 0; i < n; i++) {
+      const x = (i - (n - 1) / 2) * 5;
+      g.fillStyle(i === index ? colorFor(t.unlocked[i]) : PALETTE.inkSoft, 1);
+      g.fillRect(x - 1, y, 3, 3);
+    }
   }
 }

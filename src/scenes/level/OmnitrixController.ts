@@ -1,5 +1,5 @@
 import { OMNITRIX_WARNING_MS, getDifficulty } from '../../config/difficulty';
-import { PERFECT_TRANSFORM } from '../../config/omnitrix';
+import { PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
 import { PALETTE } from '../../config/palette';
 import { getAlien } from '../../aliens/registry';
 import type { Player } from '../../entities/Player';
@@ -20,12 +20,14 @@ export class OmnitrixController {
   acquired = false;
   jammed = false;
   transformations = 0;
+  swaps = 0;
   perfects = 0;
   private deniedFlashUntil = 0;
   private pendingPerfect = false;
   onTransformed: ((alienId: string, first: boolean) => void) | null = null;
+  onSwapped: ((alienId: string) => void) | null = null;
   onReverted: ((reason: RevertReason) => void) | null = null;
-  onDenied: ((reason: 'cooldown' | 'jammed') => void) | null = null;
+  onDenied: ((reason: 'cooldown' | 'jammed' | 'lowTime') => void) | null = null;
 
   constructor(
     unlocked: string[],
@@ -33,6 +35,7 @@ export class OmnitrixController {
     private readonly sequence: TransformSequence,
     private readonly fx: Fx,
     private readonly perfect: PerfectWindow,
+    opts: { wrongTransformChance?: number } = {},
   ) {
     const d = getDifficulty();
     this.omnitrix = new Omnitrix(
@@ -40,7 +43,10 @@ export class OmnitrixController {
         transformDurationMs: d.transformDurationMs,
         cooldownMs: d.cooldownMs,
         warningMs: OMNITRIX_WARNING_MS,
-        wrongTransformChance: d.wrongTransformChance,
+        wrongTransformChance: opts.wrongTransformChance ?? d.wrongTransformChance,
+        swapEnabled: SWAP.enabled,
+        swapCostMs: SWAP.costMs,
+        swapLockoutMs: SWAP.lockoutMs,
       },
       unlocked,
     );
@@ -62,13 +68,22 @@ export class OmnitrixController {
       return;
     }
     const state = this.omnitrix.state;
+    const lead = Math.min(c.transformLeadMs, PERFECT_TRANSFORM.touchLeadCapMs);
     if (state === 'cooldown') this.deny('cooldown', now);
     else if (state === 'ready') {
       // The very first transform is the tutorial moment; perfects start after it.
-      const lead = Math.min(c.transformLeadMs, PERFECT_TRANSFORM.touchLeadCapMs);
       this.pendingPerfect = this.transformations > 0 && this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
       this.handle(this.omnitrix.transform());
       this.pendingPerfect = false;
+    } else if (state === 'active') {
+      const denial = this.omnitrix.swapDenial();
+      if (denial === null) {
+        this.pendingPerfect = this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
+        this.handle(this.omnitrix.swap());
+        this.pendingPerfect = false;
+      } else if (denial === 'lowTime') {
+        this.deny('lowTime', now);
+      }
     }
   }
 
@@ -86,6 +101,9 @@ export class OmnitrixController {
       cooldownProgress: o.cooldownProgress,
       warning: o.isWarning,
       jammed: this.jammed,
+      unlocked: o.unlockedAliens,
+      canSwap: o.canSwap(),
+      frozen: o.timerFrozen,
     });
   }
 
@@ -107,12 +125,16 @@ export class OmnitrixController {
           const alien = getAlien(e.alienId);
           const perfect = this.pendingPerfect;
           this.sequence.transform(alien, { first: this.transformations === 1, wrong: e.wrong, perfect });
-          if (perfect) {
-            this.perfects++;
-            this.omnitrix.extend(PERFECT_TRANSFORM.bonusMs);
-            EventBus.emit('omnitrix:perfect', { bonusMs: PERFECT_TRANSFORM.bonusMs, count: this.perfects });
-          }
+          if (perfect) this.rewardPerfect();
           this.onTransformed?.(e.alienId, this.transformations === 1);
+          break;
+        }
+        case 'swapped': {
+          this.swaps++;
+          const perfect = this.pendingPerfect;
+          this.sequence.swap(getAlien(e.alienId), { wrong: e.wrong, perfect });
+          if (perfect) this.rewardPerfect();
+          this.onSwapped?.(e.alienId);
           break;
         }
         case 'warning':
@@ -136,7 +158,13 @@ export class OmnitrixController {
     }
   }
 
-  private deny(reason: 'cooldown' | 'jammed', now: number): void {
+  private rewardPerfect(): void {
+    this.perfects++;
+    this.omnitrix.extend(PERFECT_TRANSFORM.bonusMs);
+    EventBus.emit('omnitrix:perfect', { bonusMs: PERFECT_TRANSFORM.bonusMs, count: this.perfects });
+  }
+
+  private deny(reason: 'cooldown' | 'jammed' | 'lowTime', now: number): void {
     if (now < this.deniedFlashUntil) return;
     this.deniedFlashUntil = now + 250;
     playSfx(reason === 'jammed' ? 'jammed' : 'denied');

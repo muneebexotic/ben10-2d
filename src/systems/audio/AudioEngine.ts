@@ -34,8 +34,11 @@ export class AudioEngine {
   master!: GainNode;
   sfxBus!: GainNode;
   musicBus!: GainNode;
+  /** Held sounds (charge hum, XLR8's wind) go through here so pausing can silence them. */
+  loopBus!: GainNode;
   private noiseBuffer: AudioBuffer | null = null;
   private _muted = false;
+  private loopsMuted = false;
 
   get ready(): boolean {
     return this.ctx !== null && this.ctx.state === 'running';
@@ -68,6 +71,9 @@ export class AudioEngine {
         this.musicBus = this.ctx.createGain();
         this.musicBus.gain.value = AUDIO.musicVolume;
         this.musicBus.connect(this.master);
+        this.loopBus = this.ctx.createGain();
+        this.loopBus.gain.value = this.loopsMuted ? 0 : 1;
+        this.loopBus.connect(this.sfxBus);
         this.noiseBuffer = this.makeNoise();
       }
       if (this.ctx.state === 'suspended') void this.ctx.resume();
@@ -81,6 +87,14 @@ export class AudioEngine {
     if (!this.ctx) return;
     this.master.gain.cancelScheduledValues(this.now);
     this.master.gain.setTargetAtTime(muted ? 0 : AUDIO.masterVolume, this.now, 0.03);
+  }
+
+  /** Silences held sounds while the game is paused (they keep their own state and resume with it). */
+  setLoopsMuted(muted: boolean): void {
+    this.loopsMuted = muted;
+    if (!this.ctx) return;
+    this.loopBus.gain.cancelScheduledValues(this.now);
+    this.loopBus.gain.setTargetAtTime(muted ? 0 : 1, this.now, 0.02);
   }
 
   tone(o: ToneOptions): void {

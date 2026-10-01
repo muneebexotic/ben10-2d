@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 import { PALETTE } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import { HEART_FRAMES } from '../scenes/preload/uiArt';
+import type { FormTheme } from '../aliens/types';
 import { pixelText } from './text';
 
-/** Hearts for Ben, plus a segmented heat shield bar while transformed. */
+/** Hearts for Ben, plus a segmented alien shield bar (in the alien's colours) while transformed. */
 export class HealthDisplay {
   private readonly hearts: Phaser.GameObjects.Image[] = [];
   private readonly shieldLabel: Phaser.GameObjects.BitmapText;
@@ -15,6 +16,7 @@ export class HealthDisplay {
   private formVisible = false;
   private shakeLeft = 0;
   private lowPulse = 0;
+  private theme: Pick<FormTheme, 'color' | 'light' | 'dark'> = { color: PALETTE.fire2, light: PALETTE.fire0, dark: 0x3a1a14 };
 
   constructor(private readonly scene: Phaser.Scene, private readonly x: number, private readonly y: number, max: number) {
     for (let i = 0; i < max; i++) {
@@ -46,10 +48,17 @@ export class HealthDisplay {
     }
   }
 
-  setForm(hp: number, max: number, visible: boolean, delta: number): void {
+  setForm(hp: number, max: number, visible: boolean, delta: number, theme: FormTheme): void {
     this.formHp = hp;
     this.formMax = max;
     this.formVisible = visible;
+    if (visible && theme.shieldLabel !== this.shieldLabel.text) {
+      this.shieldLabel.setText(theme.shieldLabel);
+    }
+    if (visible) {
+      this.theme = theme;
+      this.shieldLabel.setTint(theme.color);
+    }
     if (delta < 0 && visible) this.shakeLeft = 250;
     this.shieldLabel.setVisible(visible && this.hearts[0].visible);
   }
@@ -67,18 +76,21 @@ export class HealthDisplay {
     const g = this.shield;
     g.clear();
     if (!this.formVisible || !this.hearts[0].visible || this.formMax <= 0) return;
-    const bx = this.x + 24 + sx;
+    const bx = this.x + Math.max(24, this.shieldLabel.width + 4) + sx;
     const by = this.y + 13;
     const seg = 7;
     for (let i = 0; i < this.formMax; i++) {
       g.fillStyle(PALETTE.ink, 1);
       g.fillRect(bx + i * (seg + 1) - 1, by - 1, seg + 2, 7);
       const filled = this.formHp - i;
-      const color = filled >= 1 ? PALETTE.fire2 : filled > 0 ? PALETTE.fire3 : 0x3a1a14;
-      g.fillStyle(color, 1);
+      g.fillStyle(this.theme.dark, 1);
       g.fillRect(bx + i * (seg + 1), by, seg, 5);
+      if (filled > 0) {
+        g.fillStyle(this.theme.color, 1);
+        g.fillRect(bx + i * (seg + 1), by, filled >= 1 ? seg : Math.ceil(seg / 2), 5);
+      }
       if (filled >= 1) {
-        g.fillStyle(PALETTE.fire0, 0.8);
+        g.fillStyle(this.theme.light, 0.8);
         g.fillRect(bx + i * (seg + 1), by, seg, 1);
       }
     }

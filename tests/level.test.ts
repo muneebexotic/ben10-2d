@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { CHAPTER_1 } from '../src/levels/chapter1';
 import { autotile, buildCells, cellAt } from '../src/levels/buildLevel';
 import { CELL, FRAME, isSolidCell } from '../src/levels/tiles';
-import { canReach, HEATBLAST_CAPS, HUMAN_CAPS, type Pos } from '../src/levels/reachability';
+import { canReach, HUMAN_CAPS, type Pos } from '../src/levels/reachability';
 import { availableCards, breaksCrackedWall, lockedCards } from '../src/levels/secrets';
-import { aliensUnlockedBy } from '../src/aliens/registry';
+import { aliensUnlockedBy, getAlien } from '../src/aliens/registry';
+
+const HEATBLAST_CAPS = getAlien('heatblast').reach;
 
 const level = CHAPTER_1;
 const grid = buildCells(level);

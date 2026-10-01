@@ -13,7 +13,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import { music } from '../../systems/audio/Music';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { a11y, flashCamera } from '../../systems/Accessibility';
-import { PERFECT_TRANSFORM } from '../../config/omnitrix';
+import { PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
 
 export interface SequenceDeps {
   scene: Phaser.Scene;
@@ -79,32 +79,73 @@ export class TransformSequence {
       this.shockwaveDistortion(opts.first ? 1.32 : 1.2);
       fx.rays(px, py, PALETTE.omnitrix, opts.first ? 240 : 170, opts.first ? 900 : 600);
       fx.ring(px, py, PALETTE.omnitrixGlow, 90, 420);
-      fx.ring(px, py, alien.color, 60, 520);
+      fx.ring(px, py, alien.theme.color, 60, 520);
       fx.flash(px, py, PALETTE.omnitrix, 70, 380);
       fx.burst('green', px, py, 40);
-      fx.burst(alien.id === 'heatblast' ? 'fire' : 'white', px, py, 30);
+      fx.burst(alien.theme.burst, px, py, 30);
       fx.burst('ember', px, py, 14);
       fx.light(px, py, 260, PALETTE.omnitrix, 700);
       fx.shake(opts.first ? FX.shakeHeavy : FX.shakeMedium, 280);
       fx.hitStop(60);
       playSfx('transformBoom');
+      if (alien.audio.transform) playSfx(alien.audio.transform);
 
       // The transformation shockwave shoves nearby drones away: transforming is also a panic button.
       const reflected = opts.perfect ? this.perfectBurst(px, py) : 0;
       if (!opts.perfect) this.d.combat.blast(px, py, 72, { damage: 1, kind: 'transform', x: px, y: py, knockback: 340 }, true);
 
       this.zoomTo(1, CAMERA.transformZoomMs, 'Back.easeOut');
+      music.setLayer(alien.audio.music);
       music.setIntensity(1);
-      EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: opts.wrong, first: opts.first });
+      EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: opts.wrong, first: opts.first, swap: false });
       const line = opts.wrong
         ? 'AW MAN, NOT THIS GUY!'
         : opts.first
-          ? "WHOA! I'M ON FIRE! ...LITERALLY!"
+          ? alien.quips.first ?? pick(alien.quips.transform)
           : opts.perfect
             ? reflected > 0 ? 'RETURN TO SENDER!' : pick(PERFECT_QUIPS)
             : pick(alien.quips.transform);
       if (line && (opts.first || opts.wrong || opts.perfect || Math.random() < 0.45)) this.d.speech.show(line, opts.first ? 2200 : 1500);
     });
+  }
+
+  /**
+   * Mid-transformation swap: no wind-up, the new alien bursts out of the old
+   * one and arrives with its entrance move. Fast enough to use in a fight.
+   */
+  swap(alien: FormDefinition, opts: { wrong: boolean; perfect: boolean }): void {
+    const { scene, player, fx, time } = this.d;
+    const px = player.x;
+    const py = player.centerY;
+    player.setForm(alien, player.shieldRatio);
+    player.setInvulnerable(SWAP.invulnMs);
+    player.squash(1.45, 0.65);
+    this.busyUntil = scene.time.now + SWAP.busyMs;
+
+    fx.hitStop(SWAP.hitStopMs);
+    time.slowMo(SWAP.slowMoScale, SWAP.slowMoMs, 160);
+    fx.flash(px, py, PALETTE.omnitrix, 46, 260);
+    fx.ring(px, py, PALETTE.omnitrix, 40, 260);
+    fx.ring(px, py, alien.theme.color, 62, 380);
+    fx.burst('green', px, py, 18);
+    fx.burst(alien.theme.burst, px, py, 26);
+    fx.light(px, py, 180, alien.theme.color, 420);
+    fx.shake(FX.shakeLight, 140);
+    EventBus.emit('hud:omnitrixSymbol', { color: opts.perfect ? PALETTE.gold : alien.theme.color, big: false });
+    playSfx('swap');
+    if (alien.audio.transform) playSfx(alien.audio.transform, 0.7);
+    music.setLayer(alien.audio.music);
+
+    const reflected = opts.perfect ? this.perfectBurst(px, py) : 0;
+    if (opts.perfect) playSfx('perfect');
+    player.swapIn();
+    EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: opts.wrong, first: false, swap: true });
+    const line = opts.wrong
+      ? 'WAIT, WRONG GUY!'
+      : opts.perfect
+        ? reflected > 0 ? 'RETURN TO SENDER!' : pick(PERFECT_QUIPS)
+        : alien.quips.swap?.length ? pick(alien.quips.swap) : '';
+    if (line && (opts.wrong || opts.perfect || Math.random() < SWAP.quipChance)) this.d.speech.show(line, 1300);
   }
 
   /** Bigger shockwave, enemy shots turned around, a slow-motion beat and a gold supernova. */
@@ -142,6 +183,7 @@ export class TransformSequence {
     fx.shake(FX.shakeMedium, 180);
     time.slowMo(0.45, 160, 160);
     playSfx(reason === 'jammed' ? 'jammed' : 'revert');
+    music.setLayer(null);
     music.setIntensity(0);
     const line = reason === 'jammed' ? 'HEY! GIVE IT BACK!' : pick(HUMAN_FORM.quips.revert);
     this.d.speech.show(line, 1500);

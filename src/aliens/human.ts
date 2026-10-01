@@ -1,8 +1,9 @@
-import { HUMAN_COMBAT, HUMAN_MOTOR, PLAYER } from '../config/player';
+import { HUMAN_COMBAT, HUMAN_FEEL, HUMAN_MOTOR } from '../config/player';
 import { FX } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { BEN_FRAME } from '../scenes/preload/characters';
 import { TEX } from '../scenes/preload/assetKeys';
+import { HUMAN_CAPS } from '../levels/reachability';
 import type { AbilityContext, FormAbilities, FormDefinition } from './types';
 import type { Rect } from '../entities/types';
 
@@ -64,7 +65,7 @@ class HumanAbilities implements FormAbilities {
     a.x = player.facing > 0 ? player.x + 2 : player.x - 2 - PUNCH.reach;
     a.y = player.centerY - PUNCH.height / 2 - 2;
 
-    const parried = ctx.combat.parry(a, player.facing);
+    const parried = ctx.combat.parry(a, player.facing, PUNCH.parrySpeedMultiplier, PUNCH.parryDamage);
     if (parried > 0) {
       ctx.sfx('parry');
       ctx.fx.hitStop(FX.hitStopHeavyMs);
@@ -119,13 +120,26 @@ export const HUMAN_FORM: FormDefinition = {
   animPrefix: 'ben',
   frame: { w: BEN_FRAME.w, h: BEN_FRAME.h, feetY: 27 },
   motor: HUMAN_MOTOR,
+  feel: HUMAN_FEEL,
   maxFormHealth: 0,
-  light: { radius: PLAYER.lightRadiusWithWatch, color: 0xb8ffc8 },
-  color: PALETTE.omnitrix,
+  theme: {
+    color: PALETTE.omnitrix,
+    light: PALETTE.omnitrixGlow,
+    dark: PALETTE.omnitrixDeep,
+    burst: 'green',
+    shieldLabel: '',
+    slam: 'plain',
+  },
   hudIcon: TEX.iconBen,
+  touchIcons: { attack: TEX.touchPunch, special: TEX.touchRoll },
   quips: {
     transform: [],
     revert: ['AW MAN!', 'NOT NOW!', 'COME ON, COME ON!', 'SERIOUSLY?!', 'UH OH...', 'STUPID WATCH!'],
   },
+  tips: {},
+  audio: { music: null },
+  // Ben's sprites are part of the shared asset map (he exists before the Omnitrix does).
+  art: { assets: [], anims: [] },
+  reach: HUMAN_CAPS,
   createAbilities: () => new HumanAbilities(),
 };

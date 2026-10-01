@@ -20,8 +20,9 @@ export class PlayerVisual {
   private blink = false;
   private currentAnim = '';
   private spin = 0;
+  private readonly ghosts: Phaser.GameObjects.Image[] = [];
 
-  constructor(scene: Phaser.Scene, x: number, y: number, form: FormDefinition, private prefix: string) {
+  constructor(private readonly scene: Phaser.Scene, x: number, y: number, form: FormDefinition, private prefix: string) {
     this.sprite = scene.add.sprite(x, y, form.texture, 0).setDepth(DEPTH.player);
     this.applyForm(form, prefix);
   }
@@ -30,9 +31,33 @@ export class PlayerVisual {
     this.prefix = prefix;
     this.sprite.setTexture(form.texture, 0);
     // Aliens made of fire (or anything glowing) render above the night lightmap.
-    this.sprite.setDepth(form.kind === 'alien' ? DEPTH.emissive - 2 : DEPTH.player);
+    this.sprite.setDepth(form.feel.emissive ? DEPTH.emissive - 2 : DEPTH.player);
     this.sprite.setOrigin(0.5, form.frame.feetY / form.frame.h);
     this.currentAnim = '';
+  }
+
+  /** A tinted copy of the current frame that fades where it was left (pooled). */
+  afterimage(color: number, alpha: number, lifeMs: number): void {
+    const s = this.sprite;
+    let ghost = this.ghosts.find((g) => !g.visible);
+    if (!ghost) {
+      ghost = this.scene.add.image(0, 0, s.texture.key);
+      this.ghosts.push(ghost);
+    }
+    ghost
+      .setTexture(s.texture.key, s.frame.name)
+      .setOrigin(s.originX, s.originY)
+      .setPosition(s.x, s.y)
+      .setScale(s.scaleX, s.scaleY)
+      .setFlipX(s.flipX)
+      .setRotation(s.rotation)
+      .setDepth(s.depth - 1)
+      .setTint(color)
+      .setTintMode(Phaser.TintModes.FILL)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setAlpha(alpha)
+      .setVisible(true);
+    this.scene.tweens.add({ targets: ghost, alpha: 0, duration: lifeMs, ease: 'Quad.easeIn', onComplete: () => ghost.setVisible(false) });
   }
 
   setPrefix(prefix: string): void {

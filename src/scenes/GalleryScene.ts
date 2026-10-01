@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { ASSETS } from './preload/assetKeys';
+import { ALL_ASSETS } from './preload/catalog';
 import { SCENES } from './SceneKeys';
 import { pixelText } from '../ui/text';
 import { PALETTE } from '../config/palette';
@@ -17,7 +17,7 @@ export class GalleryScene extends Phaser.Scene {
     let rowH = 0;
     const page = Number(new URLSearchParams(window.location.search).get('page') ?? 0);
     const scale = 2;
-    const items = ASSETS.filter((a) => a.frameWidth * a.frames * scale < 1200);
+    const items = ALL_ASSETS.filter((a) => a.frameWidth * a.frames * scale < 1200);
     const perPage = Number(new URLSearchParams(window.location.search).get('per') ?? 40);
     for (const asset of items.slice(page * perPage, page * perPage + perPage)) {
       const w = Math.min(asset.frameWidth * asset.frames, 600) * scale;

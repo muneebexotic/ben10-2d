@@ -10,6 +10,7 @@ import type {
   FormDefinition,
   FxApi,
   PlayerHandle,
+  WorldApi,
 } from '../aliens/types';
 import { HUMAN_FORM } from '../aliens/registry';
 import { emptyControls, type Controls } from '../systems/InputMap';
@@ -21,13 +22,14 @@ import {
   stepMotor,
   type MotorState,
 } from '../systems/PlatformerMotor';
-import { playSfx, type SfxName } from '../systems/audio/Sfx';
+import { playSfx, type SfxName, type SoundRecipe } from '../systems/audio/Sfx';
 import { PlayerVisual } from './PlayerVisual';
 import type { Rect } from './types';
 
 export interface PlayerServices {
   combat: CombatApi;
   fx: FxApi;
+  world: WorldApi;
   notify(action: AbilityAction): void;
   damageMultiplier: number;
 }
@@ -78,6 +80,7 @@ export class Player implements PlayerHandle {
   private deathVy = 0;
   private safeTimer = 0;
   private stepTimer = 0;
+  private onWaterLast = false;
   private controls: Controls = emptyControls();
   private readonly idleControls = emptyControls();
   private readonly ctx: AbilityContext;
@@ -107,7 +110,8 @@ export class Player implements PlayerHandle {
       player: this,
       combat: services.combat,
       fx: services.fx,
-      sfx: (name: SfxName, v?: number, p?: number) => playSfx(name, v, p),
+      world: services.world,
+      sfx: (sound: SfxName | SoundRecipe, v?: number, p?: number) => playSfx(sound, v, p),
       get now() {
         return self.now;
       },
@@ -142,6 +146,18 @@ export class Player implements PlayerHandle {
 
   get grounded(): boolean {
     return this.body.blocked.down || this.body.touching.down;
+  }
+
+  get onWater(): boolean {
+    return this.grounded && this.isWaterSurface?.(this.x, this.y) === true;
+  }
+
+  setFacing(dir: 1 | -1): void {
+    this.facing = dir;
+  }
+
+  afterimage(color: number, alpha: number, lifeMs: number): void {
+    this.visual.afterimage(color, alpha, lifeMs);
   }
 
   setVelocity(vx: number, vy: number): void {
@@ -183,6 +199,16 @@ export class Player implements PlayerHandle {
     return this.form.kind === 'alien';
   }
 
+  /** Height of the head above the feet, for speech bubbles. */
+  get headHeight(): number {
+    return this.form.frame.feetY + 3;
+  }
+
+  /** The form can run on water right now (asked by the level's water-surface collider). */
+  canRunOnWater(): boolean {
+    return !this.dead && this.body.velocity.y >= 0 && (this.abilities.canRunOnWater?.(this.ctx) ?? false);
+  }
+
   get invulnerable(): boolean {
     return this.now < this.invulnUntil || (this.abilities.isInvulnerable?.() ?? false);
   }
@@ -195,13 +221,24 @@ export class Player implements PlayerHandle {
     return out;
   }
 
-  setForm(form: FormDefinition): void {
+  /** `shieldRatio` keeps the alien shield proportional when the Omnitrix swaps forms mid-transformation. */
+  setForm(form: FormDefinition, shieldRatio = 1): void {
     this.abilities.onExit?.(this.ctx);
     this.form = form;
     this.abilities = form.createAbilities();
-    this.formHp = form.maxFormHealth;
+    this.formHp = Math.max(form.maxFormHealth > 0 ? 0.5 : 0, Math.round(form.maxFormHealth * shieldRatio * 2) / 2);
     this.visual.applyForm(form, this.animPrefix());
     this.abilities.onEnter?.(this.ctx);
+  }
+
+  /** Fraction of the alien shield left (1 for human Ben). */
+  get shieldRatio(): number {
+    return this.form.maxFormHealth > 0 ? this.formHp / this.form.maxFormHealth : 1;
+  }
+
+  /** The entrance move after a mid-transformation swap. */
+  swapIn(): void {
+    this.abilities.onSwapIn?.(this.ctx);
   }
 
   giveWatch(): void {
@@ -259,14 +296,14 @@ export class Player implements PlayerHandle {
       if (moveX !== 0) this.facing = moveX;
     }
 
-    const scale = gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING);
+    const scale = gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale;
     this.body.setGravityY(PHYSICS.gravity * (scale - 1));
-    const glide = this.abilities.glideMaxFall?.(this.ctx) ?? null;
-    const maxFall = glide ?? PLAYER.maxFallSpeed;
+    const maxFall = this.abilities.maxFallSpeed?.(this.ctx) ?? PLAYER.maxFallSpeed;
     if (this.body.velocity.y > maxFall) this.body.setVelocityY(maxFall);
 
     this.trackSafeGround(dtMs, grounded);
     this.footsteps(dtMs, grounded, moveX);
+    this.onWaterLast = this.onWater;
     if (!grounded) this.fallSpeed = Math.max(0, this.body.velocity.y);
     this.wasGrounded = grounded;
   }
@@ -276,6 +313,9 @@ export class Player implements PlayerHandle {
 
   /** Set by the Level: false where respawning would be unsafe (e.g. under water). */
   isSafeSpot: ((x: number, feetY: number) => boolean) | null = null;
+
+  /** Set by the Level: true when feet at (x, feetY) rest on a water surface. */
+  isWaterSurface: ((x: number, feetY: number) => boolean) | null = null;
 
   /** After physics: move the sprite to the body and pick an animation. */
   syncVisual(dtMs: number, visualNow: number): void {
@@ -313,8 +353,8 @@ export class Player implements PlayerHandle {
 
   private onJump(): void {
     this.visual.squash(FX.stretchJump.x, FX.stretchJump.y);
-    this.services.fx.burst('dust', this.x, this.y, 4);
-    playSfx('jump', 1, this.isAlien ? 0.8 : 1);
+    this.services.fx.burst(this.onWaterLast ? 'splash' : 'dust', this.x, this.y, 4);
+    playSfx('jump', 1, this.form.feel.jumpPitch);
   }
 
   private onLand(): void {
@@ -322,12 +362,8 @@ export class Player implements PlayerHandle {
     const k = 0.4 + impact * 0.6;
     this.visual.squash(1 + (FX.squashLand.x - 1) * k, 1 + (FX.squashLand.y - 1) * k);
     this.services.fx.burst('dust', this.x, this.y, 2 + Math.round(impact * 5));
-    if (this.isAlien && impact > 0.8) {
-      this.services.fx.burst('ember', this.x, this.y, 6);
-      this.services.fx.shake(FX.shakeLight, 90);
-    }
     playSfx('land', 0.5 + impact * 0.5);
-    this.abilities.onLand?.(this.ctx);
+    this.abilities.onLand?.(this.ctx, impact);
   }
 
   private footsteps(dtMs: number, grounded: boolean, moveX: number): void {
@@ -337,15 +373,15 @@ export class Player implements PlayerHandle {
     }
     this.stepTimer -= dtMs;
     if (this.stepTimer <= 0) {
-      this.stepTimer = this.isAlien ? 230 : 260;
-      playSfx('step', this.isAlien ? 1.4 : 1);
-      if (this.isAlien) this.services.fx.burst('ember', this.x, this.y, 2);
+      this.stepTimer = this.form.feel.stepMs;
+      playSfx('step', this.form.feel.stepVolume);
+      this.abilities.onStep?.(this.ctx);
     }
   }
 
   private trackSafeGround(dtMs: number, grounded: boolean): void {
     this.safeTimer -= dtMs;
-    if (!grounded || this.safeTimer > 0) return;
+    if (!grounded || this.safeTimer > 0 || this.onWater) return;
     this.safeTimer = PLAYER.safeGroundEveryMs;
     if (this.isSafeSpot && !this.isSafeSpot(this.x, this.y)) return;
     this.lastSafe.x = this.x;
@@ -354,14 +390,19 @@ export class Player implements PlayerHandle {
 
   // ------------------------------------------------------------ Damage
 
-  takeDamage(amount: number, sourceX: number): DamageOutcome {
-    if (this.dead || this.invulnerable || !this.controlsEnabled) return NO_DAMAGE;
+  takeDamage(amount: number, sourceX: number, source: 'shot' | 'contact' = 'contact'): DamageOutcome {
+    if (this.dead || !this.controlsEnabled) return NO_DAMAGE;
+    if (this.invulnerable) {
+      if (this.abilities.isInvulnerable?.()) this.abilities.onDodge?.(this.ctx, source);
+      return NO_DAMAGE;
+    }
     const dmg = Math.max(0.5, Math.round(amount * this.services.damageMultiplier * 2) / 2);
     const dir = this.x >= sourceX ? 1 : -1;
+    const feel = this.form.feel;
 
-    this.body.setVelocity(dir * PLAYER.hurtKnockback.x, PLAYER.hurtKnockback.y);
+    this.body.setVelocity(dir * PLAYER.hurtKnockback.x * feel.knockbackScale, PLAYER.hurtKnockback.y * feel.knockbackScale);
     markLaunched(this.motor, false);
-    this.stunUntil = this.now + PLAYER.hurtStunMs;
+    this.stunUntil = this.now + PLAYER.hurtStunMs * feel.stunScale;
     this.invulnUntil = this.now + PLAYER.hurtInvulnMs;
     this.visual.flash(PALETTE.white, 90);
     this.services.fx.burst('spark', this.x, this.centerY, 8);

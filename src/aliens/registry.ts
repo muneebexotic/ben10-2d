@@ -3,8 +3,9 @@ import { HEATBLAST_FORM } from './heatblast';
 import { HUMAN_FORM } from './human';
 
 /**
- * Every alien the Omnitrix can become. Adding an alien = one new file + one line here;
- * Player and Omnitrix code never change.
+ * Every alien the Omnitrix can become, in dial order. Adding an alien = one new
+ * module in src/aliens/ + one line here; Player, Omnitrix, HUD, touch controls,
+ * music and the asset map all read from this list.
  */
 const ALIENS: readonly FormDefinition[] = [HEATBLAST_FORM];
 
@@ -24,7 +25,12 @@ export function allAliens(): readonly FormDefinition[] {
   return ALIENS;
 }
 
-/** Aliens the watch has by the start of a chapter. */
+/** Human Ben or any alien. */
+export function getForm(id: string): FormDefinition {
+  return id === HUMAN_FORM.id ? HUMAN_FORM : getAlien(id);
+}
+
+/** Aliens the watch has by the start of a chapter, in dial order. */
 export function aliensUnlockedBy(chapter: number): string[] {
   return ALIENS.filter((a) => a.unlockChapter > 0 && a.unlockChapter <= chapter).map((a) => a.id);
 }

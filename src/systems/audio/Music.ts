@@ -4,10 +4,54 @@ import { audio, midiToFreq } from './AudioEngine';
 /**
  * Procedural chiptune sequencer. Original compositions (not the show's theme).
  * Two layers: "base" (bass + drums) always plays; "hero" (arp + lead) swells in
- * while Ben is an alien, so the music itself reacts to transforming.
+ * while Ben is an alien, so the music itself reacts to transforming. Each alien
+ * re-voices the hero layer its own way (see MusicLayerSpec).
  */
 
 type Note = number | null;
+
+/** One synth voice of a hero layer. */
+export interface MusicVoice {
+  wave: OscillatorType;
+  volume: number;
+  /** Octaves above (or below, negative) the written note. */
+  octave: number;
+  /** Note length in 16th steps. */
+  length: number;
+  /** Low-pass cutoff in Hz, or 0 for none. */
+  filter: number;
+  detune?: number;
+}
+
+/**
+ * How an alien plays the hero layer over the track's chords and melody. Pure
+ * data, so an alien's music lives in its own file.
+ */
+export interface MusicLayerSpec {
+  /** The track's arpeggio. `thin` plays only every other step. */
+  arp: (MusicVoice & { thin?: boolean }) | null;
+  /** The track's melody, optionally doubled by a second voice. */
+  lead: (MusicVoice & { double?: MusicVoice }) | null;
+  /** Power chords (root, fifth, octave) on the bar's bass root at these steps (0-15). */
+  stabs?: { steps: readonly number[]; voice: MusicVoice };
+  /** Hi-hat volume on every 16th step (driving). */
+  hats16?: number;
+  /** Floor toms at these steps (0-15). */
+  toms?: { steps: readonly number[]; volume: number };
+}
+
+/** The original hero layer: square arpeggio plus a lead doubled an octave up. Human Ben hears it quietly. */
+export const HERO_LAYER: MusicLayerSpec = {
+  arp: { wave: 'square', volume: 0.035, octave: 0, length: 0.9, filter: 3200 },
+  lead: {
+    wave: 'square',
+    volume: 0.05,
+    octave: 0,
+    length: 1.9,
+    filter: 4000,
+    double: { wave: 'triangle', volume: 0.03, octave: 1, length: 1.6, filter: 0, detune: 6 },
+  },
+};
 
 interface Track {
   bpm: number;
@@ -156,7 +200,39 @@ const VICTORY: Track = {
   drums: 'k---s---k-k-s---k---s---k-k-s-ss',
 };
 
-export const TRACKS = { forest: FOREST, boss: BOSS, title: TITLE, victory: VICTORY } as const;
+const SIM_BASS: Array<[number, number]> = [
+  [0, 0],
+  [2, 0],
+  [4, 12],
+  [6, 0],
+  [8, 0],
+  [10, 12],
+  [12, 0],
+  [14, 7],
+];
+
+/** Omnitrix Training: a cool, steady loop for trying aliens out. */
+const SIMULATION: Track = {
+  bpm: 124,
+  bars: 4,
+  loop: true,
+  bass: [
+    ...bassBar(n('E2'), SIM_BASS),
+    ...bassBar(n('C2'), SIM_BASS),
+    ...bassBar(n('G2'), SIM_BASS),
+    ...bassBar(n('D2'), SIM_BASS),
+  ],
+  arp: [
+    ...arpBar([n('E4'), n('G4'), n('B4')], ARP_SHAPE),
+    ...arpBar([n('E4'), n('G4'), n('C5')], ARP_SHAPE),
+    ...arpBar([n('D4'), n('G4'), n('B4')], ARP_SHAPE),
+    ...arpBar([n('D4'), n('F#4'), n('A4')], ARP_SHAPE),
+  ],
+  lead: seq('B4 - E5 - G5 - F#5 E5 D5 - E5 - B4 - - - G5 - A5 - B5 - D6 - B5 A5 G5 - F#5 - D5 -', 2),
+  drums: 'k-h-s-hhk-khs-hh'.repeat(4),
+};
+
+export const TRACKS = { forest: FOREST, boss: BOSS, title: TITLE, victory: VICTORY, simulation: SIMULATION } as const;
 export type TrackName = keyof typeof TRACKS;
 
 class MusicPlayer {
@@ -168,6 +244,7 @@ class MusicPlayer {
   private baseBus: GainNode | null = null;
   private heroBus: GainNode | null = null;
   private intensity = 0;
+  private layer: MusicLayerSpec = HERO_LAYER;
 
   get playing(): TrackName | null {
     return this.current;
@@ -189,7 +266,7 @@ class MusicPlayer {
     this.baseBus = ctx.createGain();
     this.heroBus = ctx.createGain();
     this.baseBus.gain.value = 1;
-    this.heroBus.gain.value = name === 'forest' || name === 'boss' ? 0.35 + this.intensity * 0.65 : 1;
+    this.heroBus.gain.value = name === 'forest' || name === 'boss' || name === 'simulation' ? 0.35 + this.intensity * 0.65 : 1;
     this.baseBus.connect(audio.musicBus);
     this.heroBus.connect(audio.musicBus);
     this.timer = setInterval(() => this.schedule(), 25);
@@ -220,6 +297,11 @@ class MusicPlayer {
     const ctx = audio.ctx;
     if (!ctx || !this.heroBus) return;
     this.heroBus.gain.setTargetAtTime(0.35 + value * 0.65, ctx.currentTime, 0.25);
+  }
+
+  /** The hero layer voicing: the active alien's, or null for the track's default. Takes effect on the next step. */
+  setLayer(spec: MusicLayerSpec | null): void {
+    this.layer = spec ?? HERO_LAYER;
   }
 
   private schedule(): void {
@@ -254,15 +336,7 @@ class MusicPlayer {
       audio.tone({ type: 'triangle', freq: midiToFreq(bass), duration: stepDur * 1.8, volume: 0.32, when: t, bus: base });
       audio.tone({ type: 'square', freq: midiToFreq(bass), duration: stepDur * 1.2, volume: 0.05, when: t, bus: base, filter: { type: 'lowpass', freq: 700 } });
     }
-    const arp = track.arp[step];
-    if (arp != null) {
-      audio.tone({ type: 'square', freq: midiToFreq(arp), duration: stepDur * 0.9, volume: 0.035, when: t, bus: hero, filter: { type: 'lowpass', freq: 3200 } });
-    }
-    const lead = track.lead[step];
-    if (lead != null) {
-      audio.tone({ type: 'square', freq: midiToFreq(lead), duration: stepDur * 1.9, volume: 0.05, when: t, bus: hero, filter: { type: 'lowpass', freq: 4000 } });
-      audio.tone({ type: 'triangle', freq: midiToFreq(lead + 12), duration: stepDur * 1.6, volume: 0.03, when: t, bus: hero, detune: 6 });
-    }
+    this.playHero(track, step, t, stepDur, hero);
     const stab = track.stabs?.[step];
     if (stab != null) {
       for (const interval of [0, 3, 7]) {
@@ -285,6 +359,40 @@ class MusicPlayer {
     } else if (drum === 'h') {
       audio.noise({ duration: 0.03, volume: 0.07, filter: 'highpass', freq: 7500, when: t, bus: base });
     }
+  }
+
+  private playHero(track: Track, step: number, t: number, stepDur: number, hero: GainNode): void {
+    const layer = this.layer;
+    const arp = track.arp[step];
+    if (arp != null && layer.arp && !(layer.arp.thin && step % 2 === 1)) this.voice(layer.arp, arp, t, stepDur, hero);
+    const lead = track.lead[step];
+    if (lead != null && layer.lead) {
+      this.voice(layer.lead, lead, t, stepDur, hero);
+      if (layer.lead.double) this.voice(layer.lead.double, lead, t, stepDur, hero);
+    }
+    const inBar = step % 16;
+    if (layer.stabs?.steps.includes(inBar)) {
+      const root = track.bass[step - inBar];
+      if (root != null) for (const interval of [12, 19, 24]) this.voice(layer.stabs.voice, root + interval, t, stepDur, hero);
+    }
+    if (layer.hats16) audio.noise({ duration: 0.025, volume: layer.hats16 * (inBar % 4 === 2 ? 1.6 : 1), filter: 'highpass', freq: 8500, when: t, bus: hero });
+    if (layer.toms?.steps.includes(inBar)) {
+      audio.tone({ type: 'sine', freq: 130, freqEnd: 62, duration: 0.2, volume: layer.toms.volume, when: t, bus: hero });
+      audio.noise({ duration: 0.06, volume: layer.toms.volume * 0.3, filter: 'lowpass', freq: 900, when: t, bus: hero });
+    }
+  }
+
+  private voice(v: MusicVoice, note: number, t: number, stepDur: number, bus: GainNode): void {
+    audio.tone({
+      type: v.wave,
+      freq: midiToFreq(note + 12 * v.octave),
+      duration: stepDur * v.length,
+      volume: v.volume,
+      when: t,
+      bus,
+      detune: v.detune,
+      filter: v.filter > 0 ? { type: 'lowpass', freq: v.filter } : undefined,
+    });
   }
 }
 

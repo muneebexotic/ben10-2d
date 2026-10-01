@@ -1,16 +1,7 @@
 import { PALETTE as P } from '../../config/palette';
 import { TILESET_FRAME_COUNT } from '../../levels/tiles';
-import type { PixelCanvas } from './PixelCanvas';
-import {
-  BEN_FRAME,
-  BEN_FRAME_COUNT,
-  BEN_FRAMES,
-  HEATBLAST_FRAME,
-  HEATBLAST_FRAME_COUNT,
-  HEATBLAST_FRAMES,
-  drawBen,
-  drawHeatblast,
-} from './characters';
+import { BEN_FRAME, BEN_FRAME_COUNT, BEN_FRAMES, drawBen } from './characters';
+import { one, sheet, type AnimDef, type AssetDef } from './assetTypes';
 import {
   BOSS_HULL,
   drawBossArm,
@@ -29,14 +20,15 @@ import * as ui from './uiArt';
 import * as world from './world';
 
 /**
- * THE single asset key map. Every texture the game uses is listed here.
- * Today each one is generated in code (`draw`). To swap in real art, add a `url`
- * (relative to public/) with the same frame size and frame order; nothing else changes.
+ * Keys for every shared texture (world, enemies, UI, human Ben). Each alien
+ * declares its own textures in its art module; `catalog.ts` joins both into the
+ * single list Preload loads. Today each one is generated in code (`draw`). To
+ * swap in real art, add a `url` (relative to public/) with the same frame size
+ * and frame order; nothing else changes.
  */
 export const TEX = {
   ben: 'ben',
   benNoWatch: 'ben-nowatch',
-  heatblast: 'heatblast',
   scout: 'drone-scout',
   striker: 'drone-striker',
   gunner: 'drone-gunner',
@@ -90,6 +82,11 @@ export const TEX = {
   laser: 'fx-laser',
   bossBolt: 'fx-boss-bolt',
   shockwave: 'fx-shockwave',
+  wave: 'fx-wave',
+  streak: 'fx-streak',
+  crack: 'fx-crack',
+  needle: 'fx-needle',
+  shell: 'fx-shell',
   bomb: 'fx-bomb',
   reticle: 'fx-reticle',
   beam: 'fx-beam',
@@ -100,7 +97,6 @@ export const TEX = {
   whitePx: 'fx-white',
   heart: 'ui-heart',
   dialFrame: 'ui-dial',
-  iconHeatblast: 'ui-icon-heatblast',
   iconBen: 'ui-icon-ben',
   cardIcon: 'ui-card',
   droneIcon: 'ui-drone',
@@ -112,23 +108,13 @@ export const TEX = {
   lockedAlien: 'ui-locked-alien',
   touchJump: 'ui-touch-jump',
   touchPunch: 'ui-touch-punch',
-  touchFire: 'ui-touch-fire',
   touchRoll: 'ui-touch-roll',
-  touchBurst: 'ui-touch-burst',
   touchPause: 'ui-touch-pause',
 } as const;
 
 export type TextureKey = (typeof TEX)[keyof typeof TEX];
 
-export interface AssetDef {
-  key: string;
-  frameWidth: number;
-  frameHeight: number;
-  frames: number;
-  /** Optional real art under public/. When present the file is loaded instead of generating. */
-  url?: string;
-  draw: (pc: PixelCanvas, frame: number) => void;
-}
+export type { AnimDef, AssetDef };
 
 /** Barricade sizes (tiles) used by level data; each gets its own texture. */
 export const BARRICADE_SIZES: ReadonlyArray<readonly [number, number]> = [
@@ -137,26 +123,9 @@ export const BARRICADE_SIZES: ReadonlyArray<readonly [number, number]> = [
 ];
 export const barricadeKey = (w: number, h: number) => `prop-barricade-${w}x${h}`;
 
-const one = (key: string, w: number, h: number, draw: (pc: PixelCanvas) => void): AssetDef => ({
-  key,
-  frameWidth: w,
-  frameHeight: h,
-  frames: 1,
-  draw: (pc) => draw(pc),
-});
-
-const sheet = (key: string, w: number, h: number, frames: number, draw: (pc: PixelCanvas, f: number) => void): AssetDef => ({
-  key,
-  frameWidth: w,
-  frameHeight: h,
-  frames,
-  draw,
-});
-
 export const ASSETS: AssetDef[] = [
   sheet(TEX.ben, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, true)),
   sheet(TEX.benNoWatch, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, false)),
-  sheet(TEX.heatblast, HEATBLAST_FRAME.w, HEATBLAST_FRAME.h, HEATBLAST_FRAME_COUNT, drawHeatblast),
   sheet(TEX.scout, 20, 16, 3, drawScout),
   sheet(TEX.striker, 22, 18, 3, drawStriker),
   sheet(TEX.gunner, 28, 20, 3, drawGunner),
@@ -214,6 +183,11 @@ export const ASSETS: AssetDef[] = [
   one(TEX.laser, 12, 5, fx.drawLaser),
   one(TEX.bossBolt, 10, 10, fx.drawBossBolt),
   sheet(TEX.shockwave, 22, 14, 3, fx.drawShockwave),
+  sheet(TEX.wave, 22, 14, 3, fx.drawWave),
+  one(TEX.streak, 28, 1, fx.drawStreak),
+  one(TEX.crack, 48, 12, fx.drawCrack),
+  one(TEX.needle, 9, 3, fx.drawNeedle),
+  one(TEX.shell, 10, 10, fx.drawShell),
   sheet(TEX.bomb, 9, 11, 2, fx.drawBomb),
   one(TEX.reticle, 16, 16, fx.drawReticle),
   one(TEX.beam, 4, 20, fx.drawBeam),
@@ -225,7 +199,6 @@ export const ASSETS: AssetDef[] = [
 
   sheet(TEX.heart, 9, 8, 3, ui.drawHeart),
   one(TEX.dialFrame, 44, 44, ui.drawDialFrame),
-  one(TEX.iconHeatblast, 16, 16, ui.drawHeatblastIcon),
   one(TEX.iconBen, 12, 12, ui.drawBenIcon),
   sheet(TEX.cardIcon, 9, 11, 2, ui.drawCardIcon),
   one(TEX.droneIcon, 11, 8, ui.drawDroneIcon),
@@ -237,19 +210,9 @@ export const ASSETS: AssetDef[] = [
   one(TEX.lockedAlien, 42, 44, story.drawLockedSilhouette),
   one(TEX.touchJump, 16, 16, ui.drawTouchJump),
   one(TEX.touchPunch, 16, 16, ui.drawTouchPunch),
-  one(TEX.touchFire, 16, 16, ui.drawTouchFire),
   one(TEX.touchRoll, 16, 16, ui.drawTouchRoll),
-  one(TEX.touchBurst, 16, 16, ui.drawTouchBurst),
   one(TEX.touchPause, 16, 16, ui.drawTouchPause),
 ];
-
-export interface AnimDef {
-  key: string;
-  texture: string;
-  frames: readonly number[];
-  frameRate: number;
-  repeat: number;
-}
 
 const benAnims = (prefix: string, texture: string): AnimDef[] => [
   { key: `${prefix}-idle`, texture, frames: BEN_FRAMES.idle, frameRate: 3, repeat: -1 },
@@ -265,19 +228,12 @@ const benAnims = (prefix: string, texture: string): AnimDef[] => [
 export const ANIMS: AnimDef[] = [
   ...benAnims('ben', TEX.ben),
   ...benAnims('bennw', TEX.benNoWatch),
-  { key: 'heatblast-idle', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.idle, frameRate: 8, repeat: -1 },
-  { key: 'heatblast-run', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.run, frameRate: 14, repeat: -1 },
-  { key: 'heatblast-jump', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.jump, frameRate: 1, repeat: 0 },
-  { key: 'heatblast-fall', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.fall, frameRate: 1, repeat: 0 },
-  { key: 'heatblast-shoot', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.shoot, frameRate: 18, repeat: 0 },
-  { key: 'heatblast-charge', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.charge, frameRate: 12, repeat: -1 },
-  { key: 'heatblast-rocket', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.rocket, frameRate: 1, repeat: 0 },
-  { key: 'heatblast-hurt', texture: TEX.heatblast, frames: HEATBLAST_FRAMES.hurt, frameRate: 1, repeat: 0 },
   { key: 'scout-idle', texture: TEX.scout, frames: [0, 1], frameRate: 10, repeat: -1 },
   { key: 'striker-idle', texture: TEX.striker, frames: [0, 1], frameRate: 8, repeat: -1 },
   { key: 'gunner-idle', texture: TEX.gunner, frames: [0, 1], frameRate: 4, repeat: -1 },
   { key: 'fireball-spin', texture: TEX.fireball, frames: [0, 1, 2], frameRate: 18, repeat: -1 },
   { key: 'shockwave-roll', texture: TEX.shockwave, frames: [0, 1, 2], frameRate: 14, repeat: -1 },
+  { key: 'wave-roll', texture: TEX.wave, frames: [0, 1, 2], frameRate: 16, repeat: -1 },
   { key: 'bomb-blink', texture: TEX.bomb, frames: [0, 1], frameRate: 10, repeat: -1 },
   { key: 'water-flow', texture: TEX.water, frames: [0, 1, 2, 3], frameRate: 6, repeat: -1 },
   { key: 'gate-hum', texture: TEX.gate, frames: [0, 1, 2, 3], frameRate: 12, repeat: -1 },

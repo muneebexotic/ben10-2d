@@ -14,11 +14,11 @@ import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { flashCamera } from '../systems/Accessibility';
 import { availableCards } from '../levels/secrets';
-import { aliensUnlockedBy } from '../aliens/registry';
+import { aliensUnlockedBy, allAliens } from '../aliens/registry';
 import { EventBus } from '../systems/EventBus';
 import { inputMode } from '../systems/InputMode';
 
-/** Title screen: night sky, the Omnitrix emblem, and Ben flipping into Heatblast on a loop. */
+/** Title screen: night sky, the Omnitrix emblem, and Ben flipping into each alien in turn. */
 export class MenuScene extends Phaser.Scene {
   private menu!: MenuList;
   private emblem!: Phaser.GameObjects.Image;
@@ -26,9 +26,10 @@ export class MenuScene extends Phaser.Scene {
   private heroGlow!: Phaser.GameObjects.Image;
   private pines!: Phaser.GameObjects.TileSprite;
   private pinesFar!: Phaser.GameObjects.TileSprite;
-  private embers!: Phaser.GameObjects.Particles.ParticleEmitter;
+  private readonly auras = new Map<string, Phaser.GameObjects.Particles.ParticleEmitter>();
   private heroTimer = 0;
   private heroAlien = false;
+  private heroIndex = -1;
   private starting = false;
   private hint!: Phaser.GameObjects.BitmapText;
 
@@ -39,6 +40,7 @@ export class MenuScene extends Phaser.Scene {
   create(): void {
     this.starting = false;
     this.heroAlien = false;
+    this.heroIndex = -1;
     this.heroTimer = 2200;
     this.cameras.main.fadeIn(400, 0, 0, 0);
 
@@ -62,16 +64,22 @@ export class MenuScene extends Phaser.Scene {
     this.heroGlow = this.add.image(GAME_WIDTH / 2, 296, TEX.light).setScale(1.6).setAlpha(0.35).setTint(PALETTE.omnitrix).setBlendMode(Phaser.BlendModes.ADD);
     this.hero = this.add.sprite(GAME_WIDTH / 2, 318, TEX.ben).setOrigin(0.5, 27 / 28).setScale(2);
     this.hero.play('ben-idle');
-    this.embers = this.add.particles(GAME_WIDTH / 2, 300, TEX.soft, {
-      lifespan: 700,
-      speedY: { min: -60, max: -20 },
-      speedX: { min: -20, max: 20 },
-      scale: { start: 0.7, end: 0 },
-      color: [PALETTE.fire0, PALETTE.fire2, PALETTE.fire3],
-      frequency: 50,
-      blendMode: 'ADD',
-      emitting: false,
-    });
+    this.auras.clear();
+    for (const alien of allAliens()) {
+      this.auras.set(
+        alien.id,
+        this.add.particles(GAME_WIDTH / 2, 300, TEX.soft, {
+          lifespan: 700,
+          speedY: { min: -60, max: -20 },
+          speedX: { min: -20, max: 20 },
+          scale: { start: 0.7, end: 0 },
+          color: [alien.theme.light, alien.theme.color, alien.theme.dark],
+          frequency: 50,
+          blendMode: 'ADD',
+          emitting: false,
+        }),
+      );
+    }
 
     const record = saveSystem.getChapter(CHAPTER_1.id);
     if (record.completed && record.bestTimeMs !== null) {
@@ -162,14 +170,17 @@ export class MenuScene extends Phaser.Scene {
       flashCamera(this.cameras.main, 160, 120, 255, 110);
       this.emblem.setAlpha(0.6);
       this.tweens.add({ targets: this.emblem, alpha: 0.22, duration: 600 });
+      for (const aura of this.auras.values()) aura.stop();
       if (this.heroAlien) {
-        this.hero.setTexture(TEX.heatblast).setOrigin(0.5, 35 / 36).play('heatblast-idle');
-        this.heroGlow.setTint(PALETTE.fire2);
-        this.embers.start();
+        const aliens = allAliens();
+        this.heroIndex = (this.heroIndex + 1) % aliens.length;
+        const alien = aliens[this.heroIndex];
+        this.hero.setTexture(alien.texture).setOrigin(0.5, alien.frame.feetY / alien.frame.h).play(`${alien.animPrefix}-idle`);
+        this.heroGlow.setTint(alien.theme.color);
+        this.auras.get(alien.id)?.start();
       } else {
         this.hero.setTexture(TEX.ben).setOrigin(0.5, 27 / 28).play('ben-idle');
         this.heroGlow.setTint(PALETTE.omnitrix);
-        this.embers.stop();
       }
       this.hero.setScale(3, 1.2);
       this.tweens.add({ targets: this.hero, scaleX: 2, scaleY: 2, duration: 350, ease: 'Back.easeOut' });

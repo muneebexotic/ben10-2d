@@ -1,3 +1,4 @@
+import type { FormFeel } from '../aliens/types';
 import type { MotorStats } from '../systems/PlatformerMotor';
 
 /** Numbers shared by every form Ben can take. */
@@ -32,6 +33,16 @@ export const HUMAN_MOTOR: MotorStats = {
   coyoteMs: 95,
   jumpBufferMs: 130,
   jumpCutMultiplier: 0.42,
+};
+
+export const HUMAN_FEEL: FormFeel = {
+  stepMs: 260,
+  stepVolume: 1,
+  jumpPitch: 1,
+  knockbackScale: 1,
+  stunScale: 1,
+  gravityScale: 1,
+  emissive: false,
 };
 
 export const HUMAN_COMBAT = {

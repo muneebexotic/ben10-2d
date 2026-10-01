@@ -1,17 +1,28 @@
-import { HEATBLAST, HEATBLAST_MOTOR } from '../config/aliens';
-import { FX } from '../config/constants';
-import { PALETTE } from '../config/palette';
-import { HEATBLAST_FRAME } from '../scenes/preload/characters';
-import { TEX } from '../scenes/preload/assetKeys';
-import { ChargeHum } from '../systems/audio/Sfx';
-import type { AbilityContext, FormAbilities, FormDefinition } from './types';
+import { HEATBLAST } from '../../config/aliens/heatblast';
+import { FX } from '../../config/constants';
+import { PALETTE } from '../../config/palette';
+import { ChargeHum } from '../../systems/audio/Sfx';
+import type { AbilityContext, FormAbilities, ShotSpec } from '../types';
+import { flameNova } from './audio';
 
 const FB = HEATBLAST.fireball;
 const BURST = HEATBLAST.burst;
 const ROCKET = HEATBLAST.rocketJump;
+const NOVA = HEATBLAST.flameNova;
 const DEG = Math.PI / 180;
 
-class HeatblastAbilities implements FormAbilities {
+const FIREBALL: ShotSpec = {
+  kind: 'fireball',
+  speed: FB.speed,
+  damage: FB.damage,
+  lifetimeMs: FB.lifetimeMs,
+  radius: FB.radius,
+  knockback: FB.knockback,
+  hitKind: 'fire',
+};
+
+/** Fireballs on J, a charged Fire Burst on K, and the rocket jump (with a glide) on a second jump. */
+export class HeatblastAbilities implements FormAbilities {
   private fireReadyAt = 0;
   private shootAnimLeft = 0;
   private chargeMs = -1;
@@ -56,7 +67,7 @@ class HeatblastAbilities implements FormAbilities {
     angle = ctx.combat.aimAssist(mx, my, angle, FB.assistConeDeg * DEG, FB.assistRange);
     angle += (Math.random() - 0.5) * FB.spreadDeg * DEG * 2;
 
-    ctx.combat.fireball(mx, my, angle);
+    ctx.combat.shoot(FIREBALL, mx, my, angle);
     this.fireReadyAt = ctx.now + FB.cooldownMs;
     this.shootAnimLeft = 140;
     if (player.grounded) player.setVelocityX(player.vx - player.facing * FB.recoil);
@@ -157,8 +168,32 @@ class HeatblastAbilities implements FormAbilities {
     return true;
   }
 
-  onLand(): void {
+  onLand(ctx: AbilityContext, impact: number): void {
     this.rocketUsed = false;
+    if (impact > HEATBLAST.hardLandingImpact) {
+      ctx.fx.burst('ember', ctx.player.x, ctx.player.y, 6);
+      ctx.fx.shake(FX.shakeLight, 90);
+    }
+  }
+
+  onStep(ctx: AbilityContext): void {
+    ctx.fx.burst('ember', ctx.player.x, ctx.player.y, 2);
+  }
+
+  /** Swap-in: Heatblast arrives in a ring of fire that also burns lasers out of the air. */
+  onSwapIn(ctx: AbilityContext): void {
+    const { player } = ctx;
+    const x = player.x;
+    const y = player.centerY;
+    const hits = ctx.combat.blast(x, y, NOVA.radius, { damage: NOVA.damage, kind: 'burst', x, y, knockback: NOVA.knockback }, true);
+    ctx.fx.ring(x, y, PALETTE.fire1, NOVA.radius, 360);
+    ctx.fx.ring(x, y, PALETTE.fire3, NOVA.radius * 0.6, 420);
+    ctx.fx.burst('fire', x, y, 36);
+    ctx.fx.burst('ember', x, y, 12);
+    ctx.fx.light(x, y, NOVA.radius * 2.6, PALETTE.fire1, 420);
+    ctx.fx.shake(FX.shakeMedium, 200);
+    ctx.sfx(flameNova);
+    ctx.notify(hits > 0 ? 'swapStrike' : 'swap');
   }
 
   onExit(ctx: AbilityContext): void {
@@ -170,7 +205,7 @@ class HeatblastAbilities implements FormAbilities {
     return this.chargeMs >= 0 ? BURST.moveMultiplier : 1;
   }
 
-  glideMaxFall(ctx: AbilityContext): number | null {
+  maxFallSpeed(ctx: AbilityContext): number | null {
     return this.rocketUsed && ctx.controls.jumpHeld ? ROCKET.glideMaxFall : null;
   }
 
@@ -181,23 +216,3 @@ class HeatblastAbilities implements FormAbilities {
     return null;
   }
 }
-
-export const HEATBLAST_FORM: FormDefinition = {
-  id: 'heatblast',
-  name: 'HEATBLAST',
-  kind: 'alien',
-  unlockChapter: 1,
-  texture: TEX.heatblast,
-  animPrefix: 'heatblast',
-  frame: { w: HEATBLAST_FRAME.w, h: HEATBLAST_FRAME.h, feetY: 35 },
-  motor: HEATBLAST_MOTOR,
-  maxFormHealth: HEATBLAST.maxFormHealth,
-  light: { radius: HEATBLAST.lightRadius, color: HEATBLAST.lightColor },
-  color: PALETTE.fire2,
-  hudIcon: TEX.iconHeatblast,
-  quips: {
-    transform: ["LET'S TURN UP THE HEAT!", "I'M ON FIRE! ...LITERALLY!", 'HOT HOT HOT!', 'TIME TO GET TOASTY!'],
-    revert: [],
-  },
-  createAbilities: () => new HeatblastAbilities(),
-};

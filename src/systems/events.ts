@@ -13,6 +13,12 @@ export interface OmnitrixTick {
   cooldownProgress: number;
   warning: boolean;
   jammed: boolean;
+  /** Aliens on the dial, in order. */
+  unlocked: readonly string[];
+  /** Pressing transform now would swap to the selected alien. */
+  canSwap: boolean;
+  /** The alien timer is frozen (Training). */
+  frozen: boolean;
 }
 
 export interface BannerPayload {
@@ -26,15 +32,18 @@ export interface BannerPayload {
 /** Every cross-scene message. Payload types are enforced by EventBus. */
 export interface GameEvents {
   'player:health': { hp: number; max: number; delta: number };
-  'player:formHealth': { hp: number; max: number; visible: boolean; delta: number };
+  'player:formHealth': { hp: number; max: number; visible: boolean; delta: number; formId: string };
   'player:died': undefined;
   'omnitrix:acquired': undefined;
   'omnitrix:tick': OmnitrixTick;
   'omnitrix:dial': { selectedId: string; index: number; count: number; direction: 1 | -1 };
   'omnitrix:warning': { secondsLeft: number };
   'omnitrix:ready': undefined;
-  'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' };
-  'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean };
+  'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' | 'lowTime' };
+  /** `swap`: changed alien mid-transformation instead of transforming from human. */
+  'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean; swap: boolean };
+  /** A swap entrance move hit something. */
+  'alien:swapStrike': { alienId: string; hits: number };
   'alien:reverted': { alienId: string; reason: RevertReason };
   'omnitrix:perfect': { bonusMs: number; count: number };
   'combo:update': { count: number; best: number };
