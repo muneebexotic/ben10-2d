@@ -39,12 +39,13 @@ export class StatsCorner {
     for (const c of this.cards) c.setVisible(v);
   }
 
-  set(timeMs: number, kills: number, cards: number, totalCards: number): void {
+  /** Slots past `reachable` are cards behind an alien you don't have yet: shown faded, a promise for later. */
+  set(timeMs: number, kills: number, cards: number, totalCards: number, reachable = totalCards): void {
     this.setTotalCards(totalCards);
     this.time.setText(formatTime(timeMs));
     this.kills.setText(String(kills));
     this.droneIcon.setX(GAME_WIDTH - 14 - this.kills.width);
-    for (let i = 0; i < this.cards.length; i++) this.cards[i].setFrame(i < cards ? 1 : 0);
+    for (let i = 0; i < this.cards.length; i++) this.cards[i].setFrame(i < cards ? 1 : 0).setAlpha(i < Math.max(cards, reachable) ? 1 : 0.3);
   }
 
   /** Gold timer while ahead of your best at the last split. */

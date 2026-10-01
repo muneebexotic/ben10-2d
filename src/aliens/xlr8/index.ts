@@ -32,10 +32,10 @@ export const XLR8_FORM: FormDefinition = {
     swap: ['TOO SLOW!', 'COMING THROUGH!', 'BLUR MODE!'],
   },
   tips: {
-    intro: { id: 'xlr8', text: 'HOLD {J}: BLUR STRIKES   {K}: DASH THROUGH ENEMIES', ms: 7000, priority: 5, doneAfter: { action: 'dashStrike', count: 1 } },
-    advanced: { id: 'xlr8-water', text: 'KEEP RUNNING AND XLR8 CAN CROSS WATER! DASH THROUGH SHOTS: TOO SLOW!', ms: 6000, priority: 4, afterKills: 3, doneAfter: { action: 'tooSlow', count: 1 } },
+    intro: { id: 'xlr8', text: 'HOLD {J}: STRIKES   {K}: DASH THROUGH', ms: 7000, priority: 5, doneAfter: { action: 'dashStrike', count: 1 } },
+    advanced: { id: 'xlr8-dodge', text: '{K} THROUGH A SHOT = TOO SLOW!', ms: 6000, priority: 4, afterKills: 3, doneAfter: { action: 'tooSlow', count: 1 } },
   },
-  moves: ['HOLD {J}: BLUR STRIKES (6TH HIT KICKS)', '{K}: DASH THROUGH ENEMIES  ({UP}: UPWARD)', 'RUN FULL SPEED TO CROSS WATER'],
+  moves: ['HOLD {J}: BLUR STRIKES (6TH HIT KICKS)', '{K}: DASH THROUGH  ({UP}: UPWARD)', 'RUN FULL SPEED TO CROSS WATER'],
   audio: { transform: xlr8Transform, music: XLR8_MUSIC },
   art: { assets: XLR8_ASSETS, anims: XLR8_ANIMS },
   // Ground jump only, but the dash and top speed carry him across wide gaps and water.

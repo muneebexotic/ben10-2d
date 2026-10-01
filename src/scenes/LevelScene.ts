@@ -57,7 +57,8 @@ import { PerfectWindow } from '../systems/PerfectTransform';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { saveSystem } from '../systems/SaveSystem';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
-import { countedCards } from '../levels/secrets';
+import { availableCards, countedCards } from '../levels/secrets';
+import { TRAINING } from '../config/training';
 import { quality } from '../systems/Quality';
 import { knownAliens, storyAliens, trainingAliens } from '../systems/Unlocks';
 import type { PauseData } from './PauseScene';
@@ -89,6 +90,7 @@ export class LevelScene extends Phaser.Scene {
   private level: LevelData = CHAPTER_1;
   private mode: 'story' | 'training' = 'story';
   private dialAliens: string[] = [];
+  private reachableCards = 0;
   private world!: LevelWorld;
   private backdrop!: { update(camera: Phaser.Cameras.Scene2D.Camera, dtMs: number): void };
   private decor!: Decor;
@@ -156,6 +158,7 @@ export class LevelScene extends Phaser.Scene {
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
     const extra = this.mode === 'story' ? knownAliens(launchParams().aliens) : [];
     this.dialAliens = this.resolveAliens(extra);
+    this.reachableCards = availableCards(this.level, this.dialAliens).length;
     // Starting mid-level (?start=) or with playtest aliens (?aliens=) is practice: no best times or splits.
     const fullRun = this.mode === 'story' && !data.checkpoint && extra.length === 0;
     this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(countedCards(this.level).length, fullRun);
@@ -753,6 +756,7 @@ export class LevelScene extends Phaser.Scene {
     const y = this.level.playerStart.y * TILE;
     this.omni.reset();
     this.player.revive(x, y);
+    music.setLayer(null);
     this.camRig.snap(x, y);
     this.state = 'play';
     this.fx.ring(x, y - 12, PALETTE.omnitrix, 30, 400);
@@ -764,7 +768,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private showTrainingPrompt(): void {
-    EventBus.emit('hud:prompt', { id: 'training', text: '{PAUSE}: TRAINING MENU (SPAWN ENEMIES)   {DIAL}: PICK AN ALIEN', priority: 1 });
+    EventBus.emit('hud:prompt', { id: 'training', text: TRAINING.prompt, priority: 1 });
   }
 
   /** The boss's arrival shockwave wipes out stragglers that wandered into the arena. */
@@ -852,6 +856,7 @@ export class LevelScene extends Phaser.Scene {
       enemiesDefeated: this.stats.enemiesDefeated,
       cards: this.stats.cardsFound.length,
       totalCards: this.stats.totalCards,
+      reachableCards: this.reachableCards,
     };
   }
 

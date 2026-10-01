@@ -13,8 +13,8 @@ import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { flashCamera } from '../systems/Accessibility';
-import { availableCards } from '../levels/secrets';
-import { aliensUnlockedBy, allAliens } from '../aliens/registry';
+import { countedCards } from '../levels/secrets';
+import { allAliens } from '../aliens/registry';
 import { EventBus } from '../systems/EventBus';
 import { inputMode } from '../systems/InputMode';
 
@@ -83,8 +83,9 @@ export class MenuScene extends Phaser.Scene {
 
     const record = saveSystem.getChapter(CHAPTER_1.id);
     if (record.completed && record.bestTimeMs !== null) {
-      const totalCards = availableCards(CHAPTER_1, aliensUnlockedBy(CHAPTER_1.chapter)).length;
-      const cards = record.cards.filter((id) => availableCards(CHAPTER_1, aliensUnlockedBy(CHAPTER_1.chapter)).some((c) => c.id === id)).length;
+      const counted = countedCards(CHAPTER_1);
+      const totalCards = counted.length;
+      const cards = record.cards.filter((id) => counted.some((c) => c.id === id)).length;
       pixelText(this, GAME_WIDTH / 2, 342, `BEST ${formatTime(record.bestTimeMs)}   RANK ${record.bestRank ?? '-'}   CARDS ${cards}/${totalCards}`, {
         originX: 0.5,
         originY: 0.5,

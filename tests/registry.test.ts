@@ -81,6 +81,22 @@ describe('alien registry', () => {
     expect(can('canBurn')).toEqual(['heatblast']);
   });
 
+  it('alien tips fit between the touch stick and buttons on a phone', () => {
+    // The prompt bar is pixel text at 6px a character; about 58 characters fit the thumb-free gap.
+    for (const form of allAliens()) {
+      for (const tip of [form.tips.intro, form.tips.advanced]) {
+        if (!tip) continue;
+        expect(formatControls(tip.text, 'touch').length, tip.text).toBeLessThanOrEqual(58);
+      }
+    }
+  });
+
+  it('move lists fit the pause screen column', () => {
+    for (const form of allAliens()) {
+      for (const move of form.moves) expect(formatControls(move, 'touch').length, move).toBeLessThanOrEqual(50);
+    }
+  });
+
   it('tips and move lists only use control tokens the HUD knows', () => {
     for (const form of [HUMAN_FORM, ...allAliens()]) {
       const texts = [...form.moves, form.tips.intro?.text ?? '', form.tips.advanced?.text ?? ''];

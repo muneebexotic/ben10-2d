@@ -50,7 +50,8 @@ export interface GameEvents {
   'omnitrix:perfect': { bonusMs: number; count: number };
   'combo:update': { count: number; best: number };
   'combo:drop': { count: number };
-  'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number };
+  /** `reachableCards`: cards that exist this run; the rest of `totalCards` wait behind a later alien. */
+  'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number; reachableCards: number };
   'card:collected': { id: string; found: number; total: number };
   'hud:split': SplitResult;
   'hud:prompt': { id: string; text: string; priority?: number };

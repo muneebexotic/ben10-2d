@@ -52,7 +52,7 @@ export const TRAINING_ARENA: LevelData = {
 
   prompts: [
     { id: 'tr-water', x: 2, w: 19, text: 'XLR8: KEEP RUNNING TO CROSS THE WATER' },
-    { id: 'tr-trench', x: 60, w: 9, text: 'XLR8: {K} DASH ACROSS' },
+    { id: 'tr-trench', x: 60, w: 9, text: 'XLR8: {K} TO DASH ACROSS' },
     { id: 'tr-wall', x: 74, w: 6, text: 'FOUR ARMS: SMASH THE CRACKED WALL' },
   ],
 

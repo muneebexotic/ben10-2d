@@ -152,7 +152,7 @@ export class PauseScene extends Phaser.Scene {
       onSelect: (i, item) => this.showHint(i === 1 ? enemy().hint : (item.hint ?? '')),
     });
 
-    this.drawMoves(touch ? 330 : 318, touch ? 70 : 70);
+    this.drawMoves(318, 70);
     this.hint = pixelText(this, GAME_WIDTH / 2, GAME_HEIGHT - 22, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     this.showHint(items[this.menu.selectedIndex].hint ?? '');
   }

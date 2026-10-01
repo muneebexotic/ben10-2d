@@ -8,6 +8,8 @@ import { DpsMeter, formatDamage } from '../src/systems/DpsMeter';
 import { TRAINING_ENEMIES } from '../src/systems/TrainingState';
 import { getLevel } from '../src/levels/registry';
 import { TRACKS } from '../src/systems/audio/Music';
+import { TRAINING } from '../src/config/training';
+import { formatControls } from '../src/systems/controlLabels';
 
 const level = TRAINING_ARENA;
 const grid = buildCells(level);
@@ -16,6 +18,12 @@ const entity = <T extends (typeof level.entities)[number]['type']>(type: T) =>
   level.entities.filter((e) => e.type === type) as Extract<(typeof level.entities)[number], { type: T }>[];
 
 describe('training arena', () => {
+  it('the standing prompt and zone prompts fit the phone prompt gap', () => {
+    for (const text of [TRAINING.prompt, ...level.prompts.map((p) => p.text)]) {
+      for (const mode of ['keyboard', 'touch'] as const) expect(formatControls(text, mode).length, text).toBeLessThanOrEqual(58);
+    }
+  });
+
   it('is registered as a level outside the story', () => {
     expect(getLevel('training')).toBe(level);
     expect(level.chapter).toBe(0);

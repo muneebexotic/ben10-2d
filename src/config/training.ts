@@ -8,6 +8,8 @@ export const TRAINING = {
   /** Most enemies of one kind alive at once. */
   maxPerKind: 4,
   maxEnemies: 8,
+  /** Shown at the bottom while nothing more urgent is. Short enough for the phone prompt gap. */
+  prompt: '{PAUSE} TRAINING MENU: SPAWN ENEMIES',
 } as const;
 
 export const DUMMY = {
