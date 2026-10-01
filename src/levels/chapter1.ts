@@ -137,6 +137,7 @@ export const CHAPTER_1: LevelData = {
       text: 'BURN THE BARRICADE!',
       alienText: '[J] TORCH THE BARRICADE!',
       humanText: 'TOO TOUGH TO PUNCH... NEED FIRE!',
+      readyText: 'TOO TOUGH TO PUNCH... [T] HEATBLAST CAN BURN IT!',
     },
     {
       id: 'rocket',
@@ -145,6 +146,7 @@ export const CHAPTER_1: LevelData = {
       text: 'TOO HIGH!',
       alienText: 'JUMP, THEN [SPACE] AGAIN IN MID-AIR: ROCKET JUMP!',
       humanText: 'TOO HIGH! WAIT FOR THE OMNITRIX...',
+      readyText: 'TOO HIGH FOR BEN... [T] TRANSFORM!',
     },
     { id: 'jammer', x: 126, w: 7, text: 'JAMMER FIELD: NO ALIENS! SMASH THE JAMMER!' },
   ],

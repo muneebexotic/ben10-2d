@@ -28,6 +28,7 @@ import { cloneRunStats, createRunStats, type RunStats } from '../systems/RunStat
 import { TimeController } from '../systems/TimeController';
 import { music } from '../systems/audio/Music';
 import { playSfx } from '../systems/audio/Sfx';
+import { bindAudioUnlock, bindMuteKey } from '../systems/Settings';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import { pixelText } from '../ui/text';
 import { BossArena } from './level/BossArena';
@@ -113,7 +114,6 @@ export class LevelScene extends Phaser.Scene {
     this.checkpointId = data.checkpoint ?? null;
 
     if (!this.scene.isActive(SCENES.ui)) this.scene.launch(SCENES.ui);
-    this.scene.bringToTop(SCENES.ui);
 
     this.world = new LevelWorld(this, this.level);
     this.physics.world.setBounds(0, 0, this.world.widthPx, this.world.heightPx + PHYSICS.worldBottomPadding);
@@ -132,7 +132,7 @@ export class LevelScene extends Phaser.Scene {
     this.projectiles = new Projectiles(this, this.fx, this.lighting);
     this.combat = new Combat(this.projectiles, {
       onTargetHit: (t, r, h) => this.onTargetHit(t, r, h),
-      onPlayerHurt: (o, x) => this.onPlayerHurt(o, x),
+      onPlayerHurt: (o) => this.onPlayerHurt(o),
       onParry: (n) => {
         this.stats.parries += n;
         this.bumpCombo(n);
@@ -227,6 +227,8 @@ export class LevelScene extends Phaser.Scene {
     EventBus.on('hud:ready', () => this.syncHud(), this);
     music.setIntensity(0);
     music.play('forest');
+    bindAudioUnlock(this);
+    bindMuteKey(this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       EventBus.offContext(this);
@@ -394,7 +396,10 @@ export class LevelScene extends Phaser.Scene {
     this.decor.update(this.cameras.main, this.lighting, this.gameNow);
     this.world.update(realDt);
     this.speech.update(this.player.x, this.player.y - (this.player.isAlien ? 38 : 30), realDt);
-    if (!this.intro.cinematic) this.tutorial.update(realDt, this.player.x, this.player.isAlien);
+    if (!this.intro.cinematic) {
+      const ready = this.omni.acquired && this.omni.omnitrix.state === 'ready' && !this.omni.jammed;
+      this.tutorial.update(realDt, this.player.x, this.player.isAlien, ready);
+    }
     this.updateLighting(realDt);
     this.debug();
   }
@@ -413,7 +418,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private updateProps(dt: number): void {
-    for (const b of this.barricades) b.update(dt, this.gameNow);
+    for (const b of this.barricades) b.update(dt);
     for (const c of this.checkpoints) c.update(this.lighting, this.gameNow);
     for (const p of this.pickups) p.update(this.fx, this.lighting, this.gameNow);
     this.jammer?.update(dt, this.lighting, this.gameNow);
@@ -462,7 +467,7 @@ export class LevelScene extends Phaser.Scene {
       this.fx.burst('splash', p.x, Math.min(p.y, this.world.heightPx), 18);
       playSfx('splash');
       const outcome = p.pitRespawn();
-      this.onPlayerHurt(outcome, p.x);
+      this.onPlayerHurt(outcome);
       if (!outcome.died) this.camRig.snap(p.x, p.y);
     }
 
@@ -485,7 +490,8 @@ export class LevelScene extends Phaser.Scene {
 
   private onTargetHit(target: Damageable, result: HitResult, hit: Hit): void {
     if (!target.countsAsEnemy || (result !== 'hit' && result !== 'killed')) {
-      if (result === 'blocked' && target === this.barricades.find((b) => b === target) && hit.kind === 'melee') {
+      const barricade = (this.barricades as Damageable[]).includes(target);
+      if (result === 'blocked' && barricade && hit.kind === 'melee') {
         this.tutorial.tip('punchBarricade', 'TOO TOUGH TO PUNCH... NEED FIRE!', 2500, 6);
       }
       return;
@@ -508,10 +514,9 @@ export class LevelScene extends Phaser.Scene {
     this.stats.enemiesDefeated++;
     if (this.player.isAlien) this.killsAsAlien++;
     if (this.killsAsAlien >= 3 && this.player.isAlien) this.tutorial.tip('burst', 'HOLD [K], THEN RELEASE: FIRE BURST!', 6000, 4);
-    void d;
   }
 
-  private onPlayerHurt(outcome: DamageOutcome, sourceX: number): void {
+  private onPlayerHurt(outcome: DamageOutcome): void {
     if (!outcome.applied) return;
     this.stats.damageTaken += outcome.amount;
     const lost = this.combo.break();
@@ -523,7 +528,6 @@ export class LevelScene extends Phaser.Scene {
       this.speech.show('OUCH! MY WATCH!', 1400);
     }
     if (outcome.died) this.onDeath();
-    void sourceX;
   }
 
   private onJammerDestroyed(): void {
@@ -573,6 +577,7 @@ export class LevelScene extends Phaser.Scene {
     for (const d of this.drones) if (d.alive) d.kill();
     this.cameras.main.flash(600, 255, 255, 255, true);
     this.fx.shake(FX.shakeHeavy * 1.5, 900);
+    this.fx.ring(x, y, PALETTE.white, 300, 1000);
     music.stop(400);
     this.time.delayedCall(900, () => {
       music.play('victory');
@@ -584,8 +589,6 @@ export class LevelScene extends Phaser.Scene {
       this.scene.stop(SCENES.ui);
       this.scene.start(SCENES.chapterComplete, { stats: cloneRunStats(this.stats) });
     });
-    void x;
-    void y;
   }
 
   private openPause(): void {

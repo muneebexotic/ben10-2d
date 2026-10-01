@@ -71,6 +71,8 @@ export interface PromptZone {
   alienText?: string;
   /** Shown instead of `text` while human. */
   humanText?: string;
+  /** Shown while human with the Omnitrix ready to use. */
+  readyText?: string;
 }
 
 export interface AmbientZone {

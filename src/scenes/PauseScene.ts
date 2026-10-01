@@ -35,6 +35,7 @@ export class PauseScene extends Phaser.Scene {
 
   create(data: PauseData): void {
     this.info = data;
+    this.scene.bringToTop();
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.72).setOrigin(0, 0);
     pixelText(this, GAME_WIDTH / 2, 54, 'PAUSED', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
 

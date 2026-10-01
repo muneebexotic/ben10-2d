@@ -157,7 +157,6 @@ There are four checkpoints by difficulty density, two Mr. Smoothy heals, and wat
 - **Not tuned by hand.** Difficulty was tuned by reasoning, scripted playtests and a reachability test, not by human players. Boss HP (120), drone counts and the jammer ravine may need tuning after real playtests. All numbers are in `src/config/`.
 - **Headless frame rate.** Headless Chromium (CPU WebGL) runs at about 43–49 FPS, and the game caps the frame step at 34 ms, so slow machines play in slight slow motion rather than tunnelling. It has not been verified on a real GPU in this session.
 - **Flashing and shake.** Screen flashes and shake can't be turned off yet. A reduced-flashing option should come with the Milestone 3 options menu (see IDEAS.md).
-- **Strikers can stall mid-air.** A Striker whose dive target is over water stops at the target height and stays "stuck" mid-air until it recovers.
 - **Zoom shimmer.** The camera zoom punch on transform briefly shows pixel shimmer, because `pixelArt` rendering doesn't zoom by integer steps.
 - **No gamepad support yet.**
 

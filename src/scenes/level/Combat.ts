@@ -7,7 +7,7 @@ import { circleRect, overlaps, type Damageable, type Hazard, type Hit, type HitR
 
 export interface CombatHooks {
   onTargetHit(target: Damageable, result: HitResult, hit: Hit): void;
-  onPlayerHurt(outcome: DamageOutcome, sourceX: number): void;
+  onPlayerHurt(outcome: DamageOutcome): void;
   onParry(count: number): void;
 }
 
@@ -140,7 +140,7 @@ export class Combat implements CombatApi {
       const outcome = player.takeDamage(p.damage, p.x - p.vx * 0.05);
       if (outcome.applied) {
         this.projectiles.kill(p, true);
-        this.hooks.onPlayerHurt(outcome, p.x);
+        this.hooks.onPlayerHurt(outcome);
       }
     });
 
@@ -149,7 +149,7 @@ export class Combat implements CombatApi {
       const outcome = player.takeDamage(h.damage, this.b.x + this.b.w / 2);
       if (outcome.applied) {
         h.onHitPlayer?.();
-        this.hooks.onPlayerHurt(outcome, this.b.x + this.b.w / 2);
+        this.hooks.onPlayerHurt(outcome);
       }
     }
   }

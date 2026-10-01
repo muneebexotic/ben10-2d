@@ -35,6 +35,7 @@ export class GameOverScene extends Phaser.Scene {
 
   create(data: GameOverData): void {
     this.info = data;
+    this.scene.bringToTop();
     const bg = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x14040a, 0).setOrigin(0, 0);
     this.tweens.add({ targets: bg, fillAlpha: 0.78, duration: 400 });
     const title = pixelText(this, GAME_WIDTH / 2, 110, "BEN'S DOWN!", { scale: 5, originX: 0.5, originY: 0.5, color: PALETTE.enemy });

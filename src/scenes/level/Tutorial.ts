@@ -45,7 +45,7 @@ export class Tutorial {
     if (action === 'parry') this.complete('parry');
   }
 
-  update(dtMs: number, playerX: number, isAlien: boolean): void {
+  update(dtMs: number, playerX: number, isAlien: boolean, omnitrixReady: boolean): void {
     for (let i = this.timed.length - 1; i >= 0; i--) {
       const t = this.timed[i];
       t.left -= dtMs;
@@ -63,7 +63,8 @@ export class Tutorial {
       this.zoneText = '';
       return;
     }
-    const text = (isAlien ? zone.alienText : zone.humanText) ?? zone.text;
+    const human = omnitrixReady ? (zone.readyText ?? zone.humanText) : zone.humanText;
+    const text = (isAlien ? zone.alienText : human) ?? zone.text;
     if (text !== this.zoneText) {
       this.zoneText = text;
       EventBus.emit('hud:prompt', { id: zone.id, text, priority: 3 });

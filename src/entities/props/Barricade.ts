@@ -69,7 +69,7 @@ export class Barricade implements Damageable {
     return 'hit';
   }
 
-  update(dtMs: number, now: number): void {
+  update(dtMs: number): void {
     if (!this.alive) return;
     if (this.burning <= 0) return;
     this.burning += dtMs;
@@ -89,6 +89,5 @@ export class Barricade implements Damageable {
       this.fx.burst('smoke', r.x + r.w / 2, r.y + r.h - 8, 10);
       this.onDestroyed?.();
     }
-    void now;
   }
 }

@@ -88,7 +88,7 @@ export class Jammer implements Damageable {
     return true;
   }
 
-  takeHit(hit: Hit): HitResult {
+  takeHit(_hit: Hit): HitResult {
     if (!this.alive) return 'none';
     this.hp -= 1;
     this.flashLeft = 120;
@@ -96,7 +96,6 @@ export class Jammer implements Damageable {
     this.fx.burst('blue', this.pylon.x, this.pylon.y - 19, 12);
     this.fx.burst('spark', this.pylon.x, this.pylon.y - 19, 6);
     playSfx('jammed', 0.6);
-    void hit;
     if (this.hp <= 0) {
       this.destroy();
       return 'killed';
