@@ -110,6 +110,12 @@ export const TEX = {
   holoProjector: 'story-projector',
   crackedWall: 'prop-cracked-wall',
   lockedAlien: 'ui-locked-alien',
+  touchJump: 'ui-touch-jump',
+  touchPunch: 'ui-touch-punch',
+  touchFire: 'ui-touch-fire',
+  touchRoll: 'ui-touch-roll',
+  touchBurst: 'ui-touch-burst',
+  touchPause: 'ui-touch-pause',
 } as const;
 
 export type TextureKey = (typeof TEX)[keyof typeof TEX];
@@ -229,6 +235,12 @@ export const ASSETS: AssetDef[] = [
   one(TEX.holoProjector, 19, 10, story.drawHoloProjector),
   one(TEX.crackedWall, 16, 48, story.drawCrackedWall),
   one(TEX.lockedAlien, 42, 44, story.drawLockedSilhouette),
+  one(TEX.touchJump, 16, 16, ui.drawTouchJump),
+  one(TEX.touchPunch, 16, 16, ui.drawTouchPunch),
+  one(TEX.touchFire, 16, 16, ui.drawTouchFire),
+  one(TEX.touchRoll, 16, 16, ui.drawTouchRoll),
+  one(TEX.touchBurst, 16, 16, ui.drawTouchBurst),
+  one(TEX.touchPause, 16, 16, ui.drawTouchPause),
 ];
 
 export interface AnimDef {

@@ -61,6 +61,7 @@ export class GameOverScene extends Phaser.Scene {
   private quit(): void {
     this.scene.stop(SCENES.level);
     this.scene.stop(SCENES.ui);
+    this.scene.stop(SCENES.touch);
     this.scene.start(SCENES.menu);
   }
 

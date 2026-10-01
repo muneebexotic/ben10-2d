@@ -44,6 +44,9 @@ export const CAMERA = {
   lookAhead: 42,
   lookAheadLerp: 0.04,
   verticalOffset: 62,
+  /** Boss arena framing: camera centre this far above the floor. Touch frames higher to keep the floor clear of thumbs. */
+  arenaLockAbove: 112,
+  arenaLockAboveTouch: 84,
   transformZoom: 1.32,
   transformZoomMs: 520,
 } as const;

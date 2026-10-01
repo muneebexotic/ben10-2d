@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { pad } from './VirtualPad';
 
 export interface Controls {
   left: boolean;
@@ -64,7 +65,7 @@ const BINDINGS = {
 
 type Action = keyof typeof BINDINGS;
 
-/** Keyboard state sampled once per frame into a plain Controls object. */
+/** Keyboard and on-screen touch controls sampled once per frame into a plain Controls object. */
 export class InputMap {
   private readonly keys: Record<Action, Phaser.Input.Keyboard.Key[]>;
   private readonly wasDown = new Map<Action, boolean>();
@@ -93,26 +94,30 @@ export class InputMap {
 
   read(): Controls {
     const s = this.state;
-    s.left = this.held('left');
-    s.right = this.held('right');
-    s.up = this.held('up');
-    s.down = this.held('down');
-    s.jumpPressed = this.pressed('jump');
-    s.jumpHeld = this.held('jump') || s.jumpPressed;
-    s.attackPressed = this.pressed('attack');
-    s.attackHeld = this.held('attack') || s.attackPressed;
-    s.specialPressed = this.pressed('special');
+    s.left = this.held('left') || pad.stick.left;
+    s.right = this.held('right') || pad.stick.right;
+    s.up = this.held('up') || pad.stick.up;
+    s.down = this.held('down') || pad.stick.down;
+    s.jumpPressed = this.pressed('jump') || pad.consume('jump');
+    s.jumpHeld = this.held('jump') || pad.isHeld('jump') || s.jumpPressed;
+    s.attackPressed = this.pressed('attack') || pad.consume('attack');
+    s.attackHeld = this.held('attack') || pad.isHeld('attack') || s.attackPressed;
+    s.specialPressed = this.pressed('special') || pad.consume('special');
     const specialWas = this.wasDown.get('special') ?? false;
     // A tap shorter than one frame still reads as held for this frame, then released on the next.
-    s.specialHeld = this.held('special') || s.specialPressed;
+    s.specialHeld = this.held('special') || pad.isHeld('special') || s.specialPressed;
     s.specialReleased = specialWas && !s.specialHeld;
     this.wasDown.set('special', s.specialHeld);
-    s.dialPrev = this.pressed('dialPrev');
-    s.dialNext = this.pressed('dialNext');
-    s.transform = this.pressed('transform');
-    s.pause = this.pressed('pause');
+    s.dialPrev = this.pressed('dialPrev') || pad.consume('dialPrev');
+    s.dialNext = this.pressed('dialNext') || pad.consume('dialNext');
+    const keyTransform = this.pressed('transform');
+    const padTransform = pad.consume('transform');
+    s.transform = keyTransform || padTransform;
+    s.transformLeadMs = padTransform && !keyTransform ? pad.transformLeadMs : 0;
+    s.pause = this.pressed('pause') || pad.consume('pause');
     s.confirm = this.pressed('confirm');
-    s.anyPressed = s.jumpPressed || s.attackPressed || s.specialPressed || s.transform || s.confirm;
+    const tapped = pad.consumeTap();
+    s.anyPressed = s.jumpPressed || s.attackPressed || s.specialPressed || s.transform || s.confirm || tapped;
     return s;
   }
 
@@ -121,6 +126,7 @@ export class InputMap {
     for (const list of Object.values(this.keys)) for (const key of list) key.reset();
     this.wasDown.clear();
     this.latched.clear();
+    pad.reset();
   }
 
   private held(action: Action): boolean {

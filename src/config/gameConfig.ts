@@ -29,6 +29,8 @@ export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[]): Phase
       },
     },
     fps: { target: 60 },
+    // Stick, jump and attack at the same time, plus a spare finger.
+    input: { activePointers: 4 },
     disableContextMenu: true,
     scene: scenes,
   };

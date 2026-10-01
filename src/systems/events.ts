@@ -58,6 +58,8 @@ export interface GameEvents {
   /** The HUD scene finished creating and wants the current state. */
   'hud:ready': undefined;
   'audio:muted': { muted: boolean };
+  /** The page was hidden or the phone turned to portrait: open the pause menu if a level is playing. */
+  'system:pause': undefined;
   'input:mode': { kind: 'keyboard' | 'touch' };
   'settings:changed': { reduceFlashing: boolean; shake: number; touchControls: TouchMode };
 }

@@ -5,6 +5,7 @@ import { TEX } from '../scenes/preload/assetKeys';
 import type { Lighting } from './Lighting';
 import type { TimeController } from './TimeController';
 import { shakeCamera } from './Accessibility';
+import { quality } from './Quality';
 
 export type BurstKind =
   | 'spark'
@@ -104,13 +105,16 @@ export class Fx {
     }
   }
 
+  /** Particle counts shrink automatically on devices that can't hold the frame rate. */
   burst(kind: BurstKind, x: number, y: number, count: number): void {
-    this.emitters.get(kind)?.explode(count, x, y);
+    const n = quality.scaleCount(count);
+    if (n > 0) this.emitters.get(kind)?.explode(n, x, y);
   }
 
   /** A few particles every call; use for trails. */
   trail(kind: BurstKind, x: number, y: number, count = 1): void {
-    this.emitters.get(kind)?.emitParticleAt(x, y, count);
+    const n = quality.scaleCount(count);
+    if (n > 0) this.emitters.get(kind)?.emitParticleAt(x, y, n);
   }
 
   setTimeScale(scale: number): void {

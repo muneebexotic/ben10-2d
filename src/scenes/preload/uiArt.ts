@@ -92,3 +92,42 @@ export function drawVignette(pc: PixelCanvas): void {
   ctx.fillStyle = grad;
   ctx.fillRect(pc.ox, pc.oy, w, h);
 }
+
+/** On-screen control icons: white so they tint with the button. 16x16. */
+export function drawTouchJump(pc: PixelCanvas): void {
+  for (let i = 0; i < 6; i++) {
+    pc.rect(7 - i, 3 + i, 2, 2, P.white).rect(7 + i, 3 + i, 2, 2, P.white);
+  }
+  pc.rect(7, 5, 2, 9, P.white);
+}
+
+export function drawTouchPunch(pc: PixelCanvas): void {
+  pc.rect(3, 5, 9, 7, P.white);
+  pc.rect(4, 4, 7, 1, P.white).rect(4, 12, 7, 1, P.white);
+  pc.rect(12, 7, 2, 4, P.white);
+  for (let x = 5; x < 12; x += 2) pc.px(x, 7, P.ink);
+  pc.rect(0, 7, 2, 1, P.white).rect(0, 10, 2, 1, P.white);
+}
+
+export function drawTouchFire(pc: PixelCanvas): void {
+  pc.circle(9, 9, 4, P.white);
+  pc.poly([[5, 9], [0, 6], [2, 9], [0, 12]], P.white);
+  pc.px(10, 8, P.ink).px(9, 9, P.ink);
+}
+
+export function drawTouchRoll(pc: PixelCanvas): void {
+  for (let a = 0.6; a < Math.PI * 1.8; a += 0.22) pc.rect(8 + Math.cos(a) * 5, 8 + Math.sin(a) * 5, 2, 2, P.white);
+  pc.poly([[11, 1], [15, 5], [10, 6]], P.white);
+}
+
+export function drawTouchBurst(pc: PixelCanvas): void {
+  pc.circle(8, 8, 3, P.white);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    pc.rect(8 + Math.cos(a) * 6, 8 + Math.sin(a) * 6, 2, 2, P.white);
+  }
+}
+
+export function drawTouchPause(pc: PixelCanvas): void {
+  pc.rect(4, 3, 3, 10, P.white).rect(9, 3, 3, 10, P.white);
+}

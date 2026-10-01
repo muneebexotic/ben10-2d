@@ -13,6 +13,7 @@ import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
 import { formatDelta } from '../systems/Splits';
+import { inputMode } from '../systems/InputMode';
 
 const RANK_COLOR: Record<Rank, number> = {
   S: PALETTE.gold,
@@ -106,7 +107,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     kb.on('keydown-ENTER', () => this.again());
     kb.on('keydown-SPACE', () => this.again());
     kb.on('keydown-ESC', () => this.title());
-    kb.on('keydown-C', () => this.copy());
+    kb.on('keydown-C', () => this.share());
   }
 
   private revealRow(row: Row, x0: number, x1: number, y: number): void {
@@ -184,11 +185,23 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
   private showFooter(): void {
     this.ready = true;
-    pixelText(this, GAME_WIDTH / 2, 300, 'NEXT: CHAPTER 2  -  ROAD TRIP', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
-    pixelText(this, GAME_WIDTH / 2, 313, 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
-    const prompt = pixelText(this, GAME_WIDTH / 2, 348, '[ENTER] PLAY AGAIN    [C] COPY SCORE    [ESC] TITLE', { originX: 0.5, originY: 0.5, color: PALETTE.white });
-    this.tweens.add({ targets: prompt, alpha: 0.5, yoyo: true, repeat: -1, duration: 700 });
-    this.copied = pixelText(this, GAME_WIDTH / 2, 330, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    pixelText(this, GAME_WIDTH / 2, 294, 'NEXT: CHAPTER 2  -  ROAD TRIP', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    pixelText(this, GAME_WIDTH / 2, 306, 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    this.copied = pixelText(this, GAME_WIDTH / 2, 322, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    // Big tappable buttons on every device; the keys still work.
+    const touch = inputMode.current === 'touch';
+    const buttons: Array<[string, () => void, number]> = [
+      [touch ? 'PLAY AGAIN' : '[ENTER] PLAY AGAIN', () => this.again(), PALETTE.white],
+      [touch ? 'SHARE SCORE' : '[C] SHARE SCORE', () => this.share(), PALETTE.gold],
+      [touch ? 'TITLE' : '[ESC] TITLE', () => this.title(), PALETTE.uiDim],
+    ];
+    buttons.forEach(([label, action, color], i) => {
+      const x = GAME_WIDTH / 2 + (i - 1) * 190;
+      const t = pixelText(this, x, 344, label, { originX: 0.5, originY: 0.5, color });
+      const zone = this.add.zone(x, 344, 170, 30).setInteractive({ useHandCursor: true });
+      zone.on('pointerdown', action);
+      if (i === 0) this.tweens.add({ targets: t, alpha: 0.5, yoyo: true, repeat: -1, duration: 700 });
+    });
   }
 
   private shareText(): string {
@@ -200,6 +213,24 @@ export class ChapterCompleteScene extends Phaser.Scene {
       url = '';
     }
     return `I beat BEN 10: OMNITRIX SUMMER - Camp Crash in ${formatTime(s.timeMs)} with an ${this.rank} rank, ${s.bestCombo}-hit best combo and ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards. Your turn! ${url}`.trim();
+  }
+
+  /** The native share sheet where there is one (phones), otherwise the clipboard. */
+  private share(): void {
+    if (!this.ready) return;
+    const text = this.shareText();
+    const nav = navigator as Navigator & { share?: (data: { title?: string; text?: string }) => Promise<void> };
+    if (typeof nav.share === 'function') {
+      nav.share({ title: 'Ben 10: Omnitrix Summer', text }).then(
+        () => this.copied.setText('THANKS FOR SHARING!'),
+        (err: unknown) => {
+          // Closing the share sheet is not a failure; anything else falls back to copying.
+          if (!(err instanceof Error && err.name === 'AbortError')) this.copy();
+        },
+      );
+      return;
+    }
+    this.copy();
   }
 
   private copy(): void {

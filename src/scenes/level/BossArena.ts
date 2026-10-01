@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { BOSS } from '../../config/boss';
-import { DEPTH, LIGHTING, TILE } from '../../config/constants';
+import { CAMERA, DEPTH, LIGHTING, TILE } from '../../config/constants';
 import type { DroneKind, EntitySpawn } from '../../levels/types';
 import { BossHazards } from '../../entities/bosses/BossHazards';
 import { HunterDrone, type BossWorld } from '../../entities/bosses/HunterDrone';
@@ -18,6 +18,7 @@ import type { CameraRig } from './CameraRig';
 import type { Combat } from './Combat';
 import type { Controls } from '../../systems/InputMap';
 import { VilgaxHologram } from './VilgaxHologram';
+import { inputMode } from '../../systems/InputMode';
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
 
@@ -119,7 +120,7 @@ export class BossArena {
     playSfx('gateDown', 0.8, 1.4);
     d.onStart(this.left, this.right);
 
-    camera.lockTo((this.left + this.right) / 2, this.floorY - 112);
+    camera.lockTo((this.left + this.right) / 2, this.floorY - (inputMode.current === 'touch' ? CAMERA.arenaLockAboveTouch : CAMERA.arenaLockAbove));
     this.hazards = new BossHazards(scene, this.floorY, this.d.fx, this.d.lighting, this.d.telegraph);
     for (const h of this.hazards.all()) combat.addHazard(h);
     EventBus.emit('hud:letterbox', { visible: true });

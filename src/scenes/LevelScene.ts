@@ -51,6 +51,7 @@ import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { saveSystem } from '../systems/SaveSystem';
 import type { CrackedWall } from '../entities/props/CrackedWall';
 import { availableCards } from '../levels/secrets';
+import { quality } from '../systems/Quality';
 
 export interface LevelStartData {
   checkpoint?: string | null;
@@ -102,6 +103,7 @@ export class LevelScene extends Phaser.Scene {
   private killsAsAlien = 0;
   private debugText: Phaser.GameObjects.BitmapText | null = null;
   private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
+  private vignette: Phaser.Filters.Controller | null = null;
 
   constructor() {
     super(SCENES.level);
@@ -127,13 +129,16 @@ export class LevelScene extends Phaser.Scene {
     this.checkpointId = data.checkpoint ?? null;
 
     if (!this.scene.isActive(SCENES.ui)) this.scene.launch(SCENES.ui);
+    if (!this.scene.isActive(SCENES.touch)) this.scene.launch(SCENES.touch);
+    quality.reset();
 
     this.world = new LevelWorld(this, this.level);
     this.physics.world.setBounds(0, 0, this.world.widthPx, this.world.heightPx + PHYSICS.worldBottomPadding);
     this.physics.world.checkCollision.down = false;
     this.cameras.main.setBounds(0, 0, this.world.widthPx, this.world.heightPx);
     this.cameras.main.setBackgroundColor(PALETTE.sky0);
-    this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f);
+    this.vignette = this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f) ?? null;
+    if (quality.lowest) this.onQualityChanged();
 
     const bossSpawn = this.level.entities.find((e) => e.type === 'boss');
     this.parallax = new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx);
@@ -250,6 +255,9 @@ export class LevelScene extends Phaser.Scene {
     this.syncHud();
     // The HUD scene may be created after this scene (first launch); it asks for state when ready.
     EventBus.on('hud:ready', () => this.syncHud(), this);
+    EventBus.on('system:pause', () => {
+      if (this.state === 'play' && this.scene.isActive() && !this.intro.cinematic && !this.arena.cinematic) this.openPause();
+    }, this);
     music.setIntensity(0);
     music.play('forest');
     bindAudioUnlock(this);
@@ -374,6 +382,7 @@ export class LevelScene extends Phaser.Scene {
   // ------------------------------------------------------------ Frame
 
   override update(time: number, delta: number): void {
+    if (quality.sample(delta)) this.onQualityChanged();
     const realDt = Math.min(delta, PHYSICS.maxFrameMs);
     const controls = this.inputMap.read();
 
@@ -649,8 +658,17 @@ export class LevelScene extends Phaser.Scene {
     this.time.delayedCall(3800, () => {
       EventBus.emit('level:complete', { stats: cloneRunStats(this.stats) });
       this.scene.stop(SCENES.ui);
+      this.scene.stop(SCENES.touch);
       this.scene.start(SCENES.chapterComplete, { stats: cloneRunStats(this.stats) });
     });
+  }
+
+  /** The frame-rate governor stepped down: at the lowest level drop the full-screen vignette pass too. */
+  private onQualityChanged(): void {
+    if (quality.lowest && this.vignette) {
+      this.cameras.main.filters?.external.remove(this.vignette);
+      this.vignette = null;
+    }
   }
 
   private openPause(): void {
@@ -704,7 +722,7 @@ export class LevelScene extends Phaser.Scene {
     if (!this.debugText) return;
     const p = this.player;
     this.debugText.setText(
-      `X ${Math.round(p.x / TILE)} Y ${Math.round(p.y / TILE)} VX ${Math.round(p.vx)} VY ${Math.round(p.vy)} G ${p.grounded} FPS ${Math.round(this.game.loop.actualFps)}\nOMNI ${this.omni.omnitrix.state} ${Math.round(this.omni.omnitrix.timeRemainingMs / 100) / 10} DRONES ${this.drones.filter((d) => d.alive).length}`,
+      `X ${Math.round(p.x / TILE)} Y ${Math.round(p.y / TILE)} VX ${Math.round(p.vx)} VY ${Math.round(p.vy)} G ${p.grounded} FPS ${Math.round(this.game.loop.actualFps)} Q${quality.level}\nOMNI ${this.omni.omnitrix.state} ${Math.round(this.omni.omnitrix.timeRemainingMs / 100) / 10} DRONES ${this.drones.filter((d) => d.alive).length}`,
     );
   }
 

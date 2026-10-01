@@ -2,12 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#070a1a" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#04060f" />
     <meta name="description" content="Ben 10: Omnitrix Summer - a pixel-art action platformer. Slap on the Omnitrix and go hero." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Omnitrix Summer" />
+    <meta property="og:title" content="Ben 10: Omnitrix Summer" />
+    <meta property="og:description" content="Slap on the Omnitrix and go hero. A fan-made pixel platformer you can play in your browser." />
+    <link rel="icon" href="./assets/icons/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <title>Ben 10: Omnitrix Summer</title>
     <style>
-      html, body {
+      html,
+      body {
         margin: 0;
         padding: 0;
         width: 100%;
@@ -15,22 +24,92 @@
         background: #04060f;
         overflow: hidden;
         touch-action: none;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
       }
+      /* Keep the game clear of notches and the home indicator. */
+      #frame {
+        position: fixed;
+        inset: 0;
+        height: 100dvh;
+        box-sizing: border-box;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      /* Phaser centres the canvas itself (autoCenter); flex centring here would offset it twice. */
       #game {
         width: 100%;
         height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        overflow: hidden;
       }
       #game canvas {
         image-rendering: pixelated;
         image-rendering: crisp-edges;
+        touch-action: none;
+      }
+      #rotate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        background: #04060f;
+        color: #f4f4f0;
+        font: 700 16px/1.4 ui-monospace, Menlo, Consolas, monospace;
+        letter-spacing: 1px;
+        text-align: center;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      body.portrait #rotate {
+        display: flex;
+      }
+      #rotate .phone {
+        width: 46px;
+        height: 80px;
+        border: 4px solid #5dff5a;
+        border-radius: 9px;
+        position: relative;
+        box-shadow: 0 0 24px rgba(93, 255, 90, 0.35);
+        animation: turn 2.4s ease-in-out infinite;
+      }
+      #rotate .phone::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 6px;
+        width: 10px;
+        height: 10px;
+        margin-left: -5px;
+        border-radius: 50%;
+        background: #5dff5a;
+      }
+      #rotate small {
+        color: #8a93b8;
+        font-weight: 400;
+      }
+      @keyframes turn {
+        0%, 25% { transform: rotate(0deg); }
+        55%, 100% { transform: rotate(-90deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #rotate .phone { animation: none; transform: rotate(-90deg); }
       }
     </style>
   </head>
   <body>
-    <div id="game"></div>
+    <div id="frame"><div id="game"></div></div>
+    <div id="rotate" role="alert">
+      <div class="phone"></div>
+      <div>TURN YOUR PHONE SIDEWAYS<br />TO GO HERO!</div>
+      <small>The game is paused.</small>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

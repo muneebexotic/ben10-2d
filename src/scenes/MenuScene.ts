@@ -15,6 +15,8 @@ import { SCENES } from './SceneKeys';
 import { flashCamera } from '../systems/Accessibility';
 import { availableCards } from '../levels/secrets';
 import { aliensUnlockedBy } from '../aliens/registry';
+import { EventBus } from '../systems/EventBus';
+import { inputMode } from '../systems/InputMode';
 
 /** Title screen: night sky, the Omnitrix emblem, and Ben flipping into Heatblast on a loop. */
 export class MenuScene extends Phaser.Scene {
@@ -94,24 +96,38 @@ export class MenuScene extends Phaser.Scene {
       22,
       2,
     );
-    this.hint = pixelText(this, GAME_WIDTH / 2, 256, 'ARROWS/WASD MOVE   SPACE JUMP   J ATTACK   K SPECIAL   T TRANSFORM', {
-      originX: 0.5,
-      originY: 0.5,
-      color: PALETTE.uiDim,
-    });
-
-    if (this.sys.game.device.input.touch && !this.sys.game.device.os.desktop) {
-      const note = pixelText(this, GAME_WIDTH / 2, 272, 'KEYBOARD NEEDED FOR NOW - TOUCH CONTROLS ARE COMING!', {
-        originX: 0.5,
-        originY: 0.5,
-        color: PALETTE.gold,
-      });
-      this.tweens.add({ targets: note, alpha: 0.4, yoyo: true, repeat: -1, duration: 800 });
-    }
+    this.hint = pixelText(this, GAME_WIDTH / 2, 256, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    this.refreshHint();
+    EventBus.on('input:mode', () => this.refreshHint(), this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
 
     bindMuteKey(this);
     bindAudioUnlock(this, () => music.play('title'));
     if (audio.ready) music.play('title');
+  }
+
+  private refreshHint(): void {
+    this.hint.setText(
+      inputMode.current === 'touch'
+        ? 'LEFT THUMB: MOVE    RIGHT THUMB: JUMP, ATTACK, SPECIAL    TAP THE OMNITRIX TO GO HERO'
+        : 'ARROWS/WASD MOVE   SPACE JUMP   J ATTACK   K SPECIAL   T TRANSFORM',
+    );
+  }
+
+  /** Phones: go fullscreen and landscape on the first tap of START (browsers only allow it at the end of a tap). */
+  private requestMobileFullscreen(): void {
+    if (inputMode.current !== 'touch' || !this.scale.fullscreen.available || this.scale.isFullscreen) return;
+    this.input.once(Phaser.Input.Events.POINTER_UP, () => {
+      try {
+        this.scale.once(Phaser.Scale.Events.ENTER_FULLSCREEN, () => {
+          const orientation = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+          orientation.lock?.('landscape').catch(() => undefined);
+        });
+        this.scale.startFullscreen();
+      } catch {
+        // Not allowed here (iOS Safari): the game still fits the screen.
+      }
+    });
   }
 
   private openSettings(): void {
@@ -123,6 +139,7 @@ export class MenuScene extends Phaser.Scene {
     if (this.starting) return;
     this.starting = true;
     this.menu.enabled = false;
+    this.requestMobileFullscreen();
     audio.unlock();
     playSfx('transformBoom', 0.7);
     flashCamera(this.cameras.main, 300, 120, 255, 110);

@@ -1,0 +1,12 @@
+{
+  "name": "Ben 10: Omnitrix Summer",
+  "short_name": "Omnitrix Summer",
+  "description": "A fan-made pixel-art Ben 10 action platformer.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#04060f",
+  "theme_color": "#04060f",
+  "icons": [{ "src": "assets/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
