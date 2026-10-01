@@ -47,12 +47,14 @@ import { Parallax } from './level/Parallax';
 import { SimBackdrop } from './level/SimBackdrop';
 import { checkpointsFor, spawnEntities } from './level/Spawner';
 import { TransformSequence } from './level/TransformSequence';
+import { MisfireBeat } from './level/MisfireBeat';
+import { misfireAllowed } from '../systems/MisfireRules';
 import { Tutorial } from './level/Tutorial';
 import { TrainingDirector } from './level/TrainingDirector';
 import { createDroneWorld, createFxApi } from './level/levelApis';
 import { SCENES } from './SceneKeys';
 import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
-import { PERFECT_TRANSFORM } from '../config/omnitrix';
+import { MISFIRE, PERFECT_TRANSFORM } from '../config/omnitrix';
 import { PerfectWindow } from '../systems/PerfectTransform';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { saveSystem } from '../systems/SaveSystem';
@@ -104,6 +106,7 @@ export class LevelScene extends Phaser.Scene {
   private player!: Player;
   private omni!: OmnitrixController;
   private sequence!: TransformSequence;
+  private misfireBeat!: MisfireBeat;
   private speech!: SpeechBubble;
   private camRig!: CameraRig;
   private intro: IntroDirector | null = null;
@@ -201,6 +204,7 @@ export class LevelScene extends Phaser.Scene {
     this.speech = new SpeechBubble(this);
 
     const start = this.resolveStart();
+    this.camRig = new CameraRig(this.cameras.main);
     this.createPlayer(start);
     this.createOmnitrix();
     this.tutorial = new Tutorial(this.level);
@@ -220,7 +224,6 @@ export class LevelScene extends Phaser.Scene {
     });
     this.spawnLevelEntities(this.checkpointId ? start.x : 0);
 
-    this.camRig = new CameraRig(this.cameras.main);
     this.camRig.snap(start.x, start.y);
 
     const resuming = this.checkpointId !== null;
@@ -244,6 +247,10 @@ export class LevelScene extends Phaser.Scene {
     this.syncHud();
     // The HUD scene may be created after this scene (first launch); it asks for state when ready.
     EventBus.on('hud:ready', () => this.syncHud(), this);
+    EventBus.on('alien:misfire', () => {
+      const bonus = Math.round(MISFIRE.improviseBonusMs / 1000);
+      this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
+    }, this);
     EventBus.on('system:pause', () => {
       if (this.state === 'play' && this.scene.isActive() && !this.cinematic) this.openPause();
     }, this);
@@ -311,11 +318,15 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private createOmnitrix(): void {
-    this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech });
-    // Training is a sandbox: no misfires while learning an alien.
+    this.misfireBeat = new MisfireBeat({ scene: this, player: this.player, fx: this.fx, time: this.time2, speech: this.speech, camera: this.camRig });
+    this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech, misfire: this.misfireBeat });
+    // Training is a sandbox: misfires only when its menu turns them on.
     this.omni = new OmnitrixController(this.dialAliens, this.player, this.sequence, this.fx, this.perfect, this.mode === 'training' ? { wrongTransformChance: 0 } : {});
     this.omni.transformations = this.stats.transformations;
     this.omni.perfects = this.stats.perfectTransforms;
+    this.omni.misfires = this.stats.misfires;
+    this.omni.improvised = this.stats.improvised;
+    this.omni.misfireAllowed = () => this.misfireAllowed();
     this.omni.onTransformed = (id) => this.onBecameAlien(id);
     this.omni.onSwapped = (id) => this.onBecameAlien(id);
     this.omni.onReverted = (reason) => {
@@ -467,6 +478,15 @@ export class LevelScene extends Phaser.Scene {
     return true;
   }
 
+  private misfireAllowed(): boolean {
+    return misfireAllowed({
+      training: this.mode === 'training',
+      transformations: this.omni.transformations,
+      introPlaying: this.intro !== null && !this.intro.done,
+      bossIntro: this.arena?.introducing ?? false,
+    });
+  }
+
   /** The intro cutscene or the Vilgax hologram is playing. */
   private get cinematic(): boolean {
     return (this.intro?.cinematic ?? false) || (this.arena?.cinematic ?? false);
@@ -487,8 +507,10 @@ export class LevelScene extends Phaser.Scene {
 
     const dt = this.time2.step(realDt);
     const visual = this.time2.frozen ? 0 : this.time2.visualScale;
-    this.fx.setTimeScale(visual);
-    this.tweens.timeScale = Math.max(0.05, this.time2.visualScale);
+    // During the misfire freeze-frame the smoke keeps clearing while the world stands still.
+    const fxScale = this.misfireBeat.active ? 1 : visual;
+    this.fx.setTimeScale(fxScale);
+    this.tweens.timeScale = Math.max(0.05, this.misfireBeat.active ? 1 : this.time2.visualScale);
     this.anims.globalTimeScale = Math.max(0.001, visual);
     this.gameNow += dt;
     this.player.now = this.gameNow;
@@ -522,6 +544,8 @@ export class LevelScene extends Phaser.Scene {
     if (this.state === 'play' && !this.cinematic) this.stats.timeMs += realDt;
     this.stats.transformations = this.omni.transformations;
     this.stats.perfectTransforms = this.omni.perfects;
+    this.stats.misfires = this.omni.misfires;
+    this.stats.improvised = this.omni.improvised;
     this.perfect.prune(this.gameNow);
     this.statsTimer -= realDt;
     if (this.statsTimer <= 0) {
@@ -530,6 +554,7 @@ export class LevelScene extends Phaser.Scene {
       this.emitFormHealth(0);
     }
 
+    this.misfireBeat.update(realDt);
     this.camRig.update(this.player.x, this.player.y, this.player.facing, this.player.grounded, realDt * Math.max(0.3, visual));
     this.backdrop.update(this.cameras.main, realDt);
     this.decor.update(this.cameras.main, this.lighting, this.gameNow);
@@ -695,6 +720,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
     this.stats.enemiesDefeated++;
     if (!this.player.isAlien) return;
+    this.omni.improvise();
     const form = this.player.form;
     const kills = (this.alienKills.get(form.id) ?? 0) + 1;
     this.alienKills.set(form.id, kills);
@@ -745,6 +771,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.state !== 'play') return;
     this.state = 'dead';
     this.stats.deaths++;
+    this.misfireBeat.cancel();
     this.time2.slowMo(0.3, 900, 300);
     this.desaturate = this.cameras.main.filters?.internal.addColorMatrix() ?? null;
     this.desaturate?.colorMatrix.desaturate();
@@ -896,6 +923,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private shutdown(): void {
+    this.misfireBeat?.cancel();
     this.intro?.destroy();
     this.arena?.destroy();
     this.training?.destroy();

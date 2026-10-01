@@ -211,7 +211,8 @@ export class TouchDial {
     const alienColor = known ? getAlien(shownId).theme.color : PALETTE.omnitrix;
     this.icon.setTint(t?.state === 'active' ? alienColor : ready ? PALETTE.omnitrix : t?.jammed ? PALETTE.jammer : PALETTE.enemyDark);
     this.glow.setTint(t?.canSwap ? alienColor : color).setAlpha(ready || t?.canSwap ? 0.3 + Math.sin(now * 0.006) * 0.12 : 0.12);
-    this.swapLabel.setVisible(t?.canSwap === true).setTint(alienColor);
+    this.swapLabel.setVisible(t?.canSwap === true).setTint(t?.fixOwed ? PALETTE.gold : alienColor);
+    this.swapLabel.setText(t?.fixOwed ? 'FIX!' : 'SWAP!');
     for (const c of this.chevrons) c.setAlpha(0.35 + (this.pressed ? 0.4 : 0));
   }
 }

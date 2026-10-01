@@ -1,5 +1,6 @@
 import { OMNITRIX_WARNING_MS, getDifficulty } from '../../config/difficulty';
-import { PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
+import { MISFIRE, PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
+import { MisfireQuips } from '../../aliens/misfire';
 import { PALETTE } from '../../config/palette';
 import { getAlien } from '../../aliens/registry';
 import type { Player } from '../../entities/Player';
@@ -22,8 +23,13 @@ export class OmnitrixController {
   transformations = 0;
   swaps = 0;
   perfects = 0;
+  misfires = 0;
+  improvised = 0;
   private deniedFlashUntil = 0;
   private pendingPerfect = false;
+  private readonly quips = new MisfireQuips();
+  /** False while the story needs the watch to behave (first transform, boss intro). */
+  misfireAllowed: () => boolean = () => true;
   onTransformed: ((alienId: string, first: boolean) => void) | null = null;
   onSwapped: ((alienId: string) => void) | null = null;
   onReverted: ((reason: RevertReason) => void) | null = null;
@@ -47,6 +53,9 @@ export class OmnitrixController {
         swapEnabled: SWAP.enabled,
         swapCostMs: SWAP.costMs,
         swapLockoutMs: SWAP.lockoutMs,
+        swapMisfireScale: MISFIRE.swapChanceScale,
+        misfireFixCostScale: MISFIRE.fixCostScale,
+        improviseBonusMs: MISFIRE.improviseBonusMs,
       },
       unlocked,
     );
@@ -73,13 +82,13 @@ export class OmnitrixController {
     else if (state === 'ready') {
       // The very first transform is the tutorial moment; perfects start after it.
       this.pendingPerfect = this.transformations > 0 && this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
-      this.handle(this.omnitrix.transform());
+      this.handle(this.omnitrix.transform({ allowMisfire: this.misfireAllowed() }));
       this.pendingPerfect = false;
     } else if (state === 'active') {
       const denial = this.omnitrix.swapDenial();
       if (denial === null) {
         this.pendingPerfect = this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
-        this.handle(this.omnitrix.swap());
+        this.handle(this.omnitrix.swap({ allowMisfire: this.misfireAllowed() }));
         this.pendingPerfect = false;
       } else if (denial === 'lowTime') {
         this.deny('lowTime', now);
@@ -91,25 +100,38 @@ export class OmnitrixController {
     this.handle(this.omnitrix.update(dtMs));
     this.player.visual.setWarning(this.omnitrix.isWarning);
     const o = this.omnitrix;
+    // Until the misfire gag, the HUD shows the alien Ben asked for: the surprise is the joke.
+    const hide = this.sequence.concealing;
     EventBus.emit('omnitrix:tick', {
       state: o.state,
       acquired: this.acquired,
       selectedId: o.selectedAlien,
-      activeId: o.activeAlienId,
+      activeId: hide ? (o.misfireState?.wantedId ?? o.activeAlienId) : o.activeAlienId,
       timeRatio: o.timeRatio,
       timeRemainingMs: o.timeRemainingMs,
       cooldownProgress: o.cooldownProgress,
       warning: o.isWarning,
       jammed: this.jammed,
       unlocked: o.unlockedAliens,
-      canSwap: o.canSwap(),
+      canSwap: !hide && o.canSwap(),
       frozen: o.timerFrozen,
+      fixOwed: !hide && o.fixSwapOwed,
     });
   }
 
   /** Forces an early revert (alien shield broken, jammer field). */
   forceRevert(reason: RevertReason): void {
     this.handle(this.omnitrix.revert(reason));
+  }
+
+  /** A KO landed: if it was the misfired alien's first, rolling with it pays out. */
+  improvise(): void {
+    const alienId = this.omnitrix.activeAlienId;
+    const bonusMs = this.omnitrix.improvise();
+    if (bonusMs <= 0 || alienId === null) return;
+    this.improvised++;
+    playSfx('improvise');
+    EventBus.emit('omnitrix:improvised', { bonusMs, alienId });
   }
 
   /** Checkpoint respawn: fresh watch, human Ben. */
@@ -124,7 +146,8 @@ export class OmnitrixController {
           this.transformations++;
           const alien = getAlien(e.alienId);
           const perfect = this.pendingPerfect;
-          this.sequence.transform(alien, { first: this.transformations === 1, wrong: e.wrong, perfect });
+          const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId) : undefined;
+          this.sequence.transform(alien, { first: this.transformations === 1, perfect, misfire });
           if (perfect) this.rewardPerfect();
           this.onTransformed?.(e.alienId, this.transformations === 1);
           break;
@@ -132,7 +155,8 @@ export class OmnitrixController {
         case 'swapped': {
           this.swaps++;
           const perfect = this.pendingPerfect;
-          this.sequence.swap(getAlien(e.alienId), { wrong: e.wrong, perfect });
+          const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId) : undefined;
+          this.sequence.swap(getAlien(e.alienId), { perfect, fix: e.fix, misfire });
           if (perfect) this.rewardPerfect();
           this.onSwapped?.(e.alienId);
           break;
@@ -156,6 +180,11 @@ export class OmnitrixController {
           break;
       }
     }
+  }
+
+  private misfire(wantedId: string, gotId: string): { wantedId: string; line: string } {
+    this.misfires++;
+    return { wantedId, line: this.quips.line(wantedId, gotId) };
   }
 
   private rewardPerfect(): void {

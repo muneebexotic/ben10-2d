@@ -73,6 +73,11 @@ export class BossArena {
     return this.started && this.boss !== null && !this.boss.defeated;
   }
 
+  /** From the walls going up until the boss has finished its entrance (no misfires in here). */
+  get introducing(): boolean {
+    return this.started && !this.boss?.defeated && (this.hologram !== null || this.boss === null || this.boss.introducing);
+  }
+
   /** True while the Vilgax hologram plays: the world holds still and the run timer pauses. */
   get cinematic(): boolean {
     return this.hologram !== null;

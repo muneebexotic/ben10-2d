@@ -299,6 +299,23 @@ class MusicPlayer {
     this.heroBus.gain.setTargetAtTime(0.35 + value * 0.65, ctx.currentTime, 0.25);
   }
 
+  /**
+   * Record scratch: the music cuts out dead, then fades back after `gapMs`.
+   * The track keeps its place, so it picks up on the beat it would have reached.
+   */
+  scratch(gapMs: number): void {
+    const ctx = audio.ctx;
+    if (!ctx || !this.baseBus || !this.heroBus) return;
+    const t = ctx.currentTime;
+    const back = t + gapMs / 1000;
+    const hero = 0.35 + this.intensity * 0.65;
+    for (const [bus, level] of [[this.baseBus, 1], [this.heroBus, hero]] as const) {
+      bus.gain.cancelScheduledValues(t);
+      bus.gain.setTargetAtTime(0.0001, t, 0.012);
+      bus.gain.setTargetAtTime(level, back, 0.12);
+    }
+  }
+
   /** The hero layer voicing: the active alien's, or null for the track's default. Takes effect on the next step. */
   setLayer(spec: MusicLayerSpec | null): void {
     this.layer = spec ?? HERO_LAYER;

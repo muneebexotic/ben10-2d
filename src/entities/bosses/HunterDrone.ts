@@ -120,6 +120,11 @@ export class HunterDrone implements Damageable, Hazard {
     return this.state !== 'dying' && this.state !== 'dead';
   }
 
+  /** Still dropping in (its entrance roar). */
+  get introducing(): boolean {
+    return this.state === 'intro';
+  }
+
   get defeated(): boolean {
     return this.state === 'dead';
   }

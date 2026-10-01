@@ -11,6 +11,9 @@ export interface RunStats {
   transformations: number;
   parries: number;
   perfectTransforms: number;
+  /** Wrong transformations, and how many of those got a KO anyway ("improvised"). */
+  misfires: number;
+  improvised: number;
   /** False for practice runs started mid-level (?start=): they never set best times or splits. */
   fullRun: boolean;
   /** The Vilgax hologram already played this run (retries skip it). */
@@ -34,6 +37,8 @@ export function createRunStats(totalCards: number, fullRun = true): RunStats {
     transformations: 0,
     parries: 0,
     perfectTransforms: 0,
+    misfires: 0,
+    improvised: 0,
     fullRun,
     sawVilgax: false,
   };

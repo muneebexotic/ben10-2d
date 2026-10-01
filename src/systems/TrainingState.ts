@@ -7,12 +7,15 @@ export interface TrainingOptions {
   /** False: enemies move but never attack (practise combos in peace). */
   enemiesAttack: boolean;
   damageNumbers: boolean;
+  /** Index into TRAINING.misfireSteps (0: the watch behaves). */
+  misfireStep: number;
 }
 
 export const trainingOptions: TrainingOptions = {
   alienTimer: true,
   enemiesAttack: true,
   damageNumbers: true,
+  misfireStep: 0,
 };
 
 /** Every enemy Training can spawn, in menu order, with its menu name. */

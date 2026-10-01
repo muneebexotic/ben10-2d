@@ -12,6 +12,7 @@ import { EventBus } from '../systems/EventBus';
 import { trainingOptions, TRAINING_ENEMIES } from '../systems/TrainingState';
 import { getAlien, hasAlien } from '../aliens/registry';
 import type { LevelStartData } from './LevelScene';
+import { TRAINING } from '../config/training';
 
 export interface PauseData {
   checkpoint: string | null;
@@ -48,6 +49,13 @@ const CONTROLS = [
 ];
 
 const onOff = (on: boolean) => (on ? 'ON' : 'OFF');
+
+function misfireLabel(step: number): string {
+  const chance = TRAINING.misfireSteps[step] ?? 0;
+  if (chance <= 0) return 'OFF';
+  if (chance >= 1) return 'CHAOS (100%)';
+  return `${Math.round(chance * 100)}%`;
+}
 
 export class PauseScene extends Phaser.Scene {
   private menu!: MenuList;
@@ -136,6 +144,12 @@ export class PauseScene extends Phaser.Scene {
         hint: 'PASSIVE ENEMIES NEVER FIGHT BACK: PRACTISE YOUR COMBOS.',
         action: () => setOption({ enemiesAttack: !trainingOptions.enemiesAttack }),
         adjust: () => setOption({ enemiesAttack: !trainingOptions.enemiesAttack }),
+      },
+      {
+        label: () => `MISFIRES: ${misfireLabel(trainingOptions.misfireStep)}`,
+        hint: 'MAKE THE OMNITRIX GLITCH: PRACTISE ROLLING WITH THE WRONG ALIEN.',
+        action: () => setOption({ misfireStep: (trainingOptions.misfireStep + 1) % TRAINING.misfireSteps.length }),
+        adjust: (dir) => setOption({ misfireStep: (trainingOptions.misfireStep + dir + TRAINING.misfireSteps.length) % TRAINING.misfireSteps.length }),
       },
       {
         label: () => `DAMAGE NUMBERS: ${onOff(trainingOptions.damageNumbers)}`,

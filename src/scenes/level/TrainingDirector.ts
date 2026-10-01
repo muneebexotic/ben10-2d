@@ -60,7 +60,8 @@ export class TrainingDirector {
     const o = this.d.omnitrix;
     const diff = getDifficulty();
     o.setTimerFrozen(!trainingOptions.alienTimer);
-    o.setConfig({ ...o.settings, cooldownMs: trainingOptions.alienTimer ? diff.cooldownMs : 0 });
+    const misfire = TRAINING.misfireSteps[trainingOptions.misfireStep] ?? 0;
+    o.setConfig({ ...o.settings, cooldownMs: trainingOptions.alienTimer ? diff.cooldownMs : 0, wrongTransformChance: misfire });
     this.d.setAggressive(trainingOptions.enemiesAttack);
   }
 

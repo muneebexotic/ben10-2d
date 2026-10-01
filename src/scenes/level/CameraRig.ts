@@ -8,6 +8,7 @@ export class CameraRig {
   private look = 0;
   private groundY = 0;
   private lock: { x: number; y: number } | null = null;
+  private focus = { x: 0, y: 0, weight: 0 };
 
   constructor(private readonly cam: Phaser.Cameras.Scene2D.Camera) {}
 
@@ -24,6 +25,13 @@ export class CameraRig {
 
   unlock(): void {
     this.lock = null;
+  }
+
+  /** Pulls the view toward a point (0..1 of the way), e.g. a comedic close-up on Ben's face. 0 releases it. */
+  setFocus(x: number, y: number, weight: number): void {
+    this.focus.x = x;
+    this.focus.y = y;
+    this.focus.weight = Math.max(0, Math.min(1, weight));
   }
 
   get locked(): boolean {
@@ -52,6 +60,7 @@ export class CameraRig {
       this.cx += (tx - this.cx) * (1 - Math.exp(-7 * dt));
       this.cy += (ty - this.cy) * (1 - Math.exp(-4.5 * dt));
     }
-    this.cam.centerOn(this.cx, this.cy);
+    const w = this.focus.weight;
+    this.cam.centerOn(this.cx + (this.focus.x - this.cx) * w, this.cy + (this.focus.y - this.cy) * w);
   }
 }

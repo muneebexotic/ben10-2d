@@ -1,3 +1,5 @@
+import { DIFFICULTY } from './difficulty';
+
 /** Omnitrix Training: the sandbox arena on the title screen. */
 export const TRAINING = {
   /**
@@ -8,6 +10,11 @@ export const TRAINING = {
   /** Most enemies of one kind alive at once. */
   maxPerKind: 4,
   maxEnemies: 8,
+  /**
+   * Misfire settings the training menu cycles through: off (the default, for
+   * learning an alien), Normal's and Hard's chance, and CHAOS (every single time).
+   */
+  misfireSteps: [0, DIFFICULTY.normal.wrongTransformChance, DIFFICULTY.hard.wrongTransformChance, 1] as readonly number[],
   /** Shown at the bottom while nothing more urgent is. Short enough for the phone prompt gap. */
   prompt: '{PAUSE} TRAINING MENU: SPAWN ENEMIES',
 } as const;

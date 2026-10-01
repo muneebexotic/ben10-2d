@@ -19,6 +19,7 @@ import { shakeCamera } from '../systems/Accessibility';
 import { SplitDisplay } from '../ui/SplitDisplay';
 import { playSfx } from '../systems/audio/Sfx';
 import { DialogBox } from '../ui/DialogBox';
+import { MISFIRE, SWAP } from '../config/omnitrix';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -83,7 +84,22 @@ export class UIScene extends Phaser.Scene {
       this.dial.pop();
       if (!hasAlien(p.alienId)) return;
       const theme = getAlien(p.alienId).theme;
-      this.banner.alienName(p.name, theme.color, { first: p.first, swap: p.swap, style: theme.slam });
+      if (p.fix) this.popText(`FIXED IT! -${((SWAP.costMs * MISFIRE.fixCostScale) / 1000).toFixed(1)}S`, theme.color);
+      // A misfire gets its own card a beat later, on the record scratch.
+      if (!p.wrong) this.banner.alienName(p.name, theme.color, { first: p.first, swap: p.swap, style: theme.slam });
+    }, this);
+    on('alien:misfire', (p) => {
+      if (!hasAlien(p.wantedId) || !hasAlien(p.gotId)) return;
+      const card = (id: string) => {
+        const a = getAlien(id);
+        return { name: a.name, icon: a.hudIcon, color: a.theme.color };
+      };
+      this.banner.misfire(card(p.wantedId), card(p.gotId), p.swap);
+      this.dial.glitch();
+    }, this);
+    on('omnitrix:improvised', (p) => {
+      this.dial.pop();
+      this.popText(`IMPROVISED! +${Math.round(p.bonusMs / 1000)}S`, PALETTE.gold, 1);
     }, this);
     on('alien:swapStrike', (p) => {
       if (hasAlien(p.alienId)) this.popText(p.hits > 1 ? `SWAP STRIKE X${p.hits}!` : 'SWAP STRIKE!', getAlien(p.alienId).theme.color);

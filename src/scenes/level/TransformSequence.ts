@@ -13,7 +13,8 @@ import { playSfx } from '../../systems/audio/Sfx';
 import { music } from '../../systems/audio/Music';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { a11y, flashCamera } from '../../systems/Accessibility';
-import { PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
+import { MISFIRE, PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
+import type { MisfireBeat } from './MisfireBeat';
 
 export interface SequenceDeps {
   scene: Phaser.Scene;
@@ -22,6 +23,13 @@ export interface SequenceDeps {
   combat: Combat;
   time: TimeController;
   speech: SpeechBubble;
+  misfire: MisfireBeat;
+}
+
+/** The Omnitrix gave the wrong alien: who was wanted and what Ben says about it. */
+export interface MisfireInfo {
+  wantedId: string;
+  line: string;
 }
 
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
@@ -34,16 +42,25 @@ const PERFECT_QUIPS = ['NAILED IT!', 'TOO SLOW, TIN CAN!', 'PERFECT TIMING!', 'D
 export class TransformSequence {
   private busyUntil = 0;
   private zoomTween: Phaser.Tweens.Tween | null = null;
+  private concealUntilGag = false;
 
   constructor(private readonly d: SequenceDeps) {}
+
+  /** A misfire is winding up: the HUD keeps showing the alien Ben picked until the reveal. */
+  get concealing(): boolean {
+    return this.concealUntilGag;
+  }
 
   get busy(): boolean {
     return this.d.scene.time.now < this.busyUntil;
   }
 
-  transform(alien: FormDefinition, opts: { first: boolean; wrong: boolean; perfect: boolean }): void {
+  transform(alien: FormDefinition, opts: { first: boolean; perfect: boolean; misfire?: MisfireInfo }): void {
     const { scene, player, fx, time } = this.d;
-    const windupMs = opts.first ? 520 : 240;
+    const misfire = opts.misfire ?? null;
+    this.concealUntilGag = misfire !== null;
+    // A misfire's tell: the watch sputters a beat longer before it goes off.
+    const windupMs = (opts.first ? 520 : 240) + (misfire ? MISFIRE.glitchWindupMs : 0);
     const cam = scene.cameras.main;
 
     player.controlsEnabled = false;
@@ -61,6 +78,7 @@ export class TransformSequence {
       fx.burst('gold', x, y, 24);
       fx.ring(x, y, PALETTE.gold, 34, windupMs);
     }
+    if (misfire) this.sputter(x, y, windupMs);
     fx.burst('green', x, y, opts.first ? 30 : 16);
     fx.ring(x, y, PALETTE.omnitrix, 18, windupMs);
     fx.light(x, y, 160, PALETTE.omnitrix, windupMs + 300, 1);
@@ -94,18 +112,54 @@ export class TransformSequence {
       const reflected = opts.perfect ? this.perfectBurst(px, py) : 0;
       if (!opts.perfect) this.d.combat.blast(px, py, 72, { damage: 1, kind: 'transform', x: px, y: py, knockback: 340 }, true);
 
-      this.zoomTo(1, CAMERA.transformZoomMs, 'Back.easeOut');
       music.setLayer(alien.audio.music);
       music.setIntensity(1);
-      EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: opts.wrong, first: opts.first, swap: false });
-      const line = opts.wrong
-        ? 'AW MAN, NOT THIS GUY!'
-        : opts.first
+      EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: misfire !== null, first: opts.first, swap: false });
+      if (misfire) {
+        // The misfire beat owns the camera from here.
+        this.zoomTween?.stop();
+        this.zoomTween = null;
+        this.startMisfire(alien, misfire, false);
+        return;
+      }
+      this.zoomTo(1, CAMERA.transformZoomMs, 'Back.easeOut');
+      const line = opts.first
           ? alien.quips.first ?? pick(alien.quips.transform)
           : opts.perfect
             ? reflected > 0 ? 'RETURN TO SENDER!' : pick(PERFECT_QUIPS)
             : pick(alien.quips.transform);
-      if (line && (opts.first || opts.wrong || opts.perfect || Math.random() < 0.45)) this.d.speech.show(line, opts.first ? 2200 : 1500);
+      if (line && (opts.first || opts.perfect || Math.random() < 0.45)) this.d.speech.show(line, opts.first ? 2200 : 1500);
+    });
+  }
+
+  /** Sparks and stutter from the watch while it winds up the wrong alien. */
+  private sputter(x: number, y: number, windupMs: number): void {
+    const { fx, scene } = this.d;
+    playSfx('omnitrixGlitch');
+    fx.burst('spark', x, y, 10);
+    fx.ring(x, y, PALETTE.enemy, 22, windupMs * 0.6);
+    scene.time.delayedCall(windupMs * 0.45, () => {
+      fx.burst('spark', this.d.player.x, this.d.player.centerY, 8);
+      EventBus.emit('hud:omnitrixSymbol', { color: PALETTE.enemy, big: false });
+    });
+  }
+
+  /**
+   * Wrong alien: the record-scratch gag, with the WANTED / GOT card on the
+   * HUD. It waits for the transformation flash to clear so the freeze-frame
+   * lands on the new alien's face, not on the explosion.
+   */
+  private startMisfire(alien: FormDefinition, misfire: MisfireInfo, swap: boolean): void {
+    this.concealUntilGag = true;
+    this.d.scene.time.delayedCall(swap ? MISFIRE.swapRevealDelayMs : MISFIRE.revealDelayMs, () => {
+      this.concealUntilGag = false;
+      if (this.d.player.dead || this.d.player.form.id !== alien.id) {
+        // No gag after all (Ben went down, or was already swapped out): just give the camera back.
+        this.zoomTo(1, CAMERA.transformZoomMs, 'Quad.easeOut');
+        return;
+      }
+      this.d.misfire.start(misfire.line, swap);
+      EventBus.emit('alien:misfire', { wantedId: misfire.wantedId, gotId: alien.id, swap });
     });
   }
 
@@ -113,7 +167,7 @@ export class TransformSequence {
    * Mid-transformation swap: no wind-up, the new alien bursts out of the old
    * one and arrives with its entrance move. Fast enough to use in a fight.
    */
-  swap(alien: FormDefinition, opts: { wrong: boolean; perfect: boolean }): void {
+  swap(alien: FormDefinition, opts: { perfect: boolean; fix: boolean; misfire?: MisfireInfo }): void {
     const { scene, player, fx, time } = this.d;
     const px = player.x;
     const py = player.centerY;
@@ -139,13 +193,20 @@ export class TransformSequence {
     const reflected = opts.perfect ? this.perfectBurst(px, py) : 0;
     if (opts.perfect) playSfx('perfect');
     player.swapIn();
-    EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: opts.wrong, first: false, swap: true });
-    const line = opts.wrong
-      ? 'WAIT, WRONG GUY!'
+    const misfire = opts.misfire ?? null;
+    EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: misfire !== null, first: false, swap: true, fix: opts.fix });
+    if (misfire) {
+      playSfx('omnitrixGlitch', 0.8);
+      fx.burst('spark', px, py, 12);
+      this.startMisfire(alien, misfire, true);
+      return;
+    }
+    const line = opts.fix
+      ? 'THAT\'S MORE LIKE IT!'
       : opts.perfect
         ? reflected > 0 ? 'RETURN TO SENDER!' : pick(PERFECT_QUIPS)
         : alien.quips.swap?.length ? pick(alien.quips.swap) : '';
-    if (line && (opts.wrong || opts.perfect || Math.random() < SWAP.quipChance)) this.d.speech.show(line, 1300);
+    if (line && (opts.fix || opts.perfect || Math.random() < SWAP.quipChance)) this.d.speech.show(line, 1300);
   }
 
   /** Bigger shockwave, enemy shots turned around, a slow-motion beat and a gold supernova. */

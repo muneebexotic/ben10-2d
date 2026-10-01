@@ -53,6 +53,34 @@ const RECIPES = {
     A.noise({ duration: 0.1, volume: 0.16 * v, filter: 'highpass', freq: 3500, when: A.now + 0.04 });
     A.tone({ type: 'triangle', freq: midiToFreq(88), duration: 0.18, volume: 0.06 * v, when: A.now + 0.06 });
   },
+  /** The misfire: a DJ scratch ("wicka-wicka") and the needle lifting off the record. */
+  recordScratch: (v) => {
+    const t = A.now;
+    const scrub = (when: number, from: number, to: number, dur: number) => {
+      A.noise({ duration: dur, volume: 0.42 * v, filter: 'bandpass', freq: from, freqEnd: to, q: 3, when: t + when });
+      A.tone({ type: 'sawtooth', freq: from / 6, freqEnd: to / 6, duration: dur, volume: 0.1 * v, filter: { type: 'bandpass', freq: 800, q: 1.2 }, when: t + when });
+    };
+    scrub(0, 380, 3400, 0.08);
+    scrub(0.08, 3600, 260, 0.13);
+    scrub(0.22, 420, 2600, 0.06);
+    scrub(0.28, 2800, 160, 0.2);
+    A.noise({ duration: 0.025, volume: 0.3 * v, filter: 'highpass', freq: 3500, when: t + 0.5 });
+  },
+  /** The Omnitrix sputtering before a misfire: the tell. */
+  omnitrixGlitch: (v) => {
+    for (let i = 0; i < 5; i++) {
+      const when = A.now + i * 0.05;
+      A.tone({ type: 'square', freq: 1500 - i * 210 + (i % 2) * 380, duration: 0.035, volume: 0.07 * v, when });
+      A.noise({ duration: 0.03, volume: 0.1 * v, filter: 'bandpass', freq: 2600 - i * 300, q: 8, when });
+    }
+  },
+  /** Rolled with the wrong alien and got a KO: a cheeky little "ta-daa". */
+  improvise: (v) => {
+    A.tone({ type: 'square', freq: midiToFreq(79), duration: 0.08, volume: 0.08 * v });
+    A.tone({ type: 'square', freq: midiToFreq(84), duration: 0.08, volume: 0.08 * v, when: A.now + 0.08 });
+    A.tone({ type: 'triangle', freq: midiToFreq(91), duration: 0.4, volume: 0.12 * v, when: A.now + 0.16 });
+    A.tone({ type: 'square', freq: midiToFreq(86), duration: 0.36, volume: 0.05 * v, when: A.now + 0.16, detune: 8 });
+  },
   tag: (v, p) => {
     for (const [i, n] of [79, 84, 88].entries()) A.tone({ type: 'square', freq: midiToFreq(n) * p, duration: 0.09, volume: 0.07 * v, when: A.now + i * 0.05 });
     A.tone({ type: 'triangle', freq: midiToFreq(91) * p, duration: 0.35, volume: 0.08 * v, when: A.now + 0.15 });

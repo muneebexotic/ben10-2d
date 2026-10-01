@@ -6,6 +6,7 @@ import type { BannerPayload } from '../systems/events';
 import { pixelText } from './text';
 import { a11y, shakeCamera } from '../systems/Accessibility';
 import { NAME_SLAM } from '../config/ui';
+import { MISFIRE } from '../config/omnitrix';
 import type { SlamStyle } from '../aliens/types';
 
 /** Big centre-screen moments: chapter titles, checkpoints, the alien name slam, the Omnitrix emblem flash. */
@@ -179,6 +180,75 @@ export class Banner {
       y: y + 12,
       delay: hold + 190,
       duration: 260,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /**
+   * The misfire card, in place of the name slam: "WANTED: XLR8" gets struck
+   * out in red, "FOUR ARMS?!" stamps in under it, and a MISFIRE! rubber stamp
+   * thunks onto the corner. Timed to land with the record scratch.
+   */
+  misfire(wanted: { name: string; icon: string; color: number }, got: { name: string; icon: string; color: number }, swap: boolean): void {
+    this.current?.destroy();
+    const scene = this.scene;
+    const y = swap ? 70 : 84;
+    const bigScale = swap ? NAME_SLAM.swapScale : NAME_SLAM.scale - 1;
+
+    const stripe = scene.add.rectangle(0, -2, GAME_WIDTH + 40, 66, 0x000000, 0.6);
+    // Row 1: what Ben asked for.
+    const label = pixelText(scene, 0, -18, 'WANTED', { originX: 0, originY: 0.5, color: PALETTE.uiDim });
+    const wantedIcon = scene.add.image(0, -18, wanted.icon).setTint(wanted.color).setScale(1.25);
+    const wantedName = pixelText(scene, 0, -18, wanted.name, { scale: 2, originX: 0, originY: 0.5, color: wanted.color });
+    const rowW = label.width + 6 + 16 + 4 + wantedName.width;
+    let x = -rowW / 2;
+    label.setX(x);
+    x += label.width + 6;
+    wantedIcon.setX(x + 8);
+    x += 16 + 4;
+    wantedName.setX(x);
+    const strike = scene.add.graphics();
+    strike.fillStyle(PALETTE.enemy, 1).fillRect(0, -1, wantedName.width + 26, 3);
+    strike.setPosition(wantedIcon.x - 11, -18).setScale(0, 1);
+
+    // Row 2: what the Omnitrix actually gave him.
+    const text = `${got.name}?!`;
+    const gotShadow = pixelText(scene, 3, 13, text, { scale: bigScale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const gotName = pixelText(scene, 0, 10, text, { scale: bigScale, originX: 0.5, originY: 0.5, color: got.color });
+    const gotIcon = scene.add.image(-gotName.width / 2 - 16, 10, got.icon).setTint(got.color).setScale(2);
+    const row2 = scene.add.container(0, 0, [gotIcon, gotShadow, gotName]).setAlpha(0);
+
+    // The rubber stamp.
+    const stampText = pixelText(scene, 0, 0, 'MISFIRE!', { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.enemy });
+    const box = scene.add.graphics();
+    box.lineStyle(2, PALETTE.enemy, 1).strokeRect(-stampText.width / 2 - 5, -stampText.height / 2 - 4, stampText.width + 10, stampText.height + 8);
+    const stamp = scene.add.container(Math.max(rowW / 2, gotName.width / 2) + 54, -16, [box, stampText]).setAngle(-12).setAlpha(0);
+
+    const c = scene.add.container(GAME_WIDTH / 2, y, [stripe, label, wantedIcon, wantedName, strike, row2, stamp]).setDepth(450);
+    this.current = c;
+    c.setAlpha(0);
+    scene.tweens.add({ targets: c, alpha: 1, duration: 90 });
+    scene.tweens.add({ targets: strike, scaleX: 1, delay: 90, duration: 110, ease: 'Quad.easeOut' });
+    scene.tweens.add({ targets: [wantedName, wantedIcon], alpha: 0.45, delay: 200, duration: 160 });
+    row2.setScale(2.6);
+    scene.tweens.add({
+      targets: row2,
+      scale: 1,
+      alpha: 1,
+      delay: 170,
+      duration: 220,
+      ease: 'Back.easeOut',
+      onComplete: () => shakeCamera(scene.cameras.main, 160, 0.008, false),
+    });
+    stamp.setScale(2.4);
+    scene.tweens.add({ targets: stamp, scale: 1, alpha: 1, delay: 330, duration: 160, ease: 'Quad.easeIn' });
+    scene.tweens.add({
+      targets: c,
+      y: y - 14,
+      alpha: 0,
+      delay: MISFIRE.cardMs,
+      duration: 280,
       ease: 'Quad.easeIn',
       onComplete: () => this.finish(c),
     });

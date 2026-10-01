@@ -21,6 +21,8 @@ export interface OmnitrixTick {
   canSwap: boolean;
   /** The alien timer is frozen (Training). */
   frozen: boolean;
+  /** After a misfire: the next swap is the half-price fix. */
+  fixOwed: boolean;
 }
 
 export interface BannerPayload {
@@ -42,8 +44,12 @@ export interface GameEvents {
   'omnitrix:warning': { secondsLeft: number };
   'omnitrix:ready': undefined;
   'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' | 'lowTime' };
-  /** `swap`: changed alien mid-transformation instead of transforming from human. */
-  'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean; swap: boolean };
+  /** `swap`: changed alien mid-transformation instead of transforming from human. `fix`: the half-price swap owed after a misfire. */
+  'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean; swap: boolean; fix?: boolean };
+  /** The record-scratch moment of a misfire: Ben wanted one alien and got another. */
+  'alien:misfire': { wantedId: string; gotId: string; swap: boolean };
+  /** A KO as the misfired alien: rolling with it paid out. */
+  'omnitrix:improvised': { bonusMs: number; alienId: string };
   /** A swap entrance move hit something. */
   'alien:swapStrike': { alienId: string; hits: number };
   'alien:reverted': { alienId: string; reason: RevertReason };

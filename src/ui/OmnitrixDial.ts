@@ -33,6 +33,9 @@ export class OmnitrixDial {
   private readonly pips: Phaser.GameObjects.Graphics;
   private readonly badge: Phaser.GameObjects.Container;
   private readonly badgeIcon: Phaser.GameObjects.Image;
+  private readonly badgeRing: Phaser.GameObjects.Graphics;
+  private readonly fixLabel: Phaser.GameObjects.BitmapText;
+  private glitchLeft = 0;
   private readonly carousel: Phaser.GameObjects.Container;
   private readonly carouselIcons: Phaser.GameObjects.Image[] = [];
   private readonly carouselName: Phaser.GameObjects.BitmapText;
@@ -56,7 +59,11 @@ export class OmnitrixDial {
     badgeBg.fillStyle(PALETTE.ink, 0.9).fillCircle(0, 0, 8);
     badgeBg.lineStyle(1, PALETTE.omnitrix, 1).strokeCircle(0, 0, 8);
     this.badgeIcon = scene.add.image(0, 0, TEX.iconBen).setScale(0.6);
-    this.badge = scene.add.container(R - 2, R - 4, [badgeBg, this.badgeIcon]).setVisible(false);
+    this.badgeRing = scene.add.graphics();
+    this.badgeRing.lineStyle(1, PALETTE.gold, 1).strokeCircle(0, 0, 9);
+    // After a misfire the swap back is half price: the badge says so.
+    this.fixLabel = pixelText(scene, 12, 0, 'FIX', { originX: 0, originY: 0.5, color: PALETTE.gold });
+    this.badge = scene.add.container(R - 2, R - 4, [badgeBg, this.badgeRing, this.badgeIcon, this.fixLabel]).setVisible(false);
 
     this.carouselName = pixelText(scene, 0, DIAL_UI.carouselNameY, '', { originX: 0.5, originY: 0, color: PALETTE.white });
     this.carousel = scene.add.container(0, 0, [this.carouselName]).setVisible(false);
@@ -84,6 +91,12 @@ export class OmnitrixDial {
 
   pop(): void {
     this.popScale = 1.35;
+  }
+
+  /** The watch glitches after a misfire: the hologram stutters for a moment. */
+  glitch(): void {
+    this.glitchLeft = 700;
+    this.shakeLeft = 300;
   }
 
   /** The dial turned: slide the hologram over and flash the row of aliens. */
@@ -131,6 +144,7 @@ export class OmnitrixDial {
     const t = this.tick;
     if (!t || !this.visible) return;
     this.shakeLeft = Math.max(0, this.shakeLeft - dtMs);
+    this.glitchLeft = Math.max(0, this.glitchLeft - dtMs);
     this.popScale += (1 - this.popScale) * Math.min(1, dtMs / 90);
     const sx = this.shakeLeft > 0 ? (Math.random() - 0.5) * 4 : 0;
     this.root.setPosition(this.x + sx, this.y).setScale(this.popScale);
@@ -199,6 +213,11 @@ export class OmnitrixDial {
       g.fillCircle(Math.cos(a) * R, Math.sin(a) * R, 1.5);
     }
 
+    if (this.glitchLeft > 0 && blinkOn(now, 70)) {
+      iconColor = PALETTE.enemy;
+      this.icon.setX((Math.random() - 0.5) * 3);
+    } else this.icon.setX(0);
+
     this.glow.setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : active ? alienColor : PALETTE.omnitrix).setAlpha(glowAlpha);
     this.icon.setTint(iconColor);
     this.status.setText(status).setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : active ? alienColor : PALETTE.omnitrix);
@@ -216,6 +235,8 @@ export class OmnitrixDial {
     if (!show) return;
     this.badgeIcon.setTexture(iconFor(t.selectedId)).setTint(t.canSwap ? colorFor(t.selectedId) : PALETTE.uiDim);
     this.badge.setAlpha(t.canSwap ? 0.8 + Math.sin(now * 0.012) * 0.2 : 0.5);
+    this.badgeRing.setVisible(t.fixOwed);
+    this.fixLabel.setVisible(t.fixOwed);
   }
 
   /** One dot per alien on the dial; the selected one is lit. */
