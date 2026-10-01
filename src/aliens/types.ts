@@ -232,6 +232,12 @@ export interface FormDefinition {
     revert: string[];
     /** Swapping into this alien mid-transformation. */
     swap?: string[];
+    /**
+     * Ben's reaction when the Omnitrix misfires and gives him THIS alien.
+     * `wanted` is keyed by the alien he picked (one or more lines per pair);
+     * `any` covers aliens added later that don't have a line yet.
+     */
+    misfire?: { wanted: Partial<Record<string, string[]>>; any: string[] };
   };
   tips: FormTips;
   /** Move list for the pause screen, with control tokens ("{J} FIREBALL"). */

@@ -30,6 +30,13 @@ export const FOURARMS_FORM: FormDefinition = {
     transform: ['FOUR ARMS, READY TO RUMBLE!', "IT'S CLOBBERING TIME!", 'WHO WANTS A KNUCKLE SANDWICH?', 'FOUR TIMES THE PUNCH!'],
     revert: [],
     swap: ['TAG! I\'M IT!', 'SMASH TIME!', 'MAKE SOME ROOM!'],
+    misfire: {
+      wanted: {
+        heatblast: ['I WANTED FIRE, NOT FISTS!', 'NO FIRE... BUT FOUR FISTS. FINE.'],
+        xlr8: ['I ASKED FOR FAST. THIS IS THE OPPOSITE!', "I CAN'T EVEN SEE MY FEET!"],
+      },
+      any: ['WRONG ALIEN! BIG, BUT WRONG!'],
+    },
   },
   tips: {
     intro: { id: 'fourarms', text: '{J} PUNCH   {K} SLAM   {UP}+{J} CLAP', ms: 7000, priority: 5, doneAfter: { action: 'slam', count: 1 } },

@@ -60,7 +60,7 @@ describe('Omnitrix swap', () => {
     const before = omni.timeRemainingMs;
     omni.select('fourarms');
     const events = omni.swap();
-    expect(events).toEqual([{ type: 'swapped', fromId: 'heatblast', alienId: 'fourarms', requestedId: 'fourarms', wrong: false, costMs: SWAP.costMs }]);
+    expect(events).toEqual([{ type: 'swapped', fromId: 'heatblast', alienId: 'fourarms', requestedId: 'fourarms', wrong: false, costMs: SWAP.costMs, fix: false }]);
     expect(omni.state).toBe('active');
     expect(omni.activeAlienId).toBe('fourarms');
     expect(omni.timeRemainingMs).toBe(before - SWAP.costMs);
@@ -112,7 +112,8 @@ describe('Omnitrix swap', () => {
     for (const roll of [0, 0.5, 0.99]) {
       const omni = new Omnitrix(config, ROSTER, () => roll);
       omni.select('heatblast');
-      omni.transform();
+      // A clean transform first: the swap right after a misfire is the guaranteed fix.
+      omni.transform({ allowMisfire: false });
       const from = omni.activeAlienId;
       omni.update(SWAP.lockoutMs);
       omni.select(ROSTER.find((id) => id !== from)!);

@@ -30,6 +30,13 @@ export const XLR8_FORM: FormDefinition = {
     transform: ['NEED FOR SPEED!', 'CATCH ME IF YOU CAN!', 'BLINK AND YOU MISS IT!', 'ZOOM ZOOM!'],
     revert: [],
     swap: ['TOO SLOW!', 'COMING THROUGH!', 'BLUR MODE!'],
+    misfire: {
+      wanted: {
+        heatblast: ['I ORDERED THE SPICY ONE!', 'I SAID HOT, NOT FAST! ...FAST WORKS.'],
+        fourarms: ['WHERE ARE MY OTHER TWO ARMS?!', 'TINY ARMS! FAST LEGS! WRONG GUY!'],
+      },
+      any: ['WRONG GUY! ...AT LEAST I GOT HERE FAST.'],
+    },
   },
   tips: {
     intro: { id: 'xlr8', text: 'HOLD {J}: STRIKES   {K}: DASH THROUGH', ms: 7000, priority: 5, doneAfter: { action: 'dashStrike', count: 1 } },

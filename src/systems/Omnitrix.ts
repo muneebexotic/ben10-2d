@@ -1,3 +1,5 @@
+import type { Rng } from './Rng';
+
 /**
  * Pure Omnitrix state machine: dial, transform timer, cooldown, unlocks and
  * wrong-transform rolls. No Phaser, no rendering; callers translate the
@@ -18,20 +20,41 @@ export interface OmnitrixConfig {
   swapLockoutMs?: number;
   /** Swapping is off unless this is true. */
   swapEnabled?: boolean;
+  /** Swaps misfire at this fraction of `wrongTransformChance` (missing: the full chance). */
+  swapMisfireScale?: number;
+  /** After a misfire, the next swap costs this fraction of `swapCostMs` and can't misfire (missing: full cost). */
+  misfireFixCostScale?: number;
+  /** Alien time refunded by the first KO as a misfired alien (missing: none). */
+  improviseBonusMs?: number;
+}
+
+/** Options for one transform or swap. */
+export interface RollOptions {
+  /** False during boss intros and story beats: the watch behaves. Default true. */
+  allowMisfire?: boolean;
+}
+
+/** The alien the Omnitrix gave by mistake, while it is still the active one. */
+export interface MisfireState {
+  wantedId: string;
+  gotId: string;
+  /** The improvise bonus was already paid for this misfire. */
+  improvised: boolean;
 }
 
 export type SwapDenial = 'off' | 'notActive' | 'sameAlien' | 'lockout' | 'lowTime';
 
 export type OmnitrixEvent =
   | { type: 'transformed'; alienId: string; requestedId: string; wrong: boolean }
-  | { type: 'swapped'; fromId: string; alienId: string; requestedId: string; wrong: boolean; costMs: number }
+  /** `fix`: the half-price, misfire-proof swap the Omnitrix owed after a misfire. */
+  | { type: 'swapped'; fromId: string; alienId: string; requestedId: string; wrong: boolean; costMs: number; fix: boolean }
   | { type: 'warning'; secondsLeft: number }
   | { type: 'reverted'; alienId: string; reason: RevertReason }
   | { type: 'ready' }
   | { type: 'dial'; selectedId: string; index: number; count: number }
   | { type: 'unlocked'; alienId: string };
 
-export type Rng = () => number;
+export type { Rng };
 
 export class Omnitrix {
   private _state: OmnitrixState = 'ready';
@@ -43,6 +66,8 @@ export class Omnitrix {
   private lastWarningSecond = -1;
   private sinceChangeMs = 0;
   private frozen = false;
+  private fixOwed = false;
+  private misfire: MisfireState | null = null;
 
   constructor(
     private config: OmnitrixConfig,
@@ -94,6 +119,31 @@ export class Omnitrix {
     return this._state === 'active' && this.remainingMs <= this.config.warningMs;
   }
 
+  /** The active alien is a misfire (and which one was wanted), or null. */
+  get misfireState(): Readonly<MisfireState> | null {
+    return this.misfire;
+  }
+
+  /** The next swap is the half-price, misfire-proof fix. */
+  get fixSwapOwed(): boolean {
+    return this.fixOwed && this._state === 'active';
+  }
+
+  /** Chance that a transform (or a swap) right now lands on the wrong alien. */
+  misfireChance(kind: 'transform' | 'swap'): number {
+    const base = Math.max(0, this.config.wrongTransformChance);
+    if (kind === 'transform') return base;
+    if (this.fixOwed) return 0;
+    return base * (this.config.swapMisfireScale ?? 1);
+  }
+
+  /** Alien time the next swap would cost. */
+  get swapCostMs(): number {
+    if (this.frozen) return 0;
+    const cost = this.config.swapCostMs ?? 0;
+    return this.fixOwed ? Math.round(cost * (this.config.misfireFixCostScale ?? 1)) : cost;
+  }
+
   get settings(): Readonly<OmnitrixConfig> {
     return this.config;
   }
@@ -140,17 +190,20 @@ export class Omnitrix {
     return [this.dialEvent()];
   }
 
-  transform(): OmnitrixEvent[] {
+  transform(opts: RollOptions = {}): OmnitrixEvent[] {
     const requestedId = this.selectedAlien;
     if (!this.canTransform() || requestedId === null) return [];
 
-    const alienId = this.rollAlien(requestedId, null);
+    const chance = opts.allowMisfire === false ? 0 : this.misfireChance('transform');
+    const alienId = this.rollAlien(requestedId, null, chance);
+    const wrong = alienId !== requestedId;
     this._state = 'active';
     this.activeAlien = alienId;
     this.remainingMs = this.config.transformDurationMs;
     this.lastWarningSecond = -1;
     this.sinceChangeMs = 0;
-    return [{ type: 'transformed', alienId, requestedId, wrong: alienId !== requestedId }];
+    this.setMisfire(wrong ? requestedId : null, alienId);
+    return [{ type: 'transformed', alienId, requestedId, wrong }];
   }
 
   /** Why a swap would be refused right now, or null if it is allowed. */
@@ -160,7 +213,7 @@ export class Omnitrix {
     const selected = this.selectedAlien;
     if (selected === null || selected === this.activeAlien) return 'sameAlien';
     if (this.sinceChangeMs < (this.config.swapLockoutMs ?? 0)) return 'lockout';
-    if (!this.frozen && this.remainingMs <= (this.config.swapCostMs ?? 0)) return 'lowTime';
+    if (!this.frozen && this.remainingMs <= this.swapCostMs) return 'lowTime';
     return null;
   }
 
@@ -170,20 +223,38 @@ export class Omnitrix {
 
   /**
    * Swaps the active alien for the one on the dial without reverting. Costs
-   * alien time; the cooldown is untouched. Misfires never land on the alien
-   * you are swapping away from.
+   * alien time; the cooldown is untouched. Misfires (at a reduced chance)
+   * never land on the alien you are swapping away from, and the swap right
+   * after a misfire is a cheaper, guaranteed fix.
    */
-  swap(): OmnitrixEvent[] {
+  swap(opts: RollOptions = {}): OmnitrixEvent[] {
     const requestedId = this.selectedAlien;
     const fromId = this.activeAlien;
     if (!this.canSwap() || requestedId === null || fromId === null) return [];
-    const alienId = this.rollAlien(requestedId, fromId);
-    const costMs = this.frozen ? 0 : (this.config.swapCostMs ?? 0);
+    const fix = this.fixOwed;
+    const costMs = this.swapCostMs;
+    const chance = opts.allowMisfire === false ? 0 : this.misfireChance('swap');
+    const alienId = this.rollAlien(requestedId, fromId, chance);
+    const wrong = alienId !== requestedId;
     this.remainingMs -= costMs;
     this.activeAlien = alienId;
     this.sinceChangeMs = 0;
     this.lastWarningSecond = -1;
-    return [{ type: 'swapped', fromId, alienId, requestedId, wrong: alienId !== requestedId, costMs }];
+    this.setMisfire(wrong ? requestedId : null, alienId);
+    return [{ type: 'swapped', fromId, alienId, requestedId, wrong, costMs, fix }];
+  }
+
+  /**
+   * The misfired alien landed a KO: rolling with it pays out once per misfire.
+   * Returns the alien time added (0 if there was nothing to pay).
+   */
+  improvise(): number {
+    const m = this.misfire;
+    const bonus = this.config.improviseBonusMs ?? 0;
+    if (!m || m.improvised || this._state !== 'active' || this.activeAlien !== m.gotId || bonus <= 0) return 0;
+    m.improvised = true;
+    this.extend(bonus);
+    return bonus;
   }
 
   /** Adds alien time (the perfect transform reward). The ring can sit above full until it drains back. */
@@ -232,10 +303,18 @@ export class Omnitrix {
     this.remainingMs = 0;
     this.cooldownLeftMs = 0;
     this.lastWarningSecond = -1;
+    this.setMisfire(null, null);
+  }
+
+  /** Remembers a misfire (the fix swap is owed) or clears it. */
+  private setMisfire(wantedId: string | null, gotId: string | null): void {
+    this.misfire = wantedId !== null && gotId !== null ? { wantedId, gotId, improvised: false } : null;
+    this.fixOwed = this.misfire !== null;
   }
 
   private enterCooldown(reason: RevertReason, overflowMs: number): OmnitrixEvent[] {
     const alienId = this.activeAlien ?? '';
+    this.setMisfire(null, null);
     this.activeAlien = null;
     this.remainingMs = 0;
     this._state = 'cooldown';
@@ -251,10 +330,11 @@ export class Omnitrix {
     return [{ type: 'ready' }];
   }
 
-  private rollAlien(requestedId: string, exclude: string | null): string {
+  /** The requested alien, or (with probability `chance`) a random other one that isn't `exclude`. */
+  private rollAlien(requestedId: string, exclude: string | null, chance: number): string {
     const others = this.unlocked.filter((id) => id !== requestedId && id !== exclude);
-    if (others.length === 0 || this.config.wrongTransformChance <= 0) return requestedId;
-    if (this.rng() >= this.config.wrongTransformChance) return requestedId;
+    if (others.length === 0 || chance <= 0) return requestedId;
+    if (this.rng() >= chance) return requestedId;
     const pick = Math.min(others.length - 1, Math.floor(this.rng() * others.length));
     return others[pick];
   }

@@ -32,6 +32,13 @@ export const HEATBLAST_FORM: FormDefinition = {
     first: "WHOA! I'M ON FIRE! ...LITERALLY!",
     revert: [],
     swap: ['FIRE IN THE HOLE!', 'HEATBLAST, TAG IN!', 'TURNING UP THE HEAT!'],
+    misfire: {
+      wanted: {
+        xlr8: ['I WANTED SPEED, NOT A BARBECUE!', 'FAST? NO. ON FIRE? VERY.'],
+        fourarms: ['I WANTED MUSCLES, NOT MATCHES!', "CAN I PUNCH WITH FIRE? ...I CAN'T, RIGHT?"],
+      },
+      any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
+    },
   },
   tips: {
     intro: { id: 'fireball', text: '{J} FIREBALL  (HOLD {UP} TO AIM HIGH)', ms: 7000, priority: 5, doneAfter: { action: 'fireball', count: 4 } },
