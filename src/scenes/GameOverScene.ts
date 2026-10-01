@@ -7,6 +7,9 @@ import { MenuList } from '../ui/MenuList';
 import { pixelText } from '../ui/text';
 import { SCENES } from './SceneKeys';
 import { inputMode } from '../systems/InputMode';
+import { session } from '../systems/Session';
+import { leaveTo, resetLeaving } from '../ui/menu/transition';
+import { GAMEOVER } from '../config/ui';
 
 interface GameOverData {
   levelId?: string;
@@ -38,6 +41,7 @@ export class GameOverScene extends Phaser.Scene {
 
   create(data: GameOverData): void {
     this.info = data;
+    resetLeaving(this);
     this.scene.bringToTop();
     const bg = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x14040a, 0).setOrigin(0, 0);
     this.tweens.add({ targets: bg, fillAlpha: 0.78, duration: 400 });
@@ -45,12 +49,17 @@ export class GameOverScene extends Phaser.Scene {
     title.setScale(3).setAlpha(0);
     this.tweens.add({ targets: title, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
     pixelText(this, GAME_WIDTH / 2, 150, `DEATHS THIS RUN: ${data.stats.deaths}`, { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
-    const tip = inputMode.format(TIPS[Math.floor(Math.random() * TIPS.length)]);
-    pixelText(this, GAME_WIDTH / 2, 280, `TIP: ${tip}`, { originX: 0.5, originY: 0.5, color: PALETTE.gold, maxWidth: 560, align: 'center' });
+    // Stuck? After a few deaths the screen says the difficulty is one setting away, without any shame.
+    const struggling = data.stats.deaths >= GAMEOVER.suggestEasierAfterDeaths && session.slot !== null && session.difficulty !== 'easy';
+    const tip = struggling
+      ? 'STUCK? SETTINGS CAN LOWER THE DIFFICULTY ANY TIME. YOUR FILE KEEPS EVERYTHING.'
+      : inputMode.format(TIPS[Math.floor(Math.random() * TIPS.length)]);
+    pixelText(this, GAME_WIDTH / 2, 286, `TIP: ${tip}`, { originX: 0.5, originY: 0.5, color: PALETTE.gold, maxWidth: 560, align: 'center' });
 
-    this.menu = new MenuList(this, GAME_WIDTH / 2, 196, [
+    this.menu = new MenuList(this, GAME_WIDTH / 2, 190, [
       { label: data.checkpoint ? 'RETRY FROM CHECKPOINT' : 'RETRY', action: () => this.retry() },
-      { label: 'QUIT TO TITLE', action: () => this.quit() },
+      { label: 'SETTINGS', action: () => this.openSettings() },
+      { label: session.slot === null ? 'QUIT TO TITLE' : 'QUIT TO CHAPTERS', action: () => this.quit() },
     ], 22, 2);
     bindMuteKey(this);
   }
@@ -59,11 +68,17 @@ export class GameOverScene extends Phaser.Scene {
     this.scene.start(SCENES.level, { levelId: this.info.levelId, checkpoint: this.info.checkpoint, stats: this.info.stats });
   }
 
+  private openSettings(): void {
+    this.scene.launch(SCENES.settings, { returnTo: SCENES.gameOver });
+    this.scene.pause();
+  }
+
+  /** The run was saved at the last checkpoint when Ben went down; Continue picks it up. */
   private quit(): void {
     this.scene.stop(SCENES.level);
     this.scene.stop(SCENES.ui);
     this.scene.stop(SCENES.touch);
-    this.scene.start(SCENES.menu);
+    leaveTo(this, session.slot === null ? SCENES.menu : SCENES.chapterSelect, undefined, 'uiBack');
   }
 
   override update(time: number): void {

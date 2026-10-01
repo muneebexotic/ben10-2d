@@ -75,6 +75,8 @@ export interface GameEvents {
   'boss:health': { ratio: number; phase: number };
   'boss:hide': undefined;
   'level:complete': { stats: RunStats };
+  /** The player quit a level from the pause menu: save where Continue picks up. */
+  'level:quit': undefined;
   'hud:reset': undefined;
   /** The HUD scene finished creating and wants the current state. */
   'hud:ready': undefined;

@@ -13,6 +13,9 @@ import { trainingOptions, TRAINING_ENEMIES } from '../systems/TrainingState';
 import { getAlien, hasAlien } from '../aliens/registry';
 import type { LevelStartData } from './LevelScene';
 import { TRAINING } from '../config/training';
+import { session } from '../systems/Session';
+import { getDifficulty } from '../config/difficulty';
+import { leaveTo, resetLeaving } from '../ui/menu/transition';
 
 export interface PauseData {
   checkpoint: string | null;
@@ -61,6 +64,7 @@ export class PauseScene extends Phaser.Scene {
   private menu!: MenuList;
   private info!: PauseData;
   private hint: Phaser.GameObjects.BitmapText | null = null;
+  private difficultyLabel: Phaser.GameObjects.BitmapText | null = null;
   private spawnIndex = 0;
 
   constructor() {
@@ -70,6 +74,8 @@ export class PauseScene extends Phaser.Scene {
   create(data: PauseData): void {
     this.info = data;
     this.hint = null;
+    this.difficultyLabel = null;
+    resetLeaving(this);
     this.scene.bringToTop();
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.8).setOrigin(0, 0);
     if (data.training) this.buildTraining();
@@ -84,14 +90,18 @@ export class PauseScene extends Phaser.Scene {
 
   private buildStory(): void {
     const touch = inputMode.current === 'touch';
-    pixelText(this, GAME_WIDTH / 2, 54, 'PAUSED', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    pixelText(this, GAME_WIDTH / 2, 50, 'PAUSED', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    const slot = session.slot;
+    const d = getDifficulty(session.difficulty);
+    const file = pixelText(this, GAME_WIDTH / 2 - 3, 76, slot === null ? 'NO SAVE FILE  -' : `FILE ${slot + 1}  -`, { originX: 1, originY: 0.5, color: PALETTE.uiDim });
+    this.difficultyLabel = pixelText(this, file.x + 6, 76, d.label, { originY: 0.5, color: d.color });
 
     this.menu = new MenuList(this, touch ? 150 : 170, touch ? 118 : 130, [
       { label: 'RESUME', action: () => this.resume() },
       { label: 'RESTART CHECKPOINT', action: () => this.restart() },
       { label: 'SETTINGS', action: () => this.openSettings() },
       { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute() },
-      { label: 'QUIT TO TITLE', action: () => this.quit() },
+      { label: slot === null ? 'QUIT TO TITLE' : 'SAVE & QUIT', action: () => this.quit() },
     ], touch ? { spacing: 30, scale: 2, rowWidth: 250 } : 20);
 
     pixelText(this, 405, 108, 'CONTROLS', { originX: 0.5, color: PALETTE.gold });
@@ -100,6 +110,12 @@ export class PauseScene extends Phaser.Scene {
       pixelText(this, 510, 124 + i * 13, keys, { originX: 1, color: PALETTE.white });
     });
     pixelText(this, GAME_WIDTH / 2, 272, 'TIP: TRANSFORMING KNOCKS NEARBY DRONES AWAY. USE IT TO ESCAPE!', { originX: 0.5, color: PALETTE.uiDim });
+    if (slot !== null) pixelText(this, GAME_WIDTH / 2, 286, 'SAVE & QUIT KEEPS YOUR RUN AT THE LAST CHECKPOINT. CONTINUE PICKS IT UP.', { originX: 0.5, color: PALETTE.uiDim });
+    // Settings can change the difficulty: keep the label honest when it comes back.
+    this.events.on(Phaser.Scenes.Events.RESUME, () => {
+      const now = getDifficulty(session.difficulty);
+      this.difficultyLabel?.setText(now.label).setTint(now.color);
+    });
   }
 
   /** Sandbox menu on the left, every alien's moves on the right. */
@@ -211,12 +227,15 @@ export class PauseScene extends Phaser.Scene {
     this.scene.start(SCENES.level, start);
   }
 
+  /** Story: the run is saved at the last checkpoint and it's back to Chapter Select. Training: the title. */
   private quit(): void {
     audio.musicBus?.gain.setTargetAtTime(0.32, audio.now, 0.05);
+    if (!this.info.training) EventBus.emit('level:quit');
     this.scene.stop(SCENES.level);
     this.scene.stop(SCENES.ui);
     this.scene.stop(SCENES.touch);
-    this.scene.start(SCENES.menu);
+    const toChapters = !this.info.training && session.slot !== null;
+    leaveTo(this, toChapters ? SCENES.chapterSelect : SCENES.menu, undefined, 'uiBack');
   }
 
   override update(time: number): void {

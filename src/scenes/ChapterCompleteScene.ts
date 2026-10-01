@@ -1,12 +1,16 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
-import type { Rank } from '../config/scoring';
-import { CHAPTER_1 } from '../levels/chapter1';
+import { RANK_COLOR, type Rank } from '../config/scoring';
+import { getDifficulty } from '../config/difficulty';
+import { CHAPTERS, chapterForLevel } from '../levels/chapters';
+import { getLevel } from '../levels/registry';
 import { music } from '../systems/audio/Music';
 import { playSfx } from '../systems/audio/Sfx';
 import { computeRank, formatTime, type RunStats } from '../systems/RunStats';
-import { saveSystem, type RecordOutcome } from '../systems/SaveSystem';
+import { bestOn, saveSystem, SaveSystem, type RecordOutcome } from '../systems/SaveSystem';
+import { session } from '../systems/Session';
+import { enterMenu, leaveTo } from '../ui/menu/transition';
 import { bindMuteKey } from '../systems/Settings';
 import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
@@ -14,14 +18,6 @@ import { SCENES } from './SceneKeys';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
 import { formatDelta } from '../systems/Splits';
 import { inputMode } from '../systems/InputMode';
-
-const RANK_COLOR: Record<Rank, number> = {
-  S: PALETTE.gold,
-  A: PALETTE.omnitrix,
-  B: PALETTE.jammer,
-  C: PALETTE.fire2,
-  D: PALETTE.uiDim,
-};
 
 const RANK_LINE: Record<Rank, string> = {
   S: 'HERO OF THE SUMMER!',
@@ -48,35 +44,46 @@ export class ChapterCompleteScene extends Phaser.Scene {
   private score = 0;
   private ready = false;
   private copied!: Phaser.GameObjects.BitmapText;
+  private levelId = 'ch1';
 
   constructor() {
     super(SCENES.chapterComplete);
   }
 
-  create(data: { stats: RunStats }): void {
+  create(data: { levelId?: string; stats: RunStats }): void {
     this.stats = data.stats;
+    this.levelId = data.levelId ?? 'ch1';
     this.ready = false;
     const result = computeRank(this.stats);
     this.rank = result.rank;
     this.score = result.score;
-    const previousBest = saveSystem.getChapter(CHAPTER_1.id).bestTimeMs;
-    this.outcome = saveSystem.recordChapter(CHAPTER_1.id, {
+    const difficulty = this.stats.difficulty;
+    const slot = session.slot;
+    const previousBest = slot === null ? null : bestOn(saveSystem.getChapter(slot, this.levelId), difficulty).bestTimeMs;
+    const run = {
       timeMs: this.stats.timeMs,
       rank: this.rank,
       score: this.score,
       cards: this.stats.cardsFound,
-      timed: this.stats.fullRun,
-    });
+      difficulty,
+      // Practice runs and runs that changed difficulty count as clears, not records.
+      timed: this.stats.fullRun && !this.stats.mixedDifficulty,
+    };
+    // Without a file (a URL playtest run) nothing is saved; the screen still celebrates.
+    this.outcome = slot === null ? new SaveSystem(null).recordChapter(0, this.levelId, run) : saveSystem.recordChapter(slot, this.levelId, run);
+    const chapter = chapterForLevel(this.levelId);
+    const d = getDifficulty(difficulty);
 
-    this.cameras.main.fadeIn(500, 0, 0, 0);
+    enterMenu(this);
     this.add.image(0, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
     this.add.tileSprite(0, 0, GAME_WIDTH, 200, TEX.stars).setOrigin(0, 0);
     this.rays = this.add.image(GAME_WIDTH / 2, 70, TEX.rays).setScale(5).setAlpha(0.14).setTint(PALETTE.omnitrix).setBlendMode(Phaser.BlendModes.ADD);
     this.add.rectangle(GAME_WIDTH / 2, 176, 420, 200, PALETTE.ink, 0.78).setStrokeStyle(1, PALETTE.omnitrixDark);
     this.add.rectangle(452, 176, 1, 176, PALETTE.omnitrixDark, 0.6);
 
-    pixelText(this, GAME_WIDTH / 2, 28, 'CHAPTER 1 COMPLETE', { scale: 3, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
-    pixelText(this, GAME_WIDTH / 2, 52, CHAPTER_1.name, { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.white });
+    pixelText(this, GAME_WIDTH / 2, 28, `CHAPTER ${chapter?.number ?? 1} COMPLETE`, { scale: 3, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    const name = pixelText(this, GAME_WIDTH / 2 - 4, 52, `${getLevel(this.levelId).name}  -`, { scale: 2, originX: 1, originY: 0.5, color: PALETTE.white });
+    pixelText(this, name.x + 8, 52, d.label, { scale: 2, originX: 0, originY: 0.5, color: d.color });
 
     const s = this.stats;
     const rows: Row[] = [
@@ -86,6 +93,9 @@ export class ChapterCompleteScene extends Phaser.Scene {
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` } },
       { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
+      ...(s.misfires > 0 || d.wrongTransformChance > 0
+        ? [{ label: 'MISFIRES', value: () => String(s.misfires), highlight: s.improvised > 0 ? `${s.improvised} IMPROVISED!` : undefined, highlightColor: PALETTE.gold }]
+        : []),
       { label: 'DEATHS', value: () => String(s.deaths), highlight: s.deaths === 0 ? 'FLAWLESS!' : undefined },
       { label: 'SUMO SLAMMERS', value: () => `${s.cardsFound.length} / ${s.totalCards}`, highlight: s.cardsFound.length === s.totalCards ? 'ALL FOUND!' : undefined },
       { label: 'SCORE', value: () => String(this.score), count: { to: Math.max(0, this.score), format: (n) => String(Math.round(n)) } },
@@ -93,20 +103,22 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
     const x0 = 126;
     const x1 = 330;
+    const spacing = rows.length > 9 ? 18 : 20;
     rows.forEach((row, i) => {
-      const y = 84 + i * 20;
-      this.time.delayedCall(500 + i * 280, () => this.revealRow(row, x0, x1, y));
+      const y = 82 + i * spacing;
+      this.time.delayedCall(500 + i * 260, () => this.revealRow(row, x0, x1, y));
     });
 
-    const rankAt = 500 + rows.length * 280 + 400;
+    const rankAt = 500 + rows.length * 260 + 400;
     this.time.delayedCall(rankAt, () => this.stampRank());
     this.time.delayedCall(rankAt + 900, () => this.showFooter());
 
     bindMuteKey(this);
     const kb = this.input.keyboard!;
-    kb.on('keydown-ENTER', () => this.again());
-    kb.on('keydown-SPACE', () => this.again());
-    kb.on('keydown-ESC', () => this.title());
+    kb.on('keydown-ENTER', () => this.toChapters());
+    kb.on('keydown-SPACE', () => this.toChapters());
+    kb.on('keydown-ESC', () => this.toChapters());
+    kb.on('keydown-R', () => this.again());
     kb.on('keydown-C', () => this.share());
   }
 
@@ -137,6 +149,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
   private timeHighlight(previousBest: number | null): Pick<Row, 'highlight' | 'highlightColor'> {
     if (!this.stats.fullRun) return { highlight: 'PRACTICE', highlightColor: PALETTE.uiDim };
+    if (this.stats.mixedDifficulty) return { highlight: 'DIFFICULTY CHANGED', highlightColor: PALETTE.uiDim };
     if (previousBest === null) return { highlight: 'NEW BEST!' };
     const delta = this.stats.timeMs - previousBest;
     if (this.outcome.newBestTime) return { highlight: `NEW BEST! ${formatDelta(delta)}` };
@@ -177,7 +190,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
       },
     });
     pixelText(this, x, y + 52, RANK_LINE[this.rank], { originX: 0.5, originY: 0, color: PALETTE.cream, maxWidth: 70, align: 'center' });
-    if (this.outcome.newBestRank && this.outcome.record.clears > 1) {
+    if (this.outcome.newBestRank && this.outcome.best.clears > 1) {
       pixelText(this, x, y - 50, 'NEW BEST!', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     }
     music.play('victory');
@@ -185,15 +198,19 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
   private showFooter(): void {
     this.ready = true;
-    pixelText(this, GAME_WIDTH / 2, 294, 'NEXT: CHAPTER 2  -  ROAD TRIP', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
-    pixelText(this, GAME_WIDTH / 2, 306, 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    const current = chapterForLevel(this.levelId);
+    const next = current ? CHAPTERS.find((c) => c.number === current.number + 1) : undefined;
+    if (next) {
+      pixelText(this, GAME_WIDTH / 2, 294, `NEXT: CHAPTER ${next.number}  -  ${next.title}${next.levelId ? '' : '  (COMING SOON)'}`, { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+      pixelText(this, GAME_WIDTH / 2, 306, next.tease, { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    }
     this.copied = pixelText(this, GAME_WIDTH / 2, 320, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     // Big tappable buttons on every device; the keys still work.
     const touch = inputMode.current === 'touch';
     const buttons: Array<[string, () => void, number]> = [
-      [touch ? 'PLAY AGAIN' : '[ENTER] PLAY AGAIN', () => this.again(), PALETTE.white],
+      [touch ? 'CONTINUE' : '[ENTER] CONTINUE', () => this.toChapters(), PALETTE.white],
+      [touch ? 'PLAY AGAIN' : '[R] PLAY AGAIN', () => this.again(), PALETTE.omnitrix],
       [touch ? 'SHARE SCORE' : '[C] SHARE SCORE', () => this.share(), PALETTE.gold],
-      [touch ? 'TITLE' : '[ESC] TITLE', () => this.title(), PALETTE.uiDim],
     ];
     buttons.forEach(([label, action, color], i) => {
       const x = GAME_WIDTH / 2 + (i - 1) * 190;
@@ -215,7 +232,11 @@ export class ChapterCompleteScene extends Phaser.Scene {
     } catch {
       url = '';
     }
-    return `I beat BEN 10: OMNITRIX SUMMER - Camp Crash in ${formatTime(s.timeMs)} with an ${this.rank} rank, ${s.bestCombo}-hit best combo and ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards. Your turn! ${url}`.trim();
+    const chapter = getLevel(this.levelId).name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    const difficulty = getDifficulty(s.difficulty).label;
+    const article = this.rank === 'A' || this.rank === 'S' ? 'an' : 'a';
+    const misfires = s.misfires > 0 ? ` and survived ${s.misfires} Omnitrix misfire${s.misfires === 1 ? '' : 's'}` : '';
+    return `I beat BEN 10: OMNITRIX SUMMER - ${chapter} on ${difficulty} in ${formatTime(s.timeMs)} with ${article} ${this.rank} rank, a ${s.bestCombo}-hit combo, ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards${misfires}. Your turn! ${url}`.trim();
   }
 
   /** The native share sheet where there is one (phones), otherwise the clipboard. */
@@ -253,13 +274,17 @@ export class ChapterCompleteScene extends Phaser.Scene {
   private again(): void {
     if (!this.ready) return;
     music.stop(200);
-    this.scene.start(SCENES.level, {});
+    playSfx('transformBoom', 0.7);
+    leaveTo(this, SCENES.level, { levelId: this.levelId }, null);
   }
 
-  private title(): void {
+  /** Back to the file's chapters (the title if this run had no file). */
+  private toChapters(): void {
     if (!this.ready) return;
-    music.stop(200);
-    this.scene.start(SCENES.menu);
+    music.stop(300);
+    playSfx('uiConfirm');
+    if (session.slot === null) leaveTo(this, SCENES.menu, undefined, null);
+    else leaveTo(this, SCENES.chapterSelect, { cleared: this.levelId, firstClear: this.outcome.firstClear }, null);
   }
 
   override update(_time: number, delta: number): void {

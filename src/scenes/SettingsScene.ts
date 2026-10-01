@@ -9,6 +9,10 @@ import { bindMuteKey, getSettings, toggleMute, updateSettings } from '../systems
 import { MenuList, type MenuItem } from '../ui/MenuList';
 import { pixelText } from '../ui/text';
 import { SCENES } from './SceneKeys';
+import { DIFFICULTY_IDS, getDifficulty } from '../config/difficulty';
+import { session } from '../systems/Session';
+import { difficultyRows } from '../ui/menu/difficultyInfo';
+import { playSfx } from '../systems/audio/Sfx';
 
 export interface SettingsData {
   /** Scene to resume when the player backs out (title or pause). */
@@ -25,6 +29,7 @@ export class SettingsScene extends Phaser.Scene {
   private hint!: Phaser.GameObjects.BitmapText;
   private bar!: Phaser.GameObjects.Graphics;
   private shakeRow = -1;
+  private details: Phaser.GameObjects.BitmapText | null = null;
 
   constructor() {
     super(SCENES.settings);
@@ -36,7 +41,18 @@ export class SettingsScene extends Phaser.Scene {
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.95).setOrigin(0, 0);
     pixelText(this, GAME_WIDTH / 2, 40, 'SETTINGS', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
 
-    const items: MenuItem[] = [
+    const items: MenuItem[] = [];
+    // Difficulty belongs to the save file, so it only shows once a file is being played.
+    const withDifficulty = session.slot !== null;
+    if (withDifficulty) {
+      items.push({
+        label: () => `DIFFICULTY: ${getDifficulty(session.difficulty).label}`,
+        action: () => this.cycleDifficulty(1),
+        adjust: (dir) => this.cycleDifficulty(dir),
+        hint: 'APPLIES RIGHT AWAY. CHECKPOINTS CHANGE ON THE NEXT RESTART. A RUN THAT CHANGES IT ISN\'T TIMED.',
+      });
+    }
+    items.push(
       {
         label: () => `REDUCE FLASHING: ${a11y.reduceFlashing ? 'ON' : 'OFF'}`,
         action: () => this.setFlashing(!a11y.reduceFlashing),
@@ -61,7 +77,7 @@ export class SettingsScene extends Phaser.Scene {
         adjust: (dir) => this.cycleTouch(dir),
         hint: 'AUTO SHOWS THEM ON TOUCH SCREENS AND HIDES THEM WHEN YOU TYPE.',
       },
-    ];
+    );
     if (this.scale.fullscreen.available) {
       items.push({
         label: () => (this.scale.isFullscreen ? 'FULLSCREEN: ON' : 'FULLSCREEN: OFF'),
@@ -70,16 +86,22 @@ export class SettingsScene extends Phaser.Scene {
       });
     }
     items.push({ label: 'BACK', action: () => this.back(), hint: '' });
-    this.shakeRow = 1;
+    this.shakeRow = withDifficulty ? 2 : 1;
 
     this.hint = pixelText(this, GAME_WIDTH / 2, 300, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim, maxWidth: 560, align: 'center' });
+    this.details = withDifficulty ? pixelText(this, GAME_WIDTH / 2, 280, '', { originX: 0.5, originY: 0.5, color: PALETTE.cream }) : null;
     this.bar = this.add.graphics();
-    this.menu = new MenuList(this, GAME_WIDTH / 2, 92, items, {
-      spacing: 28,
+    const spacing = items.length > 6 ? 25 : 28;
+    this.menu = new MenuList(this, GAME_WIDTH / 2, items.length > 6 ? 82 : 92, items, {
+      spacing,
       scale: 2,
       rowWidth: 440,
-      onSelect: (_i, item) => this.hint.setText(item.hint ?? ''),
+      onSelect: (i, item) => {
+        this.hint.setText(item.hint ?? '');
+        this.details?.setVisible(withDifficulty && i === 0);
+      },
     });
+    this.refreshDifficulty();
 
     if (prefersReducedMotion() && getSettings().reduceFlashing === null) {
       pixelText(this, GAME_WIDTH / 2, 318, 'YOUR DEVICE ASKS FOR REDUCED MOTION, SO THESE START TURNED DOWN.', {
@@ -96,6 +118,21 @@ export class SettingsScene extends Phaser.Scene {
     kb.on('keydown-P', () => this.back());
     bindMuteKey(this);
     this.events.on(Phaser.Scenes.Events.UPDATE, () => this.drawBar());
+  }
+
+  /** Changes the file's difficulty and spells out what that means. */
+  private cycleDifficulty(dir: 1 | -1): void {
+    const i = DIFFICULTY_IDS.indexOf(session.difficulty);
+    const next = DIFFICULTY_IDS[(i + dir + DIFFICULTY_IDS.length) % DIFFICULTY_IDS.length];
+    session.setDifficulty(next);
+    playSfx('uiConfirm', 0.6);
+    this.refreshDifficulty();
+  }
+
+  private refreshDifficulty(): void {
+    if (!this.details) return;
+    const d = getDifficulty(session.difficulty);
+    this.details.setText(difficultyRows(d).map(([label, value]) => `${label} ${value}`).join('   ')).setTint(d.color);
   }
 
   private setFlashing(on: boolean): void {

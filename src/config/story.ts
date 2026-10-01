@@ -21,6 +21,8 @@ export const STORY = {
     { who: 'ben', text: 'FINDERS KEEPERS, SQUID FACE!', ms: 1700 },
     { who: 'vilgax', text: 'THEN BE DESTROYED.', ms: 1300 },
   ] as StoryLine[],
+  /** Aliens in the whole story (GAME_DESIGN.md roster): the "ALIENS x/13" count on save files. */
+  rosterSize: 13,
   dialog: {
     charsPerSecond: 48,
     /** Voice blip every n typed characters. */

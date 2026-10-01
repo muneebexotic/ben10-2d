@@ -5,6 +5,8 @@ import { registerPixelFont } from '../ui/PixelFont';
 import { createAnimations, generateAssets, queueAssetFiles } from './preload/generate';
 import { SCENES } from './SceneKeys';
 import { launchParams } from '../systems/LaunchParams';
+import { session } from '../systems/Session';
+import { saveSystem } from '../systems/SaveSystem';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -23,6 +25,8 @@ export class PreloadScene extends Phaser.Scene {
     generateAssets(this);
     createAnimations(this);
     const params = launchParams();
+    // URL playtest switches skip the menus: they play on the last file (if there is one).
+    if (params.training || params.start) session.useSlot(saveSystem.lastSlot);
     if (params.gallery) this.scene.start(SCENES.gallery);
     else if (params.training) this.scene.start(SCENES.level, { levelId: 'training' });
     else if (params.start) this.scene.start(SCENES.level, { checkpoint: params.start });

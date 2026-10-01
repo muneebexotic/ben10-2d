@@ -1,3 +1,5 @@
+import { PALETTE } from './palette';
+
 export type Rank = 'S' | 'A' | 'B' | 'C' | 'D';
 
 export const SCORING = {
@@ -22,3 +24,12 @@ export const SCORING = {
 } as const;
 
 export const RANK_ORDER: Rank[] = ['D', 'C', 'B', 'A', 'S'];
+
+/** Rank letter colours on Chapter Complete and Chapter Select. */
+export const RANK_COLOR: Record<Rank, number> = {
+  S: PALETTE.gold,
+  A: PALETTE.omnitrix,
+  B: PALETTE.jammer,
+  C: PALETTE.fire2,
+  D: PALETTE.uiDim,
+};

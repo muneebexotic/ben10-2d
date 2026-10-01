@@ -11,6 +11,9 @@ import { GameOverScene } from './scenes/GameOverScene';
 import { ChapterCompleteScene } from './scenes/ChapterCompleteScene';
 import { GalleryScene } from './scenes/GalleryScene';
 import { SettingsScene } from './scenes/SettingsScene';
+import { FileSelectScene } from './scenes/FileSelectScene';
+import { DifficultyScene } from './scenes/DifficultyScene';
+import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { applySavedSettings } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
 
@@ -21,6 +24,9 @@ const game = new Phaser.Game(
     BootScene,
     PreloadScene,
     MenuScene,
+    FileSelectScene,
+    DifficultyScene,
+    ChapterSelectScene,
     LevelScene,
     UIScene,
     TouchScene,

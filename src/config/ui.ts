@@ -16,3 +16,27 @@ export const NAME_SLAM = {
   scale: 4,
   swapScale: 3,
 } as const;
+
+/** Menus: shared timing so every screen moves and sounds the same. */
+export const MENU = {
+  /** Pine parallax speed (px per ms) on every menu backdrop. */
+  pineDrift: 0.01,
+  fadeOutMs: 220,
+  fadeInMs: 260,
+  /** The Omnitrix iris that wipes between menu screens. */
+  irisMs: 320,
+  /** Card focus tween. */
+  focusMs: 160,
+  /** Chapter Select: card spacing and the size of neighbours. */
+  chapterSpacing: 238,
+  chapterSideScale: 0.8,
+  /** Side cards are darkened by this much. */
+  chapterSideShade: 0.5,
+  /** Chapter Select: the chapter title decodes letter by letter after a first clear. */
+  revealStepMs: 45,
+} as const;
+
+export const GAMEOVER = {
+  /** From this many deaths in one run, the tip suggests lowering the difficulty. */
+  suggestEasierAfterDeaths: 4,
+} as const;

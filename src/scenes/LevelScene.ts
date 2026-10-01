@@ -55,9 +55,10 @@ import { SCENES } from './SceneKeys';
 import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
 import { MISFIRE, PERFECT_TRANSFORM } from '../config/omnitrix';
 import { PerfectWindow } from '../systems/PerfectTransform';
-import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { saveSystem } from '../systems/SaveSystem';
+import { session } from '../systems/Session';
+import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
 import { availableCards, countedCards } from '../levels/secrets';
 import { TRAINING } from '../config/training';
@@ -128,6 +129,8 @@ export class LevelScene extends Phaser.Scene {
   private checkpointId: string | null = null;
   private state: 'play' | 'dead' | 'complete' = 'play';
   private statsTimer = 0;
+  /** Play time not yet added to the save file. */
+  private playMsUnsaved = 0;
   private alarm = false;
   /** Kills per alien this run (advanced tips appear after a few). */
   private readonly alienKills = new Map<string, number>();
@@ -167,6 +170,12 @@ export class LevelScene extends Phaser.Scene {
     this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(countedCards(this.level).length, fullRun, activeDifficultyId());
     // Picked up on a different difficulty than it started on: still a clear, but not a timed run.
     if (this.stats.difficulty !== activeDifficultyId()) this.stats.mixedDifficulty = true;
+    this.playMsUnsaved = 0;
+    if (this.mode === 'story' && session.slot !== null) {
+      saveSystem.unlockAliens(session.slot, this.resolveAliens([]));
+      // A fresh start of a chapter replaces any saved checkpoint for it.
+      if (!data.checkpoint && session.file?.resume?.levelId === this.level.id) saveSystem.setResume(session.slot, null);
+    }
     this.perfect.clear();
     this.checkpointId = data.checkpoint ?? null;
 
@@ -250,6 +259,7 @@ export class LevelScene extends Phaser.Scene {
     // The HUD scene may be created after this scene (first launch); it asks for state when ready.
     EventBus.on('hud:ready', () => this.syncHud(), this);
     EventBus.on('difficulty:changed', () => this.onDifficultyChanged(), this);
+    EventBus.on('level:quit', () => this.onQuit(), this);
     EventBus.on('alien:misfire', () => {
       const bonus = Math.round(MISFIRE.improviseBonusMs / 1000);
       this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
@@ -279,13 +289,18 @@ export class LevelScene extends Phaser.Scene {
 
   // ------------------------------------------------------------ Setup helpers
 
-  /** Aliens on the dial: story progress (plus ?aliens= playtest extras), or Training's line-up. */
+  /** Aliens on the dial: the file's story progress (plus ?aliens= playtest extras), or Training's line-up. */
   private resolveAliens(extra: readonly string[]): string[] {
-    const completedIds = Object.entries(saveSystem.load().chapters)
+    const file = session.file;
+    const completedIds = Object.entries(file?.chapters ?? {})
       .filter(([, record]) => record.completed)
       .map(([id]) => id);
     const completed = completedChapters(completedIds);
-    return this.mode === 'training' ? trainingAliens(completed) : storyAliens(this.level.chapter, completed, extra);
+    if (this.mode === 'training') return trainingAliens(completed);
+    const story = storyAliens(this.level.chapter, completed, extra);
+    // Aliens a file unlocked some other way (a later chapter's story moment) come along too, in dial order.
+    const owned = file?.unlockedAliens.filter((id) => hasAlien(id) && !story.includes(id)) ?? [];
+    return owned.length > 0 ? storyAliens(this.level.chapter, completed, [...extra, ...owned]) : story;
   }
 
   private resolveStart(): { x: number; y: number } {
@@ -548,6 +563,7 @@ export class LevelScene extends Phaser.Scene {
     if (dropped >= COMBO.showAt) EventBus.emit('combo:drop', { count: dropped });
 
     if (this.state === 'play' && !this.cinematic) this.stats.timeMs += realDt;
+    this.playMsUnsaved += realDt;
     this.stats.transformations = this.omni.transformations;
     this.stats.perfectTransforms = this.omni.perfects;
     this.stats.misfires = this.omni.misfires;
@@ -618,6 +634,7 @@ export class LevelScene extends Phaser.Scene {
         this.fx.ring(c.x, c.y - 24, PALETTE.omnitrix, 30, 400);
         EventBus.emit('hud:banner', { title: 'CHECKPOINT', color: PALETTE.omnitrix, durationMs: 1100, style: 'soft' });
         this.split(c.id, c.label);
+        this.saveResume();
       }
     }
 
@@ -778,6 +795,7 @@ export class LevelScene extends Phaser.Scene {
     this.state = 'dead';
     this.stats.deaths++;
     this.misfireBeat.cancel();
+    if (!this.training) this.saveResume();
     this.time2.slowMo(0.3, 900, 300);
     this.desaturate = this.cameras.main.filters?.internal.addColorMatrix() ?? null;
     this.desaturate?.colorMatrix.desaturate();
@@ -824,18 +842,38 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
+  /** Speedrun split vs the fastest time ever reached here on this difficulty. Practice runs show nothing. */
+  private split(id: string, label: string): void {
+    if (!this.stats.fullRun || this.stats.mixedDifficulty || session.slot === null) return;
+    const previous = saveSystem.recordSplit(session.slot, this.level.id, this.stats.difficulty, id, this.stats.timeMs);
+    EventBus.emit('hud:split', compareSplit(id, label, this.stats.timeMs, previous));
+  }
+
+  /** Continue picks the chapter back up at the last checkpoint, with the run so far. */
+  private saveResume(): void {
+    this.flushPlayTime();
+    if (this.mode !== 'story' || session.slot === null || this.checkpointId === null || this.checkpointId.startsWith('@')) return;
+    if (launchParams().aliens.length > 0) return;
+    saveSystem.setResume(session.slot, { levelId: this.level.id, checkpoint: this.checkpointId, stats: cloneRunStats(this.stats) });
+  }
+
+  /** Quitting keeps the run so far (time included) at the last checkpoint, like a checkpoint restart would. */
+  private onQuit(): void {
+    if (this.state === 'play') this.saveResume();
+    else this.flushPlayTime();
+  }
+
+  /** Adds time played since the last save to the file's play time. */
+  private flushPlayTime(): void {
+    if (session.slot !== null && this.playMsUnsaved > 0) saveSystem.addPlayTime(session.slot, this.playMsUnsaved);
+    this.playMsUnsaved = 0;
+  }
+
   /** Settings changed the difficulty mid-level: the watch, damage and enemy pacing follow at once. */
   private onDifficultyChanged(): void {
     this.omni.applyDifficulty();
     this.training?.apply();
     if (this.mode === 'story' && this.stats.difficulty !== activeDifficultyId()) this.stats.mixedDifficulty = true;
-  }
-
-  /** Speedrun split vs the fastest time ever reached here. Practice runs show nothing. */
-  private split(id: string, label: string): void {
-    if (!this.stats.fullRun || this.stats.mixedDifficulty) return;
-    const previous = saveSystem.recordSplit(this.level.id, id, this.stats.timeMs);
-    EventBus.emit('hud:split', compareSplit(id, label, this.stats.timeMs, previous));
   }
 
   private onBossDefeated(x: number, y: number): void {
@@ -854,11 +892,12 @@ export class LevelScene extends Phaser.Scene {
       this.speech.show('AND THAT IS HOW IT\'S DONE!', 2400);
       EventBus.emit('hud:banner', { title: 'DRONE DESTROYED!', subtitle: `${this.level.name} COMPLETE`, color: PALETTE.gold, durationMs: 2600, style: 'slam' });
     });
+    this.flushPlayTime();
     this.time.delayedCall(3800, () => {
       EventBus.emit('level:complete', { stats: cloneRunStats(this.stats) });
       this.scene.stop(SCENES.ui);
       this.scene.stop(SCENES.touch);
-      this.scene.start(SCENES.chapterComplete, { stats: cloneRunStats(this.stats) });
+      this.scene.start(SCENES.chapterComplete, { levelId: this.level.id, stats: cloneRunStats(this.stats) });
     });
   }
 
@@ -871,6 +910,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private openPause(): void {
+    this.flushPlayTime();
     audio.setLoopsMuted(true);
     this.scene.pause();
     const data: PauseData = {
@@ -936,6 +976,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private shutdown(): void {
+    this.flushPlayTime();
     this.misfireBeat?.cancel();
     this.intro?.destroy();
     this.arena?.destroy();

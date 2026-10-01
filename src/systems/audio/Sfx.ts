@@ -209,6 +209,28 @@ const RECIPES = {
     A.tone({ type: 'square', freq: midiToFreq(76), duration: 0.07, volume: 0.1 * v });
     A.tone({ type: 'square', freq: midiToFreq(83), duration: 0.12, volume: 0.1 * v, when: A.now + 0.07 });
   },
+  uiBack: (v) => {
+    A.tone({ type: 'square', freq: midiToFreq(83), duration: 0.06, volume: 0.08 * v });
+    A.tone({ type: 'square', freq: midiToFreq(76), duration: 0.1, volume: 0.08 * v, when: A.now + 0.06 });
+  },
+  /** A bigger "yes": starting a file, a chapter, a difficulty. The Omnitrix powering up. */
+  uiConfirm: (v) => {
+    A.tone({ type: 'sawtooth', freq: 260, freqEnd: 1300, duration: 0.18, volume: 0.06 * v, filter: { type: 'lowpass', freq: 2600 } });
+    for (const [i, n] of [72, 79, 84].entries()) A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.1, volume: 0.08 * v, when: A.now + 0.08 + i * 0.05 });
+    A.tone({ type: 'triangle', freq: midiToFreq(91), duration: 0.35, volume: 0.1 * v, when: A.now + 0.23 });
+  },
+  /** Screen-to-screen transition. */
+  whoosh: (v) => A.noise({ duration: 0.28, volume: 0.16 * v, filter: 'bandpass', freq: 500, freqEnd: 3200, q: 1.2, attack: 0.08 }),
+  /** A save file being wiped. */
+  erase: (v) => {
+    A.tone({ type: 'sawtooth', freq: 600, freqEnd: 60, duration: 0.5, volume: 0.1 * v, filter: { type: 'lowpass', freq: 1800 } });
+    A.noise({ duration: 0.4, volume: 0.18 * v, filter: 'highpass', freq: 2000, freqEnd: 300 });
+  },
+  /** A chapter title decoding on Chapter Select. */
+  reveal: (v) => {
+    for (const [i, n] of [76, 81, 83, 88].entries()) A.tone({ type: 'triangle', freq: midiToFreq(n), duration: 0.16, volume: 0.09 * v, when: A.now + i * 0.08 });
+    A.tone({ type: 'sine', freq: midiToFreq(95), duration: 0.8, volume: 0.07 * v, when: A.now + 0.32 });
+  },
   tick: (v, p) => A.tone({ type: 'square', freq: 1100 * p, duration: 0.025, volume: 0.06 * v }),
   stamp: (v) => {
     A.tone({ type: 'sine', freq: 100, freqEnd: 40, duration: 0.4, volume: 0.5 * v });

@@ -20,6 +20,7 @@ import * as props from './props';
 import * as story from './story';
 import * as ui from './uiArt';
 import * as world from './world';
+import { SILHOUETTE_ASSETS } from './silhouettes';
 
 /**
  * Keys for every shared texture (world, enemies, UI, human Ben). Each alien
@@ -230,6 +231,7 @@ export const ASSETS: AssetDef[] = [
   one(TEX.touchPunch, 16, 16, ui.drawTouchPunch),
   one(TEX.touchRoll, 16, 16, ui.drawTouchRoll),
   one(TEX.touchPause, 16, 16, ui.drawTouchPause),
+  ...SILHOUETTE_ASSETS,
 ];
 
 const benAnims = (prefix: string, texture: string): AnimDef[] => [
