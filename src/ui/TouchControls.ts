@@ -57,9 +57,8 @@ export class TouchButton {
     }
   }
 
-  /** `fade` dims everything during cinematics. */
-  applyAlpha(fade: number): void {
-    this.root.setAlpha((this.pressed ? TOUCH.pressedAlpha : TOUCH.idleAlpha) * fade);
+  applyAlpha(): void {
+    this.root.setAlpha(this.pressed ? TOUCH.pressedAlpha : TOUCH.idleAlpha);
   }
 }
 
@@ -115,8 +114,8 @@ export class TouchStick {
     this.knob.setPosition(this.cx, this.cy);
   }
 
-  applyAlpha(fade: number, active: boolean): void {
-    this.root.setAlpha((active ? TOUCH.pressedAlpha : TOUCH.idleAlpha) * fade);
+  applyAlpha(active: boolean): void {
+    this.root.setAlpha(active ? TOUCH.pressedAlpha : TOUCH.idleAlpha);
   }
 }
 
@@ -164,9 +163,9 @@ export class TouchDial {
     this.root.setScale(on ? 0.9 : 1);
   }
 
-  applyAlpha(fade: number): void {
+  applyAlpha(): void {
     // The watch reads a touch stronger than the other buttons: it is the star of the show.
-    this.root.setAlpha(Math.min(1, (this.pressed ? TOUCH.pressedAlpha : TOUCH.idleAlpha + 0.15) * fade));
+    this.root.setAlpha(this.pressed ? TOUCH.pressedAlpha : TOUCH.idleAlpha + 0.15);
   }
 
   /** Little nudge when the dial turns. */

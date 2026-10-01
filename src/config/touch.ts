@@ -29,6 +29,4 @@ export const TOUCH = {
   swipePx: 16,
   idleAlpha: 0.38,
   pressedAlpha: 0.78,
-  /** While a cinematic letterbox is up the controls fade almost away (a tap anywhere skips). */
-  cinematicAlpha: 0.12,
 } as const;

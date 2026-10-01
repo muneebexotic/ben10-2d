@@ -187,7 +187,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.ready = true;
     pixelText(this, GAME_WIDTH / 2, 294, 'NEXT: CHAPTER 2  -  ROAD TRIP', { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
     pixelText(this, GAME_WIDTH / 2, 306, 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
-    this.copied = pixelText(this, GAME_WIDTH / 2, 322, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    this.copied = pixelText(this, GAME_WIDTH / 2, 320, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     // Big tappable buttons on every device; the keys still work.
     const touch = inputMode.current === 'touch';
     const buttons: Array<[string, () => void, number]> = [
@@ -197,6 +197,9 @@ export class ChapterCompleteScene extends Phaser.Scene {
     ];
     buttons.forEach(([label, action, color], i) => {
       const x = GAME_WIDTH / 2 + (i - 1) * 190;
+      const frame = this.add.graphics();
+      frame.fillStyle(PALETTE.ink, 0.7).fillRoundedRect(x - 80, 332, 160, 24, 5);
+      frame.lineStyle(1, color, 0.8).strokeRoundedRect(x - 79.5, 332.5, 159, 23, 5);
       const t = pixelText(this, x, 344, label, { originX: 0.5, originY: 0.5, color });
       const zone = this.add.zone(x, 344, 170, 30).setInteractive({ useHandCursor: true });
       zone.on('pointerdown', action);

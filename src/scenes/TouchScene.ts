@@ -62,7 +62,10 @@ export class TouchScene extends Phaser.Scene {
     this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, (p: Phaser.Input.Pointer) => this.onUp(p));
 
     const on = EventBus.on.bind(EventBus);
-    on('hud:letterbox', (p) => (this.cinematic = p.visible), this);
+    on('hud:letterbox', (p) => {
+      this.cinematic = p.visible;
+      if (p.visible) this.releaseAll();
+    }, this);
     on('hud:visible', (p) => {
       this.hudVisible = p.visible;
       if (p.omnitrix !== undefined) this.omnitrixVisible = p.omnitrix && p.visible;
@@ -82,6 +85,8 @@ export class TouchScene extends Phaser.Scene {
     });
     this.scene.bringToTop();
     this.refreshVisibility();
+    // Like the HUD, this scene starts a frame after the level: ask for the current letterbox/HUD state.
+    EventBus.emit('hud:ready');
   }
 
   private get enabled(): boolean {
@@ -101,7 +106,7 @@ export class TouchScene extends Phaser.Scene {
     if (!this.levelRunning) return;
     // Any touch skips cinematics, wherever it lands.
     pad.tap();
-    if (!this.enabled || !this.hudVisible) {
+    if (!this.enabled || !this.hudVisible || this.cinematic) {
       this.tracks.set(p.id, { kind: 'tap' });
       return;
     }
@@ -204,7 +209,8 @@ export class TouchScene extends Phaser.Scene {
   // ------------------------------------------------------------ Frame
 
   private refreshVisibility(): void {
-    const show = this.enabled && this.levelRunning && this.hudVisible;
+    // Cinematics hide the controls completely; a tap anywhere skips them.
+    const show = this.enabled && this.levelRunning && this.hudVisible && !this.cinematic;
     this.stick.root.setVisible(show);
     for (const b of Object.values(this.buttons)) b.root.setVisible(show);
     this.dial.root.setVisible(show && this.omnitrixVisible);
@@ -218,10 +224,9 @@ export class TouchScene extends Phaser.Scene {
       this.releaseAll();
     }
     this.refreshVisibility();
-    const fade = this.cinematic ? TOUCH.cinematicAlpha / TOUCH.idleAlpha : 1;
-    this.stick.applyAlpha(fade, this.stickInUse());
-    for (const b of Object.values(this.buttons)) b.applyAlpha(fade);
-    this.dial.applyAlpha(fade);
+    this.stick.applyAlpha(this.stickInUse());
+    for (const b of Object.values(this.buttons)) b.applyAlpha();
+    this.dial.applyAlpha();
     this.dial.update(time);
   }
 }
