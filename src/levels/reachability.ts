@@ -7,11 +7,13 @@ export interface Capabilities {
   jumpUp: number;
   jumpAcross: number;
   canBurn: boolean;
+  /** Can break cracked walls (Four Arms, Milestone 2). */
+  canSmash: boolean;
 }
 
-export const HUMAN_CAPS: Capabilities = { jumpUp: 3, jumpAcross: 4, canBurn: false };
+export const HUMAN_CAPS: Capabilities = { jumpUp: 3, jumpAcross: 4, canBurn: false, canSmash: false };
 /** Normal jump plus rocket jump. */
-export const HEATBLAST_CAPS: Capabilities = { jumpUp: 9, jumpAcross: 9, canBurn: true };
+export const HEATBLAST_CAPS: Capabilities = { jumpUp: 9, jumpAcross: 9, canBurn: true, canSmash: false };
 
 export interface Pos {
   x: number;
@@ -23,10 +25,13 @@ const MAX_FALL = 24;
 
 export function blockedCells(level: LevelData, caps: Capabilities): Set<string> {
   const blocked = new Set<string>();
-  if (caps.canBurn) return blocked;
   for (const e of level.entities) {
-    if (e.type !== 'barricade') continue;
-    for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    if (e.type === 'barricade' && !caps.canBurn) {
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    }
+    if (e.type === 'crackedWall' && !caps.canSmash) {
+      for (let y = e.y; y < e.y + e.h; y++) blocked.add(`${e.x},${y}`);
+    }
   }
   return blocked;
 }

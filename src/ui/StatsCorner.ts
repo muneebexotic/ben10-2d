@@ -11,25 +11,36 @@ export class StatsCorner {
   private readonly kills: Phaser.GameObjects.BitmapText;
   private readonly cards: Phaser.GameObjects.Image[] = [];
   private readonly droneIcon: Phaser.GameObjects.Image;
+  private visible = false;
 
   constructor(private readonly scene: Phaser.Scene, totalCards: number) {
     this.time = pixelText(scene, GAME_WIDTH - 8, 7, '0:00.00', { originX: 1, color: PALETTE.white });
     this.kills = pixelText(scene, GAME_WIDTH - 8, 20, '0', { originX: 1, color: PALETTE.enemyGlow });
     this.droneIcon = scene.add.image(GAME_WIDTH - 30, 24, TEX.droneIcon);
-    for (let i = 0; i < totalCards; i++) {
-      this.cards.push(scene.add.image(GAME_WIDTH - 12 - (totalCards - 1 - i) * 10, 40, TEX.cardIcon, 0));
-    }
+    this.setTotalCards(totalCards);
     this.setVisible(false);
   }
 
+  /** One slot per card that exists this run (secret vault cards appear once their alien is unlocked). */
+  private setTotalCards(total: number): void {
+    if (total === this.cards.length) return;
+    for (const c of this.cards) c.destroy();
+    this.cards.length = 0;
+    for (let i = 0; i < total; i++) {
+      this.cards.push(this.scene.add.image(GAME_WIDTH - 12 - (total - 1 - i) * 10, 40, TEX.cardIcon, 0).setVisible(this.visible));
+    }
+  }
+
   setVisible(v: boolean): void {
+    this.visible = v;
     this.time.setVisible(v);
     this.kills.setVisible(v);
     this.droneIcon.setVisible(v);
     for (const c of this.cards) c.setVisible(v);
   }
 
-  set(timeMs: number, kills: number, cards: number): void {
+  set(timeMs: number, kills: number, cards: number, totalCards: number): void {
+    this.setTotalCards(totalCards);
     this.time.setText(formatTime(timeMs));
     this.kills.setText(String(kills));
     this.droneIcon.setX(GAME_WIDTH - 14 - this.kills.width);

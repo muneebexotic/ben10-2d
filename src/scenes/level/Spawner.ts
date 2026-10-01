@@ -9,6 +9,8 @@ import { Pickup } from '../../entities/props/Pickup';
 import { Drone, type DroneWorld } from '../../entities/enemies/Drone';
 import { createBrain } from '../../entities/enemies/brains';
 import type { Fx } from '../../systems/Fx';
+import { CrackedWall } from '../../entities/props/CrackedWall';
+import { cardAvailable } from '../../levels/secrets';
 
 export interface SpawnedEntities {
   drones: Drone[];
@@ -16,6 +18,7 @@ export interface SpawnedEntities {
   checkpoints: Checkpoint[];
   pickups: Pickup[];
   jammer: Jammer | null;
+  walls: CrackedWall[];
 }
 
 const DENSITY_RANK: Record<Density, number> = { sparse: 0, normal: 1, frequent: 2 };
@@ -40,8 +43,9 @@ export function spawnEntities(
   fx: Fx,
   resumeX: number,
   collectedCards: readonly string[],
+  aliens: readonly string[],
 ): SpawnedEntities {
-  const out: SpawnedEntities = { drones: [], barricades: [], checkpoints: [], pickups: [], jammer: null };
+  const out: SpawnedEntities = { drones: [], barricades: [], checkpoints: [], pickups: [], jammer: null, walls: [] };
   const behind = (tx: number) => resumeX > 0 && tx * TILE < resumeX - TILE;
 
   for (const cp of checkpointsFor(level)) {
@@ -65,8 +69,11 @@ export function spawnEntities(
         out.pickups.push(new Pickup(scene, 'smoothy', `smoothy-${e.x}`, e.x, e.y));
         break;
       case 'card':
-        if (collectedCards.includes(e.id)) break;
+        if (collectedCards.includes(e.id) || !cardAvailable(e, aliens)) break;
         out.pickups.push(new Pickup(scene, 'card', e.id, e.x, e.y));
+        break;
+      case 'crackedWall':
+        out.walls.push(new CrackedWall(scene, e.id, e.x, e.y, e.h, fx));
         break;
       case 'jammer':
         if (behind(e.gateX)) break;

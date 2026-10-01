@@ -13,6 +13,8 @@ import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { flashCamera } from '../systems/Accessibility';
+import { availableCards } from '../levels/secrets';
+import { aliensUnlockedBy } from '../aliens/registry';
 
 /** Title screen: night sky, the Omnitrix emblem, and Ben flipping into Heatblast on a loop. */
 export class MenuScene extends Phaser.Scene {
@@ -71,7 +73,9 @@ export class MenuScene extends Phaser.Scene {
 
     const record = saveSystem.getChapter(CHAPTER_1.id);
     if (record.completed && record.bestTimeMs !== null) {
-      pixelText(this, GAME_WIDTH / 2, 342, `BEST ${formatTime(record.bestTimeMs)}   RANK ${record.bestRank ?? '-'}   CARDS ${record.cards.length}/3`, {
+      const totalCards = availableCards(CHAPTER_1, aliensUnlockedBy(CHAPTER_1.chapter)).length;
+      const cards = record.cards.filter((id) => availableCards(CHAPTER_1, aliensUnlockedBy(CHAPTER_1.chapter)).some((c) => c.id === id)).length;
+      pixelText(this, GAME_WIDTH / 2, 342, `BEST ${formatTime(record.bestTimeMs)}   RANK ${record.bestRank ?? '-'}   CARDS ${cards}/${totalCards}`, {
         originX: 0.5,
         originY: 0.5,
         color: PALETTE.gold,

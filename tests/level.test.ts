@@ -3,6 +3,8 @@ import { CHAPTER_1 } from '../src/levels/chapter1';
 import { autotile, buildCells, cellAt } from '../src/levels/buildLevel';
 import { CELL, FRAME, isSolidCell } from '../src/levels/tiles';
 import { canReach, HEATBLAST_CAPS, HUMAN_CAPS, type Pos } from '../src/levels/reachability';
+import { availableCards, breaksCrackedWall, lockedCards } from '../src/levels/secrets';
+import { aliensUnlockedBy } from '../src/aliens/registry';
 
 const level = CHAPTER_1;
 const grid = buildCells(level);
@@ -61,9 +63,18 @@ describe('chapter 1 layout', () => {
     expect(frames[0][10]).toBe(FRAME.EMPTY);
   });
 
-  it('has exactly three secret cards and a boss', () => {
-    expect(entity('card')).toHaveLength(3);
+  it('has three secret cards now, one vault card for later, and a boss', () => {
+    expect(availableCards(level, aliensUnlockedBy(level.chapter))).toHaveLength(3);
+    expect(lockedCards(level, aliensUnlockedBy(level.chapter)).map((c) => c.id)).toEqual(['ch1-card-vault']);
+    expect(availableCards(level, ['heatblast', 'fourarms'])).toHaveLength(4);
     expect(entity('boss')).toHaveLength(1);
+  });
+
+  it('the cracked wall seals an open vault in the cliff face', () => {
+    const [wall] = entity('crackedWall');
+    for (let y = wall.y; y < wall.y + wall.h; y++) expect(cellAt(grid, wall.x, y), `wall row ${y}`).toBe(CELL.EMPTY);
+    expect(cellAt(grid, wall.x - 1, wall.y + wall.h - 1)).toBe(CELL.EMPTY);
+    expect(isSolidCell(cellAt(grid, wall.x, wall.y + wall.h))).toBe(true);
   });
 });
 
@@ -98,13 +109,24 @@ describe('chapter 1 progression', () => {
   });
 
   it('every card can be reached with the right form', () => {
-    const [ridge, creek, alcove] = entity('card');
+    const [ridge, creek, alcove] = availableCards(level, aliensUnlockedBy(level.chapter));
     const at = (c: { x: number; y: number }) => (p: Pos) => p.x === c.x && p.y === c.y - 1;
     expect(canReach(level, grid, start, at(ridge), HEATBLAST_CAPS)).toBe(true);
     expect(canReach(level, grid, { x: 92, y: 14 }, at(ridge), HUMAN_CAPS)).toBe(false);
     expect(canReach(level, grid, { x: 128, y: 23 }, at(creek), HUMAN_CAPS)).toBe(true);
     expect(canReach(level, grid, { x: 182, y: 23 }, at(alcove), HEATBLAST_CAPS)).toBe(true);
     expect(canReach(level, grid, { x: 182, y: 23 }, at(alcove), HUMAN_CAPS)).toBe(false);
+  });
+
+  it('the vault card needs Four Arms: no current form can get past the cracked wall', () => {
+    const [vault] = lockedCards(level, aliensUnlockedBy(level.chapter));
+    const at = (p: Pos) => p.x === vault.x && p.y === vault.y - 1;
+    const smasher = { ...HEATBLAST_CAPS, canSmash: true };
+    expect(canReach(level, grid, start, at, HEATBLAST_CAPS)).toBe(false);
+    expect(canReach(level, grid, start, at, HUMAN_CAPS)).toBe(false);
+    expect(canReach(level, grid, start, at, smasher)).toBe(true);
+    expect(breaksCrackedWall('smash')).toBe(true);
+    for (const kind of ['melee', 'fire', 'burst', 'rocket', 'reflect', 'transform'] as const) expect(breaksCrackedWall(kind)).toBe(false);
   });
 
   it('every checkpoint is reachable', () => {

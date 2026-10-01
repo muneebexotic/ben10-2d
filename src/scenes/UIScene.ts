@@ -109,7 +109,7 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('combo:update', (p) => this.combo.set(p.count, this.time.now), this);
     on('combo:drop', (p) => this.combo.drop(p.count), this);
-    on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards), this);
+    on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards, p.totalCards), this);
     on('card:collected', (p) => this.stats.cardPop(p.found - 1), this);
     on('hud:split', (s) => {
       this.splits.show(s, this.time.now);

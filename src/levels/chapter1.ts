@@ -47,6 +47,8 @@ export const CHAPTER_1: LevelData = {
   carves: [
     { x: 70, y: 20, w: 10, h: 4 },
     { x: 201, y: 21, w: 5, h: 3 },
+    // Sealed vault in the cliff face; the cracked wall at x 102 closes it.
+    { x: 102, y: 21, w: 4, h: 3 },
   ],
 
   platforms: [
@@ -88,6 +90,8 @@ export const CHAPTER_1: LevelData = {
     { type: 'drone', kind: 'scout', x: 99, y: 18 },
     { type: 'card', id: 'ch1-card-ridge', x: 97, y: 10 },
     { type: 'checkpoint', id: 'cp-cliff', x: 98, y: 24, density: 'normal', label: 'CLIFF' },
+    { type: 'crackedWall', id: 'ch1-vault-wall', x: 102, y: 21, h: 3, requires: 'fourarms' },
+    { type: 'card', id: 'ch1-card-vault', x: 104, y: 24, requires: 'fourarms' },
     { type: 'decor', kind: 'sign', x: 100, y: 24 },
 
     { type: 'smoothy', x: 106, y: 17 },

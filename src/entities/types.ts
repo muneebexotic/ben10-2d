@@ -7,7 +7,8 @@ export interface Rect {
   h: number;
 }
 
-export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform';
+/** 'smash' is a heavy blow (Four Arms, Milestone 2): the only thing that breaks cracked walls. */
+export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform' | 'smash';
 
 export interface Hit {
   damage: number;

@@ -43,7 +43,10 @@ export type EntitySpawn =
   /** `label` names the speedrun split. */
   | { type: 'checkpoint'; id: string; x: number; y: number; density: Density; label: string }
   | { type: 'smoothy'; x: number; y: number }
-  | { type: 'card'; id: string; x: number; y: number }
+  /** `requires` hides the card until that alien is on the dial (a reason to replay chapters). */
+  | { type: 'card'; id: string; x: number; y: number; requires?: string }
+  /** One tile wide, `h` tall, starting at row `y`. Only a smash hit (Four Arms) breaks it. */
+  | { type: 'crackedWall'; id: string; x: number; y: number; h: number; requires: string }
   | { type: 'jammer'; x: number; y: number; fieldFrom: number; gateX: number; gateTop: number }
   | { type: 'pod'; x: number; y: number }
   | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number }

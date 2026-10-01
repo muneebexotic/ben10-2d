@@ -49,6 +49,8 @@ import { PERFECT_TRANSFORM } from '../config/omnitrix';
 import { PerfectWindow } from '../systems/PerfectTransform';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { saveSystem } from '../systems/SaveSystem';
+import type { CrackedWall } from '../entities/props/CrackedWall';
+import { availableCards } from '../levels/secrets';
 
 export interface LevelStartData {
   checkpoint?: string | null;
@@ -89,6 +91,7 @@ export class LevelScene extends Phaser.Scene {
   private checkpoints: Checkpoint[] = [];
   private pickups: Pickup[] = [];
   private jammer: Jammer | null = null;
+  private walls: CrackedWall[] = [];
   private stats!: RunStats;
   private combo = new ComboCounter(COMBO.windowMs);
   private gameNow = 0;
@@ -111,6 +114,7 @@ export class LevelScene extends Phaser.Scene {
     this.checkpoints = [];
     this.pickups = [];
     this.jammer = null;
+    this.walls = [];
     this.combo = new ComboCounter(COMBO.windowMs);
     this.gameNow = 0;
     this.state = 'play';
@@ -164,7 +168,7 @@ export class LevelScene extends Phaser.Scene {
     this.physics.add.collider(this.player.zone, this.world.layer, undefined, (_a, tile) => this.processTile(tile as Phaser.Tilemaps.Tile));
 
     this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech });
-    this.omni = new OmnitrixController(aliensUnlockedBy(this.level.chapter), this.player, this.sequence, this.fx, this.perfect);
+    this.omni = new OmnitrixController(this.aliens(), this.player, this.sequence, this.fx, this.perfect);
     this.omni.transformations = this.stats.transformations;
     this.omni.perfects = this.stats.perfectTransforms;
     this.omni.onTransformed = () => this.tutorial.tip('fireball', '{J} FIREBALL  (HOLD {UP} TO AIM HIGH)', 7000, 5);
@@ -178,12 +182,18 @@ export class LevelScene extends Phaser.Scene {
 
     this.droneWorld = this.createDroneWorld();
     const resumeX = this.checkpointId ? start.x : 0;
-    const spawned = spawnEntities(this, this.level, this.droneWorld, this.fx, resumeX, this.stats.cardsFound);
+    const spawned = spawnEntities(this, this.level, this.droneWorld, this.fx, resumeX, this.stats.cardsFound, this.aliens());
     this.drones = spawned.drones;
     this.barricades = spawned.barricades;
     this.checkpoints = spawned.checkpoints;
     this.pickups = spawned.pickups;
     this.jammer = spawned.jammer;
+    this.walls = spawned.walls;
+    for (const w of this.walls) {
+      this.combat.addTarget(w);
+      this.physics.add.collider(this.player.zone, w.body);
+      w.onFirstTease = () => this.speech.show("I'D NEED, LIKE, FOUR ARMS TO BUST THAT...", 2400);
+    }
     for (const d of this.drones) this.registerDrone(d);
     for (const b of this.barricades) {
       this.combat.addTarget(b);
@@ -258,8 +268,13 @@ export class LevelScene extends Phaser.Scene {
 
   // ------------------------------------------------------------ Setup helpers
 
+  /** Aliens on the dial this run. Cards behind later aliens' obstacles only count once they are here. */
+  private aliens(): string[] {
+    return aliensUnlockedBy(this.level.chapter);
+  }
+
   private countCards(): number {
-    return this.level.entities.filter((e) => e.type === 'card').length;
+    return availableCards(this.level, this.aliens()).length;
   }
 
   private resolveStart(): { x: number; y: number } {
@@ -451,6 +466,7 @@ export class LevelScene extends Phaser.Scene {
     for (const c of this.checkpoints) c.update(this.lighting, this.gameNow);
     for (const p of this.pickups) p.update(this.fx, this.lighting, this.gameNow);
     this.jammer?.update(dt, this.lighting, this.gameNow);
+    for (const w of this.walls) w.update(dt, this.lighting, this.gameNow);
   }
 
   private updateZones(): void {
@@ -492,6 +508,8 @@ export class LevelScene extends Phaser.Scene {
         });
       }
     }
+
+    for (const w of this.walls) if (w.touching(p.x, p.y)) w.tease();
 
     if (this.world.inWater(p.x, p.y) || p.y > this.world.heightPx + 40) {
       this.fx.burst('splash', p.x, Math.min(p.y, this.world.heightPx), 18);
