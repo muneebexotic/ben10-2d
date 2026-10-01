@@ -147,6 +147,15 @@ export class AudioEngine {
     src.stop(t + o.duration + 0.02);
   }
 
+  /** A looping white-noise source (unstarted, unconnected) for held sounds like wind. */
+  createNoiseSource(): AudioBufferSourceNode | null {
+    if (!this.ctx || !this.noiseBuffer) return null;
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.noiseBuffer;
+    src.loop = true;
+    return src;
+  }
+
   private makeNoise(): AudioBuffer {
     const ctx = this.ctx!;
     const buffer = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);

@@ -137,6 +137,7 @@ export const HUMAN_FORM: FormDefinition = {
     revert: ['AW MAN!', 'NOT NOW!', 'COME ON, COME ON!', 'SERIOUSLY?!', 'UH OH...', 'STUPID WATCH!'],
   },
   tips: {},
+  moves: ['{J} PUNCH (KNOCKS LASERS BACK)', '{K} DODGE ROLL'],
   audio: { music: null },
   // Ben's sprites are part of the shared asset map (he exists before the Omnitrix does).
   art: { assets: [], anims: [] },

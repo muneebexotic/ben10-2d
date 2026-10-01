@@ -1,13 +1,14 @@
 import type { FormDefinition } from './types';
 import { HEATBLAST_FORM } from './heatblast';
 import { HUMAN_FORM } from './human';
+import { XLR8_FORM } from './xlr8';
 
 /**
  * Every alien the Omnitrix can become, in dial order. Adding an alien = one new
  * module in src/aliens/ + one line here; Player, Omnitrix, HUD, touch controls,
  * music and the asset map all read from this list.
  */
-const ALIENS: readonly FormDefinition[] = [HEATBLAST_FORM];
+const ALIENS: readonly FormDefinition[] = [HEATBLAST_FORM, XLR8_FORM];
 
 const BY_ID = new Map(ALIENS.map((a) => [a.id, a]));
 

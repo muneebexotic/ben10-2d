@@ -4,7 +4,10 @@ import { SCENES } from './SceneKeys';
 import { pixelText } from '../ui/text';
 import { PALETTE } from '../config/palette';
 
-/** Dev tool (?gallery=1): every generated texture at 2x, for checking placeholder or real art. */
+/**
+ * Dev tool (?gallery=1): every generated texture at 2x, for checking placeholder
+ * or real art. ?gallery=1&key=<texture> shows one sheet frame by frame at 4x.
+ */
 export class GalleryScene extends Phaser.Scene {
   constructor() {
     super(SCENES.gallery);
@@ -12,6 +15,11 @@ export class GalleryScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor(0x2a2f45);
+    const key = new URLSearchParams(window.location.search).get('key');
+    if (key) {
+      this.showSheet(key);
+      return;
+    }
     let x = 4;
     let y = 4;
     let rowH = 0;
@@ -33,5 +41,23 @@ export class GalleryScene extends Phaser.Scene {
       rowH = Math.max(rowH, h);
     }
     pixelText(this, 4, 350, 'THE QUICK BROWN FOX JUMPS OVER 0123456789 !?:-+/()%', { color: PALETTE.omnitrix });
+  }
+
+  private showSheet(key: string): void {
+    const asset = ALL_ASSETS.find((a) => a.key === key);
+    if (!asset) return;
+    const q = new URLSearchParams(window.location.search);
+    const scale = Number(q.get('scale') ?? 4);
+    const from = Number(q.get('from') ?? 0);
+    const w = asset.frameWidth * scale + 8;
+    const h = asset.frameHeight * scale + 14;
+    const cols = Math.max(1, Math.floor(636 / w));
+    for (let f = from; f < asset.frames; f++) {
+      const x = 4 + ((f - from) % cols) * w;
+      const y = 4 + Math.floor((f - from) / cols) * h;
+      this.add.rectangle(x, y + 10, asset.frameWidth * scale, asset.frameHeight * scale, 0x3a4060).setOrigin(0, 0);
+      this.add.image(x, y + 10, key, f).setOrigin(0, 0).setScale(scale);
+      pixelText(this, x, y, String(f), { color: PALETTE.uiDim });
+    }
   }
 }

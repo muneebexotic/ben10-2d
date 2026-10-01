@@ -234,6 +234,8 @@ export interface FormDefinition {
     swap?: string[];
   };
   tips: FormTips;
+  /** Move list for the pause screen, with control tokens ("{J} FIREBALL"). */
+  moves: string[];
   audio: {
     /** Signature sound layered on the transformation boom. */
     transform?: SoundRecipe;
