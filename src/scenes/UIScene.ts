@@ -16,6 +16,8 @@ import { PLAYER } from '../config/player';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { shakeCamera } from '../systems/Accessibility';
+import { SplitDisplay } from '../ui/SplitDisplay';
+import { playSfx } from '../systems/audio/Sfx';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -27,6 +29,7 @@ export class UIScene extends Phaser.Scene {
   private combo!: ComboDisplay;
   private stats!: StatsCorner;
   private letterbox!: Letterbox;
+  private splits!: SplitDisplay;
   private vignette!: Phaser.GameObjects.Image;
   private hp: number = PLAYER.maxHealth;
   private alien = false;
@@ -48,11 +51,13 @@ export class UIScene extends Phaser.Scene {
     this.prompts = new PromptBar(this);
     this.banner = new Banner(this);
     this.letterbox = new Letterbox(this);
+    this.splits = new SplitDisplay(this, 54);
 
     const on = EventBus.on.bind(EventBus);
     on('hud:visible', (p) => {
       this.health.setVisible(p.visible);
       this.stats.setVisible(p.visible);
+      this.splits.setVisible(p.visible);
       if (p.omnitrix !== undefined) this.dial.setVisible(p.omnitrix && p.visible, false);
     }, this);
     on('omnitrix:acquired', () => this.dial.setVisible(true, true), this);
@@ -102,6 +107,11 @@ export class UIScene extends Phaser.Scene {
     on('combo:drop', (p) => this.combo.drop(p.count), this);
     on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards), this);
     on('card:collected', (p) => this.stats.cardPop(p.found - 1), this);
+    on('hud:split', (s) => {
+      this.splits.show(s, this.time.now);
+      this.stats.setPace(s.deltaMs === null ? null : s.ahead);
+      if (s.ahead) playSfx('combo', 1, 1.6);
+    }, this);
     on('hud:prompt', (p) => this.prompts.add(p.id, p.text, p.priority), this);
     on('hud:promptClear', (p) => this.prompts.clear(p.id), this);
     on('hud:banner', (p) => this.banner.show(p), this);
@@ -129,6 +139,7 @@ export class UIScene extends Phaser.Scene {
     this.bossBar.update(delta, now);
     this.prompts.update(now);
     this.combo.update(delta, now);
+    this.splits.update(now);
 
     const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
     const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;

@@ -14,7 +14,7 @@ export class ComboDisplay {
   constructor(private readonly scene: Phaser.Scene) {
     this.count = pixelText(scene, 0, 0, '0', { scale: 3, originX: 1, originY: 0.5, color: PALETTE.gold });
     this.label = pixelText(scene, 0, 14, 'HIT COMBO', { originX: 1, originY: 0.5, color: PALETTE.cream });
-    this.root = scene.add.container(GAME_WIDTH - 10, 78, [this.count, this.label]).setVisible(false);
+    this.root = scene.add.container(GAME_WIDTH - 10, 116, [this.count, this.label]).setVisible(false);
   }
 
   set(count: number, now: number): void {

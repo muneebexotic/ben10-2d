@@ -40,7 +40,8 @@ export type FormFilter = 'any' | 'human' | 'alien';
 export type EntitySpawn =
   | { type: 'drone'; kind: DroneKind; x: number; y: number }
   | { type: 'barricade'; id: string; x: number; y: number; w: number; h: number }
-  | { type: 'checkpoint'; id: string; x: number; y: number; density: Density }
+  /** `label` names the speedrun split. */
+  | { type: 'checkpoint'; id: string; x: number; y: number; density: Density; label: string }
   | { type: 'smoothy'; x: number; y: number }
   | { type: 'card'; id: string; x: number; y: number }
   | { type: 'jammer'; x: number; y: number; fieldFrom: number; gateX: number; gateTop: number }

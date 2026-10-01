@@ -45,7 +45,7 @@ export function spawnEntities(
   const behind = (tx: number) => resumeX > 0 && tx * TILE < resumeX - TILE;
 
   for (const cp of checkpointsFor(level)) {
-    const c = new Checkpoint(scene, cp.id, cp.x, cp.y);
+    const c = new Checkpoint(scene, cp.id, cp.label, cp.x, cp.y);
     if (behind(cp.x) || Math.abs(cp.x * TILE + TILE / 2 - resumeX) < TILE * 2) c.light();
     out.checkpoints.push(c);
   }

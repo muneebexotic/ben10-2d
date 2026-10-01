@@ -87,7 +87,7 @@ export const CHAPTER_1: LevelData = {
     { type: 'drone', kind: 'striker', x: 92, y: 13 },
     { type: 'drone', kind: 'scout', x: 99, y: 18 },
     { type: 'card', id: 'ch1-card-ridge', x: 97, y: 10 },
-    { type: 'checkpoint', id: 'cp-cliff', x: 98, y: 24, density: 'normal' },
+    { type: 'checkpoint', id: 'cp-cliff', x: 98, y: 24, density: 'normal', label: 'CLIFF' },
     { type: 'decor', kind: 'sign', x: 100, y: 24 },
 
     { type: 'smoothy', x: 106, y: 17 },
@@ -98,11 +98,11 @@ export const CHAPTER_1: LevelData = {
     { type: 'jammer', x: 176, y: 24, fieldFrom: 131, gateX: 179, gateTop: 12 },
     { type: 'drone', kind: 'scout', x: 140, y: 17 },
     { type: 'drone', kind: 'striker', x: 149, y: 16 },
-    { type: 'checkpoint', id: 'cp-ravine', x: 152, y: 24, density: 'frequent' },
+    { type: 'checkpoint', id: 'cp-ravine', x: 152, y: 24, density: 'frequent', label: 'RAVINE' },
     { type: 'drone', kind: 'scout', x: 158, y: 15 },
     { type: 'card', id: 'ch1-card-creek', x: 160, y: 19 },
     { type: 'drone', kind: 'striker', x: 166, y: 16 },
-    { type: 'checkpoint', id: 'cp-nest', x: 182, y: 24, density: 'sparse' },
+    { type: 'checkpoint', id: 'cp-nest', x: 182, y: 24, density: 'sparse', label: 'NEST' },
 
     { type: 'drone', kind: 'gunner', x: 190, y: 16 },
     { type: 'drone', kind: 'scout', x: 198, y: 14 },
@@ -115,7 +115,7 @@ export const CHAPTER_1: LevelData = {
     { type: 'drone', kind: 'striker', x: 227, y: 14 },
     { type: 'drone', kind: 'scout', x: 232, y: 14 },
     { type: 'decor', kind: 'fire', x: 233, y: 24 },
-    { type: 'checkpoint', id: 'cp-arena', x: 236, y: 24, density: 'sparse' },
+    { type: 'checkpoint', id: 'cp-arena', x: 236, y: 24, density: 'sparse', label: 'CRASH SITE' },
 
     { type: 'decor', kind: 'crater', x: 260, y: 24 },
     { type: 'decor', kind: 'wreck', x: 253, y: 24 },

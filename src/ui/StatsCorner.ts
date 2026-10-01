@@ -36,6 +36,11 @@ export class StatsCorner {
     for (let i = 0; i < this.cards.length; i++) this.cards[i].setFrame(i < cards ? 1 : 0);
   }
 
+  /** Gold timer while ahead of your best at the last split. */
+  setPace(ahead: boolean | null): void {
+    this.time.setTint(ahead ? PALETTE.gold : PALETTE.white);
+  }
+
   cardPop(index: number): void {
     const c = this.cards[index];
     if (!c) return;

@@ -10,7 +10,7 @@ export class Checkpoint {
   readonly y: number;
   lit = false;
 
-  constructor(scene: Phaser.Scene, readonly id: string, tx: number, ty: number) {
+  constructor(scene: Phaser.Scene, readonly id: string, readonly label: string, tx: number, ty: number) {
     this.x = tx * TILE + TILE / 2;
     this.y = ty * TILE;
     this.sprite = scene.add.sprite(this.x, this.y, TEX.checkpoint, 0).setOrigin(0.5, 1).setDepth(DEPTH.props);

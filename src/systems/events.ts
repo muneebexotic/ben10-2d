@@ -1,5 +1,6 @@
 import type { OmnitrixState, RevertReason } from './Omnitrix';
 import type { TouchMode } from './SaveSystem';
+import type { SplitResult } from './Splits';
 import type { RunStats } from './RunStats';
 
 export interface OmnitrixTick {
@@ -40,6 +41,7 @@ export interface GameEvents {
   'combo:drop': { count: number };
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number };
   'card:collected': { id: string; found: number; total: number };
+  'hud:split': SplitResult;
   'hud:prompt': { id: string; text: string; priority?: number };
   'hud:promptClear': { id: string };
   'hud:banner': BannerPayload;

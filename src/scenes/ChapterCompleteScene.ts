@@ -12,6 +12,7 @@ import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
+import { formatDelta } from '../systems/Splits';
 
 const RANK_COLOR: Record<Rank, number> = {
   S: PALETTE.gold,
@@ -34,6 +35,7 @@ interface Row {
   value: () => string;
   count?: { to: number; format: (n: number) => string };
   highlight?: string;
+  highlightColor?: number;
 }
 
 /** Rewarding end screen: stats tally one by one, then the rank stamps down. */
@@ -56,11 +58,13 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const result = computeRank(this.stats);
     this.rank = result.rank;
     this.score = result.score;
+    const previousBest = saveSystem.getChapter(CHAPTER_1.id).bestTimeMs;
     this.outcome = saveSystem.recordChapter(CHAPTER_1.id, {
       timeMs: this.stats.timeMs,
       rank: this.rank,
       score: this.score,
       cards: this.stats.cardsFound,
+      timed: this.stats.fullRun,
     });
 
     this.cameras.main.fadeIn(500, 0, 0, 0);
@@ -75,7 +79,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
     const s = this.stats;
     const rows: Row[] = [
-      { label: 'TIME', value: () => formatTime(s.timeMs), highlight: this.outcome.newBestTime ? 'NEW BEST!' : undefined },
+      { label: 'TIME', value: () => formatTime(s.timeMs), ...this.timeHighlight(previousBest) },
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
       { label: 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) } },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` } },
@@ -123,11 +127,19 @@ export class ChapterCompleteScene extends Phaser.Scene {
       });
     }
     if (row.highlight) {
-      const h = pixelText(this, x1 + 8, y, row.highlight, { color: PALETTE.gold });
+      const h = pixelText(this, x1 + 8, y, row.highlight, { color: row.highlightColor ?? PALETTE.gold });
       h.setOrigin(0, 0);
       h.setScale(2).setAlpha(0);
       this.tweens.add({ targets: h, scale: 1, alpha: 1, duration: 300, delay: 350, ease: 'Back.easeOut' });
     }
+  }
+
+  private timeHighlight(previousBest: number | null): Pick<Row, 'highlight' | 'highlightColor'> {
+    if (!this.stats.fullRun) return { highlight: 'PRACTICE', highlightColor: PALETTE.uiDim };
+    if (previousBest === null) return { highlight: 'NEW BEST!' };
+    const delta = this.stats.timeMs - previousBest;
+    if (this.outcome.newBestTime) return { highlight: `NEW BEST! ${formatDelta(delta)}` };
+    return { highlight: formatDelta(delta), highlightColor: 0xff6a6a };
   }
 
   private stampRank(): void {

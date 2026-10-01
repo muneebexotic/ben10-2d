@@ -47,6 +47,8 @@ import { SCENES } from './SceneKeys';
 import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
 import { PERFECT_TRANSFORM } from '../config/omnitrix';
 import { PerfectWindow } from '../systems/PerfectTransform';
+import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
+import { saveSystem } from '../systems/SaveSystem';
 
 export interface LevelStartData {
   checkpoint?: string | null;
@@ -457,6 +459,7 @@ export class LevelScene extends Phaser.Scene {
         this.fx.burst('green', c.x, c.y - 24, 16);
         this.fx.ring(c.x, c.y - 24, PALETTE.omnitrix, 30, 400);
         EventBus.emit('hud:banner', { title: 'CHECKPOINT', color: PALETTE.omnitrix, durationMs: 1100, style: 'soft' });
+        this.split(c.id, c.label);
       }
     }
 
@@ -596,7 +599,15 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
+  /** Speedrun split vs the fastest time ever reached here. Practice runs show nothing. */
+  private split(id: string, label: string): void {
+    if (!this.stats.fullRun) return;
+    const previous = saveSystem.recordSplit(this.level.id, id, this.stats.timeMs);
+    EventBus.emit('hud:split', compareSplit(id, label, this.stats.timeMs, previous));
+  }
+
   private onBossDefeated(x: number, y: number): void {
+    this.split(FINISH_SPLIT, 'BOSS DOWN');
     this.state = 'complete';
     this.player.controlsEnabled = false;
     this.player.setInvulnerable(99999);
