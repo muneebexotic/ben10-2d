@@ -1,4 +1,5 @@
 import { SCORING, type Rank } from '../config/scoring';
+import { isDifficultyId, type DifficultyId } from '../config/difficulty';
 
 export interface RunStats {
   timeMs: number;
@@ -18,6 +19,10 @@ export interface RunStats {
   fullRun: boolean;
   /** The Vilgax hologram already played this run (retries skip it). */
   sawVilgax: boolean;
+  /** The difficulty the run started on. Bests are kept per difficulty. */
+  difficulty: DifficultyId;
+  /** The difficulty changed mid-run: it still counts as a clear, but isn't timed. */
+  mixedDifficulty: boolean;
 }
 
 export interface RankResult {
@@ -25,7 +30,7 @@ export interface RankResult {
   score: number;
 }
 
-export function createRunStats(totalCards: number, fullRun = true): RunStats {
+export function createRunStats(totalCards: number, fullRun = true, difficulty: DifficultyId = 'normal'): RunStats {
   return {
     timeMs: 0,
     damageTaken: 0,
@@ -41,6 +46,34 @@ export function createRunStats(totalCards: number, fullRun = true): RunStats {
     improvised: 0,
     fullRun,
     sawVilgax: false,
+    difficulty,
+    mixedDifficulty: false,
+  };
+}
+
+/** Rebuilds run stats read back from a save (a resume point). Null if they are unusable. */
+export function sanitizeRunStats(raw: unknown): RunStats | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0);
+  if (typeof r.timeMs !== 'number' || !Number.isFinite(r.timeMs)) return null;
+  return {
+    timeMs: n(r.timeMs),
+    damageTaken: n(r.damageTaken),
+    enemiesDefeated: n(r.enemiesDefeated),
+    deaths: n(r.deaths),
+    cardsFound: Array.isArray(r.cardsFound) ? r.cardsFound.filter((c): c is string => typeof c === 'string') : [],
+    totalCards: n(r.totalCards),
+    bestCombo: n(r.bestCombo),
+    transformations: n(r.transformations),
+    parries: n(r.parries),
+    perfectTransforms: n(r.perfectTransforms),
+    misfires: n(r.misfires),
+    improvised: n(r.improvised),
+    fullRun: r.fullRun === true,
+    sawVilgax: r.sawVilgax === true,
+    difficulty: isDifficultyId(r.difficulty) ? r.difficulty : 'normal',
+    mixedDifficulty: r.mixedDifficulty === true,
   };
 }
 

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { TILE } from '../../config/constants';
-import { getDifficulty } from '../../config/difficulty';
-import type { Density, EntitySpawn, LevelData } from '../../levels/types';
+import { checkpointsFor } from '../../levels/checkpoints';
+import type { LevelData } from '../../levels/types';
 import { Barricade } from '../../entities/props/Barricade';
 import { Checkpoint } from '../../entities/props/Checkpoint';
 import { Jammer } from '../../entities/props/Jammer';
@@ -13,6 +13,8 @@ import { CrackedWall, type WallBreaker } from '../../entities/props/CrackedWall'
 import { Boulder } from '../../entities/props/Boulder';
 import { Dummy } from '../../entities/props/Dummy';
 import { cardAvailable } from '../../levels/secrets';
+
+export { checkpointsFor };
 
 export interface SpawnedEntities {
   drones: Drone[];
@@ -35,17 +37,6 @@ export interface SpawnOptions {
   breakerFor(alienId: string): WallBreaker | null;
   /** Thrown boulders reform (Training). */
   respawningProps: boolean;
-}
-
-const DENSITY_RANK: Record<Density, number> = { sparse: 0, normal: 1, frequent: 2 };
-const DIFFICULTY_DENSITY: Record<'sparse' | 'normal' | 'frequent', number> = { sparse: 0, normal: 1, frequent: 2 };
-
-/** Checkpoints kept for the active difficulty (Hard drops the optional ones). */
-export function checkpointsFor(level: LevelData): Array<Extract<EntitySpawn, { type: 'checkpoint' }>> {
-  const allowed = DIFFICULTY_DENSITY[getDifficulty().checkpoints];
-  return level.entities.filter(
-    (e): e is Extract<EntitySpawn, { type: 'checkpoint' }> => e.type === 'checkpoint' && DENSITY_RANK[e.density] <= allowed,
-  );
 }
 
 /**

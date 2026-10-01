@@ -6,6 +6,7 @@ import { blinkOn } from '../../systems/Accessibility';
 import type { Hit } from '../types';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
 import { canShoot, rand, steer } from './brainKit';
+import { pace } from '../../systems/Difficulty';
 
 const A = ARMORED;
 
@@ -118,7 +119,7 @@ export class ArmoredBrain implements DroneBrain {
         d.vy *= 0.9;
         if (d.stateT > A.recoverMs) {
           d.setState('idle');
-          d.nextActionAt = w.now + rand(A.fireIntervalMs);
+          d.nextActionAt = w.now + pace.rest(rand(A.fireIntervalMs));
         }
         break;
       }
@@ -172,7 +173,7 @@ export class ArmoredBrain implements DroneBrain {
     }
     // Armour shatters: the drone drops, its core glows, and every hit counts.
     d.memo.armor = A.armorHp;
-    d.memo.exposedUntil = w.now + A.exposedMs;
+    d.memo.exposedUntil = w.now + pace.punish(A.exposedMs);
     d.setCharging(false);
     d.setState('idle');
     w.cancelThreat(d);

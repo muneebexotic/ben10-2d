@@ -15,6 +15,7 @@ import type { Damageable, Hazard, Hit, HitResult, Rect } from '../types';
 import { ATTACKS, newAttack, type AttackKind, type AttackState } from './bossAttacks';
 import type { BossHazards } from './BossHazards';
 import { blinkOn } from '../../systems/Accessibility';
+import { activeDifficulty, pace } from '../../systems/Difficulty';
 
 export interface BossWorld {
   readonly now: number;
@@ -186,7 +187,7 @@ export class HunterDrone implements Damageable, Hazard {
       this.startDying();
       return 'killed';
     }
-    if (this.phase === 0 && this.hp <= BOSS.maxHp * BOSS.phase2Ratio) this.startTransition();
+    if (this.phase === 0 && this.hp <= BOSS.maxHp * activeDifficulty().bossPhase2At) this.startTransition();
     return 'hit';
   }
 
@@ -204,7 +205,7 @@ export class HunterDrone implements Damageable, Hazard {
       case 'idle':
         this.eye = 'idle';
         this.setTarget(this.x + Math.sin(this.stateT * 0.002) * 30, this.hoverY + Math.sin(this.stateT * 0.003) * 8, 1.2);
-        if (this.stateT >= BOSS.idleMs[this.phase]) this.startAttack();
+        if (this.stateT >= pace.bossRest(BOSS.idleMs[this.phase])) this.startAttack();
         break;
       case 'attack':
         if (this.attack) {

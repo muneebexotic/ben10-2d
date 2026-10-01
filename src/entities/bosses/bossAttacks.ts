@@ -4,6 +4,7 @@ import { PALETTE } from '../../config/palette';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { BossWorld, HunterDrone } from './HunterDrone';
 import { blinkOn } from '../../systems/Accessibility';
+import { pace } from '../../systems/Difficulty';
 
 export type AttackKind = 'volley' | 'slam' | 'summon' | 'beam' | 'rain';
 
@@ -126,7 +127,7 @@ const slam: AttackFn = (b, w, a, dt) => {
       return false;
     }
     case 3: {
-      const stuck = lastInChain ? cfg.stuckMs[p] : 380;
+      const stuck = lastInChain ? pace.punish(cfg.stuckMs[p]) : 380;
       b.stuck = lastInChain;
       b.eye = lastInChain ? 'vulnerable' : 'charge';
       b.setTarget(b.x, floor - 30, 0);

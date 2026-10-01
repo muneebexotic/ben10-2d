@@ -8,6 +8,7 @@ import { blinkOn } from '../../systems/Accessibility';
 import { aimAt, canShoot, fireLaser, rand, steer } from './brainKit';
 import { ArmoredBrain } from './armored';
 import { HornetBrain } from './hornet';
+import { pace } from '../../systems/Difficulty';
 
 /** Hovers at a comfortable offset, telegraphs with a flickering aim line, then fires one aimed laser. */
 export class ScoutBrain implements DroneBrain {
@@ -54,7 +55,7 @@ export class ScoutBrain implements DroneBrain {
       d.vy *= 0.9;
       if (d.stateT > 420) {
         d.setState('idle');
-        d.nextActionAt = w.now + rand(SCOUT.fireIntervalMs);
+        d.nextActionAt = w.now + pace.rest(rand(SCOUT.fireIntervalMs));
       }
     }
   }
@@ -139,7 +140,7 @@ export class StrikerBrain implements DroneBrain {
         d.vx = 0;
         d.vy = 0;
         if (Math.random() < 0.08) w.fx.burst('spark', d.x + (Math.random() - 0.5) * 12, d.y - 4, 2);
-        if (d.stateT >= STRIKER.stuckMs) {
+        if (d.stateT >= pace.punish(STRIKER.stuckMs)) {
           d.sprite.setAngle(0);
           d.setCharging(false);
           d.setState('rise');
@@ -151,7 +152,7 @@ export class StrikerBrain implements DroneBrain {
         steer(d, d.x, ground - STRIKER.altitude, STRIKER.riseSpeed, 3);
         if (d.stateT > 900 || Math.abs(d.y - (ground - STRIKER.altitude)) < 6) {
           d.setState('idle');
-          d.nextActionAt = w.now + STRIKER.cooldownMs;
+          d.nextActionAt = w.now + pace.rest(STRIKER.cooldownMs);
         }
         break;
       }
@@ -226,7 +227,7 @@ export class GunnerBrain implements DroneBrain {
       d.vy *= 0.9;
       if (d.stateT > 600) {
         d.setState('idle');
-        d.nextActionAt = w.now + rand(GUNNER.fireIntervalMs);
+        d.nextActionAt = w.now + pace.rest(rand(GUNNER.fireIntervalMs));
       }
     }
   }

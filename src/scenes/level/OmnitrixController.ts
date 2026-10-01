@@ -1,10 +1,11 @@
-import { OMNITRIX_WARNING_MS, getDifficulty } from '../../config/difficulty';
+import { OMNITRIX_WARNING_MS } from '../../config/difficulty';
+import { activeDifficulty } from '../../systems/Difficulty';
 import { MISFIRE, PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
 import { MisfireQuips } from '../../aliens/misfire';
 import { PALETTE } from '../../config/palette';
 import { getAlien } from '../../aliens/registry';
 import type { Player } from '../../entities/Player';
-import { Omnitrix, type OmnitrixEvent, type RevertReason } from '../../systems/Omnitrix';
+import { Omnitrix, type OmnitrixConfig, type OmnitrixEvent, type RevertReason } from '../../systems/Omnitrix';
 import { EventBus } from '../../systems/EventBus';
 import type { Controls } from '../../systems/InputMap';
 import type { Fx } from '../../systems/Fx';
@@ -30,6 +31,7 @@ export class OmnitrixController {
   private readonly quips = new MisfireQuips();
   /** False while the story needs the watch to behave (first transform, boss intro). */
   misfireAllowed: () => boolean = () => true;
+  private readonly wrongOverride: number | null;
   onTransformed: ((alienId: string, first: boolean) => void) | null = null;
   onSwapped: ((alienId: string) => void) | null = null;
   onReverted: ((reason: RevertReason) => void) | null = null;
@@ -43,22 +45,30 @@ export class OmnitrixController {
     private readonly perfect: PerfectWindow,
     opts: { wrongTransformChance?: number } = {},
   ) {
-    const d = getDifficulty();
-    this.omnitrix = new Omnitrix(
-      {
-        transformDurationMs: d.transformDurationMs,
-        cooldownMs: d.cooldownMs,
-        warningMs: OMNITRIX_WARNING_MS,
-        wrongTransformChance: opts.wrongTransformChance ?? d.wrongTransformChance,
-        swapEnabled: SWAP.enabled,
-        swapCostMs: SWAP.costMs,
-        swapLockoutMs: SWAP.lockoutMs,
-        swapMisfireScale: MISFIRE.swapChanceScale,
-        misfireFixCostScale: MISFIRE.fixCostScale,
-        improviseBonusMs: MISFIRE.improviseBonusMs,
-      },
-      unlocked,
-    );
+    this.wrongOverride = opts.wrongTransformChance ?? null;
+    this.omnitrix = new Omnitrix(this.configFor(), unlocked);
+  }
+
+  /** The Omnitrix rules for the active difficulty (Training overrides the misfire chance). */
+  private configFor(): OmnitrixConfig {
+    const d = activeDifficulty();
+    return {
+      transformDurationMs: d.transformDurationMs,
+      cooldownMs: d.cooldownMs,
+      warningMs: OMNITRIX_WARNING_MS,
+      wrongTransformChance: this.wrongOverride ?? d.wrongTransformChance,
+      swapEnabled: SWAP.enabled,
+      swapCostMs: SWAP.costMs,
+      swapLockoutMs: SWAP.lockoutMs,
+      swapMisfireScale: MISFIRE.swapChanceScale,
+      misfireFixCostScale: MISFIRE.fixCostScale,
+      improviseBonusMs: MISFIRE.improviseBonusMs,
+    };
+  }
+
+  /** The difficulty changed mid-level: new timer, recharge and misfire chance (the running timer keeps its time). */
+  applyDifficulty(): void {
+    this.omnitrix.setConfig(this.configFor());
   }
 
   handleInput(c: Controls, now: number): void {

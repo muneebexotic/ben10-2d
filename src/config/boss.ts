@@ -2,7 +2,6 @@ export const BOSS = {
   name: 'HUNTER-KILLER DRONE',
   subtitle: "VILGAX'S RETRIEVAL UNIT",
   maxHp: 120,
-  phase2Ratio: 0.5,
   hoverHeight: 138,
   moveLerp: 2.4,
   contactDamage: 1,

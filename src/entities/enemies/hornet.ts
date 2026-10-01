@@ -5,6 +5,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import { blinkOn } from '../../systems/Accessibility';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
 import { aimAt, canShoot, rand, steer } from './brainKit';
+import { pace } from '../../systems/Difficulty';
 
 const H = HORNET;
 const DEG = Math.PI / 180;
@@ -105,7 +106,7 @@ export class HornetBrain implements DroneBrain {
         d.vy *= 0.88;
         if (d.stateT > H.recoverMs) {
           d.setState('idle');
-          d.nextActionAt = w.now + rand(H.attackIntervalMs);
+          d.nextActionAt = w.now + pace.rest(rand(H.attackIntervalMs));
         }
         break;
       }

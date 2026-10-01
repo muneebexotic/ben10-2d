@@ -9,6 +9,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { Projectiles } from '../Projectiles';
 import type { Damageable, Hazard, Hit, HitKind, HitResult, Liftable, Rect } from '../types';
 import type { Telegraphs } from './Telegraphs';
+import { pace } from '../../systems/Difficulty';
 
 export interface DroneWorld {
   now: number;
@@ -196,7 +197,7 @@ export class Drone implements Damageable, Hazard, Liftable {
       if (Math.abs(this.x - cx) < DRONE_SHARED.wakeDistance && Math.abs(this.y - w.view.centerY) < 320) {
         this.awake = true;
         const [lo, hi] = DRONE_SHARED.wakeDelayMs;
-        this.nextActionAt = w.now + lo + Math.random() * (hi - lo);
+        this.nextActionAt = w.now + pace.wake(lo + Math.random() * (hi - lo));
       } else {
         this.render(w.now);
         return;

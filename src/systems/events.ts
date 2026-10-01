@@ -4,6 +4,7 @@ import type { SplitResult } from './Splits';
 import type { RunStats } from './RunStats';
 import type { TrainingOptions } from './TrainingState';
 import type { DroneKind } from '../levels/types';
+import type { DifficultyId } from '../config/difficulty';
 
 export interface OmnitrixTick {
   state: OmnitrixState;
@@ -82,6 +83,8 @@ export interface GameEvents {
   'system:pause': undefined;
   'input:mode': { kind: 'keyboard' | 'touch' };
   'settings:changed': { reduceFlashing: boolean; shake: number; touchControls: TouchMode };
+  /** The active file's difficulty changed (Settings). Gameplay applies it live. */
+  'difficulty:changed': { id: DifficultyId };
   /** Training menu: spawn one enemy, clear them all, or change the sandbox switches. */
   'training:spawn': { kind: DroneKind };
   'training:clear': undefined;

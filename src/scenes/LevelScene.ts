@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { BOSS } from '../config/boss';
 import { COMBO, DEPTH, FX, LIGHTING, PHYSICS, TILE } from '../config/constants';
-import { getDifficulty } from '../config/difficulty';
 import { lerpColor, PALETTE } from '../config/palette';
 import { ACCESSIBILITY } from '../config/accessibility';
 import { PLAYER } from '../config/player';
@@ -56,6 +55,7 @@ import { SCENES } from './SceneKeys';
 import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
 import { MISFIRE, PERFECT_TRANSFORM } from '../config/omnitrix';
 import { PerfectWindow } from '../systems/PerfectTransform';
+import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { saveSystem } from '../systems/SaveSystem';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
@@ -164,7 +164,9 @@ export class LevelScene extends Phaser.Scene {
     this.reachableCards = availableCards(this.level, this.dialAliens).length;
     // Starting mid-level (?start=) or with playtest aliens (?aliens=) is practice: no best times or splits.
     const fullRun = this.mode === 'story' && !data.checkpoint && extra.length === 0;
-    this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(countedCards(this.level).length, fullRun);
+    this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(countedCards(this.level).length, fullRun, activeDifficultyId());
+    // Picked up on a different difficulty than it started on: still a clear, but not a timed run.
+    if (this.stats.difficulty !== activeDifficultyId()) this.stats.mixedDifficulty = true;
     this.perfect.clear();
     this.checkpointId = data.checkpoint ?? null;
 
@@ -247,6 +249,7 @@ export class LevelScene extends Phaser.Scene {
     this.syncHud();
     // The HUD scene may be created after this scene (first launch); it asks for state when ready.
     EventBus.on('hud:ready', () => this.syncHud(), this);
+    EventBus.on('difficulty:changed', () => this.onDifficultyChanged(), this);
     EventBus.on('alien:misfire', () => {
       const bonus = Math.round(MISFIRE.improviseBonusMs / 1000);
       this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
@@ -305,7 +308,10 @@ export class LevelScene extends Phaser.Scene {
       fx: createFxApi(this.fx, this.lighting),
       world: { isSolid: (x, y) => this.world.isSolid(x, y), groundBelow: (x, y) => this.world.groundBelow(x, y) },
       notify: (a) => this.onAbility(a),
-      damageMultiplier: getDifficulty().damageTakenMultiplier,
+      // Read live: changing difficulty in Settings applies to the very next hit.
+      get damageMultiplier() {
+        return activeDifficulty().damageTakenMultiplier;
+      },
     });
     if (launchParams().god) this.player.setInvulnerable(1e9);
     this.player.isSafeSpot = (x, y) => !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12);
@@ -619,7 +625,7 @@ export class LevelScene extends Phaser.Scene {
       if (!pk.touches(p.x, p.y)) continue;
       pk.collect(this.fx);
       if (pk.kind === 'smoothy') {
-        const healed = p.heal(2);
+        const healed = p.heal(activeDifficulty().smoothyHeal);
         playSfx('heal');
         this.floatText(pk.x, pk.baseY - 10, healed > 0 ? `+${healed} HP` : 'BRAIN FREEZE!', 0xff8fc8);
         if (p.isAlien) p.formHp = Math.min(p.form.maxFormHealth, p.formHp + 2);
@@ -818,9 +824,16 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
+  /** Settings changed the difficulty mid-level: the watch, damage and enemy pacing follow at once. */
+  private onDifficultyChanged(): void {
+    this.omni.applyDifficulty();
+    this.training?.apply();
+    if (this.mode === 'story' && this.stats.difficulty !== activeDifficultyId()) this.stats.mixedDifficulty = true;
+  }
+
   /** Speedrun split vs the fastest time ever reached here. Practice runs show nothing. */
   private split(id: string, label: string): void {
-    if (!this.stats.fullRun) return;
+    if (!this.stats.fullRun || this.stats.mixedDifficulty) return;
     const previous = saveSystem.recordSplit(this.level.id, id, this.stats.timeMs);
     EventBus.emit('hud:split', compareSplit(id, label, this.stats.timeMs, previous));
   }

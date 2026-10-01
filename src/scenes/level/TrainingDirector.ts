@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { TILE } from '../../config/constants';
-import { getDifficulty } from '../../config/difficulty';
+import { activeDifficulty } from '../../systems/Difficulty';
 import { PALETTE } from '../../config/palette';
 import { TRAINING } from '../../config/training';
 import type { Drone } from '../../entities/enemies/Drone';
@@ -58,7 +58,7 @@ export class TrainingDirector {
   /** Pushes the sandbox switches into the Omnitrix and the drones. */
   apply(): void {
     const o = this.d.omnitrix;
-    const diff = getDifficulty();
+    const diff = activeDifficulty();
     o.setTimerFrozen(!trainingOptions.alienTimer);
     const misfire = TRAINING.misfireSteps[trainingOptions.misfireStep] ?? 0;
     o.setConfig({ ...o.settings, cooldownMs: trainingOptions.alienTimer ? diff.cooldownMs : 0, wrongTransformChance: misfire });
