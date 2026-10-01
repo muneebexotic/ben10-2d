@@ -88,7 +88,13 @@ export class MenuScene extends Phaser.Scene {
     this.refreshHint();
     EventBus.on('input:mode', () => this.refreshHint(), this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
-    this.events.on(Phaser.Scenes.Events.RESUME, () => this.menu.refresh());
+    // Back from Settings: the CONTINUE line may show a new difficulty.
+    this.events.on(Phaser.Scenes.Events.RESUME, () => {
+      const fresh = this.buildItems();
+      items.forEach((item, i) => (item.hint = fresh[i]?.hint ?? item.hint));
+      this.menu.refresh();
+      this.detail.setText(items[this.menu.selectedIndex]?.hint ?? '');
+    });
 
     bindMuteKey(this);
     bindAudioUnlock(this, () => music.play('title'));
@@ -110,7 +116,7 @@ export class MenuScene extends Phaser.Scene {
     }
     items.push(
       { label: 'OMNITRIX TRAINING', action: () => this.startTraining(), hint: 'TRY EVERY ALIEN. SPAWN ANY ENEMY.' },
-      { label: 'SETTINGS', action: () => this.openSettings(), hint: 'ACCESSIBILITY, SOUND AND TOUCH CONTROLS' },
+      { label: 'SETTINGS', action: () => this.openSettings(), hint: summary ? 'DIFFICULTY, ACCESSIBILITY, SOUND AND TOUCH' : 'ACCESSIBILITY, SOUND AND TOUCH CONTROLS' },
       { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute(), hint: '[M] ALSO WORKS ANYWHERE' },
     );
     return items;
@@ -140,8 +146,9 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
+  /** From the title, Settings' difficulty row edits the file CONTINUE would load. */
   private openSettings(): void {
-    this.scene.launch(SCENES.settings, { returnTo: SCENES.menu });
+    this.scene.launch(SCENES.settings, { returnTo: SCENES.menu, slot: saveSystem.lastSlot });
     this.scene.pause();
   }
 

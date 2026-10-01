@@ -160,6 +160,16 @@ export function backButton(scene: Phaser.Scene, onBack: () => void): Phaser.Game
   return t;
 }
 
+/** A small text button in the top-right corner (Settings on hub screens). */
+export function cornerButton(scene: Phaser.Scene, label: string, onPress: () => void): Phaser.GameObjects.BitmapText {
+  const t = pixelText(scene, GAME_WIDTH - 14, 14, label, { originX: 1, originY: 0.5, color: PALETTE.uiDim });
+  const zone = scene.add.zone(GAME_WIDTH - 4, 2, Math.max(90, t.width + 20), 30).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+  zone.on('pointerover', () => t.setTint(PALETTE.white));
+  zone.on('pointerout', () => t.setTint(PALETTE.uiDim));
+  zone.on('pointerdown', () => onPress());
+  return t;
+}
+
 /** Formats play time as h:mm:ss (or m:ss under an hour). */
 export function formatPlayTime(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));

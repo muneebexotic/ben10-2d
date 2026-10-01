@@ -17,6 +17,8 @@ import { playSfx } from '../systems/audio/Sfx';
 export interface SettingsData {
   /** Scene to resume when the player backs out (title or pause). */
   returnTo: string;
+  /** The save file whose difficulty the DIFFICULTY row changes (default: the one being played). */
+  slot?: number | null;
 }
 
 const TOUCH_MODES: TouchMode[] = ['auto', 'on', 'off'];
@@ -30,6 +32,7 @@ export class SettingsScene extends Phaser.Scene {
   private bar!: Phaser.GameObjects.Graphics;
   private shakeRow = -1;
   private details: Phaser.GameObjects.BitmapText | null = null;
+  private slot: number | null = null;
 
   constructor() {
     super(SCENES.settings);
@@ -37,16 +40,20 @@ export class SettingsScene extends Phaser.Scene {
 
   create(data: SettingsData): void {
     this.returnTo = data.returnTo ?? SCENES.menu;
+    this.slot = data.slot ?? session.slot;
     this.scene.bringToTop();
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.95).setOrigin(0, 0);
     pixelText(this, GAME_WIDTH / 2, 40, 'SETTINGS', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
 
     const items: MenuItem[] = [];
     // Difficulty belongs to the save file, so it only shows once a file is being played.
-    const withDifficulty = session.slot !== null;
-    if (withDifficulty) {
+    const slot = this.slot;
+    const withDifficulty = slot !== null;
+    if (slot !== null) {
+      // Outside a file (the title), name the file it changes.
+      const prefix = slot === session.slot ? 'DIFFICULTY' : `FILE ${slot + 1} DIFFICULTY`;
       items.push({
-        label: () => `DIFFICULTY: ${getDifficulty(session.difficulty).label}`,
+        label: () => `${prefix}: ${getDifficulty(session.difficultyOf(slot)).label}`,
         action: () => this.cycleDifficulty(1),
         adjust: (dir) => this.cycleDifficulty(dir),
         hint: 'APPLIES RIGHT AWAY. CHECKPOINTS CHANGE ON THE NEXT RESTART. A RUN THAT CHANGES IT ISN\'T TIMED.',
@@ -122,16 +129,17 @@ export class SettingsScene extends Phaser.Scene {
 
   /** Changes the file's difficulty and spells out what that means. */
   private cycleDifficulty(dir: 1 | -1): void {
-    const i = DIFFICULTY_IDS.indexOf(session.difficulty);
+    if (this.slot === null) return;
+    const i = DIFFICULTY_IDS.indexOf(session.difficultyOf(this.slot));
     const next = DIFFICULTY_IDS[(i + dir + DIFFICULTY_IDS.length) % DIFFICULTY_IDS.length];
-    session.setDifficulty(next);
+    session.setDifficultyOf(this.slot, next);
     playSfx('uiConfirm', 0.6);
     this.refreshDifficulty();
   }
 
   private refreshDifficulty(): void {
-    if (!this.details) return;
-    const d = getDifficulty(session.difficulty);
+    if (!this.details || this.slot === null) return;
+    const d = getDifficulty(session.difficultyOf(this.slot));
     this.details.setText(difficultyRows(d).map(([label, value]) => `${label} ${value}`).join('   ')).setTint(d.color);
   }
 

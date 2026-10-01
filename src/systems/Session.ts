@@ -40,6 +40,17 @@ class Session {
   get difficulty(): DifficultyId {
     return activeDifficultyId();
   }
+
+  /** A file's difficulty: the live one for the file being played, the saved one for any other. */
+  difficultyOf(slot: number): DifficultyId {
+    return slot === this.current ? this.difficulty : (saveSystem.getSlot(slot)?.difficulty ?? DEFAULT_DIFFICULTY);
+  }
+
+  /** Changes any file's difficulty (Settings from the title edits the Continue file). */
+  setDifficultyOf(slot: number, id: DifficultyId): void {
+    if (slot === this.current) this.setDifficulty(id);
+    else saveSystem.setDifficulty(slot, id);
+  }
 }
 
 export const session = new Session();

@@ -21,7 +21,7 @@ import { bindAudioUnlock, bindMuteKey } from '../systems/Settings';
 import { ACT_COLORS, chapterArt } from '../ui/menu/chapterArt';
 import { MenuBackdrop } from '../ui/menu/MenuBackdrop';
 import { enterMenu, isLeaving, leaveTo } from '../ui/menu/transition';
-import { backButton, drawPanel, MenuButton } from '../ui/menu/widgets';
+import { backButton, cornerButton, drawPanel, MenuButton } from '../ui/menu/widgets';
 import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import type { LevelStartData } from './LevelScene';
@@ -33,6 +33,8 @@ export interface ChapterSelectData {
   /** Back from Chapter Complete: celebrate this chapter (and reveal the next one on a first clear). */
   cleared?: string;
   firstClear?: boolean;
+  /** Reopen on this chapter (after Settings changed the difficulty). */
+  focus?: number;
 }
 
 const CARD_W = 212;
@@ -92,10 +94,13 @@ export class ChapterSelectScene extends Phaser.Scene {
     const fileLabel = pixelText(this, GAME_WIDTH / 2 - 4, 38, `FILE ${session.slot + 1}  -`, { originX: 1, originY: 0.5, color: PALETTE.uiDim });
     pixelText(this, fileLabel.x + 6, 38, d.label, { originX: 0, originY: 0.5, color: d.color });
     backButton(this, () => this.back());
+    cornerButton(this, inputMode.current === 'touch' ? 'SETTINGS' : 'SETTINGS [S]', () => this.openSettings());
+    // On key-up, so Settings doesn't also see the key press and move its cursor.
+    this.input.keyboard?.on('keyup-S', () => this.openSettings());
 
     CHAPTERS.forEach((info) => this.cards.push(this.buildCard(info)));
     const clearedIndex = data.cleared ? CHAPTERS.findIndex((c) => c.levelId === data.cleared) : -1;
-    this.focus = clearedIndex >= 0 ? clearedIndex : defaultChapterIndex(this.completed);
+    this.focus = data.focus ?? (clearedIndex >= 0 ? clearedIndex : defaultChapterIndex(this.completed));
 
     this.primary = new MenuButton(this, GAME_WIDTH / 2, 292, 190, 'PLAY', PALETTE.omnitrix, () => this.playPrimary(), 24);
     this.secondary = new MenuButton(this, GAME_WIDTH / 2 + 104, 292, 104, 'RESTART', PALETTE.uiDim, () => this.restart(), 24);
@@ -365,6 +370,18 @@ export class ChapterSelectScene extends Phaser.Scene {
     if (isLeaving(this)) return;
     playSfx('uiBack');
     leaveTo(this, SCENES.fileSelect, undefined, null);
+  }
+
+  /** Settings over the hub. A new difficulty redraws the cards (bests are per difficulty). */
+  private openSettings(): void {
+    if (this.busy || isLeaving(this) || !this.file) return;
+    const shown = this.file.difficulty;
+    this.events.once(Phaser.Scenes.Events.RESUME, () => {
+      if (session.file && session.file.difficulty !== shown) this.scene.restart({ focus: this.focus });
+    });
+    playSfx('uiSelect');
+    this.scene.launch(SCENES.settings, { returnTo: SCENES.chapterSelect });
+    this.scene.pause();
   }
 
   // ---------------------------------------------------------------- Moments
