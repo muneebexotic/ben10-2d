@@ -11,6 +11,8 @@ export const SCORING = {
   comboBonusPerHit: 4,
   comboBonusCap: 140,
   enemyBonus: 3,
+  perfectBonus: 25,
+  perfectBonusCap: 100,
   thresholds: [
     { rank: 'S', min: 1150 },
     { rank: 'A', min: 950 },

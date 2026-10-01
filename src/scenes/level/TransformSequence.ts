@@ -13,6 +13,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import { music } from '../../systems/audio/Music';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { a11y, flashCamera } from '../../systems/Accessibility';
+import { PERFECT_TRANSFORM } from '../../config/omnitrix';
 
 export interface SequenceDeps {
   scene: Phaser.Scene;
@@ -24,6 +25,7 @@ export interface SequenceDeps {
 }
 
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
+const PERFECT_QUIPS = ['NAILED IT!', 'TOO SLOW, TIN CAN!', 'PERFECT TIMING!', 'DID YOU SEE THAT?!'];
 
 /**
  * The signature moment: slow-mo wind-up, Omnitrix slam, green supernova,
@@ -39,7 +41,7 @@ export class TransformSequence {
     return this.d.scene.time.now < this.busyUntil;
   }
 
-  transform(alien: FormDefinition, opts: { first: boolean; wrong: boolean }): void {
+  transform(alien: FormDefinition, opts: { first: boolean; wrong: boolean; perfect: boolean }): void {
     const { scene, player, fx, time } = this.d;
     const windupMs = opts.first ? 520 : 240;
     const cam = scene.cameras.main;
@@ -49,10 +51,16 @@ export class TransformSequence {
     player.setInvulnerable(windupMs + PLAYER.transformInvulnMs);
     time.slowMo(0.12, windupMs, 180);
     playSfx('transformCharge');
-    EventBus.emit('hud:omnitrixSymbol', { color: PALETTE.omnitrix, big: opts.first });
+    EventBus.emit('hud:omnitrixSymbol', { color: opts.perfect ? PALETTE.gold : PALETTE.omnitrix, big: opts.first || opts.perfect });
 
     const x = player.x;
     const y = player.centerY;
+    if (opts.perfect) {
+      // Instant confirmation on the press itself; the payoff lands with the burst.
+      playSfx('perfect');
+      fx.burst('gold', x, y, 24);
+      fx.ring(x, y, PALETTE.gold, 34, windupMs);
+    }
     fx.burst('green', x, y, opts.first ? 30 : 16);
     fx.ring(x, y, PALETTE.omnitrix, 18, windupMs);
     fx.light(x, y, 160, PALETTE.omnitrix, windupMs + 300, 1);
@@ -82,14 +90,39 @@ export class TransformSequence {
       playSfx('transformBoom');
 
       // The transformation shockwave shoves nearby drones away: transforming is also a panic button.
-      this.d.combat.blast(px, py, 72, { damage: 1, kind: 'transform', x: px, y: py, knockback: 340 }, true);
+      const reflected = opts.perfect ? this.perfectBurst(px, py) : 0;
+      if (!opts.perfect) this.d.combat.blast(px, py, 72, { damage: 1, kind: 'transform', x: px, y: py, knockback: 340 }, true);
 
       this.zoomTo(1, CAMERA.transformZoomMs, 'Back.easeOut');
       music.setIntensity(1);
       EventBus.emit('alien:transformed', { alienId: alien.id, name: alien.name, wrong: opts.wrong, first: opts.first });
-      const line = opts.wrong ? 'AW MAN, NOT THIS GUY!' : opts.first ? "WHOA! I'M ON FIRE! ...LITERALLY!" : pick(alien.quips.transform);
-      if (line && (opts.first || opts.wrong || Math.random() < 0.45)) this.d.speech.show(line, opts.first ? 2200 : 1500);
+      const line = opts.wrong
+        ? 'AW MAN, NOT THIS GUY!'
+        : opts.first
+          ? "WHOA! I'M ON FIRE! ...LITERALLY!"
+          : opts.perfect
+            ? reflected > 0 ? 'RETURN TO SENDER!' : pick(PERFECT_QUIPS)
+            : pick(alien.quips.transform);
+      if (line && (opts.first || opts.wrong || opts.perfect || Math.random() < 0.45)) this.d.speech.show(line, opts.first ? 2200 : 1500);
     });
+  }
+
+  /** Bigger shockwave, enemy shots turned around, a slow-motion beat and a gold supernova. */
+  private perfectBurst(x: number, y: number): number {
+    const { fx, time, combat } = this.d;
+    const P = PERFECT_TRANSFORM;
+    const reflected = combat.reflectAround(x, y, P.shockwaveRadius, P.reflectSpeedMultiplier, P.reflectDamage);
+    combat.blast(x, y, P.shockwaveRadius, { damage: P.shockwaveDamage, kind: 'transform', x, y, knockback: P.knockback, heavy: true }, false);
+    time.slowMo(P.slowMoScale, P.slowMoMs, 320);
+    fx.hitStop(P.hitStopMs);
+    fx.ring(x, y, PALETTE.gold, P.shockwaveRadius, 620);
+    fx.ring(x, y, PALETTE.white, P.shockwaveRadius * 0.7, 460);
+    fx.rays(x, y, PALETTE.gold, 260, 1000);
+    fx.flash(x, y, PALETTE.gold, 90, 420);
+    fx.burst('gold', x, y, 44);
+    fx.light(x, y, 300, PALETTE.gold, 900);
+    fx.shake(FX.shakeHeavy, 360);
+    return reflected;
   }
 
   revert(reason: 'timeout' | 'damage' | 'jammed' | 'forced'): void {

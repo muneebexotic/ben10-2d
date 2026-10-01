@@ -132,6 +132,13 @@ export class Omnitrix {
     return [{ type: 'transformed', alienId, requestedId, wrong: alienId !== requestedId }];
   }
 
+  /** Adds alien time (the perfect transform reward). The ring can sit above full until it drains back. */
+  extend(ms: number): void {
+    if (this._state !== 'active' || ms <= 0) return;
+    this.remainingMs += ms;
+    if (this.remainingMs > this.config.warningMs) this.lastWarningSecond = -1;
+  }
+
   /** Ends the transformation early (heavy damage, jammer field) and starts the full cooldown. */
   revert(reason: RevertReason): OmnitrixEvent[] {
     if (this._state !== 'active' || this.activeAlien === null) return [];

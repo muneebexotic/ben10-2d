@@ -35,6 +35,7 @@ export interface GameEvents {
   'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' };
   'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean };
   'alien:reverted': { alienId: string; reason: RevertReason };
+  'omnitrix:perfect': { bonusMs: number; count: number };
   'combo:update': { count: number; best: number };
   'combo:drop': { count: number };
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number };
@@ -53,6 +54,7 @@ export interface GameEvents {
   /** The HUD scene finished creating and wants the current state. */
   'hud:ready': undefined;
   'audio:muted': { muted: boolean };
+  'input:mode': { kind: 'keyboard' | 'touch' };
   'settings:changed': { reduceFlashing: boolean; shake: number; touchControls: TouchMode };
 }
 

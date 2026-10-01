@@ -10,6 +10,11 @@ export interface RunStats {
   bestCombo: number;
   transformations: number;
   parries: number;
+  perfectTransforms: number;
+  /** False for practice runs started mid-level (?start=): they never set best times or splits. */
+  fullRun: boolean;
+  /** The Vilgax hologram already played this run (retries skip it). */
+  sawVilgax: boolean;
 }
 
 export interface RankResult {
@@ -17,7 +22,7 @@ export interface RankResult {
   score: number;
 }
 
-export function createRunStats(totalCards: number): RunStats {
+export function createRunStats(totalCards: number, fullRun = true): RunStats {
   return {
     timeMs: 0,
     damageTaken: 0,
@@ -28,6 +33,9 @@ export function createRunStats(totalCards: number): RunStats {
     bestCombo: 0,
     transformations: 0,
     parries: 0,
+    perfectTransforms: 0,
+    fullRun,
+    sawVilgax: false,
   };
 }
 
@@ -43,6 +51,7 @@ export function computeScore(stats: RunStats): number {
     timeDelta > 0 ? -timeDelta * SCORING.pointsPerSecondOverPar : -timeDelta * SCORING.pointsPerSecondUnderPar;
 
   const comboPoints = Math.min(SCORING.comboBonusCap, stats.bestCombo * SCORING.comboBonusPerHit);
+  const perfectPoints = Math.min(SCORING.perfectBonusCap, stats.perfectTransforms * SCORING.perfectBonus);
 
   return Math.round(
     SCORING.base +
@@ -51,6 +60,7 @@ export function computeScore(stats: RunStats): number {
       stats.deaths * SCORING.deathPenalty +
       stats.cardsFound.length * SCORING.cardBonus +
       comboPoints +
+      perfectPoints +
       stats.enemiesDefeated * SCORING.enemyBonus,
   );
 }

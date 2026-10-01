@@ -45,6 +45,8 @@ import { TransformSequence } from './level/TransformSequence';
 import { Tutorial } from './level/Tutorial';
 import { SCENES } from './SceneKeys';
 import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
+import { PERFECT_TRANSFORM } from '../config/omnitrix';
+import { PerfectWindow } from '../systems/PerfectTransform';
 
 export interface LevelStartData {
   checkpoint?: string | null;
@@ -94,6 +96,7 @@ export class LevelScene extends Phaser.Scene {
   private alarm = false;
   private killsAsAlien = 0;
   private debugText: Phaser.GameObjects.BitmapText | null = null;
+  private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
 
   constructor() {
     super(SCENES.level);
@@ -112,7 +115,9 @@ export class LevelScene extends Phaser.Scene {
     this.alarm = false;
     this.killsAsAlien = 0;
     this.level = CHAPTER_1;
-    this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(this.countCards());
+    // Starting mid-level without a run to continue (?start=) is practice: no best times or splits.
+    this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(this.countCards(), !data.checkpoint);
+    this.perfect.clear();
     this.checkpointId = data.checkpoint ?? null;
 
     if (!this.scene.isActive(SCENES.ui)) this.scene.launch(SCENES.ui);
@@ -157,11 +162,12 @@ export class LevelScene extends Phaser.Scene {
     this.physics.add.collider(this.player.zone, this.world.layer, undefined, (_a, tile) => this.processTile(tile as Phaser.Tilemaps.Tile));
 
     this.sequence = new TransformSequence({ scene: this, player: this.player, fx: this.fx, combat: this.combat, time: this.time2, speech: this.speech });
-    this.omni = new OmnitrixController(aliensUnlockedBy(this.level.chapter), this.player, this.sequence, this.fx);
+    this.omni = new OmnitrixController(aliensUnlockedBy(this.level.chapter), this.player, this.sequence, this.fx, this.perfect);
     this.omni.transformations = this.stats.transformations;
-    this.omni.onTransformed = () => this.tutorial.tip('fireball', '[J] FIREBALL  (HOLD [UP] TO AIM HIGH)', 7000, 5);
+    this.omni.perfects = this.stats.perfectTransforms;
+    this.omni.onTransformed = () => this.tutorial.tip('fireball', '{J} FIREBALL  (HOLD {UP} TO AIM HIGH)', 7000, 5);
     this.omni.onReverted = (reason) => {
-      if (reason !== 'jammed') this.tutorial.tip('human', 'HUMAN AGAIN! [J] PUNCH   [K] DODGE ROLL', 6000, 6);
+      if (reason !== 'jammed') this.tutorial.tip('human', 'HUMAN AGAIN! {J} PUNCH   {K} DODGE ROLL', 6000, 6);
     };
     this.omni.onDenied = (reason) => {
       if (reason === 'cooldown') this.tutorial.tip('cooldown', 'OMNITRIX RECHARGING... HANG IN THERE!', 3000, 7);
@@ -218,6 +224,8 @@ export class LevelScene extends Phaser.Scene {
       setAlarm: (on) => (this.alarm = on),
       onStart: (left, right) => this.clearArenaStragglers(left, right),
       onDefeated: (x, y) => this.onBossDefeated(x, y),
+      threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),
+      cancelThreat: (key) => this.perfect.cancel(key),
     });
 
     if (resuming) {
@@ -298,6 +306,8 @@ export class LevelScene extends Phaser.Scene {
       isSolid: (x, y) => this.world.isSolid(x, y) || this.world.isOneWay(x, y),
       isWater: (x, y) => this.world.inWater(x, y),
       onKilled: (d) => this.onDroneKilled(d),
+      threat: (d, at) => this.perfect.register(d, at, d.x, d.y),
+      cancelThreat: (d) => this.perfect.cancel(d),
     };
   }
 
@@ -386,6 +396,8 @@ export class LevelScene extends Phaser.Scene {
 
     if (this.state === 'play' && !this.intro.cinematic) this.stats.timeMs += realDt;
     this.stats.transformations = this.omni.transformations;
+    this.stats.perfectTransforms = this.omni.perfects;
+    this.perfect.prune(this.gameNow);
     this.statsTimer -= realDt;
     if (this.statsTimer <= 0) {
       this.statsTimer = 100;
@@ -484,7 +496,12 @@ export class LevelScene extends Phaser.Scene {
     if (p.x > 20 * TILE) this.tutorial.complete('move');
     if (!p.isAlien && this.omni.acquired && this.jammer?.inField(p.x)) {
       const laserNear = this.drones.some((d) => d.alive && d.awake && d.state === 'telegraph' && Math.abs(d.x - p.x) < 260);
-      if (laserNear) this.tutorial.tip('parry', 'TIP: PUNCH [J] A LASER TO KNOCK IT BACK!', 5000, 6);
+      if (laserNear) this.tutorial.tip('parry', 'TIP: PUNCH {J} A LASER TO KNOCK IT BACK!', 5000, 6);
+    }
+    // Teach perfect transforms in the moment: a drone is about to fire, the watch is ready, and Ben has transformed before.
+    if (!p.isAlien && this.omni.perfects === 0 && this.omni.transformations >= PERFECT_TRANSFORM.tipAfterTransforms && this.omni.omnitrix.state === 'ready' && !this.omni.jammed) {
+      const aiming = this.drones.some((d) => d.alive && d.awake && (d.state === 'telegraph' || d.state === 'lock') && Math.abs(d.x - p.x) < 220);
+      if (aiming) this.tutorial.tip('perfect', 'PRO TIP: {T} RIGHT AS IT FIRES = PERFECT TRANSFORM!', 3500, 6);
     }
     if (!p.isAlien && this.drones.some((d) => d.alive && d.state === 'stuck' && Math.abs(d.x - p.x) < 120)) {
       this.tutorial.tip('striker', "IT'S STUCK! PUNCH IT!", 2500, 7);
@@ -519,10 +536,11 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private onDroneKilled(d: Drone): void {
+    this.perfect.cancel(d);
     if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
     this.stats.enemiesDefeated++;
     if (this.player.isAlien) this.killsAsAlien++;
-    if (this.killsAsAlien >= 3 && this.player.isAlien) this.tutorial.tip('burst', 'HOLD [K], THEN RELEASE: FIRE BURST!', 6000, 4);
+    if (this.killsAsAlien >= 3 && this.player.isAlien) this.tutorial.tip('burst', 'HOLD {K}, THEN RELEASE: FIRE BURST!', 6000, 4);
   }
 
   private onPlayerHurt(outcome: DamageOutcome): void {

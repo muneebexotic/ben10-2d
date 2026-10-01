@@ -87,6 +87,26 @@ export class Banner {
     });
   }
 
+  /** "PERFECT!" stamps in above the alien name slam. Separate from the main banner so neither cancels the other. */
+  perfect(bonusMs: number): void {
+    const glow = this.scene.add.image(0, 0, TEX.light).setTint(PALETTE.gold).setBlendMode(Phaser.BlendModes.ADD).setScale(4, 1.1).setAlpha(0.55);
+    const shadow = pixelText(this.scene, 2, 2, 'PERFECT!', { scale: 3, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(this.scene, 0, 0, 'PERFECT!', { scale: 3, originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    const sub = pixelText(this.scene, 0, 19, `+${Math.round(bonusMs / 1000)}S ALIEN TIME`, { originX: 0.5, originY: 0.5, color: PALETTE.cream });
+    const c = this.scene.add.container(GAME_WIDTH / 2, 40, [glow, shadow, title, sub]).setDepth(460);
+    c.setScale(0.3).setAlpha(0).setAngle(8);
+    this.scene.tweens.add({ targets: c, scale: 1, alpha: 1, angle: -2, duration: 240, ease: 'Back.easeOut' });
+    this.scene.tweens.add({ targets: glow, scaleX: 6, alpha: 0, duration: 900, ease: 'Cubic.easeOut' });
+    this.scene.tweens.add({
+      targets: c,
+      y: 26,
+      alpha: 0,
+      delay: 1300,
+      duration: 300,
+      onComplete: () => c.destroy(),
+    });
+  }
+
   omnitrixSymbol(color: number, big: boolean): void {
     const s = this.symbol;
     const soft = a11y.reduceFlashing;

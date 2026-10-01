@@ -4,6 +4,7 @@ import { TEX } from '../scenes/preload/assetKeys';
 import type { OmnitrixTick } from '../systems/events';
 import { pixelText } from './text';
 import { blinkOn } from '../systems/Accessibility';
+import { inputMode } from '../systems/InputMode';
 
 const R = 20;
 
@@ -68,7 +69,7 @@ export class OmnitrixDial {
     const start = -Math.PI / 2;
     let color: number = PALETTE.omnitrix;
     let fraction = 1;
-    let status = 'READY [T]';
+    let status = inputMode.current === 'touch' ? 'READY!' : 'READY [T]';
     let iconColor: number = PALETTE.omnitrix;
     let glowAlpha = 0.3 + Math.sin(now * 0.005) * 0.1;
 

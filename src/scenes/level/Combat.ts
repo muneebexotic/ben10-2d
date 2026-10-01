@@ -114,6 +114,17 @@ export class Combat implements CombatApi {
     return count;
   }
 
+  /** Turns every enemy shot inside the radius around and fires it back outward. Returns how many. */
+  reflectAround(x: number, y: number, radius: number, speedMultiplier: number, damage: number): number {
+    let count = 0;
+    this.projectiles.forEachActive('enemy', (p) => {
+      if ((p.x - x) ** 2 + (p.y - y) ** 2 > (radius + p.radius) ** 2) return;
+      this.projectiles.redirect(p, Math.atan2(p.y - y, p.x - x), speedMultiplier, damage);
+      count++;
+    });
+    return count;
+  }
+
   // ------------------------------------------------------------ Per-frame resolution
 
   update(): void {

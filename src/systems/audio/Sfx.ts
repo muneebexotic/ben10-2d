@@ -145,6 +145,13 @@ const RECIPES = {
   },
   meteor: (v) => A.noise({ duration: 1.3, volume: 0.25 * v, filter: 'bandpass', freq: 3000, freqEnd: 300, q: 1.5, attack: 0.4 }),
   combo: (v, p) => A.tone({ type: 'triangle', freq: 880 * p, duration: 0.06, volume: 0.06 * v }),
+  perfect: (v) => {
+    A.noise({ duration: 0.22, volume: 0.18 * v, filter: 'highpass', freq: 5200 });
+    A.tone({ type: 'square', freq: midiToFreq(88), duration: 0.1, volume: 0.09 * v, detune: 6 });
+    A.tone({ type: 'square', freq: midiToFreq(95), duration: 0.12, volume: 0.09 * v, when: A.now + 0.06, detune: -6 });
+    A.tone({ type: 'triangle', freq: midiToFreq(100), duration: 0.9, volume: 0.16 * v, when: A.now + 0.12 });
+    A.tone({ type: 'sine', freq: midiToFreq(76), duration: 0.9, volume: 0.12 * v, when: A.now + 0.12 });
+  },
 } satisfies Record<string, Recipe>;
 
 export type SfxName = keyof typeof RECIPES;

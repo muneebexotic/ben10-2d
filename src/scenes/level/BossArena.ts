@@ -36,6 +36,8 @@ export interface ArenaDeps {
   setAlarm(on: boolean): void;
   onStart(left: number, right: number): void;
   onDefeated(x: number, y: number): void;
+  threat(key: object, at: number): void;
+  cancelThreat(key: object): void;
 }
 
 /** Locks Ben into the crash site, runs the boss intro and hands the fight to the HunterDrone. */
@@ -121,6 +123,8 @@ export class BossArena {
       },
       onHealth: (ratio, phase) => EventBus.emit('boss:health', { ratio, phase }),
       onDefeated: (x, y) => this.defeated(x, y),
+      threat: (at) => this.d.threat(this, at),
+      cancelThreat: () => this.d.cancelThreat(this),
     };
     this.boss = new HunterDrone(scene, world, (this.left + this.right) / 2);
     combat.addTarget(this.boss);

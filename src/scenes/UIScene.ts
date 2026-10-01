@@ -79,6 +79,11 @@ export class UIScene extends Phaser.Scene {
       const text = p.reason === 'timeout' ? 'TIME OUT!' : p.reason === 'damage' ? 'SHIELD BROKEN!' : p.reason === 'jammed' ? 'SIGNAL JAMMED!' : 'REVERTED';
       this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy);
     }, this);
+    on('omnitrix:perfect', (p) => {
+      this.banner.perfect(p.bonusMs);
+      this.dial.pop();
+      this.popText(`+${Math.round(p.bonusMs / 1000)}S`, PALETTE.gold, 2);
+    }, this);
     on('hud:omnitrixSymbol', (p) => this.banner.omnitrixSymbol(p.color, p.big), this);
     on('player:health', (p) => {
       this.hp = p.hp;
@@ -104,6 +109,7 @@ export class UIScene extends Phaser.Scene {
     on('boss:show', (p) => this.bossBar.show(p.name), this);
     on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
     on('boss:hide', () => this.bossBar.hide(), this);
+    on('input:mode', () => this.prompts.rerender(), this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
     EventBus.emit('hud:ready');

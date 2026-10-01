@@ -226,7 +226,7 @@ export class IntroDirector {
       this.t = 0;
       this.player.controlsEnabled = true;
       EventBus.emit('hud:letterbox', { visible: false });
-      EventBus.emit('hud:prompt', { id: 'transform', text: 'PRESS [T] TO TRANSFORM!', priority: 10 });
+      EventBus.emit('hud:prompt', { id: 'transform', text: 'PRESS {T} TO TRANSFORM!', priority: 10 });
       this.slowMoLeft = 3500;
     }
   }

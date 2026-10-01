@@ -24,6 +24,9 @@ export interface DroneWorld {
   isSolid(x: number, y: number): boolean;
   isWater(x: number, y: number): boolean;
   onKilled(drone: Drone): void;
+  /** This drone's attack lands at game time `at` (perfect transform timing). */
+  threat(drone: Drone, at: number): void;
+  cancelThreat(drone: Drone): void;
 }
 
 /** Per-variant behaviour. Brains only steer; the Drone handles health, hits and death. */

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { pixelText } from './text';
+import { inputMode } from '../systems/InputMode';
 
 interface Prompt {
   id: string;
@@ -38,6 +39,11 @@ export class PromptBar {
     this.refresh();
   }
 
+  /** Re-renders the current prompt (the player switched between keys and touch). */
+  rerender(): void {
+    this.refresh();
+  }
+
   clearAll(): void {
     this.prompts.length = 0;
     this.refresh();
@@ -50,7 +56,7 @@ export class PromptBar {
       this.root.setVisible(false);
       return;
     }
-    this.label.setText(top.text);
+    this.label.setText(inputMode.format(top.text));
     const w = Math.ceil(this.label.width) + 18;
     this.bg.clear();
     this.bg.fillStyle(PALETTE.ink, 0.85);

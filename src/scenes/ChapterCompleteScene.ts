@@ -80,6 +80,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
       { label: 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) } },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` } },
       { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
+      { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
       { label: 'DEATHS', value: () => String(s.deaths), highlight: s.deaths === 0 ? 'FLAWLESS!' : undefined },
       { label: 'SUMO SLAMMERS', value: () => `${s.cardsFound.length} / ${s.totalCards}`, highlight: s.cardsFound.length === s.totalCards ? 'ALL FOUND!' : undefined },
       { label: 'SCORE', value: () => String(this.score), count: { to: Math.max(0, this.score), format: (n) => String(Math.round(n)) } },
@@ -88,7 +89,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const x0 = 126;
     const x1 = 330;
     rows.forEach((row, i) => {
-      const y = 88 + i * 22;
+      const y = 84 + i * 20;
       this.time.delayedCall(500 + i * 280, () => this.revealRow(row, x0, x1, y));
     });
 

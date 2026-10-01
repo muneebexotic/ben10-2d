@@ -15,6 +15,8 @@ export interface Controls {
   dialPrev: boolean;
   dialNext: boolean;
   transform: boolean;
+  /** How long ago the transform was really pressed (touch fires on release). 0 for keys. */
+  transformLeadMs: number;
   pause: boolean;
   confirm: boolean;
   anyPressed: boolean;
@@ -36,6 +38,7 @@ export function emptyControls(): Controls {
     dialPrev: false,
     dialNext: false,
     transform: false,
+    transformLeadMs: 0,
     pause: false,
     confirm: false,
     anyPressed: false,

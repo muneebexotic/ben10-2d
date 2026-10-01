@@ -118,6 +118,19 @@ export class Projectiles {
     p.sprite.setScale(1.4);
   }
 
+  /** Perfect transform: an enemy shot turns green and flies off along `angle`. */
+  redirect(p: Projectile, angle: number, speedMultiplier: number, damage: number): void {
+    const speed = Math.hypot(p.vx, p.vy) * speedMultiplier;
+    p.team = 'player';
+    p.reflected = true;
+    p.damage = damage;
+    p.vx = Math.cos(angle) * speed;
+    p.vy = Math.sin(angle) * speed;
+    p.life = 1500;
+    p.sprite.setTint(P.omnitrix);
+    p.sprite.setScale(1.4);
+  }
+
   forEachActive(team: Team, cb: (p: Projectile) => void): void {
     for (const p of this.items) if (p.active && p.team === team) cb(p);
   }

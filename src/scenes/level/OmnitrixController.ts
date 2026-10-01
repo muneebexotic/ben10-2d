@@ -1,4 +1,5 @@
 import { OMNITRIX_WARNING_MS, getDifficulty } from '../../config/difficulty';
+import { PERFECT_TRANSFORM } from '../../config/omnitrix';
 import { PALETTE } from '../../config/palette';
 import { getAlien } from '../../aliens/registry';
 import type { Player } from '../../entities/Player';
@@ -6,6 +7,7 @@ import { Omnitrix, type OmnitrixEvent, type RevertReason } from '../../systems/O
 import { EventBus } from '../../systems/EventBus';
 import type { Controls } from '../../systems/InputMap';
 import type { Fx } from '../../systems/Fx';
+import type { PerfectWindow } from '../../systems/PerfectTransform';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { TransformSequence } from './TransformSequence';
 
@@ -18,7 +20,9 @@ export class OmnitrixController {
   acquired = false;
   jammed = false;
   transformations = 0;
+  perfects = 0;
   private deniedFlashUntil = 0;
+  private pendingPerfect = false;
   onTransformed: ((alienId: string, first: boolean) => void) | null = null;
   onReverted: ((reason: RevertReason) => void) | null = null;
   onDenied: ((reason: 'cooldown' | 'jammed') => void) | null = null;
@@ -28,6 +32,7 @@ export class OmnitrixController {
     private readonly player: Player,
     private readonly sequence: TransformSequence,
     private readonly fx: Fx,
+    private readonly perfect: PerfectWindow,
   ) {
     const d = getDifficulty();
     this.omnitrix = new Omnitrix(
@@ -58,7 +63,13 @@ export class OmnitrixController {
     }
     const state = this.omnitrix.state;
     if (state === 'cooldown') this.deny('cooldown', now);
-    else if (state === 'ready') this.handle(this.omnitrix.transform());
+    else if (state === 'ready') {
+      // The very first transform is the tutorial moment; perfects start after it.
+      const lead = Math.min(c.transformLeadMs, PERFECT_TRANSFORM.touchLeadCapMs);
+      this.pendingPerfect = this.transformations > 0 && this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
+      this.handle(this.omnitrix.transform());
+      this.pendingPerfect = false;
+    }
   }
 
   update(dtMs: number): void {
@@ -94,7 +105,13 @@ export class OmnitrixController {
         case 'transformed': {
           this.transformations++;
           const alien = getAlien(e.alienId);
-          this.sequence.transform(alien, { first: this.transformations === 1, wrong: e.wrong });
+          const perfect = this.pendingPerfect;
+          this.sequence.transform(alien, { first: this.transformations === 1, wrong: e.wrong, perfect });
+          if (perfect) {
+            this.perfects++;
+            this.omnitrix.extend(PERFECT_TRANSFORM.bonusMs);
+            EventBus.emit('omnitrix:perfect', { bonusMs: PERFECT_TRANSFORM.bonusMs, count: this.perfects });
+          }
           this.onTransformed?.(e.alienId, this.transformations === 1);
           break;
         }

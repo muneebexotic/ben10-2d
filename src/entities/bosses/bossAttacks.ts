@@ -38,6 +38,7 @@ const volley: AttackFn = (b, w, a) => {
   const p0 = w.player;
   if (!a.started) {
     a.started = true;
+    w.threat(w.now + cfg.telegraphMs[p]);
     playSfx('laserCharge', 1, 0.6);
   }
   if (a.step === 0) {
@@ -61,6 +62,7 @@ const volley: AttackFn = (b, w, a) => {
       }
       w.fx.flash(b.x, b.eyeY, PALETTE.enemy, 18, 150);
       w.lighting.flash(b.x, b.eyeY, 90, PALETTE.enemy, 150);
+      w.threat(w.now);
       playSfx('laser', 1, 0.6);
       b.jolt(-Math.cos(base) * 6, -Math.sin(base) * 4);
       a.count++;
@@ -99,6 +101,7 @@ const slam: AttackFn = (b, w, a, dt) => {
       b.shake = 1 + t * 2;
       if (a.t >= track) {
         next(a);
+        w.threat(w.now + (Math.max(0, floor - 30 - b.y) / cfg.dropSpeed) * 1000);
         playSfx('whistle', 1, 0.5);
       }
       return false;
@@ -188,6 +191,7 @@ const beam: AttackFn = (b, w, a) => {
     b.eye = 'charge';
     if (a.t >= cfg.moveMs) {
       next(a);
+      w.threat(w.now + cfg.telegraphMs);
       playSfx('beamCharge');
     }
     return false;

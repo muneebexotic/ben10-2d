@@ -32,6 +32,9 @@ export interface BossWorld {
   onPhase2(): void;
   onHealth(ratio: number, phase: number): void;
   onDefeated(x: number, y: number): void;
+  /** The boss's attack lands at game time `at` (perfect transform timing). Boss attacks are aimed at Ben, so range is unlimited. */
+  threat(at: number): void;
+  cancelThreat(): void;
 }
 
 type BossState = 'intro' | 'idle' | 'attack' | 'transition' | 'dying' | 'dead';
@@ -250,6 +253,7 @@ export class HunterDrone implements Damageable, Hazard {
 
   private startTransition(): void {
     this.phase = 1;
+    this.w.cancelThreat();
     this.attack = null;
     this.stuck = false;
     this.shake = 0;
@@ -295,6 +299,7 @@ export class HunterDrone implements Damageable, Hazard {
   }
 
   private startDying(): void {
+    this.w.cancelThreat();
     this.attack = null;
     this.stuck = false;
     this.w.hazards.clear();

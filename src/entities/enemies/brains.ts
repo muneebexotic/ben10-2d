@@ -50,6 +50,7 @@ export class ScoutBrain implements DroneBrain {
       if (w.now >= d.nextActionAt && d.stunLeft <= 0 && canShoot(d, w, SCOUT.aggroRange)) {
         d.setState('telegraph');
         d.setCharging(true);
+        w.threat(d, w.now + SCOUT.telegraphMs);
         playSfx('laserCharge', 0.6);
       }
     } else if (d.state === 'telegraph') {
@@ -64,6 +65,7 @@ export class ScoutBrain implements DroneBrain {
       w.lighting.add(d.x, d.y, 30 + t * 30, PALETTE.enemy, 1);
       if (d.stateT >= SCOUT.telegraphMs) {
         fireLaser(d, w, d.aim, SCOUT.laserSpeed, SCOUT.laserDamage);
+        w.threat(d, w.now);
         playSfx('laser', 0.9);
         d.kx -= Math.cos(d.aim) * SCOUT.recoil;
         d.ky -= Math.sin(d.aim) * SCOUT.recoil;
@@ -90,6 +92,7 @@ export class ScoutBrain implements DroneBrain {
       d.setCharging(false);
       d.setState('idle');
       d.nextActionAt = w.now + 700;
+      w.cancelThreat(d);
     }
   }
 }
@@ -113,6 +116,7 @@ export class StrikerBrain implements DroneBrain {
         if (inRange && w.now >= d.nextActionAt && d.stunLeft <= 0 && !p.dead && w.onScreen(d.x, d.y, 10)) {
           d.setState('lock');
           d.setCharging(true);
+          w.threat(d, w.now + STRIKER.lockMs);
           playSfx('diveLock', 0.7);
         }
         break;
@@ -208,6 +212,7 @@ export class GunnerBrain implements DroneBrain {
       if (w.now >= d.nextActionAt && d.stunLeft <= 0 && canShoot(d, w, GUNNER.aggroRange)) {
         d.setState('telegraph');
         d.setCharging(true);
+        w.threat(d, w.now + GUNNER.telegraphMs);
         playSfx('laserCharge', 0.8, 0.7);
       }
     } else if (d.state === 'telegraph') {
@@ -224,6 +229,7 @@ export class GunnerBrain implements DroneBrain {
       w.lighting.add(d.x, d.y, 40 + t * 40, PALETTE.enemy, 1);
       if (d.stateT >= GUNNER.telegraphMs) {
         for (let i = -1; i <= 1; i++) fireLaser(d, w, d.aim + i * spread, GUNNER.laserSpeed, GUNNER.laserDamage);
+        w.threat(d, w.now);
         playSfx('laser', 1, 0.7);
         d.kx -= Math.cos(d.aim) * GUNNER.recoil;
         d.setCharging(false);
