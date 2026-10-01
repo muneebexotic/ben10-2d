@@ -83,4 +83,9 @@ export const FX = {
 export const COMBO = {
   windowMs: 2200,
   showAt: 3,
+  /**
+   * Tag team: each new form that joins a live combo refunds this much alien
+   * time (half a swap's cost), so swapping mid-combo is rewarded, not taxed.
+   */
+  tagRefundMs: 1500,
 } as const;

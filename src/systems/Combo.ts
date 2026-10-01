@@ -1,8 +1,14 @@
-/** Consecutive-hit counter. Taking damage or waiting too long resets it. */
+/**
+ * Consecutive-hit counter. Taking damage or waiting too long resets it.
+ * It also remembers which forms landed hits: switching aliens mid-combo
+ * makes a tag team.
+ */
 export class ComboCounter {
   private _count = 0;
   private _best = 0;
   private timerMs = 0;
+  private readonly forms: string[] = [];
+  private joined = false;
 
   constructor(private readonly windowMs: number) {}
 
@@ -19,10 +25,22 @@ export class ComboCounter {
     return this._count === 0 ? 0 : Math.max(0, this.timerMs / this.windowMs);
   }
 
-  hit(): number {
+  /** Forms (aliens, or human Ben) that landed hits in the current combo, in order. */
+  get contributors(): readonly string[] {
+    return this.forms;
+  }
+
+  /** True when the last hit brought a new form into the combo. */
+  get newContributor(): boolean {
+    return this.joined;
+  }
+
+  hit(formId?: string): number {
     this._count += 1;
     this.timerMs = this.windowMs;
     if (this._count > this._best) this._best = this._count;
+    this.joined = formId !== undefined && !this.forms.includes(formId);
+    if (this.joined && formId !== undefined) this.forms.push(formId);
     return this._count;
   }
 
@@ -31,6 +49,8 @@ export class ComboCounter {
     const lost = this._count;
     this._count = 0;
     this.timerMs = 0;
+    this.forms.length = 0;
+    this.joined = false;
     return lost;
   }
 

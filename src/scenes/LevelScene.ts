@@ -669,12 +669,25 @@ export class LevelScene extends Phaser.Scene {
 
   private bumpCombo(n: number): void {
     let count = 0;
-    for (let i = 0; i < n; i++) count = this.combo.hit();
+    let tagged = false;
+    for (let i = 0; i < n; i++) {
+      count = this.combo.hit(this.player.form.id);
+      tagged ||= this.combo.newContributor && this.combo.contributors.length >= 2;
+    }
     this.stats.bestCombo = Math.max(this.stats.bestCombo, this.combo.best);
-    if (count >= COMBO.showAt) {
-      EventBus.emit('combo:update', { count, best: this.combo.best });
+    if (count >= COMBO.showAt || this.combo.contributors.length >= 2) {
+      EventBus.emit('combo:update', { count, best: this.combo.best, forms: this.combo.contributors });
       if (count % 5 === 0) playSfx('combo', 1, 1 + Math.min(1, count / 40));
     }
+    if (tagged) this.onTagTeam();
+  }
+
+  /** A different form joined the live combo: refund some alien time and celebrate. */
+  private onTagTeam(): void {
+    const refund = this.player.isAlien ? COMBO.tagRefundMs : 0;
+    if (refund > 0) this.omni.omnitrix.extend(refund);
+    playSfx('tag', 1, 1 + this.combo.contributors.length * 0.08);
+    EventBus.emit('combo:tag', { forms: this.combo.contributors, refundMs: refund });
   }
 
   private onDroneKilled(d: Drone): void {

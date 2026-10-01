@@ -84,4 +84,40 @@ describe('ComboCounter', () => {
     expect(combo.update(900)).toBe(0);
     expect(combo.count).toBe(2);
   });
+
+  it('remembers which forms joined, in order, and flags each newcomer once', () => {
+    const combo = new ComboCounter(1000);
+    combo.hit('ben');
+    expect(combo.newContributor).toBe(true);
+    combo.hit('ben');
+    expect(combo.newContributor).toBe(false);
+    combo.hit('xlr8');
+    expect(combo.newContributor).toBe(true);
+    combo.hit('fourarms');
+    combo.hit('xlr8');
+    expect(combo.newContributor).toBe(false);
+    expect(combo.contributors).toEqual(['ben', 'xlr8', 'fourarms']);
+  });
+
+  it('a dropped or broken combo forgets its forms', () => {
+    const combo = new ComboCounter(1000);
+    combo.hit('heatblast');
+    combo.hit('xlr8');
+    combo.update(1200);
+    expect(combo.contributors).toEqual([]);
+    combo.hit('xlr8');
+    expect(combo.newContributor).toBe(true);
+    expect(combo.contributors).toEqual(['xlr8']);
+    combo.break();
+    expect(combo.contributors).toEqual([]);
+    expect(combo.newContributor).toBe(false);
+  });
+
+  it('hits without a form still count but never join', () => {
+    const combo = new ComboCounter(1000);
+    combo.hit();
+    expect(combo.newContributor).toBe(false);
+    expect(combo.contributors).toEqual([]);
+    expect(combo.count).toBe(1);
+  });
 });

@@ -33,6 +33,7 @@ export class UIScene extends Phaser.Scene {
   private splits!: SplitDisplay;
   private dialog!: DialogBox;
   private vignette!: Phaser.GameObjects.Image;
+  private readonly pops: (Phaser.GameObjects.BitmapText | null)[] = [];
   private hp: number = PLAYER.maxHealth;
   private alien = false;
   private dead = false;
@@ -42,6 +43,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.pops.length = 0;
     this.dead = false;
     this.alien = false;
     this.vignette = this.add.image(0, 0, TEX.vignette).setOrigin(0, 0).setScale(2).setTint(PALETTE.enemy).setAlpha(0);
@@ -112,7 +114,14 @@ export class UIScene extends Phaser.Scene {
       this.dialog.clear();
       this.combo.hide();
     }, this);
-    on('combo:update', (p) => this.combo.set(p.count, this.time.now), this);
+    on('combo:update', (p) => this.combo.set(p.count, this.time.now, p.forms.map((id) => ({ icon: getForm(id).hudIcon, color: getForm(id).theme.color }))), this);
+    on('combo:tag', (p) => {
+      this.combo.tag();
+      if (p.refundMs > 0) {
+        this.dial.pop();
+        this.popText(`TAG TEAM! +${(p.refundMs / 1000).toFixed(1)}S`, getForm(p.forms[p.forms.length - 1]).theme.color);
+      }
+    }, this);
     on('combo:drop', (p) => this.combo.drop(p.count), this);
     on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards, p.totalCards, p.reachableCards), this);
     on('card:collected', (p) => this.stats.cardPop(p.found - 1), this);
@@ -136,11 +145,26 @@ export class UIScene extends Phaser.Scene {
     EventBus.emit('hud:ready');
   }
 
+  /** Status pops under the health bar. Pops that overlap in time stack downwards instead of garbling. */
   private popText(text: string, color: number, scale = 1): void {
-    const t = pixelText(this, 58, 44, text, { color, scale });
+    const slot = this.pops.findIndex((p) => !p);
+    const i = slot >= 0 ? slot : this.pops.length;
+    const y = 44 + i * 11;
+    const t = pixelText(this, 58, y, text, { color, scale });
+    this.pops[i] = t;
     t.setAlpha(0);
-    this.tweens.add({ targets: t, alpha: 1, y: 40, duration: 120 });
-    this.tweens.add({ targets: t, alpha: 0, y: 32, delay: 700, duration: 300, onComplete: () => t.destroy() });
+    this.tweens.add({ targets: t, alpha: 1, y: y - 4, duration: 120 });
+    this.tweens.add({
+      targets: t,
+      alpha: 0,
+      y: y - 12,
+      delay: 700,
+      duration: 300,
+      onComplete: () => {
+        if (this.pops[i] === t) this.pops[i] = null;
+        t.destroy();
+      },
+    });
   }
 
   override update(_time: number, delta: number): void {

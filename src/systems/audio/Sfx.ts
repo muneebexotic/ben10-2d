@@ -53,6 +53,10 @@ const RECIPES = {
     A.noise({ duration: 0.1, volume: 0.16 * v, filter: 'highpass', freq: 3500, when: A.now + 0.04 });
     A.tone({ type: 'triangle', freq: midiToFreq(88), duration: 0.18, volume: 0.06 * v, when: A.now + 0.06 });
   },
+  tag: (v, p) => {
+    for (const [i, n] of [79, 84, 88].entries()) A.tone({ type: 'square', freq: midiToFreq(n) * p, duration: 0.09, volume: 0.07 * v, when: A.now + i * 0.05 });
+    A.tone({ type: 'triangle', freq: midiToFreq(91) * p, duration: 0.35, volume: 0.08 * v, when: A.now + 0.15 });
+  },
   revert: (v) => {
     A.tone({ type: 'sawtooth', freq: 900, freqEnd: 110, duration: 0.55, volume: 0.12 * v, filter: { type: 'lowpass', freq: 2500 } });
     A.tone({ type: 'square', freq: 440, freqEnd: 90, duration: 0.45, volume: 0.06 * v, detune: -10 });

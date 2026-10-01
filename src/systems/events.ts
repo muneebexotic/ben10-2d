@@ -48,7 +48,9 @@ export interface GameEvents {
   'alien:swapStrike': { alienId: string; hits: number };
   'alien:reverted': { alienId: string; reason: RevertReason };
   'omnitrix:perfect': { bonusMs: number; count: number };
-  'combo:update': { count: number; best: number };
+  'combo:update': { count: number; best: number; forms: readonly string[] };
+  /** A new form joined a live combo (2 or more forms in it). */
+  'combo:tag': { forms: readonly string[]; refundMs: number };
   'combo:drop': { count: number };
   /** `reachableCards`: cards that exist this run; the rest of `totalCards` wait behind a later alien. */
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number; reachableCards: number };
