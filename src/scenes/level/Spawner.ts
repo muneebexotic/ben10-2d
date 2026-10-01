@@ -9,7 +9,9 @@ import { Pickup } from '../../entities/props/Pickup';
 import { Drone, type DroneWorld } from '../../entities/enemies/Drone';
 import { createBrain } from '../../entities/enemies/brains';
 import type { Fx } from '../../systems/Fx';
-import { CrackedWall } from '../../entities/props/CrackedWall';
+import { CrackedWall, type WallBreaker } from '../../entities/props/CrackedWall';
+import { Boulder } from '../../entities/props/Boulder';
+import { Dummy } from '../../entities/props/Dummy';
 import { cardAvailable } from '../../levels/secrets';
 
 export interface SpawnedEntities {
@@ -19,6 +21,20 @@ export interface SpawnedEntities {
   pickups: Pickup[];
   jammer: Jammer | null;
   walls: CrackedWall[];
+  boulders: Boulder[];
+  dummies: Dummy[];
+}
+
+export interface SpawnOptions {
+  /** Where play resumes (checkpoint x in pixels), 0 from the start. */
+  resumeX: number;
+  collectedCards: readonly string[];
+  /** Aliens on the dial: cards and walls behind later aliens react to them. */
+  aliens: readonly string[];
+  /** The alien that can break a cracked wall, if it is on the dial. */
+  breakerFor(alienId: string): WallBreaker | null;
+  /** Thrown boulders reform (Training). */
+  respawningProps: boolean;
 }
 
 const DENSITY_RANK: Record<Density, number> = { sparse: 0, normal: 1, frequent: 2 };
@@ -36,16 +52,9 @@ export function checkpointsFor(level: LevelData): Array<Extract<EntitySpawn, { t
  * Builds gameplay entities from level data. When resuming from a checkpoint,
  * everything behind it that the player already dealt with stays gone.
  */
-export function spawnEntities(
-  scene: Phaser.Scene,
-  level: LevelData,
-  droneWorld: DroneWorld,
-  fx: Fx,
-  resumeX: number,
-  collectedCards: readonly string[],
-  aliens: readonly string[],
-): SpawnedEntities {
-  const out: SpawnedEntities = { drones: [], barricades: [], checkpoints: [], pickups: [], jammer: null, walls: [] };
+export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld: DroneWorld, fx: Fx, opts: SpawnOptions): SpawnedEntities {
+  const { resumeX, collectedCards, aliens } = opts;
+  const out: SpawnedEntities = { drones: [], barricades: [], checkpoints: [], pickups: [], jammer: null, walls: [], boulders: [], dummies: [] };
   const behind = (tx: number) => resumeX > 0 && tx * TILE < resumeX - TILE;
 
   for (const cp of checkpointsFor(level)) {
@@ -73,7 +82,13 @@ export function spawnEntities(
         out.pickups.push(new Pickup(scene, 'card', e.id, e.x, e.y));
         break;
       case 'crackedWall':
-        out.walls.push(new CrackedWall(scene, e.id, e.x, e.y, e.h, fx));
+        out.walls.push(new CrackedWall(scene, e.id, e.x, e.y, e.h, fx, { rebuildMs: e.rebuildMs, breaker: aliens.includes(e.requires) ? opts.breakerFor(e.requires) : null }));
+        break;
+      case 'boulder':
+        out.boulders.push(new Boulder(scene, e.x, e.y, fx, opts.respawningProps));
+        break;
+      case 'dummy':
+        out.dummies.push(new Dummy(scene, e.x, e.y, fx));
         break;
       case 'jammer':
         if (behind(e.gateX)) break;

@@ -185,3 +185,69 @@ export function drawBossArm(pc: PixelCanvas, frame: number): void {
   }
   pc.outline(P.ink);
 }
+
+// ---------------------------------------------------------------- Milestone 2 drones
+
+/**
+ * Armored Drone, 30x24. Frames: 0-1 intact, 2 charging, 3-4 cracked plating,
+ * 5-6 armour blown off with the core exposed.
+ */
+export function drawArmored(pc: PixelCanvas, frame: number): void {
+  const charging = frame === 2;
+  const cracked = frame === 3 || frame === 4;
+  const exposed = frame === 5 || frame === 6;
+  const flicker = frame % 2 === 1;
+  // Thrusters and the cannon slung underneath.
+  pc.rect(5, 18, 5, 3, P.metal0).rect(20, 18, 5, 3, P.metal0);
+  pc.rect(6, 21, 3, 1, flicker ? P.enemyGlow : P.enemy).rect(21, 21, 3, 1, flicker ? P.enemyGlow : P.enemy);
+  pc.rect(12, 18, 6, 4, P.metal1);
+  pc.rect(13, 21, 4, 2, P.metal0);
+  pc.px(14, 22, charging ? P.white : P.enemy).px(15, 22, charging ? P.enemyGlow : P.enemyDark);
+  // Heavy hull.
+  pc.rect(3, 5, 24, 13, P.metal1);
+  pc.rect(4, 4, 22, 1, P.metal2);
+  pc.rect(3, 15, 24, 3, P.metal0);
+  if (exposed) {
+    // Plating gone: wiring and a hot reactor core.
+    for (let i = 0; i < 5; i++) pc.line(5 + i * 5, 6, 7 + i * 4, 15, i % 2 ? P.fire3 : P.enemyDark);
+    pc.circle(15, 10, 4, P.fire3);
+    pc.circle(15, 10, 3, flicker ? P.fire1 : P.fire2);
+    pc.circle(15, 10, 1, P.fire0);
+    pc.rect(9, 8, 3, 1, P.metal3).rect(19, 13, 3, 1, P.metal3);
+  } else {
+    // Overlapping front plates with a slit visor.
+    pc.poly([[2, 4], [15, 2], [15, 16], [1, 15]], P.metal2);
+    pc.poly([[28, 4], [15, 2], [15, 16], [29, 15]], P.metal2);
+    pc.rect(3, 3, 11, 1, P.metal3).rect(16, 3, 11, 1, P.metal3);
+    pc.vline(15, 2, 16, P.metal1);
+    for (const [x, y] of [[4, 6], [26, 6], [4, 13], [26, 13]]) pc.px(x, y, P.metal1);
+    pc.rect(6, 8, 18, 3, P.ink);
+    pc.rect(7, 9, 16, 1, charging ? P.enemyGlow : P.enemyDark);
+    if (charging) pc.rect(9, 9, 12, 1, P.white);
+    else pc.rect(flicker ? 16 : 9, 9, 5, 1, P.enemy);
+    if (cracked) {
+      pc.line(5, 4, 9, 9, P.ink).line(9, 9, 7, 14, P.ink);
+      pc.line(24, 5, 21, 12, P.ink).line(21, 12, 25, 15, P.ink);
+      pc.px(8, 8, P.fire2).px(22, 10, P.fire2);
+      pc.rect(17, 13, 3, 2, P.metal1);
+    }
+  }
+  pc.outline(P.ink);
+}
+
+/** Hornet, 18x12. Frames: 0-1 wings, 2 charging. */
+export function drawHornet(pc: PixelCanvas, frame: number): void {
+  const charging = frame === 2;
+  // Wing blur above the body.
+  const lift = frame === 1 ? 1 : 0;
+  pc.rect(2, 1 + lift, 6, 2, P.metal3, 0.55).rect(10, 1 + lift, 6, 2, P.metal3, 0.55);
+  pc.rect(3, 1 + lift, 4, 1, P.white, 0.5).rect(11, 1 + lift, 4, 1, P.white, 0.5);
+  // Slim body with red stripes and a stinger.
+  pc.ellipse(9, 6, 6, 3, P.metal1);
+  pc.rect(5, 5, 1, 3, P.enemy).rect(12, 5, 1, 3, P.enemy);
+  pc.rect(7, 4, 4, 4, P.ink);
+  pc.rect(8, 5, 2, 2, charging ? P.white : P.enemyGlow);
+  pc.line(9, 9, 9, 11, charging ? P.enemyGlow : P.metal2);
+  pc.px(9, 11, charging ? P.white : P.enemy);
+  pc.outline(P.ink);
+}

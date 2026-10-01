@@ -9,6 +9,7 @@ import { SCENES } from './SceneKeys';
 import { inputMode } from '../systems/InputMode';
 
 interface GameOverData {
+  levelId?: string;
   checkpoint: string | null;
   stats: RunStats;
 }
@@ -55,7 +56,7 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   private retry(): void {
-    this.scene.start(SCENES.level, { checkpoint: this.info.checkpoint, stats: this.info.stats });
+    this.scene.start(SCENES.level, { levelId: this.info.levelId, checkpoint: this.info.checkpoint, stats: this.info.stats });
   }
 
   private quit(): void {

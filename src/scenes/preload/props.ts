@@ -287,3 +287,36 @@ export function drawEnergyWall(pc: PixelCanvas, frame: number, color: number, da
   for (let y = 0; y < 16; y += 4) pc.rect(0, (y + frame * 2) % 16, 8, 1, color, 0.8);
   pc.px(1, (frame * 5) % 16, P.white).px(6, (frame * 5 + 8) % 16, P.white);
 }
+
+/** Liftable boulder, 18x16. */
+export function drawBoulder(pc: PixelCanvas): void {
+  pc.poly([[2, 15], [0, 9], [3, 3], [8, 0], [14, 2], [17, 7], [17, 13], [14, 15]], P.rock1);
+  pc.poly([[4, 4], [8, 1], [13, 3], [10, 6], [5, 7]], P.rock2);
+  pc.line(9, 7, 13, 12, P.rock0).line(9, 7, 5, 11, P.rock0).line(13, 12, 15, 11, P.rock0);
+  pc.px(6, 3, 0x7c86b0).px(12, 9, P.rock2).px(3, 12, P.rock0);
+  pc.rect(2, 14, 13, 1, P.rock0);
+  pc.outline(P.ink);
+}
+
+/** Training dummy: a scrap robot on a spring with a target on its chest. 20x32, origin bottom-centre. */
+export function drawDummy(pc: PixelCanvas): void {
+  // Base and spring.
+  pc.rect(4, 29, 12, 3, P.metal0).rect(5, 29, 10, 1, P.metal2);
+  for (let y = 22; y < 29; y += 2) pc.rect(7, y, 6, 1, P.metal3).rect(8, y + 1, 4, 1, P.metal1);
+  // Barrel body with a painted target.
+  pc.rect(3, 9, 14, 13, P.metal1);
+  pc.rect(3, 9, 14, 2, P.metal2);
+  pc.rect(3, 20, 14, 2, P.metal0);
+  pc.circle(10, 15, 4, P.white);
+  pc.circle(10, 15, 3, P.enemy);
+  pc.circle(10, 15, 1, P.white);
+  // Stubby arms and a bucket head with one green lens.
+  pc.rect(0, 11, 3, 6, P.metal2).rect(17, 11, 3, 6, P.metal2);
+  pc.rect(5, 2, 10, 7, P.metal2);
+  pc.rect(5, 2, 10, 1, P.metal3);
+  pc.rect(7, 4, 6, 3, P.ink);
+  pc.rect(8, 5, 2, 1, P.omnitrix);
+  pc.vline(13, 0, 2, P.metal3);
+  pc.px(13, 0, P.omnitrix);
+  pc.outline(P.ink);
+}

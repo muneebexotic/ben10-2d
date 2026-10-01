@@ -40,7 +40,7 @@ function hash(x: number, salt: number): number {
 export class Decor {
   private readonly fires: FireSpot[] = [];
   private readonly mushrooms: Array<{ x: number; y: number }> = [];
-  private readonly fireflies: Phaser.GameObjects.Particles.ParticleEmitter;
+  private readonly fireflies: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private readonly windowLight: { x: number; y: number } | null = null;
 
   constructor(scene: Phaser.Scene, level: LevelData, world: LevelWorld) {
@@ -82,6 +82,8 @@ export class Decor {
       if (e.kind === 'rv') this.windowLight = { x: x - 12, y: y - 30 };
     }
 
+    // Grass, mushrooms and fireflies belong to the forest, not the training simulation.
+    if (level.theme === 'sim') return;
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {
@@ -131,7 +133,7 @@ export class Decor {
 
   update(camera: Phaser.Cameras.Scene2D.Camera, lighting: Lighting, now: number): void {
     const view = camera.worldView;
-    const zone = this.fireflies.emitZones[0] as unknown as { source: Phaser.Geom.Rectangle } | undefined;
+    const zone = this.fireflies?.emitZones[0] as unknown as { source: Phaser.Geom.Rectangle } | undefined;
     if (zone?.source) zone.source.setTo(view.x, view.y + 40, view.width, view.height - 60);
 
     for (const f of this.fires) {

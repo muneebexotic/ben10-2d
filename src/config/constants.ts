@@ -60,6 +60,8 @@ export const LIGHTING = {
   ambientRavine: 0x6882b6,
   ambientCrash: 0x86668e,
   ambientAlarm: 0x8a3444,
+  /** Omnitrix Training: a bright, cool simulation. */
+  ambientSim: 0xa8bcb8,
   ambientBlendMs: 900,
 } as const;
 

@@ -25,7 +25,8 @@ export class LevelWorld {
 
     const frames = autotile(this.grid);
     const map = scene.make.tilemap({ data: frames, tileWidth: TILE, tileHeight: TILE });
-    const tileset = map.addTilesetImage(TEX.tiles, TEX.tiles, TILE, TILE, 0, 0)!;
+    const tilesKey = data.theme === 'sim' ? TEX.tilesSim : TEX.tiles;
+    const tileset = map.addTilesetImage(tilesKey, tilesKey, TILE, TILE, 0, 0)!;
     this.layer = map.createLayer(0, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer;
     this.layer.setDepth(DEPTH.terrain);
     this.layer.setCollision([...SOLID_FRAMES, ...ONE_WAY_FRAMES]);

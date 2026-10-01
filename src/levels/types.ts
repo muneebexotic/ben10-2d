@@ -33,7 +33,7 @@ export interface WaterSpan {
   depth: number;
 }
 
-export type DroneKind = 'scout' | 'striker' | 'gunner';
+export type DroneKind = 'scout' | 'striker' | 'gunner' | 'armored' | 'hornet';
 export type Density = 'sparse' | 'normal' | 'frequent';
 export type FormFilter = 'any' | 'human' | 'alien';
 
@@ -45,8 +45,12 @@ export type EntitySpawn =
   | { type: 'smoothy'; x: number; y: number }
   /** `requires` hides the card until that alien is on the dial (a reason to replay chapters). */
   | { type: 'card'; id: string; x: number; y: number; requires?: string }
-  /** One tile wide, `h` tall, starting at row `y`. Only a smash hit (Four Arms) breaks it. */
-  | { type: 'crackedWall'; id: string; x: number; y: number; h: number; requires: string }
+  /** One tile wide, `h` tall, starting at row `y`. Only a smash hit (Four Arms) breaks it. `rebuildMs` (Training) makes it reform. */
+  | { type: 'crackedWall'; id: string; x: number; y: number; h: number; requires: string; rebuildMs?: number }
+  /** A boulder strong aliens can lift and throw. `y` is the surface it rests on. */
+  | { type: 'boulder'; x: number; y: number }
+  /** Training dummy: takes any hit, shows damage numbers, never breaks. */
+  | { type: 'dummy'; x: number; y: number }
   | { type: 'jammer'; x: number; y: number; fieldFrom: number; gateX: number; gateTop: number }
   | { type: 'pod'; x: number; y: number }
   | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number }
@@ -79,15 +83,22 @@ export interface PromptZone {
   readyText?: string;
 }
 
+export type AmbientKind = 'camp' | 'forest' | 'ravine' | 'crash' | 'sim';
+
 export interface AmbientZone {
   x: number;
-  ambient: 'camp' | 'forest' | 'ravine' | 'crash';
+  ambient: AmbientKind;
 }
+
+/** Visual set: the night forest, or the Omnitrix's holographic training simulation. */
+export type LevelTheme = 'forest' | 'sim';
 
 export interface LevelData {
   id: string;
+  /** Story chapter number, or 0 for levels outside the story (Training). */
   chapter: number;
   name: string;
+  theme?: LevelTheme;
   width: number;
   height: number;
   playerStart: { x: number; y: number };
@@ -98,6 +109,7 @@ export interface LevelData {
   entities: EntitySpawn[];
   prompts: PromptZone[];
   ambience: AmbientZone[];
+  /** Story intro: where the pod cutscene starts and the drones that crash it. Unused without a pod. */
   podTriggerX: number;
   introSpawns: Array<{ kind: DroneKind; x: number; y: number }>;
 }

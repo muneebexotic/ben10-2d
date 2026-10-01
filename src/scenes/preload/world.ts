@@ -284,3 +284,80 @@ export function drawCrashGlow(pc: PixelCanvas): void {
     [1, P.enemyDark, 0],
   ]);
 }
+
+// ---------------------------------------------------------------- Omnitrix Training simulation
+
+const SIM = {
+  base: 0x0e1b1e,
+  panel: 0x15282b,
+  seam: 0x203d40,
+  deep: 0x0a1416,
+  rim: P.omnitrix,
+  rimDark: P.omnitrixDark,
+} as const;
+
+function simPanel(pc: PixelCanvas, deep = false): void {
+  pc.rect(0, 0, 16, 16, deep ? SIM.deep : SIM.panel);
+  pc.hline(0, 15, 7, SIM.seam);
+  pc.vline(7, 0, 15, SIM.seam);
+  pc.px(2, 2, SIM.seam).px(12, 2, SIM.seam).px(2, 12, SIM.seam).px(12, 12, SIM.seam);
+  for (let y = 1; y < 16; y += 3) pc.rect(0, y, 16, 1, 0x000000, 0.12);
+}
+
+/** Training tileset: dark metal panels with glowing Omnitrix-green rims (same frame layout as the forest). */
+export function drawSimTile(pc: PixelCanvas, frame: number): void {
+  const F = FRAME;
+  const top: number[] = [F.GRASS_TOP, F.GRASS_TOP_VAR, F.GRASS_TOP_L, F.GRASS_TOP_R, F.GRASS_TOP_S, F.ROCK_TOP, F.ROCK_TOP_L, F.ROCK_TOP_R, F.ROCK_TOP_S];
+  const left: number[] = [F.GRASS_TOP_L, F.GRASS_TOP_S, F.ROCK_TOP_L, F.ROCK_TOP_S, F.DIRT_L, F.ROCK_L];
+  const right: number[] = [F.GRASS_TOP_R, F.GRASS_TOP_S, F.ROCK_TOP_R, F.ROCK_TOP_S, F.DIRT_R, F.ROCK_R];
+  const platform: number[] = [F.PLATFORM_L, F.PLATFORM_M, F.PLATFORM_R, F.PLATFORM_S];
+  if (platform.includes(frame)) {
+    pc.rect(0, 0, 16, 4, SIM.rimDark, 0.85);
+    pc.rect(0, 0, 16, 1, SIM.rim);
+    pc.rect(0, 3, 16, 1, P.omnitrixDeep);
+    for (let x = 1; x < 16; x += 4) pc.px(x, 2, P.omnitrixGlow);
+    if (frame === F.PLATFORM_L || frame === F.PLATFORM_S) pc.rect(0, 0, 1, 4, SIM.rim);
+    if (frame === F.PLATFORM_R || frame === F.PLATFORM_S) pc.rect(15, 0, 1, 4, SIM.rim);
+    return;
+  }
+  simPanel(pc, frame === F.DIRT_DEEP);
+  if (top.includes(frame)) {
+    pc.rect(0, 0, 16, 2, SIM.rim);
+    pc.rect(0, 2, 16, 1, SIM.rimDark);
+    pc.px(4, 0, P.omnitrixGlow).px(11, 0, P.omnitrixGlow);
+  }
+  if (left.includes(frame)) pc.rect(0, 0, 1, 16, SIM.rimDark);
+  if (right.includes(frame)) pc.rect(15, 0, 1, 16, SIM.rimDark);
+  if (frame === F.DIRT_BOTTOM || frame === F.ROCK_BOTTOM) pc.rect(0, 15, 16, 1, SIM.rimDark);
+}
+
+export function drawSimSky(pc: PixelCanvas): void {
+  pc.verticalGradient(0, 0, pc.width, pc.height, [
+    [0, 0x030a0b],
+    [0.55, 0x0a1d1f],
+    [1, 0x123331],
+  ]);
+}
+
+/** A faint holographic grid, tiled behind the arena. 64x64. */
+export function drawSimGrid(pc: PixelCanvas): void {
+  pc.rect(0, 0, 64, 1, P.omnitrix, 0.5).rect(0, 0, 1, 64, P.omnitrix, 0.5);
+  pc.rect(32, 0, 1, 64, P.omnitrix, 0.18).rect(0, 32, 64, 1, P.omnitrix, 0.18);
+  pc.px(0, 0, P.omnitrixGlow);
+}
+
+/** Blocky "data towers" on the horizon of the simulation. 256x120. */
+export function drawSimTowers(pc: PixelCanvas): void {
+  const rnd = seeded(71);
+  let x = 0;
+  while (x < pc.width) {
+    const w = 10 + Math.floor(rnd() * 22);
+    const h = 30 + Math.floor(rnd() * 80);
+    pc.rect(x, pc.height - h, w, h, 0x0c2224);
+    pc.rect(x, pc.height - h, w, 1, P.omnitrixDark);
+    for (let y = pc.height - h + 6; y < pc.height; y += 7) {
+      if (rnd() < 0.35) pc.rect(x + 2 + Math.floor(rnd() * Math.max(1, w - 5)), y, 2, 1, P.omnitrix, 0.6);
+    }
+    x += w + 2 + Math.floor(rnd() * 8);
+  }
+}

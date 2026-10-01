@@ -2,6 +2,8 @@ import type { OmnitrixState, RevertReason } from './Omnitrix';
 import type { TouchMode } from './SaveSystem';
 import type { SplitResult } from './Splits';
 import type { RunStats } from './RunStats';
+import type { TrainingOptions } from './TrainingState';
+import type { DroneKind } from '../levels/types';
 
 export interface OmnitrixTick {
   state: OmnitrixState;
@@ -71,6 +73,10 @@ export interface GameEvents {
   'system:pause': undefined;
   'input:mode': { kind: 'keyboard' | 'touch' };
   'settings:changed': { reduceFlashing: boolean; shake: number; touchControls: TouchMode };
+  /** Training menu: spawn one enemy, clear them all, or change the sandbox switches. */
+  'training:spawn': { kind: DroneKind };
+  'training:clear': undefined;
+  'training:options': TrainingOptions;
 }
 
 export type GameEventName = keyof GameEvents;

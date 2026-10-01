@@ -24,6 +24,7 @@ export class PreloadScene extends Phaser.Scene {
     createAnimations(this);
     const params = launchParams();
     if (params.gallery) this.scene.start(SCENES.gallery);
+    else if (params.training) this.scene.start(SCENES.level, { levelId: 'training' });
     else if (params.start) this.scene.start(SCENES.level, { checkpoint: params.start });
     else this.scene.start(SCENES.menu);
   }

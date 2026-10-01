@@ -1,36 +1,13 @@
-import { DRONE_SHARED, GUNNER, LASER, SCOUT, STRIKER } from '../../config/enemies';
+import { GUNNER, SCOUT, STRIKER } from '../../config/enemies';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
 import { playSfx } from '../../systems/audio/Sfx';
+import type { DroneKind } from '../../levels/types';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
 import { blinkOn } from '../../systems/Accessibility';
-
-const rand = (range: readonly [number, number]) => range[0] + Math.random() * (range[1] - range[0]);
-
-function steer(d: Drone, tx: number, ty: number, speed: number, gain = 2.2): void {
-  // Boss adds (homeX < 0) roam the arena; level drones stay near home so they never pile up behind Ben.
-  if (d.homeX >= 0) tx = Math.max(d.homeX - DRONE_SHARED.leash, Math.min(d.homeX + DRONE_SHARED.leash, tx));
-  const dx = tx - d.x;
-  const dy = ty - d.y;
-  d.vx = Math.max(-speed, Math.min(speed, dx * gain));
-  d.vy = Math.max(-speed, Math.min(speed, dy * gain));
-}
-
-function aimAt(d: Drone, w: DroneWorld): number {
-  return Math.atan2(w.player.centerY - d.y, w.player.x - d.x);
-}
-
-function canShoot(d: Drone, w: DroneWorld, range: number): boolean {
-  return !w.player.dead && w.onScreen(d.x, d.y, 10) && Math.abs(w.player.x - d.x) < range;
-}
-
-function fireLaser(d: Drone, w: DroneWorld, angle: number, speed: number, damage: number): void {
-  const ox = d.x + Math.cos(angle) * 8;
-  const oy = d.y + Math.sin(angle) * 8;
-  w.projectiles.spawn('laser', 'enemy', ox, oy, Math.cos(angle) * speed, Math.sin(angle) * speed, damage, LASER.lifetimeMs, LASER.radius);
-  w.fx.burst('red', ox, oy, 4);
-  w.lighting.flash(ox, oy, 40, PALETTE.enemy, 120);
-}
+import { aimAt, canShoot, fireLaser, rand, steer } from './brainKit';
+import { ArmoredBrain } from './armored';
+import { HornetBrain } from './hornet';
 
 /** Hovers at a comfortable offset, telegraphs with a flickering aim line, then fires one aimed laser. */
 export class ScoutBrain implements DroneBrain {
@@ -113,7 +90,7 @@ export class StrikerBrain implements DroneBrain {
         const ty = Math.min(ground, p.y) - STRIKER.altitude + Math.sin(w.now * 0.004 + d.seed) * 6;
         steer(d, tx, ty, STRIKER.patrolSpeed, 1.6);
         const inRange = Math.abs(p.x - d.x) < STRIKER.triggerRange && d.y < p.y - 30;
-        if (inRange && w.now >= d.nextActionAt && d.stunLeft <= 0 && !p.dead && w.onScreen(d.x, d.y, 10)) {
+        if (inRange && w.aggressive && w.now >= d.nextActionAt && d.stunLeft <= 0 && !p.dead && w.onScreen(d.x, d.y, 10)) {
           d.setState('lock');
           d.setCharging(true);
           w.threat(d, w.now + STRIKER.lockMs);
@@ -189,6 +166,15 @@ export class StrikerBrain implements DroneBrain {
     return d.state === 'stuck' ? 1.5 : 1;
   }
 
+  /** Embedded in the ground after a dive: Four Arms can pull it out and throw it. */
+  pinned(d: Drone): boolean {
+    return d.state === 'stuck';
+  }
+
+  onRecover(d: Drone): void {
+    d.sprite.setAngle(0);
+  }
+
   onHurt(d: Drone): void {
     if (d.state === 'idle' || d.state === 'rise') d.stunLeft = STRIKER.hurtStunMs;
   }
@@ -254,8 +240,17 @@ export class GunnerBrain implements DroneBrain {
   }
 }
 
-export function createBrain(kind: 'scout' | 'striker' | 'gunner'): DroneBrain {
-  if (kind === 'scout') return new ScoutBrain();
-  if (kind === 'striker') return new StrikerBrain();
-  return new GunnerBrain();
+export function createBrain(kind: DroneKind): DroneBrain {
+  switch (kind) {
+    case 'scout':
+      return new ScoutBrain();
+    case 'striker':
+      return new StrikerBrain();
+    case 'gunner':
+      return new GunnerBrain();
+    case 'armored':
+      return new ArmoredBrain();
+    case 'hornet':
+      return new HornetBrain();
+  }
 }

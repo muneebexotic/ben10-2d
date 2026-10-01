@@ -40,12 +40,29 @@ export class Tutorial {
     this.timed.push({ id, left: ms });
   }
 
-  /** An alien's tip (from its definition): shown once, cleared early once the player has used the move. */
+  private formTipId: string | null = null;
+
+  /**
+   * An alien's tip (from its definition): shown once, cleared early once the
+   * player has used the move. A new alien's tip replaces the previous one.
+   */
   formTip(tip: FormTip): void {
+    if (this.shown.has(tip.id) || this.done.has(tip.id)) return;
+    this.clearFormTip();
+    this.formTipId = tip.id;
     if (tip.doneAfter && !this.completions.some((c) => c.id === tip.id)) {
       this.completions.push({ id: tip.id, action: tip.doneAfter.action, count: tip.doneAfter.count });
     }
     this.tip(tip.id, tip.text, tip.ms, tip.priority);
+  }
+
+  /** Hides the current alien's tip (swapped away or reverted). It won't come back this run. */
+  clearFormTip(): void {
+    if (!this.formTipId) return;
+    EventBus.emit('hud:promptClear', { id: this.formTipId });
+    const i = this.timed.findIndex((t) => t.id === this.formTipId);
+    if (i >= 0) this.timed.splice(i, 1);
+    this.formTipId = null;
   }
 
   onAction(action: AbilityAction): void {

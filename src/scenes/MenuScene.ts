@@ -95,13 +95,14 @@ export class MenuScene extends Phaser.Scene {
     this.menu = new MenuList(
       this,
       GAME_WIDTH / 2,
-      178,
+      170,
       [
         { label: 'START', action: () => this.startGame() },
+        { label: 'OMNITRIX TRAINING', action: () => this.startGame('training') },
         { label: 'SETTINGS', action: () => this.openSettings() },
         { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute() },
       ],
-      22,
+      21,
       2,
     );
     this.hint = pixelText(this, GAME_WIDTH / 2, 256, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
@@ -143,7 +144,7 @@ export class MenuScene extends Phaser.Scene {
     this.scene.pause();
   }
 
-  private startGame(): void {
+  private startGame(levelId?: string): void {
     if (this.starting) return;
     this.starting = true;
     this.menu.enabled = false;
@@ -153,7 +154,7 @@ export class MenuScene extends Phaser.Scene {
     flashCamera(this.cameras.main, 300, 120, 255, 110);
     music.stop(300);
     this.cameras.main.fadeOut(500, 0, 0, 0);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start(SCENES.level, {}));
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start(SCENES.level, levelId ? { levelId } : {}));
   }
 
   override update(time: number, delta: number): void {
