@@ -111,11 +111,15 @@ export const ARMORED = {
 export const HORNET = {
   hp: 3,
   body: { width: 14, height: 10 },
-  moveSpeed: 190,
-  orbitRadius: 74,
-  orbitSpeed: 2.6,
-  /** Orbits around head height, dipping into strike range. */
-  hoverOffsetY: -30,
+  /** Kites at this distance; faster than Heatblast and Four Arms, slower than XLR8 at full tilt. */
+  keepDistance: 110,
+  moveSpeed: 200,
+  /** Closer than this and it bolts for open air. */
+  fleeRange: 80,
+  fleeDistance: 170,
+  wobble: 24,
+  /** Hovers around head height, dipping into strike range. */
+  hoverOffsetY: -26,
   aggroRange: 300,
   attackIntervalMs: [1250, 1900] as const,
   telegraphMs: 430,
@@ -125,7 +129,7 @@ export const HORNET = {
   recoverMs: 480,
   dashDamage: 1,
   needles: { count: 3, spreadDeg: 11, speed: 270, damage: 1, radius: 2 },
-  evade: { radius: 52, cooldownMs: 650, impulse: 260, textEveryMs: 1600 },
+  evade: { radius: 52, cooldownMs: 380, impulse: 280, textEveryMs: 1600 },
   hurtStunMs: 120,
 } as const;
 

@@ -21,25 +21,30 @@ export function shouldEvade(hx: number, hy: number, px: number, py: number, vx: 
 }
 
 /**
- * Tiny interceptor: orbits Ben, sidesteps fireballs, and alternates a darting
- * ram with a needle spread. Fire struggles to land on it; XLR8's instant
- * strikes and dash do not.
+ * Tiny interceptor: kites Ben at a distance, sidesteps fireballs, scrambles
+ * aim assist, and alternates a darting ram with a needle spread. Heatblast and
+ * Four Arms can't catch it; XLR8 can, and his strikes can't be dodged.
  */
 export class HornetBrain implements DroneBrain {
   readonly kind = 'hornet' as const;
   readonly texture = TEX.hornet;
   readonly maxHp = H.hp;
   readonly body = H.body;
+  readonly evasive = true;
 
   update(d: Drone, w: DroneWorld): void {
     const p = w.player;
     if (d.state !== 'dash' && d.stunLeft <= 0) this.tryEvade(d, w);
     switch (d.state) {
       case 'idle': {
-        const t = w.now * 0.001 * H.orbitSpeed + d.seed;
+        // Kite: hold a distance on whichever side it's on, bolt when Ben closes in.
+        const dx = p.x - d.x;
+        if (Math.abs(dx) > 24) d.side = dx > 0 ? -1 : 1;
+        const t = w.now * 0.002 + d.seed;
+        const near = Math.abs(dx) < H.fleeRange;
+        const tx = p.x + d.side * (near ? H.fleeDistance : H.keepDistance) + Math.sin(t) * H.wobble;
         const ground = w.groundBelow(d.x, d.y);
-        const tx = p.x + Math.cos(t) * H.orbitRadius;
-        const ty = Math.min(p.centerY + H.hoverOffsetY + Math.sin(t * 2) * 18, ground - 22);
+        const ty = Math.min(p.centerY + H.hoverOffsetY + Math.sin(t * 2.3) * 14, ground - 22);
         steer(d, tx, ty, H.moveSpeed, 3.2);
         d.vx += (Math.random() - 0.5) * 60;
         d.vy += (Math.random() - 0.5) * 40;

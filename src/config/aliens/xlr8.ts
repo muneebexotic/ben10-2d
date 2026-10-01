@@ -45,8 +45,8 @@ export const XLR8 = {
     lunge: 46,
     hitStopMs: 16,
     finisherHitStopMs: 70,
-    /** Ground speed while striking (fraction of run speed). */
-    moveMultiplier: 0.55,
+    /** Ground speed while striking (fraction of run speed): still faster than most things. */
+    moveMultiplier: 0.85,
     /** Striking in mid-air hangs XLR8 in place for a few hits. */
     airHoverFall: 40,
     airHoverMs: 110,
@@ -67,7 +67,7 @@ export const XLR8 = {
     knockback: 220,
     detonateDelayMs: 110,
     hitStopMs: 90,
-    sweep: { width: 28, height: 34 },
+    sweep: { width: 28, height: 40 },
   },
   /** Dodging a shot mid-dash: the world slows for a beat and the dash comes straight back. */
   tooSlow: {

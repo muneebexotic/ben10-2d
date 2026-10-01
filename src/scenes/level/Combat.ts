@@ -120,7 +120,7 @@ export class Combat implements CombatApi {
     let best = angle;
     let bestScore = Infinity;
     for (const t of this.targets) {
-      if (!t.alive || !t.countsAsEnemy || !t.hurtbox(this.b)) continue;
+      if (!t.alive || !t.countsAsEnemy || t.evasive || !t.hurtbox(this.b)) continue;
       const tx = this.b.x + this.b.w / 2;
       const ty = this.b.y + this.b.h / 2;
       const dist = Math.hypot(tx - x, ty - y);

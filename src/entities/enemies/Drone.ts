@@ -49,6 +49,8 @@ export interface DroneBrain {
   /** Extra per-frame drawing (armour plates, glints). */
   render?(d: Drone, w: DroneWorld): void;
   contactDamage?(d: Drone): number;
+  /** Too twitchy to lock onto: aim assist ignores it. */
+  readonly evasive?: boolean;
 }
 
 type Carry = 'none' | 'held' | 'thrown';
@@ -100,6 +102,10 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.hp = brain.maxHp;
     this.sprite = scene.add.sprite(x, y, brain.texture, 0).setDepth(DEPTH.enemies);
     this.sprite.play(`${brain.kind}-idle`);
+  }
+
+  get evasive(): boolean {
+    return this.brain.evasive ?? false;
   }
 
   /** Contact damage (a ramming Armored Drone hits harder). */

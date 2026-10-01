@@ -36,6 +36,8 @@ export interface Damageable {
   readonly countsAsEnemy: boolean;
   /** Damage the last hit actually dealt after armour and multipliers (Training damage numbers). */
   readonly lastDamage?: number;
+  /** Aim assist ignores it (Hornets scramble targeting). */
+  readonly evasive?: boolean;
 }
 
 /** Something a strong alien can pick up and throw: a stunned drone, a boulder. */
