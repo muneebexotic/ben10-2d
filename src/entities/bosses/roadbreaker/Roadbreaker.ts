@@ -99,6 +99,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
   private bag: RbAttackKind[] = [];
   private sinceKey = 0;
   private pendingTransform = false;
+  /** Just landed on its roof: righting itself, can't be lifted again until it's back on its wheels. */
+  private flipped = false;
   private stallLeft = 0;
   private ventLeft = 0;
   private flashLeft = 0;
@@ -319,7 +321,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
   // ------------------------------------------------------------ Liftable (a stalled truck)
 
   get liftable(): boolean {
-    return this.mode === 'truck' && this.state === 'stalled' && this.alive;
+    // Not while it rights itself after a flip: one flip per stall.
+    return this.mode === 'truck' && this.state === 'stalled' && this.alive && !this.flipped;
   }
 
   get self(): Damageable {
@@ -385,6 +388,7 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
     if (this.hp <= this.maxHp * RB.robotAt) this.pendingTransform = true;
     this.enter('stalled');
     this.stallLeft = 900;
+    this.flipped = true;
   }
 
   private clampX(x: number): number {
@@ -548,6 +552,7 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
     if (Math.random() < 0.3) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 60, this.floorY - 40);
     if (Math.random() < 0.15) this.w.fx.burst('spark', this.x + (Math.random() - 0.5) * 80, this.floorY - 20, 2);
     if (this.stallLeft > 0 || this.pendingTransform) return;
+    this.flipped = false;
     // Fresh tires bolt on and it's back in business.
     for (const t of this.tires) {
       if (t.popped || !t.sprite.visible) t.restore();
@@ -609,6 +614,7 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
 
   private startTransform(): void {
     this.pendingTransform = false;
+    this.flipped = false;
     this.attack = null;
     this.bag = [];
     this.sinceKey = 0;
