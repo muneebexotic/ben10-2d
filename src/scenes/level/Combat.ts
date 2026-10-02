@@ -228,7 +228,8 @@ export class Combat implements CombatApi {
   hurl(obj: HeldObject, x: number, y: number, vx: number, vy: number, hit: Hit, splash: number): void {
     const l = this.liftables.find((it) => it === obj);
     if (!l) return;
-    this.thrown.push({ obj: l, x, y, vx, vy, hit, splash, age: 0, angle: 0, pins: [] });
+    const heavy = l.impactDamage !== undefined && l.impactDamage > hit.damage ? { ...hit, damage: l.impactDamage } : hit;
+    this.thrown.push({ obj: l, x, y, vx, vy, hit: heavy, splash, age: 0, angle: 0, pins: [] });
   }
 
   /** A thrown object's landing blast: hits everything nearby except the pins it already bowled over. Returns enemies hit. */

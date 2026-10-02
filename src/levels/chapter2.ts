@@ -44,7 +44,6 @@ export const CHAPTER_2: LevelData = {
     { material: 'rock', x: 244, top: 4, w: 4 },
     // Chase arena: a flat stretch of highway between two mesas.
     { material: 'ground', x: 248, top: 26, w: 60 },
-    { material: 'rock', x: 248, top: 4, w: 2 },
     { material: 'rock', x: 306, top: 4, w: 2 },
     // Truck stop.
     { material: 'ground', x: 308, top: 24, w: 100 },
@@ -111,7 +110,7 @@ export const CHAPTER_2: LevelData = {
       { alien: 'xlr8', x: 123, line: 'THE BRIDGE IS OUT! HOW AM I SUPPOSED TO...' },
       { alien: 'fourarms', x: 279, line: "IT'S DRAGGING US OFF THE ROAD!", scripted: true },
     ],
-    chase: { boardX: 226, boardY: 24, arenaX: 278, roadY: 26, endX: 316, endY: 24, checkpoint: 'cp-convoy' },
+    chase: { boardX: 226, boardY: 24, arenaX: 278, roadY: 26, endX: 318, endY: 24, checkpoint: 'cp-convoy' },
     outro: [
       { who: 'max', text: 'THAT CALLS FOR A CELEBRATION. WHO WANTS MARINATED MEALWORMS?', ms: 2800 },
       { who: 'gwen', text: 'GROSS!', ms: 900 },

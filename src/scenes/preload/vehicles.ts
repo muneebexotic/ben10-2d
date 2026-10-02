@@ -177,3 +177,23 @@ export function drawHaulerTrailer(pc: PixelCanvas, frame: number): void {
   }
   pc.outline(P.ink);
 }
+
+/** A loose truck tire bouncing down the highway. */
+export function drawTire(pc: PixelCanvas): void {
+  pc.circle(8, 8, 7, P.ink);
+  pc.circle(8, 8, 6, 0x2a2a34);
+  for (let a = 0; a < 8; a++) {
+    const ang = (a / 8) * Math.PI * 2;
+    pc.px(Math.round(8 + Math.cos(ang) * 5.5), Math.round(8 + Math.sin(ang) * 5.5), 0x4a4a58);
+  }
+  pc.circle(8, 8, 3, P.metal2);
+  pc.circle(8, 8, 1, P.metal3);
+  pc.px(6, 6, P.metal3);
+}
+
+/** A pothole seen edge-on on the asphalt. */
+export function drawPothole(pc: PixelCanvas): void {
+  pc.ellipse(15, 3, 14, 2.5, 0x101018);
+  pc.ellipse(15, 2, 11, 1.5, 0x05050a);
+  pc.rect(3, 0, 6, 1, 0x6a6a74).rect(19, 0, 7, 1, 0x6a6a74);
+}

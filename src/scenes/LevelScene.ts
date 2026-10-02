@@ -383,6 +383,10 @@ export class LevelScene extends Phaser.Scene {
         EventBus.emit('hud:letterbox', { visible });
       },
       rescue: (x, feetY) => this.rescue(x, feetY),
+      onPlayerHurt: (outcome) => this.onPlayerHurt(outcome),
+      onEnemyKilled: () => this.creditKill(),
+      threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),
+      cancelThreat: (key) => this.perfect.cancel(key),
     };
     return new StoryDirector(kit, resumeX, { onIntroControl: () => this.spawnIntroDrones() });
   }
@@ -907,6 +911,11 @@ export class LevelScene extends Phaser.Scene {
   private onDroneKilled(d: Drone): void {
     this.perfect.cancel(d);
     if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
+    this.creditKill();
+  }
+
+  /** A kill counts: stats, the improvise bonus after a misfire, the alien's advanced tip. */
+  private creditKill(): void {
     this.stats.enemiesDefeated++;
     if (!this.player.isAlien) return;
     this.omni.improvise();

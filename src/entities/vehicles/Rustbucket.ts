@@ -46,6 +46,15 @@ export class Rustbucket {
     return this.x + R.roofTo;
   }
 
+  /** The back bumper (it drives right). */
+  get rearX(): number {
+    return this.x - RUSTBUCKET.w / 2;
+  }
+
+  get frontX(): number {
+    return this.x + RUSTBUCKET.w / 2;
+  }
+
   setDriving(on: boolean): void {
     this.driving = on;
     if (on) this.sprite.play('rustbucket-drive', true);

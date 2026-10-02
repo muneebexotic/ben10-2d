@@ -1,5 +1,6 @@
 import type { Controls } from '../../../systems/InputMap';
 import { AlienHints } from './AlienHints';
+import { RoadChase } from './RoadChase';
 import { RoadIntro } from './RoadIntro';
 import type { SetPiece, StoryKit } from './StoryKit';
 import { UnlockBeat } from './UnlockBeat';
@@ -25,16 +26,11 @@ export class StoryDirector {
     }
     this.pieces.push(new WaveTriggers(kit, resumeX));
     this.pieces.push(new AlienHints(kit));
-  }
-
-  /** Adds a set piece built elsewhere (the chase needs the director's unlock beats). */
-  add(piece: SetPiece): void {
-    this.pieces.push(piece);
-  }
-
-  /** The scripted unlock for this alien (the chase starts Four Arms'). */
-  unlockBeat(alienId: string): UnlockBeat | null {
-    return this.unlockBeats.get(alienId) ?? null;
+    if (plan?.chase) {
+      // The chase starts the chapter's scripted unlock (Four Arms, on the first truck that hooks on).
+      const scripted = (plan.unlocks ?? []).find((u) => u.scripted);
+      this.pieces.push(new RoadChase(kit, plan.chase, resumeX, scripted ? (this.unlockBeats.get(scripted.alien) ?? null) : null));
+    }
   }
 
   /** The opening is still running (the watch never misfires then). */

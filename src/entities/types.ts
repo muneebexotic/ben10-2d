@@ -59,6 +59,8 @@ export interface Liftable {
   shatter(x: number, y: number): void;
   /** Its own hurtbox, so a thrown drone never hits itself. */
   readonly self?: Damageable;
+  /** Heavy things hit harder when thrown (a truck): the throw's damage is at least this. */
+  readonly impactDamage?: number;
 }
 
 /** Anything that hurts the player on contact. */

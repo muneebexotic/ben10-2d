@@ -158,7 +158,7 @@ export interface StoryPlan {
   unlocks?: Array<{ alien: string; x: number; line: string; scripted?: boolean }>;
   /**
    * The Rustbucket chase: Ben boards the RV at `boardX` (its roof), the chase
-   * runs on the road at `arenaX` (centre), and afterwards play picks up at `endX`.
+   * runs on the road at `arenaX` (centre), and afterwards play picks up at `endX` (the next checkpoint; the RV parks just behind it).
    */
   chase?: { boardX: number; boardY: number; arenaX: number; roadY: number; endX: number; endY: number; checkpoint: string };
   /** Lines after the boss falls. */

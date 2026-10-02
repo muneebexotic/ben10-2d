@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import type { Player } from '../../../entities/Player';
+import type { DamageOutcome, Player } from '../../../entities/Player';
 import type { Projectiles } from '../../../entities/Projectiles';
 import type { Drone, DroneWorld } from '../../../entities/enemies/Drone';
 import type { Telegraphs } from '../../../entities/enemies/Telegraphs';
@@ -70,4 +70,11 @@ export interface StoryKit {
   setLetterbox(visible: boolean): void;
   /** Ben fell somewhere he can't be (off the Rustbucket): hurt and put back at `x`, `feetY`. */
   rescue(x: number, feetY: number): void;
+  /** Report damage a set piece dealt Ben directly (combo break, HUD, death). */
+  onPlayerHurt(outcome: DamageOutcome): void;
+  /** An enemy that isn't a drone went down (a convoy truck): stats, improvise bonus, tips. */
+  onEnemyKilled(): void;
+  /** An attack lands at game time `at` (a perfect transform window); cancel when it won't. */
+  threat(key: object, at: number): void;
+  cancelThreat(key: object): void;
 }
