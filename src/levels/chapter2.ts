@@ -74,7 +74,7 @@ export const CHAPTER_2: LevelData = {
     // Truck stop: an old loading dock, a crate step and the motel balcony (the way over the outcrop for anyone).
     { x: 318, y: 21, w: 4 },
     { x: 342, y: 22, w: 2 },
-    { x: 345, y: 20, w: 4 },
+    { x: 345, y: 20, w: 5 },
     // Boss arena: billboard scaffolds on both sides and a high one in the middle.
     { x: 367, y: 21, w: 5 },
     { x: 395, y: 21, w: 5 },
