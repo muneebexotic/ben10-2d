@@ -112,7 +112,7 @@ Vilgax's war rig, rebuilt from the crashed hauler. Vilgax's hologram (now with h
 
 ### Scripted playtests and what they caught
 
-Chapter 2 was played start to finish by a script in headless Chromium (title > Chapter Select > the whole chapter > Chapter Complete) on **Normal (desktop 1280x720)**, **Hard (phone 844x390)** and **Easy (desktop)**, plus **Normal (phone)**, and Chapter 1 was rechecked on a 20:9 phone (915x412). The script plays the intended route (Heatblast for the barricade, XLR8 across the river, Four Arms ripping trucks off the RV) and drives the boss through its counters (tires, stall, flip, transformation, plates, vents). Along the way it caught, and these are fixed:
+Chapter 2 was played start to finish by a script in headless Chromium (title > Chapter Select > the whole chapter > Chapter Complete) on **all three difficulties, each on desktop (1280x720) and an emulated phone (844x390)**: all six runs reach Chapter Complete with no deaths and no errors. Chapter 1 was rechecked (its boss, the vault, the title and play on a 20:9 phone at 915x412). The script plays the intended route (Heatblast for the barricade, XLR8 across the river, Four Arms ripping trucks off the RV) and drives the boss through its counters (tires, stall, flip, transformation, plates, vents). Along the way it caught, and these are fixed:
 
 - **Falling through the RV roof** on a slow frame (the roof body was 8 px; a 30 fps phone could drop Ben through it on landing). Now 24 px deep.
 - **Leaping off the broken bridge into the river** before XLR8's discovery started (the beat waited for Ben to land). Beats now start mid-jump and stop him dead over the ledge.
