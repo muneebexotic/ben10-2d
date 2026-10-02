@@ -110,6 +110,17 @@ Vilgax's war rig, rebuilt from the crashed hauler. Vilgax's hologram (now with h
 - **The way back to Chapter 1:** a cracked wall whose alien isn't on the dial now shows that alien's rim-lit silhouette and **UNLOCKS IN CHAPTER N**, so Camp Crash's vault points at Road Trip. When an alien joins mid-chapter, walls update to name it. Smashing a vault in Chapter 2 makes Ben remember the one at camp ("WAIT... THERE WAS ONE OF THESE BACK IN CAMP CRASH!"), and **Chapter Select flags chapters with a secret the file can now open** (a pulsing SECRET WAITING! chip and a glinting card slot).
 - Chapter Select gets a Road Trip diorama (the Rustbucket at sunset, Ben on the roof, a convoy rig on its tail); bests, ranks, per-difficulty medals and splits work for Chapter 2 exactly like Chapter 1.
 
+### Scripted playtests and what they caught
+
+Chapter 2 was played start to finish by a script in headless Chromium (title > Chapter Select > the whole chapter > Chapter Complete) on **Normal (desktop 1280x720)**, **Hard (phone 844x390)** and **Easy (desktop)**, plus **Normal (phone)**, and Chapter 1 was rechecked on a 20:9 phone (915x412). The script plays the intended route (Heatblast for the barricade, XLR8 across the river, Four Arms ripping trucks off the RV) and drives the boss through its counters (tires, stall, flip, transformation, plates, vents). Along the way it caught, and these are fixed:
+
+- **Falling through the RV roof** on a slow frame (the roof body was 8 px; a 30 fps phone could drop Ben through it on landing). Now 24 px deep.
+- **Leaping off the broken bridge into the river** before XLR8's discovery started (the beat waited for Ben to land). Beats now start mid-jump and stop him dead over the ledge.
+- **The canyon's dry wash** had a 3-tile lip only a perfect full jump cleared. Now 2 tiles.
+- **Truck stop:** only Heatblast and Four Arms could climb over the outcrop to the boss (caught by the reachability test), and missing the jump from the balcony dropped Ben into a slot beside the vault. A crate step and a balcony that reaches the rock fix both.
+- **ROADBREAKER:** a flipped truck could be lifted again the moment it landed, so Four Arms could chain flips and skip robot mode. One flip per stall now.
+- A pit respawn could shorten a longer invulnerability (a story beat's); it now only extends it.
+
 ### Approved ideas built this milestone
 
 - **STRIKE!:** a thrown enemy (or truck, or boss) bowls through ordinary enemies; two or more down pops STRIKE! with a slow-motion beat (`COMBAT.bowlingSlowdown`, `strikeHits`).
