@@ -7,8 +7,13 @@ import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import type { LevelWorld } from './LevelWorld';
 
+/** Level-wide moments an ability can trigger (they need the camera or the HUD). */
+export interface FxHooks {
+  comicFreeze(count: number, x: number, y: number, dir: 1 | -1, color: number, targets: ReadonlyArray<{ x: number; y: number }>, ms: number): void;
+}
+
 /** The effects surface abilities get: the level's Fx and lighting, nothing else. */
-export function createFxApi(fx: Fx, lighting: Lighting): FxApi {
+export function createFxApi(fx: Fx, lighting: Lighting, hooks?: FxHooks): FxApi {
   return {
     burst: (k, x, y, n) => fx.burst(k, x, y, n),
     trail: (k, x, y, n) => fx.trail(k, x, y, n),
@@ -23,6 +28,7 @@ export function createFxApi(fx: Fx, lighting: Lighting): FxApi {
     popText: (x, y, text, color) => fx.popText(x, y, text, color),
     speedLine: (x, y, dir, color) => fx.speedLine(x, y, dir, color),
     crack: (x, y, size) => fx.crack(x, y, size),
+    comicFreeze: (count, x, y, dir, color, targets, ms) => hooks?.comicFreeze(count, x, y, dir, color, targets, ms),
   };
 }
 

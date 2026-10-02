@@ -269,6 +269,26 @@ const RECIPES = {
     A.tone({ type: 'triangle', freq: midiToFreq(100), duration: 0.9, volume: 0.16 * v, when: A.now + 0.12 });
     A.tone({ type: 'sine', freq: midiToFreq(76), duration: 0.9, volume: 0.12 * v, when: A.now + 0.12 });
   },
+  /** STRIKE!: a heavy ball thunk, pins clattering everywhere, then a bowling-alley fanfare. */
+  strike: (v) => {
+    const t = A.now;
+    A.tone({ type: 'sine', freq: 110, freqEnd: 40, duration: 0.3, volume: 0.5 * v });
+    for (let i = 0; i < 9; i++) {
+      const when = t + 0.03 + i * 0.035 + Math.random() * 0.02;
+      A.noise({ duration: 0.05, volume: (0.22 - i * 0.015) * v, filter: 'bandpass', freq: 2200 + Math.random() * 2600, q: 6, when });
+      A.tone({ type: 'triangle', freq: 900 + Math.random() * 900, duration: 0.04, volume: 0.05 * v, when });
+    }
+    for (const [i, n] of [72, 76, 79, 84].entries()) A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.12, volume: 0.07 * v, when: t + 0.38 + i * 0.07 });
+    A.tone({ type: 'triangle', freq: midiToFreq(88), duration: 0.6, volume: 0.12 * v, when: t + 0.66 });
+  },
+  /** The comic-panel freeze: a blade being drawn, then the page snaps. */
+  comicCut: (v) => {
+    const t = A.now;
+    A.noise({ duration: 0.18, volume: 0.3 * v, filter: 'highpass', freq: 4200, freqEnd: 9000, attack: 0.05 });
+    A.tone({ type: 'sawtooth', freq: 2400, freqEnd: 5200, duration: 0.16, volume: 0.04 * v, filter: { type: 'highpass', freq: 2000 } });
+    A.tone({ type: 'square', freq: midiToFreq(76), duration: 0.08, volume: 0.06 * v, when: t + 0.12 });
+    A.tone({ type: 'square', freq: midiToFreq(83), duration: 0.22, volume: 0.06 * v, when: t + 0.18 });
+  },
 } satisfies Record<string, Recipe>;
 
 export type SfxName = keyof typeof RECIPES;

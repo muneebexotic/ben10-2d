@@ -4,6 +4,7 @@ import { COMBO, DEPTH, FX, LIGHTING, PHYSICS, TILE } from '../config/constants';
 import { lerpColor, PALETTE } from '../config/palette';
 import { ACCESSIBILITY } from '../config/accessibility';
 import { PLAYER } from '../config/player';
+import { COMBAT } from '../config/combat';
 import { getAlien, hasAlien } from '../aliens/registry';
 import type { AbilityAction } from '../aliens/types';
 import { CHAPTER_1 } from '../levels/chapter1';
@@ -208,6 +209,7 @@ export class LevelScene extends Phaser.Scene {
           this.stats.parries += n;
           this.bumpCombo(n);
         },
+        onThrowLanded: (hits, x, y) => this.onThrowLanded(hits, x, y),
       },
       { isSolid: (x, y) => this.world.isSolid(x, y) },
     );
@@ -320,7 +322,7 @@ export class LevelScene extends Phaser.Scene {
   private createPlayer(start: { x: number; y: number }): void {
     this.player = new Player(this, start.x, start.y, {
       combat: this.combat,
-      fx: createFxApi(this.fx, this.lighting),
+      fx: createFxApi(this.fx, this.lighting, { comicFreeze: (...args) => this.comicFreeze(...args) }),
       world: { isSolid: (x, y) => this.world.isSolid(x, y), groundBelow: (x, y) => this.world.groundBelow(x, y) },
       notify: (a) => this.onAbility(a),
       // Read live: changing difficulty in Settings applies to the very next hit.
@@ -347,6 +349,7 @@ export class LevelScene extends Phaser.Scene {
     this.omni.perfects = this.stats.perfectTransforms;
     this.omni.misfires = this.stats.misfires;
     this.omni.improvised = this.stats.improvised;
+    this.omni.swaps = this.stats.swaps;
     this.omni.misfireAllowed = () => this.misfireAllowed();
     this.omni.onTransformed = (id) => this.onBecameAlien(id);
     this.omni.onSwapped = (id) => this.onBecameAlien(id);
@@ -568,6 +571,7 @@ export class LevelScene extends Phaser.Scene {
     this.stats.perfectTransforms = this.omni.perfects;
     this.stats.misfires = this.omni.misfires;
     this.stats.improvised = this.omni.improvised;
+    this.stats.swaps = this.omni.swaps;
     this.perfect.prune(this.gameNow);
     this.statsTimer -= realDt;
     if (this.statsTimer <= 0) {
@@ -715,6 +719,37 @@ export class LevelScene extends Phaser.Scene {
     this.bumpCombo(1);
   }
 
+  /**
+   * XLR8 cut four or more enemies in one dash: the world freezes into a comic
+   * panel (the HUD draws it) with a slash across every target, then they all burst.
+   */
+  private comicFreeze(count: number, x: number, y: number, dir: 1 | -1, color: number, targets: ReadonlyArray<{ x: number; y: number }>, ms: number): void {
+    const cam = this.cameras.main;
+    const view = cam.worldView;
+    this.fx.hitStop(ms);
+    playSfx('comicCut');
+    const slashes = this.add.graphics().setDepth(DEPTH.fxTop).setBlendMode(Phaser.BlendModes.ADD);
+    for (const t of targets) {
+      slashes.lineStyle(3, PALETTE.white, 1).lineBetween(t.x - dir * 14, t.y - 10, t.x + dir * 14, t.y + 10);
+      slashes.lineStyle(1, color, 1).lineBetween(t.x - dir * 18, t.y - 12, t.x + dir * 18, t.y + 12);
+    }
+    this.tweens.add({ targets: slashes, alpha: 0, delay: ms, duration: 200, onComplete: () => slashes.destroy() });
+    this.stats.multiCuts++;
+    EventBus.emit('hud:comicPanel', { count, x: (x - view.x) * cam.zoom, y: (y - view.y) * cam.zoom, dir, color, ms });
+  }
+
+  /** Bowling: a thrown enemy that takes two or more others down with it is a STRIKE! */
+  private onThrowLanded(hits: number, x: number, y: number): void {
+    if (hits < COMBAT.strikeHits) return;
+    this.stats.strikes++;
+    this.time2.slowMo(0.22, 560, 320);
+    this.fx.hitStop(60);
+    this.fx.ring(x, y, PALETTE.gold, 70, 500);
+    this.fx.burst('gold', x, y, 30);
+    playSfx('strike');
+    EventBus.emit('hud:strike', { hits });
+  }
+
   private bumpCombo(n: number): void {
     let count = 0;
     let tagged = false;
@@ -732,6 +767,7 @@ export class LevelScene extends Phaser.Scene {
 
   /** A different form joined the live combo: refund some alien time and celebrate. */
   private onTagTeam(): void {
+    this.stats.bestTagTeam = Math.max(this.stats.bestTagTeam, this.combo.contributors.length);
     const refund = this.player.isAlien ? COMBO.tagRefundMs : 0;
     if (refund > 0) this.omni.omnitrix.extend(refund);
     playSfx('tag', 1, 1 + this.combo.contributors.length * 0.08);

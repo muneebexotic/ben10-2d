@@ -99,6 +99,8 @@ export interface LevelData {
   chapter: number;
   name: string;
   theme?: LevelTheme;
+  /** Par time for the score (default: SCORING.parTimeMs). */
+  parTimeMs?: number;
   width: number;
   height: number;
   playerStart: { x: number; y: number };

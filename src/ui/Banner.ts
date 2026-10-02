@@ -275,6 +275,53 @@ export class Banner {
     });
   }
 
+  /**
+   * STRIKE!: a thrown enemy bowled over two or more others. Pins scatter
+   * across the screen and the word stamps in, bowling-alley style.
+   */
+  strike(hits: number): void {
+    const scene = this.scene;
+    const glow = scene.add.image(0, 0, TEX.light).setTint(PALETTE.gold).setBlendMode(Phaser.BlendModes.ADD).setScale(4.5, 1.2).setAlpha(0.5);
+    const shadow = pixelText(scene, 3, 3, 'STRIKE!', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(scene, 0, 0, 'STRIKE!', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    title.setTint(PALETTE.white, PALETTE.white, PALETTE.gold, PALETTE.gold);
+    const sub = pixelText(scene, 0, 22, `${hits} DOWN IN ONE THROW`, { originX: 0.5, originY: 0.5, color: PALETTE.cream });
+    const pins = scene.add.graphics();
+    const c = scene.add.container(GAME_WIDTH / 2, 64, [glow, pins, shadow, title, sub]).setDepth(460);
+    // Ten little pins fly out from behind the word.
+    const flying = Array.from({ length: 10 }, (_, i) => ({ x: (i - 4.5) * 9, y: 4, vx: (i - 4.5) * 36 + (Math.random() - 0.5) * 40, vy: -120 - Math.random() * 90, spin: (Math.random() - 0.5) * 12, a: 0 }));
+    const state = { t: 0 };
+    scene.tweens.add({
+      targets: state,
+      t: 1,
+      duration: 900,
+      onUpdate: () => {
+        const dt = 0.9 * state.t;
+        pins.clear();
+        for (const p of flying) {
+          const x = p.x + p.vx * dt;
+          const y = p.y + p.vy * dt + 260 * dt * dt;
+          const a = p.spin * dt;
+          const cos = Math.cos(a);
+          const sin = Math.sin(a);
+          const pt = (dx: number, dy: number) => [x + dx * cos - dy * sin, y + dx * sin + dy * cos] as const;
+          pins.fillStyle(PALETTE.white, 1 - state.t * 0.6);
+          const [ax, ay] = pt(0, -5);
+          const [bx, by] = pt(0, 4);
+          pins.fillCircle(ax, ay, 2);
+          pins.fillCircle(bx, by, 3);
+          pins.fillStyle(PALETTE.enemy, 1 - state.t * 0.6);
+          const [sx, sy] = pt(0, -1.5);
+          pins.fillRect(sx - 2, sy, 4, 1);
+        }
+      },
+    });
+    c.setScale(2.6).setAlpha(0).setAngle(-6);
+    scene.tweens.add({ targets: c, scale: 1, alpha: 1, angle: -2, duration: 220, ease: 'Back.easeOut', onComplete: () => shakeCamera(scene.cameras.main, 220, 0.01, false) });
+    scene.tweens.add({ targets: glow, scaleX: 7, alpha: 0, duration: 900, ease: 'Cubic.easeOut' });
+    scene.tweens.add({ targets: c, y: 48, alpha: 0, delay: 1500, duration: 300, onComplete: () => c.destroy() });
+  }
+
   omnitrixSymbol(color: number, big: boolean): void {
     const s = this.symbol;
     const soft = a11y.reduceFlashing;

@@ -15,6 +15,13 @@ export interface RunStats {
   /** Wrong transformations, and how many of those got a KO anyway ("improvised"). */
   misfires: number;
   improvised: number;
+  /** Mid-transformation swaps, and the most forms (Ben included) that joined one combo. */
+  swaps: number;
+  bestTagTeam: number;
+  /** Thrown enemies that bowled over two or more others. */
+  strikes: number;
+  /** XLR8 dashes that cut four or more enemies at once. */
+  multiCuts: number;
   /** False for practice runs started mid-level (?start=): they never set best times or splits. */
   fullRun: boolean;
   /** The Vilgax hologram already played this run (retries skip it). */
@@ -44,6 +51,10 @@ export function createRunStats(totalCards: number, fullRun = true, difficulty: D
     perfectTransforms: 0,
     misfires: 0,
     improvised: 0,
+    swaps: 0,
+    bestTagTeam: 0,
+    strikes: 0,
+    multiCuts: 0,
     fullRun,
     sawVilgax: false,
     difficulty,
@@ -70,6 +81,10 @@ export function sanitizeRunStats(raw: unknown): RunStats | null {
     perfectTransforms: n(r.perfectTransforms),
     misfires: n(r.misfires),
     improvised: n(r.improvised),
+    swaps: n(r.swaps),
+    bestTagTeam: n(r.bestTagTeam),
+    strikes: n(r.strikes),
+    multiCuts: n(r.multiCuts),
     fullRun: r.fullRun === true,
     sawVilgax: r.sawVilgax === true,
     difficulty: isDifficultyId(r.difficulty) ? r.difficulty : 'normal',
@@ -81,15 +96,17 @@ export function cloneRunStats(stats: RunStats): RunStats {
   return { ...stats, cardsFound: [...stats.cardsFound] };
 }
 
-export function computeScore(stats: RunStats): number {
+/** `parTimeMs`: the chapter's par (longer chapters get a longer one). */
+export function computeScore(stats: RunStats, parTimeMs: number = SCORING.parTimeMs): number {
   const seconds = stats.timeMs / 1000;
-  const parSeconds = SCORING.parTimeMs / 1000;
+  const parSeconds = parTimeMs / 1000;
   const timeDelta = seconds - parSeconds;
   const timePoints =
     timeDelta > 0 ? -timeDelta * SCORING.pointsPerSecondOverPar : -timeDelta * SCORING.pointsPerSecondUnderPar;
 
   const comboPoints = Math.min(SCORING.comboBonusCap, stats.bestCombo * SCORING.comboBonusPerHit);
   const perfectPoints = Math.min(SCORING.perfectBonusCap, stats.perfectTransforms * SCORING.perfectBonus);
+  const swapPoints = Math.min(SCORING.swapBonusCap, stats.swaps * SCORING.swapBonus) + tagTeamPoints(stats.bestTagTeam);
 
   return Math.round(
     SCORING.base +
@@ -99,12 +116,18 @@ export function computeScore(stats: RunStats): number {
       stats.cardsFound.length * SCORING.cardBonus +
       comboPoints +
       perfectPoints +
+      swapPoints +
       stats.enemiesDefeated * SCORING.enemyBonus,
   );
 }
 
-export function computeRank(stats: RunStats): RankResult {
-  const score = computeScore(stats);
+/** Bonus for the biggest tag team: each form past the first in one combo. */
+export function tagTeamPoints(forms: number): number {
+  return Math.max(0, forms - 1) * SCORING.tagTeamBonusPerForm;
+}
+
+export function computeRank(stats: RunStats, parTimeMs?: number): RankResult {
+  const score = computeScore(stats, parTimeMs);
   const match = SCORING.thresholds.find((t) => score >= t.min);
   return { rank: match ? match.rank : 'D', score };
 }

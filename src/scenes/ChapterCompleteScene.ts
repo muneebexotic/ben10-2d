@@ -20,6 +20,9 @@ import { flashCamera, shakeCamera } from '../systems/Accessibility';
 import { formatDelta } from '../systems/Splits';
 import { inputMode } from '../systems/InputMode';
 
+/** Best tag team names, by how many forms joined one combo. */
+const TAG_TEAM_NAMES = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!'];
+
 const RANK_LINE: Record<Rank, string> = {
   S: 'HERO OF THE SUMMER!',
   A: 'GRANDPA MAX WOULD BE PROUD.',
@@ -55,7 +58,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.stats = data.stats;
     this.levelId = data.levelId ?? 'ch1';
     this.ready = false;
-    const result = computeRank(this.stats);
+    const result = computeRank(this.stats, getLevel(this.levelId).parTimeMs);
     this.rank = result.rank;
     this.score = result.score;
     const difficulty = this.stats.difficulty;
@@ -91,12 +94,18 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const rows: Row[] = [
       { label: 'TIME', value: () => formatTime(s.timeMs), ...this.timeHighlight(previousBest) },
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
-      { label: 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) } },
-      { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` } },
+      { label: 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
+      { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` }, highlight: s.multiCuts > 0 ? `${s.multiCuts} MULTI-CUT${s.multiCuts === 1 ? '' : 'S'}!` : undefined, highlightColor: 0x9fd8ff },
       { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
       ...(s.misfires > 0 || d.wrongTransformChance > 0
         ? [{ label: 'MISFIRES', value: () => String(s.misfires), highlight: s.improvised > 0 ? `${s.improvised} IMPROVISED!` : undefined, highlightColor: PALETTE.gold }]
+        : []),
+      ...(s.swaps > 0 || s.bestTagTeam >= 2
+        ? [
+            { label: 'SWAPS', value: () => String(s.swaps), count: { to: s.swaps, format: (n: number) => String(Math.round(n)) } },
+            { label: 'BEST TAG TEAM', value: () => (s.bestTagTeam >= 2 ? `${s.bestTagTeam} FORMS` : '-'), highlight: TAG_TEAM_NAMES[Math.min(s.bestTagTeam, TAG_TEAM_NAMES.length - 1)] || undefined, highlightColor: PALETTE.omnitrix },
+          ]
         : []),
       { label: 'DEATHS', value: () => String(s.deaths), highlight: s.deaths === 0 ? 'FLAWLESS!' : undefined },
       { label: 'SUMO SLAMMERS', value: () => `${s.cardsFound.length} / ${s.totalCards}`, highlight: s.cardsFound.length === s.totalCards ? 'ALL FOUND!' : undefined },
@@ -105,7 +114,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
     const x0 = 126;
     const x1 = 330;
-    const spacing = rows.length > 9 ? 18 : 20;
+    const spacing = rows.length > 11 ? 15 : rows.length > 9 ? 18 : 20;
     rows.forEach((row, i) => {
       const y = 82 + i * spacing;
       this.time.delayedCall(500 + i * 260, () => this.revealRow(row, x0, x1, y));
@@ -238,7 +247,8 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const difficulty = getDifficulty(s.difficulty).label;
     const article = this.rank === 'A' || this.rank === 'S' ? 'an' : 'a';
     const misfires = s.misfires > 0 ? ` and survived ${s.misfires} Omnitrix misfire${s.misfires === 1 ? '' : 's'}` : '';
-    return `I beat BEN 10: OMNITRIX SUMMER - ${chapter} on ${difficulty} in ${formatTime(s.timeMs)} with ${article} ${this.rank} rank, a ${s.bestCombo}-hit combo, ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards${misfires}. Your turn! ${url}`.trim();
+    const tag = s.bestTagTeam >= 3 ? ` with a ${s.bestTagTeam}-form tag team` : '';
+    return `I beat BEN 10: OMNITRIX SUMMER - ${chapter} on ${difficulty} in ${formatTime(s.timeMs)} with ${article} ${this.rank} rank, a ${s.bestCombo}-hit combo, ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards${tag}${misfires}. Your turn! ${url}`.trim();
   }
 
   /** The native share sheet where there is one (phones), otherwise the clipboard. */

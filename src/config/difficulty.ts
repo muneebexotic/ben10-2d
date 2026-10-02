@@ -100,6 +100,12 @@ export const DEFAULT_DIFFICULTY: DifficultyId = 'normal';
 /** The watch beeps and flashes red for this long before timing out. */
 export const OMNITRIX_WARNING_MS = 5_000;
 
+/** One step down (Hard to Normal, Normal to Easy), or null on Easy. */
+export function easierThan(id: DifficultyId): DifficultyId | null {
+  const i = DIFFICULTY_IDS.indexOf(id);
+  return i > 0 ? DIFFICULTY_IDS[i - 1] : null;
+}
+
 export function getDifficulty(id: DifficultyId): DifficultyPreset {
   return DIFFICULTY[id];
 }

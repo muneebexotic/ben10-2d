@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DIFFICULTY, DIFFICULTY_IDS, isDifficultyId } from '../src/config/difficulty';
+import { DIFFICULTY, DIFFICULTY_IDS, easierThan, isDifficultyId } from '../src/config/difficulty';
 import { activeDifficultyId, pace, setActiveDifficulty } from '../src/systems/Difficulty';
 import { misfireAllowed } from '../src/systems/MisfireRules';
 import { checkpointsFor } from '../src/levels/checkpoints';
@@ -85,5 +85,13 @@ describe('run stats from a save', () => {
     expect(sanitizeRunStats({ timeMs: 5, deaths: -3, difficulty: 'nope', cardsFound: ['x', 2] })).toMatchObject({ timeMs: 5, deaths: 0, difficulty: 'normal', cardsFound: ['x'], misfires: 0 });
     expect(sanitizeRunStats({ deaths: 1 })).toBeNull();
     expect(sanitizeRunStats(null)).toBeNull();
+  });
+});
+
+describe('make it easier', () => {
+  it('steps down one difficulty at a time and stops at Easy', () => {
+    expect(easierThan('hard')).toBe('normal');
+    expect(easierThan('normal')).toBe('easy');
+    expect(easierThan('easy')).toBeNull();
   });
 });

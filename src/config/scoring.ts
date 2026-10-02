@@ -15,6 +15,10 @@ export const SCORING = {
   enemyBonus: 3,
   perfectBonus: 25,
   perfectBonusCap: 100,
+  /** Switching mastery: a little per mid-transformation swap, and per form in the best tag team. */
+  swapBonus: 4,
+  swapBonusCap: 40,
+  tagTeamBonusPerForm: 15,
   thresholds: [
     { rank: 'S', min: 1150 },
     { rank: 'A', min: 950 },

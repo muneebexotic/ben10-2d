@@ -98,7 +98,7 @@ const slam: AttackFn = (b, w, a, dt) => {
       const t = a.t / track;
       const pulse = blinkOn(a.t, locked ? 50 : 110);
       w.telegraph.rect(a.x - 44, floor - 3, 88, 3, PALETTE.enemy, pulse ? 0.9 : 0.35);
-      w.telegraph.rect(a.x - 44, floor - 60, 88, 57, PALETTE.enemy, (pulse ? 0.12 : 0.05) * (0.5 + t));
+      w.telegraph.zone(a.x - 44, floor - 60, 88, 57, PALETTE.enemy, (pulse ? 0.7 : 0.35) * (0.5 + t * 0.5), a.t * 0.03);
       b.shake = 1 + t * 2;
       if (a.t >= track) {
         next(a);
@@ -206,7 +206,7 @@ const beam: AttackFn = (b, w, a) => {
     const beat = t < 0.45 ? 200 : t < 0.8 ? 110 : 50;
     const on = blinkOn(a.t, beat);
     w.telegraph.line(from, beamY, to, beamY, t > 0.9 ? 0xffffff : PALETTE.enemy, on ? 0.95 : 0.3, t > 0.9 ? 3 : 1);
-    w.telegraph.rect(Math.min(from, to), beamY - cfg.height / 2, Math.abs(to - from), cfg.height, PALETTE.enemy, 0.08 + t * 0.12);
+    w.telegraph.zone(Math.min(from, to), beamY - cfg.height / 2, Math.abs(to - from), cfg.height, PALETTE.enemy, 0.3 + t * 0.6, a.t * 0.06, a.dir);
     w.lighting.add(from, beamY, 40 + t * 60, PALETTE.enemy, 1);
     if (a.t >= cfg.telegraphMs) {
       w.hazards.fireBeam(from, to, beamY);

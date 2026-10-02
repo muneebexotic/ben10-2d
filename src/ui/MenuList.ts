@@ -10,6 +10,8 @@ export interface MenuItem {
   adjust?: (dir: 1 | -1) => void;
   /** One-line explanation shown by menus that have a hint line. */
   hint?: string;
+  /** Accent colour for a row that should stand out (shown dimmer when not selected). */
+  color?: number;
 }
 
 export interface MenuOptions {
@@ -131,7 +133,8 @@ export class MenuList {
   refresh(): void {
     this.texts.forEach((t, i) => {
       t.setText(this.label(this.items[i]));
-      t.setTint(i === this.index ? PALETTE.white : PALETTE.uiDim);
+      const accent = this.items[i].color;
+      t.setTint(i === this.index ? (accent ?? PALETTE.white) : (accent !== undefined ? accent : PALETTE.uiDim)).setAlpha(accent !== undefined && i !== this.index ? 0.7 : 1);
       const arrows = this.arrows[i];
       if (arrows) for (const a of arrows) a.setAlpha(i === this.index ? 1 : 0.35);
     });

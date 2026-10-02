@@ -20,6 +20,8 @@ export interface CombatHooks {
   onTargetHit(target: Damageable, result: HitResult, hit: Hit): void;
   onPlayerHurt(outcome: DamageOutcome): void;
   onParry(count: number): void;
+  /** A thrown object came down after bowling over `hits` enemies (STRIKE! at two or more). */
+  onThrowLanded?(hits: number, x: number, y: number): void;
 }
 
 /** Level queries Combat needs to fly thrown objects. */
@@ -37,6 +39,8 @@ interface Thrown {
   splash: number;
   age: number;
   angle: number;
+  /** Enemies it already bowled over on the way (each is hit once). */
+  pins: Damageable[];
 }
 
 /** Resolves every hit in the level: melee, projectiles, blasts, contact hazards, thrown objects. */
@@ -167,6 +171,14 @@ export class Combat implements CombatApi {
     return added;
   }
 
+  markedPoints(key: object): Array<{ x: number; y: number }> {
+    const out: Array<{ x: number; y: number }> = [];
+    for (const t of this.marks.get(key) ?? []) {
+      if (t.alive && t.hurtbox(this.b)) out.push({ x: rectCenterX(this.b), y: rectCenterY(this.b) });
+    }
+    return out;
+  }
+
   strikeMarked(key: object, hit: Hit, onEach?: (x: number, y: number) => void): number {
     const set = this.marks.get(key);
     this.marks.delete(key);
@@ -216,7 +228,21 @@ export class Combat implements CombatApi {
   hurl(obj: HeldObject, x: number, y: number, vx: number, vy: number, hit: Hit, splash: number): void {
     const l = this.liftables.find((it) => it === obj);
     if (!l) return;
-    this.thrown.push({ obj: l, x, y, vx, vy, hit, splash, age: 0, angle: 0 });
+    this.thrown.push({ obj: l, x, y, vx, vy, hit, splash, age: 0, angle: 0, pins: [] });
+  }
+
+  /** A thrown object's landing blast: hits everything nearby except the pins it already bowled over. Returns enemies hit. */
+  private blastExcept(x: number, y: number, radius: number, hit: Hit, skip: readonly Damageable[]): number {
+    let count = 0;
+    for (const t of [...this.targets]) {
+      if (skip.includes(t) || !t.alive || !t.hurtbox(this.b) || !circleRect(x, y, radius, this.b)) continue;
+      if (t.accepts && !t.accepts(hit.kind)) continue;
+      if (this.apply(t, hit) && t.countsAsEnemy) count++;
+    }
+    this.projectiles.forEachActive('enemy', (p) => {
+      if ((p.x - x) ** 2 + (p.y - y) ** 2 <= (radius + p.radius) ** 2) this.projectiles.kill(p, true);
+    });
+    return count;
   }
 
   /** Turns every enemy shot inside the radius around and fires it back outward. Returns how many. */
@@ -313,20 +339,26 @@ export class Combat implements CombatApi {
       const r = COMBAT.thrownHitRadius;
       let impact = th.age > COMBAT.throwMaxMs || this.world.isSolid(th.x, th.y + half) || this.world.isSolid(th.x + Math.sign(th.vx) * r, th.y);
       if (!impact) {
-        for (const t of this.targets) {
-          if (t === th.obj.self || !t.alive || !t.hurtbox(this.b)) continue;
+        for (const t of [...this.targets]) {
+          if (t === th.obj.self || !t.alive || th.pins.includes(t) || !t.hurtbox(this.b)) continue;
           if (t.accepts && !t.accepts(th.hit.kind)) continue;
-          if (circleRect(th.x, th.y, r, this.b)) {
+          if (!circleRect(th.x, th.y, r, this.b)) continue;
+          // Bowling: ordinary enemies are knocked down like pins and the throw rolls on. Walls, props and bosses stop it.
+          if (!t.countsAsEnemy || t.stopsThrows) {
             impact = true;
             break;
           }
+          th.pins.push(t);
+          this.apply(t, { ...th.hit, x: th.x - th.vx * 0.05, y: th.y });
+          th.vx *= COMBAT.bowlingSlowdown;
         }
       }
       if (!impact) continue;
       this.thrown.splice(i, 1);
       this.removeLiftable(th.obj);
       th.obj.shatter(th.x, th.y);
-      this.blast(th.x, th.y, th.splash, { ...th.hit, x: th.x - th.vx * 0.05, y: th.y }, true);
+      const splashHits = this.blastExcept(th.x, th.y, th.splash, { ...th.hit, x: th.x - th.vx * 0.05, y: th.y }, th.pins);
+      this.hooks.onThrowLanded?.(th.pins.filter((p) => p.countsAsEnemy).length + splashHits, th.x, th.y);
     }
   }
 }

@@ -9,4 +9,8 @@ export const COMBAT = {
   throwSpinRadPerSec: 9,
   thrownHitRadius: 12,
   throwMaxMs: 2600,
+  /** A throw keeps this much of its speed after bowling over each enemy. */
+  bowlingSlowdown: 0.82,
+  /** STRIKE!: a throw that bowls over at least this many enemies. */
+  strikeHits: 2,
 } as const;

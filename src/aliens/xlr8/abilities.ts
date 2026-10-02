@@ -20,6 +20,10 @@ interface PendingCut {
   at: number;
   dir: 1 | -1;
   swap: boolean;
+  /** Enemies the dash passed through. */
+  count: number;
+  /** The comic-panel freeze already played for this cut. */
+  frozen: boolean;
 }
 
 /**
@@ -46,6 +50,7 @@ export class Xlr8Abilities implements FormAbilities {
   private airDashUsed = false;
   private invulnUntil = 0;
   private dashKey: object | null = null;
+  private dashMarks = 0;
   private swapDash = false;
   private dodged = false;
   private readonly pending: PendingCut[] = [];
@@ -102,6 +107,7 @@ export class Xlr8Abilities implements FormAbilities {
     this.invulnUntil = ctx.now + D.invulnMs;
     if (!player.grounded) this.airDashUsed = true;
     this.dashKey = {};
+    this.dashMarks = 0;
     this.swapDash = swap;
     this.dodged = false;
     this.strikeCount = 0;
@@ -124,7 +130,7 @@ export class Xlr8Abilities implements FormAbilities {
     a.h = D.sweep.height;
     a.x = player.x - a.w / 2;
     a.y = player.centerY - a.h / 2;
-    ctx.combat.mark(a, this.dashKey);
+    this.dashMarks += ctx.combat.mark(a, this.dashKey);
   }
 
   private endDash(ctx: AbilityContext): void {
@@ -133,7 +139,7 @@ export class Xlr8Abilities implements FormAbilities {
     player.setVelocity(this.dashDir * XLR8_MOTOR.runSpeed * D.exitSpeed, this.dashVy < 0 ? this.dashVy * 0.35 : 0);
     player.squash(0.8, 1.2);
     this.dashReadyAt = ctx.now + D.cooldownMs;
-    if (this.dashKey) this.pending.push({ key: this.dashKey, at: ctx.now + D.detonateDelayMs, dir: this.dashDir, swap: this.swapDash });
+    if (this.dashKey) this.pending.push({ key: this.dashKey, at: ctx.now + D.detonateDelayMs, dir: this.dashDir, swap: this.swapDash, count: this.dashMarks, frozen: false });
     this.dashKey = null;
   }
 
@@ -142,8 +148,19 @@ export class Xlr8Abilities implements FormAbilities {
     for (let i = this.pending.length - 1; i >= 0; i--) {
       const cut = this.pending[i];
       if (!all && ctx.now < cut.at) continue;
-      this.pending.splice(i, 1);
       const { player, fx } = ctx;
+      if (!all && !cut.frozen && cut.count >= XLR8.multiCut.minTargets) {
+        // Four or more in one dash: the world freezes into a comic panel first; the cut lands right after.
+        cut.frozen = true;
+        cut.at = ctx.now + 1;
+        const points = ctx.combat.markedPoints(cut.key);
+        if (points.length >= XLR8.multiCut.minTargets) {
+          fx.comicFreeze(points.length, player.x, player.centerY, cut.dir, C.light, points, XLR8.multiCut.freezeMs);
+          ctx.notify('multiCut');
+          continue;
+        }
+      }
+      this.pending.splice(i, 1);
       const hits = ctx.combat.strikeMarked(
         cut.key,
         { damage: D.damage, kind: 'melee', x: player.x, y: player.centerY, knockback: D.knockback, heavy: true },
@@ -286,7 +303,7 @@ export class Xlr8Abilities implements FormAbilities {
 
   onExit(ctx: AbilityContext): void {
     this.wind.stop();
-    if (this.dashKey) this.pending.push({ key: this.dashKey, at: 0, dir: this.dashDir, swap: this.swapDash });
+    if (this.dashKey) this.pending.push({ key: this.dashKey, at: 0, dir: this.dashDir, swap: this.swapDash, count: this.dashMarks, frozen: true });
     this.dashKey = null;
     this.resolveCuts(ctx, true);
   }

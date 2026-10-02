@@ -77,6 +77,8 @@ export interface CombatApi {
   blast(x: number, y: number, radius: number, hit: Hit, clearsProjectiles: boolean): number;
   /** Tags every target inside `area` under `key` without hurting it yet. Returns how many were newly tagged. */
   mark(area: Rect, key: object): number;
+  /** Centres of the live targets tagged under `key` (for effects before the strike). */
+  markedPoints(key: object): Array<{ x: number; y: number }>;
   /** Hits every target tagged under `key` at once, then forgets them. `onEach` gets each target's centre. */
   strikeMarked(key: object, hit: Hit, onEach?: (x: number, y: number) => void): number;
   /** Sends a shockwave along the ground from (x, feetY) in direction `dir`. */
@@ -104,6 +106,11 @@ export interface FxApi {
   speedLine(x: number, y: number, dir: 1 | -1, color: number): void;
   /** A crack decal on the ground that fades out. `size` 0..1. */
   crack(x: number, feetY: number, size: number): void;
+  /**
+   * Freezes the world into a comic panel for `ms` (XLR8's multi-cut): speed
+   * lines at (x, y), a slash across every target and an "X5 CUT!" caption.
+   */
+  comicFreeze(count: number, x: number, y: number, dir: 1 | -1, color: number, targets: ReadonlyArray<{ x: number; y: number }>, ms: number): void;
 }
 
 /** Read-only level queries for abilities that react to terrain. */

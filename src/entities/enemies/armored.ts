@@ -88,7 +88,7 @@ export class ArmoredBrain implements DroneBrain {
         const dir = d.memo.ramDir ?? 1;
         const len = (A.ramSpeed * A.ramMs) / 1000;
         const alpha = 0.35 + (blinkOn(d.stateT, 90) ? 0.35 : 0.1);
-        w.telegraph.rect(dir > 0 ? d.x : d.x - len, d.y - A.body.height / 2, len, A.body.height, PALETTE.enemy, alpha * 0.35);
+        w.telegraph.zone(dir > 0 ? d.x : d.x - len, d.y - A.body.height / 2, len, A.body.height, PALETTE.enemy, alpha, d.stateT * 0.05, dir as 1 | -1);
         w.telegraph.dashed(d.x, d.y, d.x + dir * len, d.y, PALETTE.enemy, alpha, d.stateT * 0.1, 2);
         if (d.stateT >= A.ramTelegraphMs) {
           d.setCharging(false);

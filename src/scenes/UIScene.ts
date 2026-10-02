@@ -19,6 +19,7 @@ import { shakeCamera } from '../systems/Accessibility';
 import { SplitDisplay } from '../ui/SplitDisplay';
 import { playSfx } from '../systems/audio/Sfx';
 import { DialogBox } from '../ui/DialogBox';
+import { ComicPanel } from '../ui/ComicPanel';
 import { MISFIRE, SWAP } from '../config/omnitrix';
 import { frameView } from '../ui/view';
 
@@ -34,6 +35,7 @@ export class UIScene extends Phaser.Scene {
   private letterbox!: Letterbox;
   private splits!: SplitDisplay;
   private dialog!: DialogBox;
+  private comic!: ComicPanel;
   private vignette!: Phaser.GameObjects.Image;
   private readonly pops: (Phaser.GameObjects.BitmapText | null)[] = [];
   private hp: number = PLAYER.maxHealth;
@@ -60,6 +62,7 @@ export class UIScene extends Phaser.Scene {
     this.letterbox = new Letterbox(this);
     this.splits = new SplitDisplay(this, 54);
     this.dialog = new DialogBox(this);
+    this.comic = new ComicPanel(this, frame);
     // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
     frame.onResize((w) => {
       this.vignette.setX(frame.left).setScale(w / 320, 2);
@@ -128,6 +131,8 @@ export class UIScene extends Phaser.Scene {
       this.popText(`+${Math.round(p.bonusMs / 1000)}S`, PALETTE.gold, 2);
     }, this);
     on('hud:omnitrixSymbol', (p) => this.banner.omnitrixSymbol(p.color, p.big), this);
+    on('hud:strike', (p) => this.banner.strike(p.hits), this);
+    on('hud:comicPanel', (p) => this.comic.show(p.count, p.x, p.y, p.dir, p.color, p.ms), this);
     on('player:health', (p) => {
       this.hp = p.hp;
       this.health.setHealth(p.hp, p.delta);
@@ -141,6 +146,7 @@ export class UIScene extends Phaser.Scene {
       this.prompts.clearAll();
       this.dialog.clear();
       this.combo.hide();
+      this.comic.hide();
     }, this);
     on('combo:update', (p) => this.combo.set(p.count, this.time.now, p.forms.map((id) => ({ icon: getForm(id).hudIcon, color: getForm(id).theme.color }))), this);
     on('combo:tag', (p) => {
@@ -204,6 +210,7 @@ export class UIScene extends Phaser.Scene {
     this.combo.update(delta, now);
     this.splits.update(now);
     this.dialog.update(delta, now);
+    this.comic.update(delta);
 
     const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
     const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;

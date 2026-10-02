@@ -178,7 +178,7 @@ export class BossHazards {
       bomb.warnLeft -= dtMs;
       const t = 1 - Math.max(0, bomb.warnLeft) / BOSS.rain.warnMs;
       const pulse = blinkOn(now, t > 0.7 ? 60 : 120);
-      this.telegraph.circle(bomb.x, this.floorY - 2, BOSS.rain.radius * (0.4 + t * 0.6), PALETTE.enemy, pulse ? 0.9 : 0.4);
+      this.telegraph.target(bomb.x, this.floorY - 2, BOSS.rain.radius * (0.4 + t * 0.6), PALETTE.enemy, pulse ? 0.9 : 0.4);
       this.telegraph.rect(bomb.x - BOSS.rain.radius, this.floorY - 2, BOSS.rain.radius * 2, 2, PALETTE.enemy, 0.3 + t * 0.6);
       if (!bomb.falling && bomb.warnLeft <= fallTime * 1000) {
         bomb.falling = true;

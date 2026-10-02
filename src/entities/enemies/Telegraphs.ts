@@ -5,7 +5,8 @@ import { TEX } from '../../scenes/preload/assetKeys';
 /**
  * Immediate-mode warning visuals (aim lines, target reticles, danger zones).
  * Cleared every frame; enemies redraw what they are about to do. Always emissive
- * so a telegraph is never hidden by the night.
+ * so a telegraph is never hidden by the night. Danger zones always carry a
+ * shape cue (stripes, chevrons or a cross) so they read without colour.
  */
 export class Telegraphs {
   private readonly g: Phaser.GameObjects.Graphics;
@@ -47,6 +48,65 @@ export class Telegraphs {
   rect(x: number, y: number, w: number, h: number, color: number, alpha: number): void {
     this.g.fillStyle(color, alpha);
     this.g.fillRect(x, y, w, h);
+  }
+
+  /**
+   * A danger zone that doesn't rely on colour alone: a tinted fill with bold
+   * diagonal hazard stripes (they crawl with `phase`), or chevrons pointing
+   * the way the attack will travel when `dir` is given. `strength` (0..1)
+   * scales how loudly it reads as the attack gets close.
+   */
+  zone(x: number, y: number, w: number, h: number, color: number, strength: number, phase = 0, dir: 1 | -1 | 0 = 0): void {
+    if (w <= 0 || h <= 0) return;
+    const a = Math.max(0, Math.min(1, strength));
+    this.g.fillStyle(color, 0.06 + a * 0.12);
+    this.g.fillRect(x, y, w, h);
+    this.g.lineStyle(1, color, 0.35 + a * 0.5);
+    this.g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    if (dir !== 0) this.chevrons(x, y, w, h, color, 0.3 + a * 0.6, phase, dir);
+    else this.stripes(x, y, w, h, color, 0.18 + a * 0.4, phase);
+  }
+
+  /** A circular impact marker with a cross through it (bombs, landings). */
+  target(x: number, y: number, r: number, color: number, alpha: number): void {
+    this.g.lineStyle(1, color, alpha);
+    this.g.strokeCircle(x, y, r);
+    const k = r * 0.62;
+    this.g.lineStyle(2, color, alpha * 0.85);
+    this.g.lineBetween(x - k, y - k, x + k, y + k);
+    this.g.lineBetween(x - k, y + k, x + k, y - k);
+  }
+
+  /** 45-degree hazard stripes clipped to the rectangle. */
+  private stripes(x: number, y: number, w: number, h: number, color: number, alpha: number, phase: number): void {
+    const gap = 9;
+    this.g.lineStyle(3, color, alpha);
+    const offset = ((phase % gap) + gap) % gap;
+    // Lines x - y = c, swept across the rectangle.
+    for (let c = x - y - h + offset - gap; c <= x + w - y; c += gap) {
+      // Intersect x = y + c with the rectangle [x, x+w] x [y, y+h].
+      const y0 = Math.max(y, x - c);
+      const y1 = Math.min(y + h, x + w - c);
+      if (y1 <= y0) continue;
+      this.g.lineBetween(y0 + c, y0, y1 + c, y1);
+    }
+  }
+
+  /** Rows of chevrons (> > >) marching in the attack's direction. */
+  private chevrons(x: number, y: number, w: number, h: number, color: number, alpha: number, phase: number, dir: 1 | -1): void {
+    const step = 16;
+    const half = Math.min(h / 2 - 1, 6);
+    if (half < 2) return;
+    const cy = y + h / 2;
+    const offset = ((phase % step) + step) % step;
+    this.g.lineStyle(2, color, alpha);
+    for (let i = -1; i * step < w + step; i++) {
+      const tip = dir > 0 ? x + i * step + offset : x + w - i * step - offset;
+      const back = tip - dir * half;
+      if (Math.min(tip, back) < x || Math.max(tip, back) > x + w) continue;
+      this.g.lineBetween(back, cy - half, tip, cy);
+      this.g.lineBetween(tip, cy, back, cy + half);
+    }
   }
 
   circle(x: number, y: number, r: number, color: number, alpha: number, filled = false): void {

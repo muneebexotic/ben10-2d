@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeRank, computeScore, createRunStats, formatTime, cloneRunStats } from '../src/systems/RunStats';
+import { computeRank, computeScore, createRunStats, formatTime, cloneRunStats, sanitizeRunStats, tagTeamPoints } from '../src/systems/RunStats';
 import { ComboCounter } from '../src/systems/Combo';
 import { SCORING } from '../src/config/scoring';
 
@@ -119,5 +119,37 @@ describe('ComboCounter', () => {
     expect(combo.newContributor).toBe(false);
     expect(combo.contributors).toEqual([]);
     expect(combo.count).toBe(1);
+  });
+});
+
+describe('switching mastery', () => {
+  it('swaps add a little score, capped', () => {
+    const base = createRunStats(3);
+    base.timeMs = SCORING.parTimeMs;
+    const score = computeScore(base);
+    expect(computeScore({ ...base, swaps: 3 })).toBe(score + 3 * SCORING.swapBonus);
+    expect(computeScore({ ...base, swaps: 1000 })).toBe(score + SCORING.swapBonusCap);
+  });
+
+  it('the best tag team pays per form past the first', () => {
+    expect(tagTeamPoints(0)).toBe(0);
+    expect(tagTeamPoints(1)).toBe(0);
+    expect(tagTeamPoints(3)).toBe(2 * SCORING.tagTeamBonusPerForm);
+  });
+
+  it('a longer chapter can set its own par', () => {
+    const stats = createRunStats(3);
+    stats.timeMs = 400_000;
+    expect(computeScore(stats, 420_000)).toBeGreaterThan(computeScore(stats));
+  });
+
+  it('old resume points without the new counters still load', () => {
+    const raw = { ...createRunStats(3) } as Record<string, unknown>;
+    delete raw.swaps;
+    delete raw.strikes;
+    const back = sanitizeRunStats(raw)!;
+    expect(back.swaps).toBe(0);
+    expect(back.strikes).toBe(0);
+    expect(back.multiCuts).toBe(0);
   });
 });

@@ -59,6 +59,10 @@ export interface GameEvents {
   /** A new form joined a live combo (2 or more forms in it). */
   'combo:tag': { forms: readonly string[]; refundMs: number };
   'combo:drop': { count: number };
+  /** A thrown enemy bowled over `hits` others. */
+  'hud:strike': { hits: number };
+  /** XLR8's dash cut `count` enemies at once: a comic-panel freeze. `x`/`y` are screen coordinates of XLR8. */
+  'hud:comicPanel': { count: number; x: number; y: number; dir: 1 | -1; color: number; ms: number };
   /** `reachableCards`: cards that exist this run; the rest of `totalCards` wait behind a later alien. */
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number; reachableCards: number };
   'card:collected': { id: string; found: number; total: number };

@@ -49,6 +49,7 @@ const PHASE_BAGS: AttackKind[][] = [
 /** Chapter 1 boss: a Vilgax hunter-killer drone. Two phases, every attack telegraphed. */
 export class HunterDrone implements Damageable, Hazard {
   readonly countsAsEnemy = true;
+  readonly stopsThrows = true;
   readonly damage = BOSS.contactDamage;
   x: number;
   y: number;

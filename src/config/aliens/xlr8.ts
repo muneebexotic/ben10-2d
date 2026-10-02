@@ -69,6 +69,11 @@ export const XLR8 = {
     hitStopMs: 90,
     sweep: { width: 28, height: 40 },
   },
+  /** One dash cutting this many enemies freezes the world into a comic panel before they all burst. */
+  multiCut: {
+    minTargets: 4,
+    freezeMs: 560,
+  },
   /** Dodging a shot mid-dash: the world slows for a beat and the dash comes straight back. */
   tooSlow: {
     slowMoScale: 0.25,

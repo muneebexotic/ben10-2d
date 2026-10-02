@@ -38,6 +38,8 @@ export interface Damageable {
   readonly lastDamage?: number;
   /** Aim assist ignores it (Hornets scramble targeting). */
   readonly evasive?: boolean;
+  /** Thrown objects stop on it instead of bowling through (bosses, big machines). */
+  readonly stopsThrows?: boolean;
 }
 
 /** Something a strong alien can pick up and throw: a stunned drone, a boulder. */
