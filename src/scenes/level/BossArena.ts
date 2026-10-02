@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import { BOSS } from '../../config/boss';
 import { CAMERA, DEPTH, LIGHTING, TILE } from '../../config/constants';
 import type { DroneKind, EntitySpawn } from '../../levels/types';
 import { BossHazards } from '../../entities/bosses/BossHazards';
-import { HunterDrone, type BossWorld } from '../../entities/bosses/HunterDrone';
+import type { BossWorld } from '../../entities/bosses/HunterDrone';
+import type { ArenaBoss } from '../../entities/bosses/ArenaBoss';
+import { BOSS_KINDS } from '../../entities/bosses/bossKinds';
 import type { Player } from '../../entities/Player';
 import type { Projectiles } from '../../entities/Projectiles';
 import type { Telegraphs } from '../../entities/enemies/Telegraphs';
@@ -46,12 +47,14 @@ export interface ArenaDeps {
   /** The Vilgax hologram plays once per run. */
   hologramSeen(): boolean;
   onHologramSeen(): void;
+  /** A hint at the bottom of the screen (once per id). */
+  tip(id: string, text: string, ms: number): void;
 }
 
-/** Locks Ben into the crash site, runs the boss intro and hands the fight to the HunterDrone. */
+/** Locks Ben into the boss's arena, runs Vilgax's hologram and the boss's entrance, then hands over the fight. */
 export class BossArena {
   started = false;
-  boss: HunterDrone | null = null;
+  boss: ArenaBoss | null = null;
   private hazards: BossHazards | null = null;
   private hologram: VilgaxHologram | null = null;
   private readonly walls: Phaser.Physics.Arcade.Image[] = [];
@@ -66,7 +69,11 @@ export class BossArena {
   ) {
     this.left = spawn.arenaFrom * TILE;
     this.right = spawn.arenaTo * TILE;
-    this.floorY = 24 * TILE;
+    this.floorY = (spawn.floor ?? 24) * TILE;
+  }
+
+  private get kind() {
+    return BOSS_KINDS[this.spawn.kind ?? 'hunter'];
   }
 
   get fighting(): boolean {
@@ -136,13 +143,14 @@ export class BossArena {
       d.player.controlsEnabled = false;
       d.player.setVelocityX(0);
       music.stop(500);
-      this.hologram = new VilgaxHologram({ scene, fx: d.fx, lighting: d.lighting, say: (t, ms) => d.say(t, ms) }, (this.left + this.right) / 2, this.floorY);
+      const { hologram: lines, portrait } = this.kind;
+      this.hologram = new VilgaxHologram({ scene, fx: d.fx, lighting: d.lighting, say: (t, ms) => d.say(t, ms), lines, portrait }, (this.left + this.right) / 2, this.floorY);
     } else {
       this.beginBoss();
     }
   }
 
-  /** The Hunter-Killer drops in: boss bar, music, and the fight starts after its intro. */
+  /** The boss makes its entrance: boss bar, music, and the fight starts after its intro. */
   private beginBoss(): void {
     const d = this.d;
     const { scene, combat } = d;
@@ -165,22 +173,31 @@ export class BossArena {
       dropPickup: (x, y) => this.d.dropPickup(x, y),
       onPhase2: () => {
         this.d.setAlarm(true);
-        EventBus.emit('hud:banner', { title: 'IT\'S ANGRY NOW!', color: 0xff3048, durationMs: 1400, style: 'slam' });
+        EventBus.emit('hud:banner', { title: this.boss?.phase2Title ?? '', color: 0xff3048, durationMs: 1400, style: 'slam' });
       },
       onHealth: (ratio, phase) => EventBus.emit('boss:health', { ratio, phase }),
       onDefeated: (x, y) => this.defeated(x, y),
       threat: (at) => this.d.threat(this, at),
       cancelThreat: () => this.d.cancelThreat(this),
+      tip: (id, text, ms) => this.d.tip(id, text, ms),
     };
-    this.boss = new HunterDrone(scene, world, (this.left + this.right) / 2);
-    combat.addTarget(this.boss);
-    combat.addHazard(this.boss);
+    const boss = this.kind.create(scene, world, (this.left + this.right) / 2);
+    this.boss = boss;
+    combat.addTarget(boss);
+    combat.addHazard(boss);
+    for (const t of boss.extraTargets) combat.addTarget(t);
+    for (const h of boss.extraHazards) combat.addHazard(h);
+    for (const l of boss.liftables) combat.addLiftable(l);
 
-    music.play('boss');
-    EventBus.emit('boss:show', { name: BOSS.name, subtitle: BOSS.subtitle });
+    music.play(this.kind.music);
+    EventBus.emit('boss:show', { name: boss.name, subtitle: boss.subtitle });
     EventBus.emit('boss:health', { ratio: 1, phase: 0 });
     EventBus.emit('hud:letterbox', { visible: true });
-    scene.time.delayedCall(BOSS.introMs - 400, () => EventBus.emit('hud:letterbox', { visible: false }));
+    const clearLetterbox = () => {
+      if (boss.introducing) scene.time.delayedCall(100, clearLetterbox);
+      else EventBus.emit('hud:letterbox', { visible: false });
+    };
+    scene.time.delayedCall(600, clearLetterbox);
   }
 
   destroy(): void {

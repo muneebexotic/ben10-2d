@@ -358,7 +358,9 @@ export class Combat implements CombatApi {
       this.thrown.splice(i, 1);
       this.removeLiftable(th.obj);
       th.obj.shatter(th.x, th.y);
-      const splashHits = this.blastExcept(th.x, th.y, th.splash, { ...th.hit, x: th.x - th.vx * 0.05, y: th.y }, th.pins);
+      // The landing blast spares the thrown thing itself (a thrown boss isn't hit twice).
+      const spared = th.obj.self ? [...th.pins, th.obj.self] : th.pins;
+      const splashHits = this.blastExcept(th.x, th.y, th.splash, { ...th.hit, x: th.x - th.vx * 0.05, y: th.y }, spared);
       this.hooks.onThrowLanded?.(th.pins.filter((p) => p.countsAsEnemy).length + splashHits, th.x, th.y);
     }
   }

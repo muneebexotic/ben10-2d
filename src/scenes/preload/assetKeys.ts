@@ -24,6 +24,7 @@ import { SILHOUETTE_ASSETS } from './silhouettes';
 import * as hw from './highway';
 import * as veh from './vehicles';
 import * as portraits from './portraits';
+import * as rb from './roadbreaker';
 
 /**
  * Keys for every shared texture (world, enemies, UI, human Ben). Each alien
@@ -160,6 +161,12 @@ export const TEX = {
   haulerCab: 'vehicle-hauler-cab',
   haulerTrailer: 'vehicle-hauler-trailer',
   tire: 'prop-tire',
+  rbTruck: 'boss-rb-truck',
+  rbWheel: 'boss-rb-wheel',
+  rbLegs: 'boss-rb-legs',
+  rbTorso: 'boss-rb-torso',
+  rbArm: 'boss-rb-arm',
+  rbPlate: 'boss-rb-plate',
   pothole: 'prop-pothole',
   portraitMax: 'portrait-max',
   portraitGwen: 'portrait-gwen',
@@ -312,6 +319,12 @@ export const ASSETS: AssetDef[] = [
   sheet(TEX.haulerCab, veh.HAULER_CAB.w, veh.HAULER_CAB.h, 2, veh.drawHaulerCab),
   sheet(TEX.haulerTrailer, veh.HAULER_TRAILER.w, veh.HAULER_TRAILER.h, 2, veh.drawHaulerTrailer),
   one(TEX.tire, 16, 16, veh.drawTire),
+  sheet(TEX.rbTruck, rb.RB_TRUCK.w, rb.RB_TRUCK.h, 4, rb.drawRbTruck),
+  sheet(TEX.rbWheel, rb.RB_WHEEL.w, rb.RB_WHEEL.h, 3, rb.drawRbWheel),
+  sheet(TEX.rbLegs, rb.RB_LEGS.w, rb.RB_LEGS.h, 4, rb.drawRbLegs),
+  sheet(TEX.rbTorso, rb.RB_TORSO.w, rb.RB_TORSO.h, 3, rb.drawRbTorso),
+  one(TEX.rbArm, rb.RB_ARM.w, rb.RB_ARM.h, rb.drawRbArm),
+  sheet(TEX.rbPlate, rb.RB_PLATE.w, rb.RB_PLATE.h, 2, rb.drawRbPlate),
   one(TEX.pothole, 30, 6, veh.drawPothole),
   one(TEX.portraitMax, portraits.PORTRAIT.w, portraits.PORTRAIT.h, portraits.drawPortraitMax),
   one(TEX.portraitGwen, portraits.PORTRAIT.w, portraits.PORTRAIT.h, portraits.drawPortraitGwen),
@@ -351,5 +364,8 @@ export const ANIMS: AnimDef[] = [
   { key: 'boss-arm-snap', texture: TEX.bossArm, frames: [0, 1, 0], frameRate: 10, repeat: 0 },
   { key: 'rustbucket-drive', texture: TEX.rustbucket, frames: [0, 1], frameRate: 14, repeat: -1 },
   { key: 'convoy-drive', texture: TEX.convoy, frames: [0, 1], frameRate: 14, repeat: -1 },
+  { key: 'rb-drive', texture: TEX.rbTruck, frames: [0, 1], frameRate: 10, repeat: -1 },
+  { key: 'rb-wheel', texture: TEX.rbWheel, frames: [0, 1], frameRate: 16, repeat: -1 },
+  { key: 'rb-walk', texture: TEX.rbLegs, frames: [1, 0, 2, 0], frameRate: 6, repeat: -1 },
   { key: 'neon-flicker', texture: TEX.neon, frames: [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0], frameRate: 8, repeat: -1 },
 ];

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { DEPTH } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
-import { STORY } from '../../config/story';
+import { STORY, type StoryLine } from '../../config/story';
 import { a11y } from '../../systems/Accessibility';
 import { EventBus } from '../../systems/EventBus';
 import type { Fx } from '../../systems/Fx';
@@ -17,6 +17,10 @@ export interface HologramDeps {
   lighting: Lighting;
   /** Ben's reply goes in his world speech bubble. */
   say(text: string, ms: number): void;
+  /** What he says (Chapter 1's speech when left out). */
+  lines?: readonly StoryLine[];
+  /** His portrait in the dialogue box (the chapters with portraits). */
+  portrait?: string;
 }
 
 type Phase = 'rise' | 'talk' | 'collapse' | 'done';
@@ -131,7 +135,7 @@ export class VilgaxHologram {
 
   private nextLine(): void {
     this.line++;
-    const line = STORY.vilgaxLines[this.line];
+    const line = (this.d.lines ?? STORY.vilgaxLines)[this.line];
     if (!line) {
       this.collapse();
       return;
@@ -141,7 +145,7 @@ export class VilgaxHologram {
       EventBus.emit('hud:dialogClear');
       this.d.say(line.text, line.ms);
     } else {
-      EventBus.emit('hud:dialog', { speaker: 'VILGAX', text: line.text, color: PALETTE.enemy, voicePitch: 1, skip: true });
+      EventBus.emit('hud:dialog', { speaker: 'VILGAX', text: line.text, color: PALETTE.enemy, voicePitch: 1, skip: true, portrait: this.d.portrait });
     }
   }
 

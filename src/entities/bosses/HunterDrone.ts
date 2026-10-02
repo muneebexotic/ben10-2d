@@ -11,7 +11,8 @@ import type { TimeController } from '../../systems/TimeController';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Telegraphs } from '../enemies/Telegraphs';
 import type { Projectiles } from '../Projectiles';
-import type { Damageable, Hazard, Hit, HitResult, Rect } from '../types';
+import type { Damageable, Hazard, Hit, HitResult, Liftable, Rect } from '../types';
+import type { ArenaBoss } from './ArenaBoss';
 import { ATTACKS, newAttack, type AttackKind, type AttackState } from './bossAttacks';
 import type { BossHazards } from './BossHazards';
 import { blinkOn } from '../../systems/Accessibility';
@@ -36,6 +37,8 @@ export interface BossWorld {
   /** The boss's attack lands at game time `at` (perfect transform timing). Boss attacks are aimed at Ben, so range is unlimited. */
   threat(at: number): void;
   cancelThreat(): void;
+  /** A hint at the bottom of the screen (once per id). */
+  tip(id: string, text: string, ms: number): void;
 }
 
 type BossState = 'intro' | 'idle' | 'attack' | 'transition' | 'dying' | 'dead';
@@ -47,7 +50,15 @@ const PHASE_BAGS: AttackKind[][] = [
 ];
 
 /** Chapter 1 boss: a Vilgax hunter-killer drone. Two phases, every attack telegraphed. */
-export class HunterDrone implements Damageable, Hazard {
+export class HunterDrone implements ArenaBoss {
+  readonly name = BOSS.name;
+  readonly subtitle = BOSS.subtitle;
+  readonly maxHp = BOSS.maxHp;
+  readonly phase2Title = "IT'S ANGRY NOW!";
+  readonly defeatTitle = 'DRONE DESTROYED!';
+  readonly extraTargets: readonly Damageable[] = [];
+  readonly extraHazards: readonly Hazard[] = [];
+  readonly liftables: readonly Liftable[] = [];
   readonly countsAsEnemy = true;
   readonly stopsThrows = true;
   readonly damage = BOSS.contactDamage;

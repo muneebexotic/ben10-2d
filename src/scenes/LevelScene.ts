@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { BOSS } from '../config/boss';
 import { COMBO, DEPTH, FX, LIGHTING, PHYSICS, TILE } from '../config/constants';
 import { lerpColor, PALETTE } from '../config/palette';
 import { ACCESSIBILITY } from '../config/accessibility';
@@ -64,6 +63,7 @@ import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
 import { MISFIRE, PERFECT_TRANSFORM } from '../config/omnitrix';
 import { PerfectWindow } from '../systems/PerfectTransform';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
+import { STORY_BEATS } from '../config/story';
 import { saveSystem } from '../systems/SaveSystem';
 import { session } from '../systems/Session';
 import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
@@ -562,6 +562,7 @@ export class LevelScene extends Phaser.Scene {
       say: (text, ms) => this.speech.show(text, ms),
       hologramSeen: () => this.stats.sawVilgax,
       onHologramSeen: () => (this.stats.sawVilgax = true),
+      tip: (id, text, ms) => this.tutorial.tip(id, text, ms, 8),
     });
   }
 
@@ -1062,13 +1063,17 @@ export class LevelScene extends Phaser.Scene {
     this.fx.shake(FX.shakeHeavy * 1.5, 900);
     this.fx.ring(x, y, PALETTE.white, 300, 1000);
     music.stop(400);
+    const outro = this.level.story?.outro ?? [];
     this.time.delayedCall(900, () => {
       music.play('victory');
       this.speech.show('AND THAT IS HOW IT\'S DONE!', 2400);
-      EventBus.emit('hud:banner', { title: 'DRONE DESTROYED!', subtitle: `${this.level.name} COMPLETE`, color: PALETTE.gold, durationMs: 2600, style: 'slam' });
+      EventBus.emit('hud:banner', { title: this.arena?.boss?.defeatTitle ?? 'BOSS DOWN!', subtitle: `${this.level.name} COMPLETE`, color: PALETTE.gold, durationMs: 2600, style: 'slam' });
     });
+    // The family's last word (portraits in the box) before the results.
+    if (outro.length > 0) this.time.delayedCall(STORY_BEATS.bossOutroAt, () => this.dialogue.play(outro));
+    const outroMs = outro.reduce((sum, line) => sum + line.ms, 0);
     this.flushPlayTime();
-    this.time.delayedCall(3800, () => {
+    this.time.delayedCall(outro.length > 0 ? STORY_BEATS.bossOutroAt + outroMs + 500 : 3800, () => {
       EventBus.emit('level:complete', { stats: cloneRunStats(this.stats) });
       this.scene.stop(SCENES.ui);
       this.scene.stop(SCENES.touch);
@@ -1111,8 +1116,8 @@ export class LevelScene extends Phaser.Scene {
     this.emitFormHealth(0);
     EventBus.emit('stats:update', this.statsPayload());
     if (arena?.fighting && arena.boss) {
-      EventBus.emit('boss:show', { name: BOSS.name, subtitle: BOSS.subtitle });
-      EventBus.emit('boss:health', { ratio: arena.boss.hp / BOSS.maxHp, phase: arena.boss.phase });
+      EventBus.emit('boss:show', { name: arena.boss.name, subtitle: arena.boss.subtitle });
+      EventBus.emit('boss:health', { ratio: arena.boss.hp / arena.boss.maxHp, phase: arena.boss.phase });
     } else {
       EventBus.emit('boss:hide');
     }

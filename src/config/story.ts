@@ -21,6 +21,14 @@ export const STORY = {
     { who: 'ben', text: 'FINDERS KEEPERS, SQUID FACE!', ms: 1700 },
     { who: 'vilgax', text: 'THEN BE DESTROYED.', ms: 1300 },
   ] as StoryLine[],
+  /** Chapter 2: the projector rises out of the wrecked hauler's lot. */
+  vilgaxLinesRoadTrip: [
+    { who: 'vilgax', text: 'YOU DESTROYED MY HUNTER, BOY. A LUCKY ACCIDENT.', ms: 2500 },
+    { who: 'ben', text: "OR MAYBE I'M JUST THAT GOOD.", ms: 1600 },
+    { who: 'vilgax', text: 'MY WAR RIG HAS FLATTENED ARMIES. YOUR LITTLE TIN HOUSE ON WHEELS IS NEXT.', ms: 3100 },
+    { who: 'ben', text: "NOBODY CALLS THE RUSTBUCKET A TIN HOUSE, SQUID FACE!", ms: 2000 },
+    { who: 'vilgax', text: 'ROADBREAKER. BRING ME THAT WATCH.', ms: 1700 },
+  ] as StoryLine[],
   /** Aliens in the whole story (GAME_DESIGN.md roster): the "ALIENS x/13" count on save files. */
   rosterSize: 13,
   dialog: {
@@ -41,4 +49,6 @@ export const STORY_BEATS = {
     transformAt: 4500,
     doneAt: 5000,
   },
+  /** After a boss falls: the family's closing lines start this long after the hit. */
+  bossOutroAt: 3300,
 } as const;
