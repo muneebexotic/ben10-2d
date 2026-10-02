@@ -8,6 +8,7 @@ import type { TouchMode } from '../systems/SaveSystem';
 import { bindMuteKey, getSettings, toggleMute, updateSettings } from '../systems/Settings';
 import { MenuList, type MenuItem } from '../ui/MenuList';
 import { pixelText } from '../ui/text';
+import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { SCENES } from './SceneKeys';
 import { DIFFICULTY_IDS, getDifficulty } from '../config/difficulty';
 import { session } from '../systems/Session';
@@ -42,7 +43,8 @@ export class SettingsScene extends Phaser.Scene {
     this.returnTo = data.returnTo ?? SCENES.menu;
     this.slot = data.slot ?? session.slot;
     this.scene.bringToTop();
-    this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.95).setOrigin(0, 0);
+    frameView(this);
+    this.add.rectangle(COVER_X, 0, COVER_W, GAME_HEIGHT, 0x05070f, 0.95).setOrigin(0, 0);
     pixelText(this, GAME_WIDTH / 2, 40, 'SETTINGS', { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
 
     const items: MenuItem[] = [];

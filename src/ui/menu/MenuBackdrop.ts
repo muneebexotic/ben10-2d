@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../../config/constants';
+import { COVER_W, COVER_X, frameView } from '../view';
 import { PALETTE } from '../../config/palette';
 import { MENU } from '../../config/ui';
 import { TEX } from '../../scenes/preload/assetKeys';
@@ -24,21 +25,23 @@ export class MenuBackdrop {
   private readonly stars: Phaser.GameObjects.TileSprite;
 
   constructor(private readonly scene: Phaser.Scene, opts: BackdropOptions = {}) {
-    scene.add.image(0, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
-    this.stars = scene.add.tileSprite(0, 0, GAME_WIDTH, 200, TEX.stars).setOrigin(0, 0);
+    // Every menu sits on this backdrop: it centres the 640 frame on wide screens and covers the whole view.
+    frameView(scene);
+    scene.add.image(COVER_X, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(COVER_W, GAME_HEIGHT);
+    this.stars = scene.add.tileSprite(COVER_X, 0, COVER_W, 200, TEX.stars).setOrigin(0, 0);
     if (opts.moon !== false) {
       scene.add.image(520, 60, TEX.light).setScale(1.8).setAlpha(0.18).setTint(PALETTE.moon).setBlendMode(Phaser.BlendModes.ADD);
       scene.add.image(520, 60, TEX.moon);
     }
-    scene.add.tileSprite(0, 150, GAME_WIDTH, 140, TEX.mountains).setOrigin(0, 0);
-    this.pinesFar = scene.add.tileSprite(0, 190, GAME_WIDTH, 150, TEX.pinesFar).setOrigin(0, 0);
-    this.pines = scene.add.tileSprite(0, 220, GAME_WIDTH, 200, TEX.pinesMid).setOrigin(0, 0);
-    scene.add.rectangle(0, 318, GAME_WIDTH, 60, PALETTE.pineNear).setOrigin(0, 0);
+    scene.add.tileSprite(COVER_X, 150, COVER_W, 140, TEX.mountains).setOrigin(0, 0);
+    this.pinesFar = scene.add.tileSprite(COVER_X, 190, COVER_W, 150, TEX.pinesFar).setOrigin(0, 0);
+    this.pines = scene.add.tileSprite(COVER_X, 220, COVER_W, 200, TEX.pinesMid).setOrigin(0, 0);
+    scene.add.rectangle(COVER_X, 318, COVER_W, 60, PALETTE.pineNear).setOrigin(0, 0);
 
     this.emblem = opts.emblem === false
       ? null
       : scene.add.image(GAME_WIDTH / 2, 92, TEX.hourglass).setTint(PALETTE.omnitrix).setAlpha(0.22).setScale(2.4).setBlendMode(Phaser.BlendModes.ADD);
-    if (opts.dim) scene.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, PALETTE.ink, opts.dim).setOrigin(0, 0);
+    if (opts.dim) scene.add.rectangle(COVER_X, 0, COVER_W, GAME_HEIGHT, PALETTE.ink, opts.dim).setOrigin(0, 0);
     this.update();
   }
 

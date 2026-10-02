@@ -30,6 +30,11 @@ export class DialogBox {
     this.skip = pixelText(scene, GAME_WIDTH - 12, GAME_HEIGHT - 17, '', { originX: 1, originY: 0.5, color: PALETTE.uiDim }).setDepth(950);
   }
 
+  /** Keeps the skip hint in the bottom-right corner of the screen (wide screens). */
+  setRight(right: number): void {
+    this.skip.setX(right - 12);
+  }
+
   show(speaker: string, text: string, color: number, voicePitch = 1, skip = false): void {
     this.full = text;
     this.shown = 0;

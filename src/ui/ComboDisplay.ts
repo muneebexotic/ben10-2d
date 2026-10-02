@@ -25,6 +25,7 @@ export class ComboDisplay {
   private shown = 0;
   private hideAt = 0;
   private pop = 1;
+  private right = GAME_WIDTH;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.count = pixelText(scene, 0, 0, '0', { scale: 3, originX: 1, originY: 0.5, color: PALETTE.gold });
@@ -42,9 +43,16 @@ export class ComboDisplay {
     this.showIcons(forms);
     // A new combo can start while the last one is still fading out.
     this.scene.tweens.killTweensOf(this.root);
-    this.root.setVisible(true).setAlpha(1).setX(GAME_WIDTH - 10);
+    this.root.setVisible(true).setAlpha(1).setX(this.right - 10);
     this.pop = 1.6;
     this.hideAt = now + 2400;
+  }
+
+  /** Moves the counter to the screen's right edge (wide screens). */
+  setRight(right: number): void {
+    this.right = right;
+    this.scene.tweens.killTweensOf(this.root);
+    this.root.setX(right - 10).setAlpha(this.root.visible ? 1 : this.root.alpha);
   }
 
   /** A new form just joined: its icon slams in. */
@@ -57,7 +65,7 @@ export class ComboDisplay {
   }
 
   hide(): void {
-    this.root.setVisible(false).setAlpha(1).setX(GAME_WIDTH - 10);
+    this.root.setVisible(false).setAlpha(1).setX(this.right - 10);
     this.showIcons([]);
   }
 

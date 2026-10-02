@@ -20,6 +20,7 @@ import { SplitDisplay } from '../ui/SplitDisplay';
 import { playSfx } from '../systems/audio/Sfx';
 import { DialogBox } from '../ui/DialogBox';
 import { MISFIRE, SWAP } from '../config/omnitrix';
+import { frameView } from '../ui/view';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -47,6 +48,7 @@ export class UIScene extends Phaser.Scene {
     this.pops.length = 0;
     this.dead = false;
     this.alien = false;
+    const frame = frameView(this);
     this.vignette = this.add.image(0, 0, TEX.vignette).setOrigin(0, 0).setScale(2).setTint(PALETTE.enemy).setAlpha(0);
     this.dial = new OmnitrixDial(this, 30, 32);
     this.health = new HealthDisplay(this, 58, 12, PLAYER.maxHealth);
@@ -58,6 +60,16 @@ export class UIScene extends Phaser.Scene {
     this.letterbox = new Letterbox(this);
     this.splits = new SplitDisplay(this, 54);
     this.dialog = new DialogBox(this);
+    // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
+    frame.onResize((w) => {
+      this.vignette.setX(frame.left).setScale(w / 320, 2);
+      this.dial.setX(frame.left + 30);
+      this.health.setX(frame.left + 58);
+      this.stats.setRight(frame.right);
+      this.combo.setRight(frame.right);
+      this.splits.setRight(frame.right);
+      this.dialog.setRight(frame.right);
+    });
 
     const on = EventBus.on.bind(EventBus);
     on('hud:visible', (p) => {
@@ -166,7 +178,7 @@ export class UIScene extends Phaser.Scene {
     const slot = this.pops.findIndex((p) => !p);
     const i = slot >= 0 ? slot : this.pops.length;
     const y = 44 + i * 11;
-    const t = pixelText(this, 58, y, text, { color, scale });
+    const t = pixelText(this, frameView(this).left + 58, y, text, { color, scale });
     this.pops[i] = t;
     t.setAlpha(0);
     this.tweens.add({ targets: t, alpha: 1, y: y - 4, duration: 120 });

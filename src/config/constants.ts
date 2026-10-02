@@ -1,5 +1,11 @@
+/**
+ * The base frame every screen is laid out on. The scale mode (EXPAND) keeps
+ * the height and widens the view on wide phones (up to GAME_MAX_WIDTH, about
+ * 2.4:1) so they show more level instead of side bars.
+ */
 export const GAME_WIDTH = 640;
 export const GAME_HEIGHT = 360;
+export const GAME_MAX_WIDTH = 864;
 export const TILE = 16;
 
 /** World physics. */

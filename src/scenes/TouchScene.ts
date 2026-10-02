@@ -9,6 +9,7 @@ import { TouchButton, TouchDial, TouchStick } from '../ui/TouchControls';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { getForm, HUMAN_FORM } from '../aliens/registry';
+import { viewWidth } from '../ui/view';
 
 type ButtonId = 'jump' | 'attack' | 'special' | 'pause';
 
@@ -49,12 +50,16 @@ export class TouchScene extends Phaser.Scene {
     const B = TOUCH.buttons;
     this.stick = new TouchStick(this);
     this.buttons = {
-      jump: new TouchButton(this, B.jump.x, B.jump.y, B.jump.r, TEX.touchJump, 'JUMP', PALETTE.omnitrix),
-      attack: new TouchButton(this, B.attack.x, B.attack.y, B.attack.r, TEX.touchPunch, 'ATTACK', PALETTE.fire1),
-      special: new TouchButton(this, B.special.x, B.special.y, B.special.r, TEX.touchRoll, 'SPECIAL', PALETTE.jammer),
-      pause: new TouchButton(this, B.pause.x, B.pause.y, B.pause.r, TEX.touchPause, '', PALETTE.uiDim),
+      jump: new TouchButton(this, 0, B.jump.y, B.jump.r, TEX.touchJump, 'JUMP', PALETTE.omnitrix),
+      attack: new TouchButton(this, 0, B.attack.y, B.attack.r, TEX.touchPunch, 'ATTACK', PALETTE.fire1),
+      special: new TouchButton(this, 0, B.special.y, B.special.r, TEX.touchRoll, 'SPECIAL', PALETTE.jammer),
+      pause: new TouchButton(this, 0, B.pause.y, B.pause.r, TEX.touchPause, '', PALETTE.uiDim),
     };
-    this.dial = new TouchDial(this, B.omnitrix.x, B.omnitrix.y, B.omnitrix.r);
+    this.dial = new TouchDial(this, 0, B.omnitrix.y, B.omnitrix.r);
+    this.layout();
+    const onResize = () => this.layout();
+    this.scale.on(Phaser.Scale.Events.RESIZE, onResize);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, onResize));
 
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (p: Phaser.Input.Pointer) => this.onDown(p));
     this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => this.onMove(p));
@@ -87,6 +92,18 @@ export class TouchScene extends Phaser.Scene {
     this.refreshVisibility();
     // Like the HUD, this scene starts a frame after the level: ask for the current letterbox/HUD state.
     EventBus.emit('hud:ready');
+  }
+
+  /** Right-hand buttons hug the right edge, whatever the screen's width; pause stays top centre. */
+  private layout(): void {
+    const w = viewWidth(this);
+    const B = TOUCH.buttons;
+    this.buttons.jump.moveTo(w - B.jump.right, B.jump.y);
+    this.buttons.attack.moveTo(w - B.attack.right, B.attack.y);
+    this.buttons.special.moveTo(w - B.special.right, B.special.y);
+    this.buttons.pause.moveTo(w / 2, B.pause.y);
+    this.dial.moveTo(w - B.omnitrix.right, B.omnitrix.y);
+    this.releaseAll();
   }
 
   private get enabled(): boolean {
@@ -125,7 +142,7 @@ export class TouchScene extends Phaser.Scene {
       pad.press(PAD_BUTTON[hit.id]);
       return;
     }
-    if (p.x < TOUCH.stick.zoneRight && p.y > TOUCH.stick.zoneTop && !this.stickInUse()) {
+    if (p.x < viewWidth(this) * TOUCH.stick.zoneRightFraction && p.y > TOUCH.stick.zoneTop && !this.stickInUse()) {
       this.tracks.set(p.id, { kind: 'stick' });
       this.stick.grab(p.x, p.y, this.scale.width, this.scale.height);
       return;

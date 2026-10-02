@@ -18,13 +18,19 @@ export class HealthDisplay {
   private lowPulse = 0;
   private theme: Pick<FormTheme, 'color' | 'light' | 'dark'> = { color: PALETTE.fire2, light: PALETTE.fire0, dark: 0x3a1a14 };
 
-  constructor(private readonly scene: Phaser.Scene, private readonly x: number, private readonly y: number, max: number) {
+  constructor(private readonly scene: Phaser.Scene, private x: number, private readonly y: number, max: number) {
     for (let i = 0; i < max; i++) {
       this.hearts.push(scene.add.image(x + i * 11, y, TEX.heart, HEART_FRAMES.full).setOrigin(0, 0).setScale(1));
     }
     this.shieldLabel = pixelText(scene, x, y + 12, 'HEAT', { color: PALETTE.fire1 });
     this.shield = scene.add.graphics();
     this.setVisible(false);
+  }
+
+  /** Moves the hearts and shield bar (pinned to the left screen edge on wide screens). */
+  setX(x: number): void {
+    this.x = x;
+    this.shieldLabel.setX(x);
   }
 
   setVisible(v: boolean): void {

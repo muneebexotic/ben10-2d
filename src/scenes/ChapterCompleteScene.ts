@@ -13,6 +13,7 @@ import { session } from '../systems/Session';
 import { enterMenu, leaveTo } from '../ui/menu/transition';
 import { bindMuteKey } from '../systems/Settings';
 import { pixelText } from '../ui/text';
+import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
@@ -75,8 +76,9 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const d = getDifficulty(difficulty);
 
     enterMenu(this);
-    this.add.image(0, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
-    this.add.tileSprite(0, 0, GAME_WIDTH, 200, TEX.stars).setOrigin(0, 0);
+    frameView(this);
+    this.add.image(COVER_X, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(COVER_W, GAME_HEIGHT);
+    this.add.tileSprite(COVER_X, 0, COVER_W, 200, TEX.stars).setOrigin(0, 0);
     this.rays = this.add.image(GAME_WIDTH / 2, 70, TEX.rays).setScale(5).setAlpha(0.14).setTint(PALETTE.omnitrix).setBlendMode(Phaser.BlendModes.ADD);
     this.add.rectangle(GAME_WIDTH / 2, 176, 420, 200, PALETTE.ink, 0.78).setStrokeStyle(1, PALETTE.omnitrixDark);
     this.add.rectangle(452, 176, 1, 176, PALETTE.omnitrixDark, 0.6);

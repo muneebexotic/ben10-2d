@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEPTH, GAME_HEIGHT, GAME_WIDTH } from '../../config/constants';
+import { DEPTH, GAME_HEIGHT, GAME_MAX_WIDTH as W } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../preload/assetKeys';
 
@@ -23,14 +23,14 @@ export class Parallax {
   private time = 0;
 
   constructor(scene: Phaser.Scene, crashX: number) {
-    scene.add.image(0, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT).setScrollFactor(0).setDepth(DEPTH.sky);
-    this.stars = scene.add.tileSprite(0, 0, GAME_WIDTH, 220, TEX.stars).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.stars);
+    scene.add.image(0, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(W, GAME_HEIGHT).setScrollFactor(0).setDepth(DEPTH.sky);
+    this.stars = scene.add.tileSprite(0, 0, W, 220, TEX.stars).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.stars);
     this.moonGlow = scene.add.image(520, 58, TEX.light).setScrollFactor(0).setDepth(DEPTH.moon).setScale(1.8).setAlpha(0.18).setTint(PALETTE.moon).setBlendMode(Phaser.BlendModes.ADD);
     this.moon = scene.add.image(520, 58, TEX.moon).setScrollFactor(0).setDepth(DEPTH.moon);
 
     // The crash site glows red on the horizon and slides closer as Ben approaches.
     this.crashGlow = scene.add
-      .image(crashX * 0.35 + GAME_WIDTH * 0.5, 0, TEX.crashGlow)
+      .image(crashX * 0.35 + W * 0.37, 0, TEX.crashGlow)
       .setOrigin(0.5, 1)
       .setScale(3, 1.6)
       .setScrollFactor(0.35, 0)
@@ -44,7 +44,7 @@ export class Parallax {
     this.addLayer(scene, TEX.pinesMid, 0.45, 0.28, 250, DEPTH.pinesMid, 0, PALETTE.pineMid);
 
     this.trunks = scene.add
-      .tileSprite(0, GAME_HEIGHT - 40, GAME_WIDTH, 40, TEX.trunks)
+      .tileSprite(0, GAME_HEIGHT - 40, W, 40, TEX.trunks)
       .setOrigin(0, 0)
       .setScrollFactor(0)
       .setDepth(DEPTH.foreground);
@@ -62,10 +62,10 @@ export class Parallax {
     alpha = 1,
   ): void {
     const tex = scene.textures.get(texture).getSourceImage();
-    const sprite = scene.add.tileSprite(0, 0, GAME_WIDTH, tex.height, texture).setOrigin(0, 0).setScrollFactor(0).setDepth(depth).setAlpha(alpha);
+    const sprite = scene.add.tileSprite(0, 0, W, tex.height, texture).setOrigin(0, 0).setScrollFactor(0).setDepth(depth).setAlpha(alpha);
     let fill: Phaser.GameObjects.Rectangle | undefined;
     if (fillColor !== undefined) {
-      fill = scene.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, fillColor).setOrigin(0, 0).setScrollFactor(0).setDepth(depth);
+      fill = scene.add.rectangle(0, 0, W, GAME_HEIGHT, fillColor).setOrigin(0, 0).setScrollFactor(0).setDepth(depth);
     }
     this.layers.push({ sprite, fill, fx, fy, baseY, drift });
   }
@@ -80,8 +80,9 @@ export class Parallax {
     const sy = camera.scrollY;
     this.stars.tilePositionX = sx * 0.02;
     this.stars.y = -sy * 0.02;
-    this.moon.y = 58 - sy * 0.03;
-    this.moonGlow.y = this.moon.y;
+    // The moon keeps its place near the top-right corner, whatever the screen's width.
+    this.moon.setPosition(camera.width - 120, 58 - sy * 0.03);
+    this.moonGlow.setPosition(this.moon.x, this.moon.y);
     this.crashGlow.y = 300 - sy * 0.12;
     for (const l of this.layers) {
       l.sprite.tilePositionX = sx * l.fx + this.time * l.drift;

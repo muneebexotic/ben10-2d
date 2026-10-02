@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEPTH, GAME_HEIGHT, GAME_WIDTH } from '../../config/constants';
+import { DEPTH, GAME_HEIGHT, GAME_MAX_WIDTH as W } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../preload/assetKeys';
 
@@ -15,20 +15,20 @@ export class SimBackdrop {
   private time = 0;
 
   constructor(scene: Phaser.Scene) {
-    scene.add.image(0, 0, TEX.simSky).setOrigin(0, 0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT).setScrollFactor(0).setDepth(DEPTH.sky);
+    scene.add.image(0, 0, TEX.simSky).setOrigin(0, 0).setDisplaySize(W, GAME_HEIGHT).setScrollFactor(0).setDepth(DEPTH.sky);
     this.emblem = scene.add
-      .image(GAME_WIDTH / 2, 120, TEX.hourglass)
+      .image(W / 2, 120, TEX.hourglass)
       .setScrollFactor(0)
       .setDepth(DEPTH.stars)
       .setScale(4)
       .setTint(PALETTE.omnitrix)
       .setAlpha(0.07)
       .setBlendMode(Phaser.BlendModes.ADD);
-    this.grid = scene.add.tileSprite(0, 0, GAME_WIDTH, GAME_HEIGHT, TEX.simGrid).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.mountains).setAlpha(0.3);
-    this.towers = scene.add.tileSprite(0, GAME_HEIGHT - 190, GAME_WIDTH, 120, TEX.simTowers).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.pinesFar);
+    this.grid = scene.add.tileSprite(0, 0, W, GAME_HEIGHT, TEX.simGrid).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.mountains).setAlpha(0.3);
+    this.towers = scene.add.tileSprite(0, GAME_HEIGHT - 190, W, 120, TEX.simTowers).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.pinesFar);
     scene.add
       .particles(0, 0, TEX.px, {
-        x: { min: 0, max: GAME_WIDTH },
+        x: { min: 0, max: W },
         y: GAME_HEIGHT + 4,
         lifespan: { min: 3000, max: 6000 },
         speedY: { min: -40, max: -14 },
@@ -48,6 +48,6 @@ export class SimBackdrop {
     this.grid.tilePositionY = camera.scrollY * 0.3 - this.time * 0.004;
     this.towers.tilePositionX = camera.scrollX * 0.15;
     this.towers.y = GAME_HEIGHT - 190 - camera.scrollY * 0.08;
-    this.emblem.setAngle(Math.sin(this.time * 0.0003) * 6);
+    this.emblem.setX(camera.width / 2).setAngle(Math.sin(this.time * 0.0003) * 6);
   }
 }

@@ -17,6 +17,7 @@ export class SplitDisplay {
   private readonly time: Phaser.GameObjects.BitmapText;
   private readonly delta: Phaser.GameObjects.BitmapText;
   private hideAt = 0;
+  private right = GAME_WIDTH;
 
   constructor(private readonly scene: Phaser.Scene, y: number) {
     this.bg = scene.add.graphics();
@@ -42,13 +43,19 @@ export class SplitDisplay {
     this.bg.fillRoundedRect(-w + 4, -4, w, 37, 3);
     this.bg.fillStyle(color, 1);
     this.bg.fillRect(4, -4, 2, 37);
-    this.root.setVisible(true).setAlpha(1).setX(GAME_WIDTH + 40);
-    this.scene.tweens.add({ targets: this.root, x: GAME_WIDTH - 10, duration: 260, ease: 'Back.easeOut' });
+    this.root.setVisible(true).setAlpha(1).setX(this.right + 40);
+    this.scene.tweens.add({ targets: this.root, x: this.right - 10, duration: 260, ease: 'Back.easeOut' });
     if (s.ahead) {
       this.delta.setScale(2);
       this.scene.tweens.add({ targets: this.delta, scale: 1, duration: 300, ease: 'Back.easeOut' });
     }
     this.hideAt = now + SHOW_MS;
+  }
+
+  /** Moves the panel to the screen's right edge (wide screens). */
+  setRight(right: number): void {
+    this.right = right;
+    if (!this.root.visible) this.root.setX(right - 10);
   }
 
   setVisible(v: boolean): void {
@@ -58,6 +65,6 @@ export class SplitDisplay {
   update(now: number): void {
     if (!this.root.visible || now < this.hideAt) return;
     this.hideAt = Infinity;
-    this.scene.tweens.add({ targets: this.root, alpha: 0, x: GAME_WIDTH + 20, duration: 300, onComplete: () => this.root.setVisible(false) });
+    this.scene.tweens.add({ targets: this.root, alpha: 0, x: this.right + 20, duration: 300, onComplete: () => this.root.setVisible(false) });
   }
 }

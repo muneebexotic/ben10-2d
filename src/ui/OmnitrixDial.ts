@@ -47,7 +47,7 @@ export class OmnitrixDial {
   private visible = false;
   private shownIcon = '';
 
-  constructor(private readonly scene: Phaser.Scene, private readonly x: number, private readonly y: number) {
+  constructor(private readonly scene: Phaser.Scene, private x: number, private readonly y: number) {
     this.glow = scene.add.image(0, 0, TEX.soft).setScale(4.5).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setTint(PALETTE.omnitrix);
     const frame = scene.add.image(0, 0, TEX.dialFrame);
     this.ring = scene.add.graphics();
@@ -79,6 +79,12 @@ export class OmnitrixDial {
       this.root.setScale(3).setAlpha(0);
       this.scene.tweens.add({ targets: this.root, scale: 1, alpha: 1, duration: 450, ease: 'Back.easeOut' });
     }
+  }
+
+  /** Moves the dial (it stays pinned to the left screen edge on wide screens). */
+  setX(x: number): void {
+    this.x = x;
+    this.root.setX(x);
   }
 
   setTick(t: OmnitrixTick): void {
@@ -126,7 +132,8 @@ export class OmnitrixDial {
       this.carouselKey = key;
     }
     const span = (list.length - 1) * DIAL_UI.carouselSpacing;
-    const cx = Math.max(this.x, span / 2 + 10);
+    // Never past the left screen edge (the dial sits 30 px in from it).
+    const cx = Math.max(this.x, this.x - 20 + span / 2);
     this.carousel.setPosition(cx, this.y + DIAL_UI.carouselY);
     list.forEach((id, i) => {
       const img = this.carouselIcons[i];

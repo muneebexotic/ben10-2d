@@ -4,6 +4,7 @@ import { PALETTE } from '../../config/palette';
 import { playSfx } from '../../systems/audio/Sfx';
 import { inputMode } from '../../systems/InputMode';
 import { pixelText } from '../text';
+import { frameView } from '../view';
 
 export interface PanelStyle {
   fill?: number;
@@ -150,8 +151,9 @@ export class MenuButton {
 /** "< BACK" in the top-left corner of every menu (Esc on a keyboard). */
 export function backButton(scene: Phaser.Scene, onBack: () => void): Phaser.GameObjects.BitmapText {
   const label = () => (inputMode.current === 'touch' ? '< BACK' : '< BACK [ESC]');
-  const t = pixelText(scene, 14, 14, label(), { originX: 0, originY: 0.5, color: PALETTE.uiDim, scale: 1 });
-  const zone = scene.add.zone(4, 2, 110, 30).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+  const frame = frameView(scene);
+  const t = frame.pin(pixelText(scene, 14, 14, label(), { originX: 0, originY: 0.5, color: PALETTE.uiDim, scale: 1 }), 'left', 14);
+  const zone = frame.pin(scene.add.zone(4, 2, 110, 30).setOrigin(0, 0).setInteractive({ useHandCursor: true }), 'left', 4);
   zone.on('pointerover', () => t.setTint(PALETTE.white));
   zone.on('pointerout', () => t.setTint(PALETTE.uiDim));
   zone.on('pointerdown', () => onBack());
@@ -162,8 +164,9 @@ export function backButton(scene: Phaser.Scene, onBack: () => void): Phaser.Game
 
 /** A small text button in the top-right corner (Settings on hub screens). */
 export function cornerButton(scene: Phaser.Scene, label: string, onPress: () => void): Phaser.GameObjects.BitmapText {
-  const t = pixelText(scene, GAME_WIDTH - 14, 14, label, { originX: 1, originY: 0.5, color: PALETTE.uiDim });
-  const zone = scene.add.zone(GAME_WIDTH - 4, 2, Math.max(90, t.width + 20), 30).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+  const frame = frameView(scene);
+  const t = frame.pin(pixelText(scene, GAME_WIDTH - 14, 14, label, { originX: 1, originY: 0.5, color: PALETTE.uiDim }), 'right', 14);
+  const zone = frame.pin(scene.add.zone(GAME_WIDTH - 4, 2, Math.max(90, t.width + 20), 30).setOrigin(1, 0).setInteractive({ useHandCursor: true }), 'right', 4);
   zone.on('pointerover', () => t.setTint(PALETTE.white));
   zone.on('pointerout', () => t.setTint(PALETTE.uiDim));
   zone.on('pointerdown', () => onPress());

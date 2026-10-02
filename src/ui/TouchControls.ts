@@ -15,8 +15,8 @@ export class TouchButton {
 
   constructor(
     scene: Phaser.Scene,
-    readonly x: number,
-    readonly y: number,
+    public x: number,
+    public y: number,
     readonly r: number,
     icon: string,
     caption: string,
@@ -27,6 +27,13 @@ export class TouchButton {
     const label = pixelText(scene, 0, r + 6, caption, { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     this.root = scene.add.container(x, y, [this.ring, this.icon, label]);
     this.draw();
+  }
+
+  /** Repositions the button (the view was resized). */
+  moveTo(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+    this.root.setPosition(x, y);
   }
 
   setIcon(key: string): void {
@@ -137,8 +144,8 @@ export class TouchDial {
 
   constructor(
     scene: Phaser.Scene,
-    readonly x: number,
-    readonly y: number,
+    public x: number,
+    public y: number,
     readonly r: number,
   ) {
     this.glow = scene.add.image(0, 0, TEX.soft).setScale(5).setBlendMode(Phaser.BlendModes.ADD).setTint(PALETTE.omnitrix).setAlpha(0.25);
@@ -160,6 +167,12 @@ export class TouchDial {
 
   setTick(t: OmnitrixTick): void {
     this.tick = t;
+  }
+
+  moveTo(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+    this.root.setPosition(x, y);
   }
 
   setPressed(on: boolean): void {

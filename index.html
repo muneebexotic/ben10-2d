@@ -38,11 +38,22 @@
         height: 100dvh;
         box-sizing: border-box;
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        --avail-w: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right));
+        --avail-h: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       }
-      /* Phaser centres the canvas itself (autoCenter); flex centring here would offset it twice. */
+      /*
+       * The game expands sideways on wide screens (Phaser EXPAND). #game stays between
+       * 16:9 and 2.4:1 (864x360): wider windows get side bars, narrower ones top and
+       * bottom bars. The canvas always fills #game exactly, so nothing is centred twice.
+       */
       #game {
         width: 100%;
         height: 100%;
+        max-width: calc(var(--avail-h) * 2.4);
+        max-height: calc(var(--avail-w) * 9 / 16);
         overflow: hidden;
       }
       #game canvas {

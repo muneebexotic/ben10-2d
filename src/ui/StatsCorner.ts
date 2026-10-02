@@ -12,6 +12,8 @@ export class StatsCorner {
   private readonly cards: Phaser.GameObjects.Image[] = [];
   private readonly droneIcon: Phaser.GameObjects.Image;
   private visible = false;
+  /** Frame x of the screen's right edge (moves out on wide screens). */
+  private right = GAME_WIDTH;
 
   constructor(private readonly scene: Phaser.Scene, totalCards: number) {
     this.time = pixelText(scene, GAME_WIDTH - 8, 7, '0:00.00', { originX: 1, color: PALETTE.white });
@@ -21,14 +23,29 @@ export class StatsCorner {
     this.setVisible(false);
   }
 
+  /** Moves the corner to the screen's right edge (wide screens). */
+  setRight(right: number): void {
+    this.right = right;
+    this.time.setX(right - 8);
+    this.kills.setX(right - 8);
+    this.droneIcon.setX(right - 14 - this.kills.width);
+    this.layoutCards();
+  }
+
+  private layoutCards(): void {
+    const total = this.cards.length;
+    this.cards.forEach((c, i) => c.setX(this.right - 12 - (total - 1 - i) * 10));
+  }
+
   /** One slot per card that exists this run (secret vault cards appear once their alien is unlocked). */
   private setTotalCards(total: number): void {
     if (total === this.cards.length) return;
     for (const c of this.cards) c.destroy();
     this.cards.length = 0;
     for (let i = 0; i < total; i++) {
-      this.cards.push(this.scene.add.image(GAME_WIDTH - 12 - (total - 1 - i) * 10, 40, TEX.cardIcon, 0).setVisible(this.visible));
+      this.cards.push(this.scene.add.image(0, 40, TEX.cardIcon, 0).setVisible(this.visible));
     }
+    this.layoutCards();
   }
 
   setVisible(v: boolean): void {
@@ -44,7 +61,7 @@ export class StatsCorner {
     this.setTotalCards(totalCards);
     this.time.setText(formatTime(timeMs));
     this.kills.setText(String(kills));
-    this.droneIcon.setX(GAME_WIDTH - 14 - this.kills.width);
+    this.droneIcon.setX(this.right - 14 - this.kills.width);
     for (let i = 0; i < this.cards.length; i++) this.cards[i].setFrame(i < cards ? 1 : 0).setAlpha(i < Math.max(cards, reachable) ? 1 : 0.3);
   }
 

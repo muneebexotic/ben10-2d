@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { registerPixelFont } from '../ui/PixelFont';
+import { frameView } from '../ui/view';
 import { createAnimations, generateAssets, queueAssetFiles } from './preload/generate';
 import { SCENES } from './SceneKeys';
 import { launchParams } from '../systems/LaunchParams';
@@ -14,6 +15,7 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload(): void {
+    frameView(this);
     const bar = this.add.rectangle(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2, 0, 4, PALETTE.omnitrix).setOrigin(0, 0.5);
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 164, 8).setStrokeStyle(1, PALETTE.omnitrixDark);
     this.load.on(Phaser.Loader.Events.PROGRESS, (p: number) => (bar.width = 160 * p));

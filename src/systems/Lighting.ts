@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEPTH, GAME_HEIGHT, GAME_WIDTH, LIGHTING } from '../config/constants';
+import { DEPTH, GAME_HEIGHT, GAME_MAX_WIDTH, LIGHTING } from '../config/constants';
 import { lerpColor } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 
@@ -38,7 +38,8 @@ export class Lighting {
 
   constructor(scene: Phaser.Scene) {
     const s = LIGHTING.scale;
-    this.w = Math.ceil((GAME_WIDTH + LIGHTING.margin * 2) / s);
+    // Sized for the widest view (wide phones), centred on the camera every frame.
+    this.w = Math.ceil((GAME_MAX_WIDTH + LIGHTING.margin * 2) / s);
     this.h = Math.ceil((GAME_HEIGHT + LIGHTING.margin * 2) / s);
     this.rt = scene.add.renderTexture(0, 0, this.w, this.h);
     this.rt.setOrigin(0, 0).setScale(s).setDepth(DEPTH.lightmap).setBlendMode(Phaser.BlendModes.MULTIPLY);

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../../config/constants';
+import { GAME_HEIGHT } from '../../config/constants';
+import { viewWidth } from '../view';
 import { PALETTE } from '../../config/palette';
 import { MENU } from '../../config/ui';
 import { TEX } from '../../scenes/preload/assetKeys';
@@ -34,7 +35,7 @@ export function leaveTo(scene: Phaser.Scene, key: string, data?: object, sound: 
   scene.data.set(LEAVING, true);
   if (sound) playSfx(sound);
   const iris = scene.add
-    .image(GAME_WIDTH / 2, GAME_HEIGHT / 2, TEX.hourglass)
+    .image(viewWidth(scene) / 2, GAME_HEIGHT / 2, TEX.hourglass)
     .setTint(PALETTE.omnitrix)
     .setBlendMode(Phaser.BlendModes.ADD)
     .setAlpha(a11y.reduceFlashing ? 0.18 : 0.45)

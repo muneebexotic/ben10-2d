@@ -14,8 +14,11 @@ export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[]): Phase
       antialias: false,
       powerPreference: 'high-performance',
     },
+    // EXPAND: the height stays 360 and wide screens get a wider view instead of side bars.
+    // index.html keeps #game between 16:9 and 2.4:1 (GAME_MAX_WIDTH), so tablets letterbox
+    // and ultra-wide windows pillarbox. (Phaser's min/max would clamp the CSS size instead.)
     scale: {
-      mode: Phaser.Scale.FIT,
+      mode: Phaser.Scale.EXPAND,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     physics: {

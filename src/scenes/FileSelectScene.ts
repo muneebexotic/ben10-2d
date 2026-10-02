@@ -14,6 +14,7 @@ import { MenuBackdrop } from '../ui/menu/MenuBackdrop';
 import { enterMenu, isLeaving, leaveTo } from '../ui/menu/transition';
 import { backButton, drawPanel, formatPlayTime, menuHeader, MenuButton } from '../ui/menu/widgets';
 import { pixelText } from '../ui/text';
+import { COVER_W, COVER_X } from '../ui/view';
 import { MENU } from '../config/ui';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
@@ -207,7 +208,7 @@ export class FileSelectScene extends Phaser.Scene {
     if (this.confirm || !this.cards[this.focus].summary || isLeaving(this)) return;
     playSfx('denied');
     const slot = this.focus;
-    const shade = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, PALETTE.ink, 0.7).setOrigin(0, 0).setInteractive();
+    const shade = this.add.rectangle(COVER_X, 0, COVER_W, GAME_HEIGHT, PALETTE.ink, 0.7).setOrigin(0, 0).setInteractive();
     const panel = this.add.graphics();
     drawPanel(panel, GAME_WIDTH / 2, GAME_HEIGHT / 2, 320, 118, { fill: PALETTE.uiPanel, fillAlpha: 0.97, stroke: PALETTE.enemy, radius: 8, bevel: true });
     const title = pixelText(this, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 36, `ERASE FILE ${slot + 1}?`, { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.enemy });

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { GAME_HEIGHT } from '../config/constants';
+import { COVER_W, COVER_X } from './view';
 
 const BAR = 34;
 
@@ -8,8 +9,8 @@ export class Letterbox {
   private readonly bottom: Phaser.GameObjects.Rectangle;
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.top = scene.add.rectangle(0, -BAR, GAME_WIDTH, BAR, 0x000000).setOrigin(0, 0).setDepth(900);
-    this.bottom = scene.add.rectangle(0, GAME_HEIGHT, GAME_WIDTH, BAR, 0x000000).setOrigin(0, 0).setDepth(900);
+    this.top = scene.add.rectangle(COVER_X, -BAR, COVER_W, BAR, 0x000000).setOrigin(0, 0).setDepth(900);
+    this.bottom = scene.add.rectangle(COVER_X, GAME_HEIGHT, COVER_W, BAR, 0x000000).setOrigin(0, 0).setDepth(900);
   }
 
   private shown = false;

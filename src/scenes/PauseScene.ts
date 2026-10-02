@@ -6,6 +6,7 @@ import type { RunStats } from '../systems/RunStats';
 import { bindMuteKey, toggleMute } from '../systems/Settings';
 import { MenuList, type MenuItem } from '../ui/MenuList';
 import { pixelText } from '../ui/text';
+import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { SCENES } from './SceneKeys';
 import { inputMode } from '../systems/InputMode';
 import { EventBus } from '../systems/EventBus';
@@ -77,7 +78,8 @@ export class PauseScene extends Phaser.Scene {
     this.difficultyLabel = null;
     resetLeaving(this);
     this.scene.bringToTop();
-    this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x05070f, 0.8).setOrigin(0, 0);
+    frameView(this);
+    this.add.rectangle(COVER_X, 0, COVER_W, GAME_HEIGHT, 0x05070f, 0.8).setOrigin(0, 0);
     if (data.training) this.buildTraining();
     else this.buildStory();
 

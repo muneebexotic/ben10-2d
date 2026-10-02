@@ -4,6 +4,7 @@ import { PALETTE } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import type { BannerPayload } from '../systems/events';
 import { pixelText } from './text';
+import { COVER_W } from './view';
 import { a11y, shakeCamera } from '../systems/Accessibility';
 import { NAME_SLAM } from '../config/ui';
 import { MISFIRE } from '../config/omnitrix';
@@ -29,12 +30,12 @@ export class Banner {
     const y = style === 'boss' ? 110 : 96;
     const title = pixelText(this.scene, 0, 0, p.title, { scale: style === 'soft' ? 2 : 3, originX: 0.5, originY: 0.5, color });
     const items: Phaser.GameObjects.GameObject[] = [];
-    const stripe = this.scene.add.rectangle(0, 0, GAME_WIDTH + 40, style === 'soft' ? 26 : 40, 0x000000, 0.55);
+    const stripe = this.scene.add.rectangle(0, 0, COVER_W + 40, style === 'soft' ? 26 : 40, 0x000000, 0.55);
     items.push(stripe, title);
     if (p.subtitle) {
       const sub = pixelText(this.scene, 0, style === 'soft' ? 16 : 22, p.subtitle, { originX: 0.5, originY: 0.5, color: PALETTE.cream });
       items.push(sub);
-      stripe.setSize(GAME_WIDTH + 40, style === 'soft' ? 44 : 56).setY(style === 'soft' ? 7 : 9);
+      stripe.setSize(COVER_W + 40, style === 'soft' ? 44 : 56).setY(style === 'soft' ? 7 : 9);
     }
     const c = this.scene.add.container(GAME_WIDTH / 2, y, items).setDepth(400);
     this.current = c;
@@ -196,7 +197,7 @@ export class Banner {
     const y = swap ? 70 : 84;
     const bigScale = swap ? NAME_SLAM.swapScale : NAME_SLAM.scale - 1;
 
-    const stripe = scene.add.rectangle(0, -2, GAME_WIDTH + 40, 66, 0x000000, 0.6);
+    const stripe = scene.add.rectangle(0, -2, COVER_W + 40, 66, 0x000000, 0.6);
     // Row 1: what Ben asked for.
     const label = pixelText(scene, 0, -18, 'WANTED', { originX: 0, originY: 0.5, color: PALETTE.uiDim });
     const wantedIcon = scene.add.image(0, -18, wanted.icon).setTint(wanted.color).setScale(1.25);
