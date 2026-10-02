@@ -8,7 +8,7 @@ import { getAlien, hasAlien } from '../aliens/registry';
 import type { AbilityAction } from '../aliens/types';
 import { CHAPTER_1 } from '../levels/chapter1';
 import { completedChapters, getLevel } from '../levels/registry';
-import type { AmbientKind, DroneKind, EntitySpawn, LevelData } from '../levels/types';
+import type { AmbientKind, EnemyKind, EntitySpawn, LevelData } from '../levels/types';
 import { Player, type DamageOutcome } from '../entities/Player';
 import { Projectiles } from '../entities/Projectiles';
 import { Drone, type DroneWorld } from '../entities/enemies/Drone';
@@ -44,6 +44,8 @@ import { LevelWorld } from './level/LevelWorld';
 import { OmnitrixController } from './level/OmnitrixController';
 import { Parallax } from './level/Parallax';
 import { SimBackdrop } from './level/SimBackdrop';
+import { MuseumBackdrop } from './level/MuseumBackdrop';
+import { SpecialTerrain } from './level/SpecialTerrain';
 import { checkpointsFor, spawnEntities } from './level/Spawner';
 import { TransformSequence } from './level/TransformSequence';
 import { MisfireBeat } from './level/MisfireBeat';
@@ -93,6 +95,12 @@ const AMBIENT: Record<AmbientKind, number> = {
   dusk: LIGHTING.ambientDusk,
   night: LIGHTING.ambientNight,
   neon: LIGHTING.ambientNeon,
+  street: LIGHTING.ambientStreet,
+  museum: LIGHTING.ambientMuseum,
+  gallery: LIGHTING.ambientGallery,
+  blackout: LIGHTING.ambientBlackout,
+  atrium: LIGHTING.ambientAtrium,
+  lab: LIGHTING.ambientLab,
 };
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
@@ -143,6 +151,7 @@ export class LevelScene extends Phaser.Scene {
   private walls: CrackedWall[] = [];
   private boulders: Boulder[] = [];
   private dummies: Dummy[] = [];
+  private terrain: SpecialTerrain | null = null;
   private stats!: RunStats;
   private combo = new ComboCounter(COMBO.windowMs);
   private gameNow = 0;
@@ -214,7 +223,13 @@ export class LevelScene extends Phaser.Scene {
 
     const bossSpawn = this.level.entities.find((e): e is BossSpawn => e.type === 'boss') ?? null;
     this.highway = this.level.theme === 'highway' ? new HighwayBackdrop(this, this.level.sky ?? []) : null;
-    this.backdrop = this.highway ?? (this.level.theme === 'sim' ? new SimBackdrop(this) : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
+    this.backdrop =
+      this.highway ??
+      (this.level.theme === 'sim'
+        ? new SimBackdrop(this)
+        : this.level.theme === 'museum'
+          ? new MuseumBackdrop(this, this.level)
+          : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
     this.decor = new Decor(this, this.level, this.world);
     this.lighting = new Lighting(this);
     this.time2 = new TimeController();
@@ -345,6 +360,7 @@ export class LevelScene extends Phaser.Scene {
 
   private levelTrack(): TrackName {
     if (this.mode === 'training') return 'simulation';
+    if (this.level.theme === 'museum') return 'museum';
     return this.level.theme === 'highway' ? 'highway' : 'forest';
   }
 
@@ -394,7 +410,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   /** A drone a set piece brings in (ambush waves, the convoy's escorts). */
-  private spawnStoryDrone(kind: DroneKind, x: number, y: number, opts: { roam?: boolean; delayMs?: number } = {}): Drone {
+  private spawnStoryDrone(kind: EnemyKind, x: number, y: number, opts: { roam?: boolean; delayMs?: number } = {}): Drone {
     const d = new Drone(this, this.droneWorld, x, y, createBrain(kind));
     d.awake = true;
     d.nextActionAt = this.gameNow + (opts.delayMs ?? 1200);
@@ -530,6 +546,18 @@ export class LevelScene extends Phaser.Scene {
       this.combat.addTarget(d);
       this.combat.addLiftable(d);
     }
+    this.terrain = new SpecialTerrain({
+      scene: this,
+      level: this.level,
+      world: this.world,
+      fx: this.fx,
+      lighting: this.lighting,
+      combat: this.combat,
+      projectiles: this.projectiles,
+      player: this.player,
+      tilesKey: this.world.tilesKey,
+      onSecretFound: (id) => this.onHiddenPath(id),
+    });
     if (this.jammer) {
       const jammer = this.jammer;
       this.combat.addTarget(jammer);
@@ -568,6 +596,7 @@ export class LevelScene extends Phaser.Scene {
       hologramSeen: () => this.stats.sawVilgax,
       onHologramSeen: () => (this.stats.sawVilgax = true),
       tip: (id, text, ms) => this.tutorial.tip(id, text, ms, 8),
+      dialogue: (lines, onDone) => this.dialogue.play(lines, { skippable: true, onDone }),
     });
   }
 
@@ -602,7 +631,7 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
-  private spawnAdd(kind: DroneKind, x: number, y: number): void {
+  private spawnAdd(kind: EnemyKind, x: number, y: number): void {
     const d = new Drone(this, this.droneWorld, x, y, createBrain(kind));
     d.awake = true;
     d.homeX = -1;
@@ -612,7 +641,7 @@ export class LevelScene extends Phaser.Scene {
     this.registerDrone(d);
   }
 
-  private spawnTrainingDrone(kind: DroneKind, x: number, y: number): Drone {
+  private spawnTrainingDrone(kind: EnemyKind, x: number, y: number): Drone {
     const d = new Drone(this, this.droneWorld, x, y, createBrain(kind));
     d.awake = true;
     d.nextActionAt = this.gameNow + 1200;
@@ -737,7 +766,13 @@ export class LevelScene extends Phaser.Scene {
       if (light > 0) p.hasWatch ? this.lighting.add(p.x, p.centerY, light, 0xb8ffc8, 0.85) : this.lighting.add(p.x, p.centerY, light, 0xc8d0ff, 0.6);
     }
     const zone = this.world.ambientAt(p.x);
-    const ambient = this.alarm ? this.alarmAmbient() : AMBIENT[zone];
+    let ambient = this.alarm ? this.alarmAmbient() : AMBIENT[zone];
+    // A form that doesn't see like Ben (Wildmutt): the world dims and his own senses light it.
+    const vision = p.dead ? undefined : p.form.feel.vision;
+    if (vision) {
+      ambient = lerpColor(0x000000, ambient, vision.ambientScale);
+      this.lighting.add(p.x, p.centerY, vision.light.radius, vision.light.color, vision.light.intensity);
+    }
     this.lighting.setAmbient(ambient, this.alarm ? 250 : LIGHTING.ambientBlendMs);
     this.lighting.update(realDt);
     this.lighting.render(this.cameras.main);
@@ -752,6 +787,7 @@ export class LevelScene extends Phaser.Scene {
 
   private updateProps(dt: number): void {
     for (const b of this.barricades) b.update(dt);
+    this.terrain?.update(dt);
     for (const c of this.checkpoints) c.update(this.lighting, this.gameNow);
     for (const p of this.pickups) p.update(this.fx, this.lighting, this.gameNow);
     this.jammer?.update(dt, this.lighting, this.gameNow);
@@ -962,6 +998,13 @@ export class LevelScene extends Phaser.Scene {
     // An earlier chapter has a secret this file can open now: point Ben back to it.
     const back = this.earlierSecret();
     this.speech.show(back ? `WAIT... THERE WAS ONE OF THESE BACK IN ${back}!` : "NOW THAT'S WHAT I CALL A SECRET!", 2600);
+  }
+
+  /** Wildmutt's senses opened a hidden passage. */
+  private onHiddenPath(_id: string): void {
+    this.time2.slowMo(0.35, 500, 250);
+    EventBus.emit('hud:banner', { title: 'HIDDEN PATH!', subtitle: 'SNIFFED OUT', color: 0xffb070, durationMs: 1500, style: 'slam' });
+    if (this.player.form.id === 'wildmutt') this.speech.show('*SNIFF SNIFF* (SOMETHING BACK HERE...)', 2000);
   }
 
   /** The title of an earlier chapter with a secret this file's aliens can open and hasn't found yet. */

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { DEPTH, FX } from '../../config/constants';
 import { DRONE_SHARED } from '../../config/enemies';
 import { PALETTE } from '../../config/palette';
-import type { DroneKind } from '../../levels/types';
+import type { EnemyKind } from '../../levels/types';
 import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import { playSfx } from '../../systems/audio/Sfx';
@@ -10,10 +10,12 @@ import type { Projectiles } from '../Projectiles';
 import type { Damageable, Hazard, Hit, HitKind, HitResult, Liftable, Rect } from '../types';
 import type { Telegraphs } from './Telegraphs';
 import { pace } from '../../systems/Difficulty';
+import { COMBAT } from '../../config/combat';
+import { SlimeStatus } from './slime';
 
 export interface DroneWorld {
   now: number;
-  player: { x: number; y: number; centerY: number; dead: boolean; vx: number };
+  player: { x: number; y: number; centerY: number; dead: boolean; vx: number; senseRadius: number };
   fx: Fx;
   lighting: Lighting;
   projectiles: Projectiles;
@@ -34,7 +36,7 @@ export interface DroneWorld {
 
 /** Per-variant behaviour. Brains only steer; the Drone handles health, hits, knockdowns and death. */
 export interface DroneBrain {
-  readonly kind: DroneKind;
+  readonly kind: EnemyKind;
   readonly texture: string;
   readonly maxHp: number;
   readonly body: { width: number; height: number };
@@ -52,6 +54,14 @@ export interface DroneBrain {
   contactDamage?(d: Drone): number;
   /** Too twitchy to lock onto: aim assist ignores it. */
   readonly evasive?: boolean;
+  /** Slime globs that gum its wings and drop it out of the air (default COMBAT.slime.stickAt). */
+  readonly slimeGroundsAt?: number;
+  /** A mutant animal: it bursts into goo instead of exploding, and glows its own colour. */
+  readonly organic?: { glow: number };
+  /** Walks on the ground (Dr. Animo's mutants): no hover bob, and knocked down it lands on its back. */
+  readonly walker?: boolean;
+  /** Thrown things stop on it instead of bowling through (a brute). */
+  readonly stopsThrows?: boolean;
 }
 
 type Carry = 'none' | 'held' | 'thrown';
@@ -83,6 +93,8 @@ export class Drone implements Damageable, Hazard, Liftable {
   lastDamage = 0;
   /** Brains keep their own extra state here (armour, juke timers). */
   readonly memo: Record<string, number> = {};
+  /** Stinkfly's goo: slows it, and enough of it gums its wings. */
+  readonly slime = new SlimeStatus();
   private flashLeft = 0;
   stunLeft = 0;
   /** Knocked out of the sky by a heavy hit: lying on the ground, harmless, liftable. */
@@ -107,6 +119,10 @@ export class Drone implements Damageable, Hazard, Liftable {
 
   get evasive(): boolean {
     return this.brain.evasive ?? false;
+  }
+
+  get stopsThrows(): boolean {
+    return this.brain.stopsThrows ?? false;
   }
 
   /** Contact damage (a ramming Armored Drone hits harder). */
@@ -168,6 +184,11 @@ export class Drone implements Damageable, Hazard, Liftable {
     }
     this.brain.onHurt?.(this, this.world, hit);
     if (hit.stunMs) this.knockDown(hit.stunMs);
+    if (this.slime.apply(hit, this.world.now, this.brain.slimeGroundsAt) === 'stuck') {
+      // Gummed wings: down it comes.
+      this.knockDown(COMBAT.slime.stuckMs);
+      this.world.fx.popText(this.x, this.y - 12, 'GUMMED!', 0xd4e83a);
+    }
     return 'hit';
   }
 
@@ -204,7 +225,11 @@ export class Drone implements Damageable, Hazard, Liftable {
       }
     }
 
-    this.stateT += dtMs;
+    // Slime slows everything it does: moving, winding up, resting.
+    this.slime.update(dtMs);
+    const f = this.slime.factor;
+    this.stateT += dtMs * f;
+    if (f < 1) this.nextActionAt += dtMs * (1 - f);
     this.stunLeft = Math.max(0, this.stunLeft - dtMs);
     const decay = Math.exp(-DRONE_SHARED.knockbackDecay * dt);
     this.kx *= decay;
@@ -213,14 +238,15 @@ export class Drone implements Damageable, Hazard, Liftable {
     if (this.downed) {
       this.updateDowned(dtMs, dt);
     } else {
-      this.brain.update(this, w, dtMs);
-      this.x += (this.vx + this.kx) * dt;
-      this.y += (this.vy + this.ky) * dt;
+      this.brain.update(this, w, dtMs * f);
+      this.x += (this.vx * f + this.kx) * dt;
+      this.y += (this.vy * f + this.ky) * dt;
     }
 
     this.flashLeft = Math.max(0, this.flashLeft - dtMs);
     this.render(w.now);
-    w.lighting.add(this.x, this.y, 30, PALETTE.enemy, this.downed ? 0.4 : 0.8);
+    w.lighting.add(this.x, this.y, 30, this.brain.organic?.glow ?? PALETTE.enemy, this.downed ? 0.4 : 0.8);
+    if (this.slime.slowed && Math.random() < 0.08) w.fx.burst('slime', this.x + (Math.random() - 0.5) * 8, this.y + 4, 1);
   }
 
   private updateDowned(dtMs: number, dt: number): void {
@@ -256,13 +282,17 @@ export class Drone implements Damageable, Hazard, Liftable {
   }
 
   private render(now: number): void {
-    const bobY = this.downed || this.carryState !== 'none' ? 0 : Math.sin(now * 0.004 + this.seed) * 1.5;
+    const walker = this.brain.walker ?? false;
+    const bobY = this.downed || this.carryState !== 'none' || walker ? 0 : Math.sin(now * 0.004 + this.seed) * 1.5;
     this.sprite.setPosition(Math.round(this.x), Math.round(this.y + bobY));
     if (this.carryState === 'none') {
-      const tilt = this.downed ? (this.grounded ? 160 : 140) : this.sprite.angle === 160 || this.sprite.angle === 140 ? 0 : this.sprite.angle;
+      // Knocked down: drones tumble onto their side, walking mutants flip onto their backs.
+      const down = walker ? (this.grounded ? 180 : 150) : this.grounded ? 160 : 140;
+      const tilt = this.downed ? down : [160, 140, 180, 150].includes(this.sprite.angle) ? 0 : this.sprite.angle;
       this.sprite.setAngle(tilt);
     }
     if (this.flashLeft > 0) this.sprite.setTint(PALETTE.white).setTintMode(Phaser.TintModes.FILL);
+    else if (this.slime.slowed) this.sprite.setTint(0xd8f070).setTintMode(Phaser.TintModes.MULTIPLY);
     else if (this.downed) this.sprite.setTint(0x8a8aa0).setTintMode(Phaser.TintModes.MULTIPLY);
     else this.sprite.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     this.brain.render?.(this, this.world);
@@ -328,9 +358,11 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.alive = false;
     this.downedLeft = 0;
     this.sprite.setVisible(false);
-    w.fx.explosion(this.x, this.y, this.brain.maxHp >= 5 || this.carryState === 'thrown' ? 'medium' : 'small');
+    const size = this.brain.maxHp >= 5 || this.carryState === 'thrown' ? 'medium' : 'small';
+    if (this.brain.organic) w.fx.splat(this.x, this.y, size);
+    else w.fx.explosion(this.x, this.y, size);
     w.fx.hitStop(FX.hitStopKillMs);
-    playSfx('explode', 0.8, 0.9 + Math.random() * 0.25);
+    playSfx(this.brain.organic ? 'splat' : 'explode', 0.8, 0.9 + Math.random() * 0.25);
     w.onKilled(this);
   }
 

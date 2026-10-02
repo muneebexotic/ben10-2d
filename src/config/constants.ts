@@ -73,6 +73,13 @@ export const LIGHTING = {
   ambientDusk: 0xc49ab4,
   ambientNight: 0x7078b0,
   ambientNeon: 0x8a6c9e,
+  /** Dr. Animo: the street at night, the museum's moonlit halls, the dark galleries, the blackout, the glass atrium, the lab. */
+  ambientStreet: 0x6c76ac,
+  ambientMuseum: 0x8c88ac,
+  ambientGallery: 0x76708e,
+  ambientBlackout: 0x1a1828,
+  ambientAtrium: 0x8a9cc4,
+  ambientLab: 0x5e8076,
   ambientBlendMs: 900,
 } as const;
 

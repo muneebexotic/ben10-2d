@@ -11,17 +11,20 @@ import { formatControls } from '../src/systems/controlLabels';
 const REQUIRED_ANIMS = ['idle', 'run', 'jump', 'fall', 'hurt'];
 
 describe('alien registry', () => {
-  it('has Heatblast for Chapter 1 and Four Arms and XLR8 for Chapter 2, in dial order', () => {
-    expect(allAliens().map((a) => a.id)).toEqual(['heatblast', 'fourarms', 'xlr8']);
+  it('has Heatblast for Chapter 1, Four Arms and XLR8 for Chapter 2, Wildmutt and Stinkfly for Chapter 3, in dial order', () => {
+    expect(allAliens().map((a) => a.id)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly']);
     expect(getAlien('heatblast').unlockChapter).toBe(1);
     expect(getAlien('fourarms').unlockChapter).toBe(2);
     expect(getAlien('xlr8').unlockChapter).toBe(2);
+    expect(getAlien('wildmutt').unlockChapter).toBe(3);
+    expect(getAlien('stinkfly').unlockChapter).toBe(3);
   });
 
   it('unlocks by chapter', () => {
     expect(aliensUnlockedBy(0)).toEqual([]);
     expect(aliensUnlockedBy(1)).toEqual(['heatblast']);
     expect(aliensUnlockedBy(2)).toEqual(['heatblast', 'fourarms', 'xlr8']);
+    expect(aliensUnlockedBy(3)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly']);
   });
 
   it('human Ben is a form but not an alien on the dial', () => {

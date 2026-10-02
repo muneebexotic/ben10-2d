@@ -21,10 +21,20 @@ export class PlayerVisual {
   private currentAnim = '';
   private spin = 0;
   private readonly ghosts: Phaser.GameObjects.Image[] = [];
+  /** A form's gauge (flight stamina): a small wheel beside the head that fades out once it has been full a while. */
+  private readonly meterGfx: Phaser.GameObjects.Graphics;
+  private meter: { value: number; color: number } | null = null;
+  private meterAlpha = 0;
+  private meterFullMs = 0;
 
   constructor(private readonly scene: Phaser.Scene, x: number, y: number, form: FormDefinition, private prefix: string) {
     this.sprite = scene.add.sprite(x, y, form.texture, 0).setDepth(DEPTH.player);
+    this.meterGfx = scene.add.graphics().setDepth(DEPTH.worldUi - 1);
     this.applyForm(form, prefix);
+  }
+
+  setMeter(m: { value: number; color: number } | null): void {
+    this.meter = m;
   }
 
   applyForm(form: FormDefinition, prefix: string): void {
@@ -129,5 +139,27 @@ export class PlayerVisual {
       s.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     }
     s.setAlpha(this.blink && blinkOn(now, 70) ? 0.35 : 1);
+    this.drawMeter(x, feetY, facing, dtMs);
+  }
+
+  private drawMeter(x: number, feetY: number, facing: 1 | -1, dtMs: number): void {
+    const g = this.meterGfx;
+    g.clear();
+    const m = this.meter;
+    if (m && m.value < 0.999) this.meterFullMs = 0;
+    else this.meterFullMs += dtMs;
+    const target = m && this.meterFullMs < 600 ? 1 : 0;
+    this.meterAlpha += (target - this.meterAlpha) * Math.min(1, dtMs / 120);
+    if (!m || this.meterAlpha < 0.02) return;
+    const cx = x - facing * 15;
+    const cy = feetY - 30;
+    const low = m.value < 0.25;
+    g.fillStyle(PALETTE.ink, 0.6 * this.meterAlpha).fillCircle(cx, cy, 6);
+    g.lineStyle(3, PALETTE.inkSoft, 0.9 * this.meterAlpha).beginPath();
+    g.arc(cx, cy, 4.5, 0, Math.PI * 2);
+    g.strokePath();
+    g.lineStyle(3, low ? PALETTE.enemy : m.color, this.meterAlpha).beginPath();
+    g.arc(cx, cy, 4.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.001, m.value), false);
+    g.strokePath();
   }
 }

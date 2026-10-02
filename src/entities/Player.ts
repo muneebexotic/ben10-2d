@@ -204,6 +204,11 @@ export class Player implements PlayerHandle {
     return this.form.frame.feetY + 3;
   }
 
+  /** How far the current form senses hidden things (Wildmutt), 0 for none. */
+  get senseRadius(): number {
+    return this.dead ? 0 : (this.abilities.senseRadius?.() ?? 0);
+  }
+
   /** The form can run on water right now (asked by the level's water-surface collider). */
   canRunOnWater(): boolean {
     return !this.dead && this.body.velocity.y >= 0 && (this.abilities.canRunOnWater?.(this.ctx) ?? false);
@@ -296,7 +301,8 @@ export class Player implements PlayerHandle {
       if (moveX !== 0) this.facing = moveX;
     }
 
-    const scale = gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale;
+    const custom = this.abilities.gravityScale?.(this.ctx) ?? null;
+    const scale = custom ?? gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale;
     this.body.setGravityY(PHYSICS.gravity * (scale - 1));
     const maxFall = this.abilities.maxFallSpeed?.(this.ctx) ?? PLAYER.maxFallSpeed;
     if (this.body.velocity.y > maxFall) this.body.setVelocityY(maxFall);
@@ -325,6 +331,7 @@ export class Player implements PlayerHandle {
       this.deathY += this.deathVy * (dtMs / 1000);
     }
     this.visual.setBlink(this.now < this.invulnUntil && !this.dead);
+    this.visual.setMeter(this.dead ? null : (this.abilities.meter?.() ?? null));
     this.visual.update(this.x, this.y + this.deathY, this.facing, dtMs, visualNow);
   }
 

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { CAMERA, DEPTH, LIGHTING, TILE } from '../../config/constants';
-import type { DroneKind, EntitySpawn } from '../../levels/types';
+import type { EnemyKind, EntitySpawn } from '../../levels/types';
 import { BossHazards } from '../../entities/bosses/BossHazards';
 import type { BossWorld } from '../../entities/bosses/HunterDrone';
 import type { ArenaBoss } from '../../entities/bosses/ArenaBoss';
@@ -34,7 +34,7 @@ export interface ArenaDeps {
   combat: Combat;
   camera: CameraRig;
   now(): number;
-  spawnAdd(kind: DroneKind, x: number, y: number): void;
+  spawnAdd(kind: EnemyKind, x: number, y: number): void;
   aliveAdds(): number;
   dropPickup(x: number, y: number): void;
   setAlarm(on: boolean): void;
@@ -49,6 +49,8 @@ export interface ArenaDeps {
   onHologramSeen(): void;
   /** A hint at the bottom of the screen (once per id). */
   tip(id: string, text: string, ms: number): void;
+  /** A conversation in the dialogue box (bosses with their own speaker). */
+  dialogue(lines: ReadonlyArray<{ who: string; text: string; ms: number }>, onDone: () => void): void;
 }
 
 /** Locks Ben into the boss's arena, runs Vilgax's hologram and the boss's entrance, then hands over the fight. */
@@ -138,7 +140,7 @@ export class BossArena {
     EventBus.emit('hud:letterbox', { visible: true });
     this.d.lighting.setAmbient(LIGHTING.ambientCrash, 600);
 
-    if (!d.hologramSeen()) {
+    if (!d.hologramSeen() && this.kind.hologram.length > 0) {
       d.onHologramSeen();
       d.player.controlsEnabled = false;
       d.player.setVelocityX(0);
@@ -180,7 +182,14 @@ export class BossArena {
       threat: (at) => this.d.threat(this, at),
       cancelThreat: () => this.d.cancelThreat(this),
       tip: (id, text, ms) => this.d.tip(id, text, ms),
+      introSeen: d.hologramSeen(),
+      dialogue: (lines, onDone) => d.dialogue(lines, onDone),
+      holdPlayer: (on) => {
+        d.player.controlsEnabled = !on;
+        if (on) d.player.setVelocityX(0);
+      },
     };
+    if (this.kind.hologram.length === 0) d.onHologramSeen();
     const boss = this.kind.create(scene, world, (this.left + this.right) / 2);
     this.boss = boss;
     combat.addTarget(boss);

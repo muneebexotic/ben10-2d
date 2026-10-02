@@ -13,4 +13,23 @@ export const COMBAT = {
   bowlingSlowdown: 0.82,
   /** STRIKE!: a throw that bowls over at least this many enemies. */
   strikeHits: 2,
+  /** Stink clouds (Stinkfly): how often they hit what's inside, and the blast when fire sets one off. */
+  gas: {
+    tickMs: 420,
+    puffEveryMs: 110,
+    ignite: { damage: 9, radiusScale: 1.45, knockback: 360 },
+  },
+  /**
+   * Slime on enemies: each glob slows them for its `slowMs`; this many globs
+   * inside `stackWindowMs` stick them in place. Short whiffs of gas only slow
+   * (they're under `stackMinMs`).
+   */
+  slime: {
+    slowFactor: 0.45,
+    stickAt: 3,
+    stackWindowMs: 2600,
+    stackMinMs: 1000,
+    stuckMs: 1700,
+    stuckFactor: 0.05,
+  },
 } as const;

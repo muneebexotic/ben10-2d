@@ -22,6 +22,20 @@ export interface CombatHooks {
   onParry(count: number): void;
   /** A thrown object came down after bowling over `hits` enemies (STRIKE! at two or more). */
   onThrowLanded?(hits: number, x: number, y: number): void;
+  /** A stink cloud is still hanging there (draw a puff). */
+  onGasPuff?(x: number, y: number, radius: number): void;
+  /** Fire set a stink cloud off. */
+  onGasIgnite?(x: number, y: number, radius: number, hits: number): void;
+}
+
+interface GasCloud {
+  x: number;
+  y: number;
+  radius: number;
+  life: number;
+  tick: number;
+  puff: number;
+  hit: Hit;
 }
 
 /** Level queries Combat needs to fly thrown objects. */
@@ -43,13 +57,20 @@ interface Thrown {
   pins: Damageable[];
 }
 
-/** Resolves every hit in the level: melee, projectiles, blasts, contact hazards, thrown objects. */
+/** Fire of any kind (fireballs, bursts, rocket blasts): what sets stink clouds off. */
+function isFlame(kind: HitKind): boolean {
+  return kind === 'fire' || kind === 'burst' || kind === 'rocket';
+}
+
+/** Resolves every hit in the level: melee, projectiles, blasts, contact hazards, thrown objects, stink clouds. */
 export class Combat implements CombatApi {
   private readonly targets: Damageable[] = [];
   private readonly hazards: Hazard[] = [];
   private readonly liftables: Liftable[] = [];
   private readonly thrown: Thrown[] = [];
   private readonly marks = new Map<object, Set<Damageable>>();
+  private readonly clouds: GasCloud[] = [];
+  private readonly onceHits = new Map<object, Set<Damageable>>();
   private player: Player | null = null;
   private readonly a: Rect = { x: 0, y: 0, w: 0, h: 0 };
   private readonly b: Rect = { x: 0, y: 0, w: 0, h: 0 };
@@ -102,6 +123,27 @@ export class Combat implements CombatApi {
     return count;
   }
 
+  meleeOnce(area: Rect, hit: Hit, key: object): number {
+    let set = this.onceHits.get(key);
+    if (!set) {
+      set = new Set();
+      this.onceHits.set(key, set);
+    }
+    let count = 0;
+    for (const t of [...this.targets]) {
+      if (set.has(t) || !t.alive || !t.hurtbox(this.b) || !overlaps(area, this.b)) continue;
+      if (this.apply(t, hit)) {
+        set.add(t);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  forget(key: object): void {
+    this.onceHits.delete(key);
+  }
+
   parry(area: Rect, facing: 1 | -1, speedMultiplier: number, damage: number): number {
     let count = 0;
     this.projectiles.forEachActive('enemy', (p) => {
@@ -117,6 +159,8 @@ export class Combat implements CombatApi {
     this.projectiles.spawn(spec.kind, 'player', x, y, Math.cos(angle) * spec.speed, Math.sin(angle) * spec.speed, spec.damage, spec.lifetimeMs, spec.radius, {
       hitKind: spec.hitKind,
       knockback: spec.knockback,
+      gravity: spec.gravity,
+      slowMs: spec.slowMs,
     });
   }
 
@@ -142,6 +186,7 @@ export class Combat implements CombatApi {
   }
 
   blast(x: number, y: number, radius: number, hit: Hit, clearsProjectiles: boolean): number {
+    if (isFlame(hit.kind)) this.igniteNear(x, y, radius);
     let count = 0;
     for (const t of [...this.targets]) {
       if (!t.alive || !t.hurtbox(this.b) || !circleRect(x, y, radius, this.b)) continue;
@@ -246,6 +291,61 @@ export class Combat implements CombatApi {
     return count;
   }
 
+  gas(x: number, y: number, radius: number, lifeMs: number, hit: Hit): void {
+    this.clouds.push({ x, y, radius, life: lifeMs, tick: 0, puff: 0, hit });
+  }
+
+  /** Stink clouds hanging in the air right now (for tests and tips). */
+  get gasClouds(): number {
+    return this.clouds.length;
+  }
+
+  private updateGas(dtMs: number): void {
+    for (let i = this.clouds.length - 1; i >= 0; i--) {
+      const c = this.clouds[i];
+      c.life -= dtMs;
+      if (c.life <= 0) {
+        this.clouds.splice(i, 1);
+        continue;
+      }
+      c.puff -= dtMs;
+      if (c.puff <= 0) {
+        c.puff = COMBAT.gas.puffEveryMs;
+        this.hooks.onGasPuff?.(c.x, c.y, c.radius);
+      }
+      c.tick -= dtMs;
+      if (c.tick > 0) continue;
+      c.tick = COMBAT.gas.tickMs;
+      for (const t of [...this.targets]) {
+        if (!t.alive || !t.countsAsEnemy || !t.hurtbox(this.b) || !circleRect(c.x, c.y, c.radius, this.b)) continue;
+        if (t.accepts && !t.accepts(c.hit.kind)) continue;
+        this.apply(t, { ...c.hit, x: c.x, y: c.y });
+      }
+    }
+    // Fireballs flying through a cloud set it off.
+    if (this.clouds.length === 0) return;
+    this.projectiles.forEachActive('player', (p) => {
+      if (!isFlame(p.hitKind)) return;
+      if (this.igniteNear(p.x, p.y, p.radius)) this.projectiles.kill(p, true);
+    });
+  }
+
+  /** Sets off every stink cloud touching the circle. True if any went up. */
+  private igniteNear(x: number, y: number, radius: number): boolean {
+    let lit = false;
+    for (let i = this.clouds.length - 1; i >= 0; i--) {
+      const c = this.clouds[i];
+      if ((c.x - x) ** 2 + (c.y - y) ** 2 > (c.radius + radius) ** 2) continue;
+      this.clouds.splice(i, 1);
+      lit = true;
+      const G = COMBAT.gas.ignite;
+      const r = c.radius * G.radiusScale;
+      const hits = this.blastExcept(c.x, c.y, r, { damage: G.damage, kind: 'burst', x: c.x, y: c.y + 8, knockback: G.knockback, heavy: true }, []);
+      this.hooks.onGasIgnite?.(c.x, c.y, r, hits);
+    }
+    return lit;
+  }
+
   /** Turns every enemy shot inside the radius around and fires it back outward. Returns how many. */
   reflectAround(x: number, y: number, radius: number, speedMultiplier: number, damage: number): number {
     let count = 0;
@@ -267,6 +367,7 @@ export class Combat implements CombatApi {
   update(dtMs: number): void {
     this.projectiles.forEachActive('player', (p) => this.resolvePlayerShot(p));
     this.updateThrown(dtMs);
+    this.updateGas(dtMs);
 
     // Fireballs burn enemy lasers out of the air.
     this.projectiles.forEachActive('player', (shot) => {
@@ -319,7 +420,7 @@ export class Combat implements CombatApi {
         this.projectiles.kill(p, true);
         return;
       }
-      const hit: Hit = { damage: p.damage, kind: p.hitKind, x: p.x - Math.sign(p.vx) * 10, y: p.y, knockback: p.knockback, stunMs: p.stunMs || undefined };
+      const hit: Hit = { damage: p.damage, kind: p.hitKind, x: p.x - Math.sign(p.vx) * 10, y: p.y, knockback: p.knockback, stunMs: p.stunMs || undefined, slowMs: p.slowMs || undefined };
       this.apply(t, hit);
       if (p.pierce) p.hits.push(t);
       else this.projectiles.kill(p, true);

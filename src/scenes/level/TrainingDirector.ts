@@ -5,7 +5,7 @@ import { PALETTE } from '../../config/palette';
 import { TRAINING } from '../../config/training';
 import type { Drone } from '../../entities/enemies/Drone';
 import type { Damageable, Hit, HitResult, Rect } from '../../entities/types';
-import type { DroneKind } from '../../levels/types';
+import type { EnemyKind } from '../../levels/types';
 import { formatDamage } from '../../systems/DpsMeter';
 import { EventBus } from '../../systems/EventBus';
 import type { Fx } from '../../systems/Fx';
@@ -20,7 +20,7 @@ export interface TrainingDeps {
   player: { x: number; y: number };
   setAggressive(on: boolean): void;
   /** Spawns a drone hovering at (x, y) and registers it with the level. */
-  spawnDrone(kind: DroneKind, x: number, y: number): Drone;
+  spawnDrone(kind: EnemyKind, x: number, y: number): Drone;
   groundBelow(x: number, y: number): number;
   isSolid(x: number, y: number): boolean;
   worldWidth: number;
@@ -65,7 +65,7 @@ export class TrainingDirector {
     this.d.setAggressive(trainingOptions.enemiesAttack);
   }
 
-  spawn(kind: DroneKind): void {
+  spawn(kind: EnemyKind): void {
     this.prune();
     const sameKind = this.spawned.filter((dr) => dr.brain.kind === kind).length;
     if (sameKind >= TRAINING.maxPerKind || this.spawned.length >= TRAINING.maxEnemies) {

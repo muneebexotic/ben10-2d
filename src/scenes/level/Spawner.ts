@@ -62,6 +62,15 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         if (behind(e.x)) break;
         out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, e.y * TILE + TILE / 2, createBrain(e.kind)));
         break;
+      case 'mutant': {
+        if (behind(e.x)) break;
+        // Ground mutants stand on row y; a ceiling roach clings under the solid row y.
+        const brain = createBrain(e.kind, { ceiling: e.ceiling });
+        const half = brain.body.height / 2;
+        const y = e.ceiling ? (e.y + 1) * TILE + half : e.y * TILE - half;
+        out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, y, brain));
+        break;
+      }
       case 'barricade':
         if (behind(e.x + e.w)) break;
         out.barricades.push(new Barricade(scene, e.id, e.x, e.y, e.w, e.h, fx));

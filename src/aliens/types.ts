@@ -46,6 +46,10 @@ export interface ShotSpec {
   radius: number;
   knockback: number;
   hitKind: HitKind;
+  /** Pulls the shot down (lobbed goo). */
+  gravity?: number;
+  /** Gums up whatever it hits for this long. */
+  slowMs?: number;
 }
 
 /** A shockwave that runs along the ground, hitting each target once. */
@@ -68,6 +72,12 @@ export interface HeldObject {
 export interface CombatApi {
   /** Instant melee hitbox. Returns how many targets were hit. */
   melee(area: Rect, hit: Hit): number;
+  /**
+   * Melee that hits each target at most once under `key` (a pounce raking
+   * through a pack). Returns how many new targets were hit; `forget` resets it.
+   */
+  meleeOnce(area: Rect, hit: Hit, key: object): number;
+  forget(key: object): void;
   /** Knocks enemy projectiles inside `area` back the way they came. Returns how many. */
   parry(area: Rect, facing: 1 | -1, speedMultiplier: number, damage: number): number;
   shoot(spec: ShotSpec, x: number, y: number, angleRad: number): void;
@@ -87,6 +97,11 @@ export interface CombatApi {
   lift(area: Rect): HeldObject | null;
   /** Throws a held object. It flies until it hits terrain or a target, then hits everything within `splash`. */
   hurl(obj: HeldObject, x: number, y: number, vx: number, vy: number, hit: Hit, splash: number): void;
+  /**
+   * A lingering stink cloud: every tick it hits whatever is inside with `hit`
+   * (and keeps enemies too queasy to attack). Fire touching it sets it off.
+   */
+  gas(x: number, y: number, radius: number, lifeMs: number, hit: Hit): void;
 }
 
 export interface FxApi {
@@ -166,6 +181,15 @@ export interface FormAbilities {
   maxFallSpeed?(ctx: AbilityContext): number | null;
   /** True while the form is fast enough to run across water. */
   canRunOnWater?(ctx: AbilityContext): boolean;
+  /**
+   * Gravity for this frame as a multiple of normal, replacing the jump curve
+   * (0 while flying under power or clinging to a wall), or null for the default.
+   */
+  gravityScale?(ctx: AbilityContext): number | null;
+  /** How far the form can sense hidden things right now (px), 0 for none. */
+  senseRadius?(): number;
+  /** A gauge shown by the form (flight stamina): 0..1 and its colour, or null when there's nothing to show. */
+  meter?(): { value: number; color: number } | null;
 }
 
 /** How a form moves and reacts, beyond its motor stats. */
@@ -180,10 +204,16 @@ export interface FormFeel {
   gravityScale: number;
   /** Glowing forms (made of fire) render above the night lightmap. */
   emissive: boolean;
+  /**
+   * The form doesn't see like Ben does (Wildmutt has no eyes): the world's
+   * light is scaled by `ambientScale` while it is out, and it carries a
+   * soft light of its own, so whatever it senses stands out.
+   */
+  vision?: { ambientScale: number; light: { radius: number; color: number; intensity: number } };
 }
 
 /** How the alien's name slams onto the screen when it transforms. */
-export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'plain';
+export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'plain';
 
 export interface FormTheme {
   /** Main colour: name slam, transform ring, shield bar, dial while active. */

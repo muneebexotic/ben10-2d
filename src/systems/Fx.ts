@@ -23,7 +23,12 @@ export type BurstKind =
   | 'leaf'
   | 'gold'
   | 'white'
-  | 'magma';
+  | 'magma'
+  | 'slime'
+  | 'stink'
+  | 'goo'
+  | 'mutagen'
+  | 'sense';
 
 type EmitterConfig = Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
 
@@ -84,6 +89,31 @@ const PRESETS: Record<BurstKind, { texture: string; config: EmitterConfig; depth
   white: {
     texture: TEX.soft,
     config: { lifespan: { min: 200, max: 400 }, speed: { min: 60, max: 180 }, scale: { start: 0.5, end: 0 }, blendMode: 'ADD' },
+  },
+  // Stinkfly's goo: sticky blobs that drip.
+  slime: {
+    texture: TEX.px,
+    config: { lifespan: { min: 300, max: 700 }, speed: { min: 30, max: 140 }, gravityY: 520, scale: { start: 1.6, end: 0.6 }, color: [P.slime, P.slime, P.slimeDark] },
+  },
+  // Stink clouds: slow, wobbling green-yellow puffs.
+  stink: {
+    texture: TEX.smoke,
+    config: { lifespan: { min: 700, max: 1300 }, speed: { min: 6, max: 30 }, scale: { start: 0.5, end: 1.8 }, alpha: { start: 0.55, end: 0 }, gravityY: -12, tint: [0xa8c43a, 0x7f9a2a, 0xc8d84a] },
+    depth: DEPTH.fx - 1,
+  },
+  // Mutant creatures pop into goo (no explosions: they're animals).
+  goo: {
+    texture: TEX.px,
+    config: { lifespan: { min: 350, max: 800 }, speed: { min: 60, max: 210 }, angle: { min: 190, max: 350 }, gravityY: 640, scale: { start: 2, end: 0.6 }, color: [P.mutagenGlow, P.mutagen, P.mutagenDark] },
+  },
+  mutagen: {
+    texture: TEX.soft,
+    config: { lifespan: { min: 300, max: 800 }, speed: { min: 10, max: 70 }, scale: { start: 0.6, end: 0 }, gravityY: -40, color: [P.mutagenGlow, P.mutagen, P.mutagenDark], blendMode: 'ADD' },
+  },
+  // Wildmutt's senses: warm motes drifting off whatever he picks up.
+  sense: {
+    texture: TEX.spark,
+    config: { lifespan: { min: 400, max: 900 }, speed: { min: 8, max: 40 }, scale: { start: 1, end: 0 }, gravityY: -30, color: [P.white, 0xffd08a, 0xff9a3c], blendMode: 'ADD' },
   },
 };
 
@@ -251,6 +281,18 @@ export class Fx {
     this.ring(x, y, P.fire2, 22 * k, 300, 0.7);
     this.light(x, y, 70 * k, P.fire2, 360 + 120 * k, 1);
     this.shake(size === 'small' ? FX.shakeLight : size === 'medium' ? FX.shakeMedium : FX.shakeHeavy, 150 + 80 * k);
+  }
+
+  /** A mutant creature bursting: goo, a green flash and a puff of mutagen (the animal version of an explosion). */
+  splat(x: number, y: number, size: 'small' | 'medium' | 'big'): void {
+    const k = size === 'small' ? 1 : size === 'medium' ? 1.7 : 3;
+    this.burst('goo', x, y, Math.round(16 * k));
+    this.burst('mutagen', x, y, Math.round(8 * k));
+    this.burst('smoke', x, y, Math.round(2 * k));
+    this.flash(x, y, P.mutagenGlow, 14 * k, 220);
+    this.ring(x, y, P.mutagen, 20 * k, 280, 0.6);
+    this.light(x, y, 60 * k, P.mutagen, 320 + 100 * k, 0.9);
+    this.shake(size === 'small' ? FX.shakeLight : size === 'medium' ? FX.shakeMedium : FX.shakeHeavy, 120 + 70 * k);
   }
 
   private take(texture: string, x: number, y: number, tint: number, depth: number): Pooled {

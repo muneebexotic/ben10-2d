@@ -8,7 +8,7 @@ import type { Lighting } from '../systems/Lighting';
 import { playSfx } from '../systems/audio/Sfx';
 import type { Damageable, HitKind } from './types';
 
-export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell';
+export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit';
 export type Team = 'player' | 'enemy';
 
 interface KindStyle {
@@ -30,6 +30,8 @@ const STYLE: Record<ProjectileKind, KindStyle> = {
   wave: { texture: TEX.wave, anim: 'wave-roll', trail: 'dust', trailChance: 0.5, light: 34, lightColor: P.fire2, impact: 'debris', rotate: false, additive: false },
   needle: { texture: TEX.needle, trail: 'red', trailChance: 0.4, light: 22, lightColor: P.enemyGlow, impact: 'red', rotate: true, additive: false },
   shell: { texture: TEX.shell, trail: 'smoke', trailChance: 0.35, light: 40, lightColor: P.enemy, impact: 'red', rotate: false, additive: false },
+  slime: { texture: TEX.slimeGlob, anim: 'slime-wobble', trail: 'slime', trailChance: 0.45, light: 30, lightColor: 0xd4e83a, impact: 'slime', rotate: true, additive: false },
+  spit: { texture: TEX.spitGlob, anim: 'spit-wobble', trail: 'goo', trailChance: 0.5, light: 40, lightColor: P.mutagen, impact: 'goo', rotate: false, additive: false },
 };
 
 /** Extra behaviour for a shot. Defaults match the original fireballs and lasers. */
@@ -44,6 +46,8 @@ export interface ShotOptions {
   /** Rides along the ground (shockwaves); dies at walls and ledges. */
   hugGround?: boolean;
   stunMs?: number;
+  /** Gums up whatever it hits for this long (Stinkfly's slime). */
+  slowMs?: number;
   tint?: number;
 }
 
@@ -66,6 +70,7 @@ export interface Projectile {
   pierce: boolean;
   hugGround: boolean;
   stunMs: number;
+  slowMs: number;
   /** Targets a piercing shot already hit. */
   readonly hits: Damageable[];
 }
@@ -97,7 +102,7 @@ export class Projectiles {
       const sprite = this.scene.add.sprite(0, 0, STYLE[kind].texture);
       p = {
         sprite, active: false, kind, team, x: 0, y: 0, vx: 0, vy: 0, radius: 0, damage: 0, life: 0, reflected: false,
-        hitKind: 'fire', knockback: 0, gravity: 0, pierce: false, hugGround: false, stunMs: 0, hits: [],
+        hitKind: 'fire', knockback: 0, gravity: 0, pierce: false, hugGround: false, stunMs: 0, slowMs: 0, hits: [],
       };
       this.items.push(p);
     }
@@ -110,6 +115,7 @@ export class Projectiles {
       pierce: opts.pierce ?? false,
       hugGround: opts.hugGround ?? false,
       stunMs: opts.stunMs ?? 0,
+      slowMs: opts.slowMs ?? 0,
     });
     p.hits.length = 0;
     const s = p.sprite;
@@ -178,8 +184,14 @@ export class Projectiles {
       this.fx.burst('smoke', p.x, p.y, 2);
       this.fx.light(p.x, p.y, 50, P.fire2, 180);
       playSfx('fireHit', 0.5);
+    } else if (p.kind === 'slime' || p.kind === 'spit') {
+      playSfx('splat', 0.5, p.kind === 'spit' ? 0.7 : 1.1);
     }
+    this.onImpact?.(p);
   }
+
+  /** Called whenever a shot ends on something (the level makes puddles from mutagen spit). */
+  onImpact: ((p: Projectile) => void) | null = null;
 
   /** Punch-parry: an enemy shot turns green and flies back, faster and stronger. */
   reflect(p: Projectile, facing: 1 | -1, speedMultiplier: number, damage: number): void {

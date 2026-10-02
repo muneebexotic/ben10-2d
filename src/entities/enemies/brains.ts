@@ -2,12 +2,17 @@ import { GUNNER, SCOUT, STRIKER } from '../../config/enemies';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
 import { playSfx } from '../../systems/audio/Sfx';
-import type { DroneKind } from '../../levels/types';
+import type { EnemyKind } from '../../levels/types';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
 import { blinkOn } from '../../systems/Accessibility';
 import { aimAt, canShoot, fireLaser, rand, steer } from './brainKit';
 import { ArmoredBrain } from './armored';
 import { HornetBrain } from './hornet';
+import { BatBrain } from './mutants/bat';
+import { BruteBrain } from './mutants/brute';
+import { LurkerBrain } from './mutants/lurker';
+import { RatBrain } from './mutants/rat';
+import { RoachBrain } from './mutants/roach';
 import { pace } from '../../systems/Difficulty';
 
 /** Hovers at a comfortable offset, telegraphs with a flickering aim line, then fires one aimed laser. */
@@ -241,7 +246,8 @@ export class GunnerBrain implements DroneBrain {
   }
 }
 
-export function createBrain(kind: DroneKind): DroneBrain {
+/** A fresh brain for any enemy kind (`ceiling`: a roach that starts clinging to the ceiling). */
+export function createBrain(kind: EnemyKind, opts: { ceiling?: boolean } = {}): DroneBrain {
   switch (kind) {
     case 'scout':
       return new ScoutBrain();
@@ -253,5 +259,15 @@ export function createBrain(kind: DroneKind): DroneBrain {
       return new ArmoredBrain();
     case 'hornet':
       return new HornetBrain();
+    case 'bat':
+      return new BatBrain();
+    case 'rat':
+      return new RatBrain();
+    case 'roach':
+      return new RoachBrain(opts.ceiling ?? false);
+    case 'lurker':
+      return new LurkerBrain();
+    case 'brute':
+      return new BruteBrain();
   }
 }

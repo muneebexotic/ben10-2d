@@ -3,7 +3,7 @@ import type { DamageOutcome, Player } from '../../../entities/Player';
 import type { Projectiles } from '../../../entities/Projectiles';
 import type { Drone, DroneWorld } from '../../../entities/enemies/Drone';
 import type { Telegraphs } from '../../../entities/enemies/Telegraphs';
-import type { DroneKind, LevelData } from '../../../levels/types';
+import type { EnemyKind, LevelData } from '../../../levels/types';
 import type { Fx } from '../../../systems/Fx';
 import type { Controls } from '../../../systems/InputMap';
 import type { Lighting } from '../../../systems/Lighting';
@@ -61,7 +61,7 @@ export interface StoryKit {
   /** On the dial right now. */
   hasAlien(id: string): boolean;
   /** A drone that joins the fight now. `roam`: free of its spawn leash (it follows the action). */
-  spawnDrone(kind: DroneKind, x: number, y: number, opts?: { roam?: boolean; delayMs?: number }): Drone;
+  spawnDrone(kind: EnemyKind, x: number, y: number, opts?: { roam?: boolean; delayMs?: number }): Drone;
   /** Lights a (hidden) checkpoint: split, save point, banner. */
   reachCheckpoint(id: string): void;
   playMusic(track: TrackName): void;

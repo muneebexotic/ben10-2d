@@ -3,7 +3,7 @@ import type { TouchMode } from './SaveSystem';
 import type { SplitResult } from './Splits';
 import type { RunStats } from './RunStats';
 import type { TrainingOptions } from './TrainingState';
-import type { DroneKind } from '../levels/types';
+import type { EnemyKind } from '../levels/types';
 import type { DifficultyId } from '../config/difficulty';
 
 export interface OmnitrixTick {
@@ -94,7 +94,7 @@ export interface GameEvents {
   /** The active file's difficulty changed (Settings). Gameplay applies it live. */
   'difficulty:changed': { id: DifficultyId };
   /** Training menu: spawn one enemy, clear them all, or change the sandbox switches. */
-  'training:spawn': { kind: DroneKind };
+  'training:spawn': { kind: EnemyKind };
   'training:clear': undefined;
   'training:options': TrainingOptions;
 }

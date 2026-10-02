@@ -26,19 +26,29 @@ export interface PlatformSpan {
   w: number;
 }
 
+/** Water, Dr. Animo's glowing mutagen (both runnable by XLR8), or a tar pit (too sticky to run on). */
+export type LiquidKind = 'water' | 'mutagen' | 'tar';
+
 export interface WaterSpan {
   x: number;
   w: number;
   surface: number;
   depth: number;
+  kind?: LiquidKind;
 }
 
-export type DroneKind = 'scout' | 'striker' | 'gunner' | 'armored' | 'hornet';
+/** Flying enemies (Vilgax's drones, Dr. Animo's mutant bats): they use the Drone body. */
+export type DroneKind = 'scout' | 'striker' | 'gunner' | 'armored' | 'hornet' | 'bat';
+/** Dr. Animo's ground mutants: they walk, climb and leap. */
+export type MutantKind = 'rat' | 'roach' | 'lurker' | 'brute';
+export type EnemyKind = DroneKind | MutantKind;
 export type Density = 'sparse' | 'normal' | 'frequent';
 export type FormFilter = 'any' | 'human' | 'alien';
 
 export type EntitySpawn =
   | { type: 'drone'; kind: DroneKind; x: number; y: number }
+  /** A ground mutant standing on row `y` (`ceiling`: a roach clinging to the ceiling above it). */
+  | { type: 'mutant'; kind: MutantKind; x: number; y: number; ceiling?: boolean }
   | { type: 'barricade'; id: string; x: number; y: number; w: number; h: number }
   /**
    * `label` names the speedrun split. A `hidden` checkpoint has no post: a set
@@ -59,7 +69,16 @@ export type EntitySpawn =
   /** `floor`: the arena's floor row (default 24). `kind` picks the boss. */
   | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number; kind?: BossKind; floor?: number }
   /** Drones that fly in from off-screen once Ben passes `triggerX` (each spawn's x is where it heads). */
-  | { type: 'wave'; id: string; triggerX: number; from: 'left' | 'right' | 'above'; spawns: Array<{ kind: DroneKind; x: number; y: number }> }
+  | { type: 'wave'; id: string; triggerX: number; from: 'left' | 'right' | 'above'; spawns: Array<{ kind: EnemyKind; x: number; y: number }> }
+  /**
+   * A secret passage that looks like the wall around it: solid until a form
+   * that senses (Wildmutt) comes close, then it shows its outline and opens.
+   */
+  | { type: 'hiddenDoor'; id: string; x: number; y: number; w: number; h: number }
+  /** A skylight pane: only a heavy enough smash (a high meteor drop) breaks it. */
+  | { type: 'glassFloor'; id: string; x: number; y: number; w: number }
+  /** Mutant vines: like a barricade, only fire gets through. */
+  | { type: 'vines'; id: string; x: number; y: number; w: number; h: number }
   /**
    * A secret only a later alien can reach (a card out of every current alien's
    * reach). Standing in the zone shows that alien's locked silhouette and the
@@ -101,7 +120,29 @@ export type DecorKind =
   | 'garage'
   | 'neon'
   | 'haulerWreck'
-  | 'fence';
+  | 'fence'
+  // Dr. Animo (the museum at night and his lab).
+  | 'lampPost'
+  | 'museumFacade'
+  | 'trex'
+  | 'mammoth'
+  | 'whale'
+  | 'pterosaur'
+  | 'displayCase'
+  | 'stuffedBear'
+  | 'banner'
+  | 'painting'
+  | 'velvetRope'
+  | 'bench'
+  | 'exitSign'
+  | 'tarSign'
+  | 'meteorite'
+  | 'mutagenTank'
+  | 'cage'
+  | 'labConsole'
+  | 'pipes'
+  | 'staffDoor'
+  | 'columns';
 
 export interface PromptZone {
   id: string;
@@ -118,17 +159,17 @@ export interface PromptZone {
   formText?: Partial<Record<string, string>>;
 }
 
-export type AmbientKind = 'camp' | 'forest' | 'ravine' | 'crash' | 'sim' | 'sunset' | 'dusk' | 'night' | 'neon';
+export type AmbientKind = 'camp' | 'forest' | 'ravine' | 'crash' | 'sim' | 'sunset' | 'dusk' | 'night' | 'neon' | 'street' | 'museum' | 'gallery' | 'blackout' | 'atrium' | 'lab';
 
 export interface AmbientZone {
   x: number;
   ambient: AmbientKind;
 }
 
-/** Visual set: the night forest, the Omnitrix's training simulation, or the desert highway at sundown. */
-export type LevelTheme = 'forest' | 'sim' | 'highway';
+/** Visual set: the night forest, the Omnitrix's training simulation, the desert highway at sundown, or the museum at night. */
+export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum';
 
-export type BossKind = 'hunter' | 'roadbreaker';
+export type BossKind = 'hunter' | 'roadbreaker' | 'frog';
 
 /** A strip of asphalt drawn over the ground (row `y` is the road surface). */
 export interface RoadSpan {
@@ -163,6 +204,27 @@ export interface StoryPlan {
   chase?: { boardX: number; boardY: number; arenaX: number; roadY: number; endX: number; endY: number; checkpoint: string };
   /** Lines after the boss falls. */
   outro?: Array<{ who: string; text: string; ms: number }>;
+  /** Chapter 3's opening: the Rustbucket parked outside the museum at night (`x`, `y`: where it stands). */
+  museumIntro?: { x: number; y: number };
+  /**
+   * The villain's entrance: Ben walking past `triggerX` stops the action, and
+   * Dr. Animo makes his speech from (x, y), unleashes his mutants and leaves
+   * toward `exitX`.
+   */
+  villainIntro?: { triggerX: number; x: number; y: number; exitX: number; spawns: Array<{ kind: EnemyKind; x: number; y: number }> };
+  /**
+   * The lights go out across `fromX`-`toX` once Ben passes `triggerX`; the
+   * chapter's scripted unlock for `alien` happens in the dark.
+   */
+  blackout?: { triggerX: number; fromX: number; toX: number; alien: string };
+  /**
+   * The floor at the atrium's edge gives way (`collapse`, solid tiles that
+   * crumble) as Ben passes `triggerX`; the villain escapes across to (toX, toY);
+   * the chapter's scripted unlock for `alien` follows.
+   */
+  atrium?: { triggerX: number; collapse: { x: number; y: number; w: number; h: number }; toX: number; toY: number; alien: string };
+  /** After the boss, before the results: a cliffhanger plays once, on the file's first clear (see ActEndScene). */
+  actEnd?: number;
 }
 
 export interface LevelData {
@@ -188,5 +250,7 @@ export interface LevelData {
   introSpawns: Array<{ kind: DroneKind; x: number; y: number }>;
   roads?: RoadSpan[];
   sky?: SkyKey[];
+  /** Museum interiors: the back wall behind each stretch (tiles), outdoors elsewhere. */
+  interiors?: Array<{ x: number; w: number; wall: 'hall' | 'lab' }>;
   story?: StoryPlan;
 }

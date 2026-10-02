@@ -6,10 +6,12 @@ import type { TrackName } from '../../systems/audio/Music';
 import type { ArenaBoss } from './ArenaBoss';
 import { HunterDrone, type BossWorld } from './HunterDrone';
 import { Roadbreaker } from './roadbreaker/Roadbreaker';
+import { Frog } from './frog/Frog';
 
 /** Everything an arena needs to stage a boss: its music, Vilgax's speech before it, and the boss itself. */
 export interface BossKindDef {
   music: TrackName;
+  /** Vilgax's speech before the fight (empty: the boss brings its own speaker, Dr. Animo). */
   hologram: readonly StoryLine[];
   /** Vilgax's portrait in the dialogue box (chapters that use portraits). */
   portrait?: string;
@@ -24,4 +26,5 @@ export const BOSS_KINDS: Record<BossKind, BossKindDef> = {
     portrait: TEX.portraitVilgax,
     create: (scene, world, x) => new Roadbreaker(scene, world, x),
   },
+  frog: { music: 'animo', hologram: [], create: (scene, world, x) => new Frog(scene, world, x) },
 };

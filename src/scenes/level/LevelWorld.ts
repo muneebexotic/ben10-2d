@@ -6,7 +6,14 @@ import type { LevelData } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
 import type { Rect } from '../../entities/types';
 
-const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert } as const;
+const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum } as const;
+
+/** How each liquid looks: its surface texture and the colour it fades to when deeper than one texture. */
+const LIQUIDS = {
+  water: { texture: TEX.water, deep: 0x0c2440, drift: 0.012 },
+  mutagen: { texture: TEX.mutagenPool, deep: 0x06261c, drift: 0.008 },
+  tar: { texture: TEX.tarPool, deep: 0x08070c, drift: 0.002 },
+} as const;
 
 /** Tilemap, collision setup and spatial queries for a level. */
 export class LevelWorld {
@@ -14,7 +21,9 @@ export class LevelWorld {
   readonly layer: Phaser.Tilemaps.TilemapLayer;
   readonly widthPx: number;
   readonly heightPx: number;
-  private readonly waterSprites: Phaser.GameObjects.TileSprite[] = [];
+  /** The tileset this level is drawn with (hidden doors disguise themselves in it). */
+  readonly tilesKey: string;
+  private readonly waterSprites: Array<{ sprite: Phaser.GameObjects.TileSprite; drift: number }> = [];
   /** Thin one-way floors on every water surface. The level only lets them collide for forms that run on water. */
   readonly waterSurfaces: Phaser.Physics.Arcade.StaticGroup;
   /**
@@ -34,6 +43,7 @@ export class LevelWorld {
     const frames = autotile(this.grid);
     const map = scene.make.tilemap({ data: frames, tileWidth: TILE, tileHeight: TILE });
     const tilesKey = TILESETS[data.theme ?? 'forest'];
+    this.tilesKey = tilesKey;
     const tileset = map.addTilesetImage(tilesKey, tilesKey, TILE, TILE, 0, 0)!;
     this.layer = map.createLayer(0, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer;
     this.layer.setDepth(DEPTH.terrain);
@@ -65,22 +75,25 @@ export class LevelWorld {
       body.checkCollision.down = false;
       body.checkCollision.left = false;
       body.checkCollision.right = false;
-      this.waterSurfaces.add(floor);
-      // The water texture is one surface deep (64 px); deeper water continues in its darkest blue.
+      // Tar is too sticky to run across: no surface to stand on.
+      if (w.kind === 'tar') floor.disableBody(true, true);
+      else this.waterSurfaces.add(floor);
+      // The texture is one surface deep (64 px); deeper liquid continues in its darkest colour.
+      const look = LIQUIDS[w.kind ?? 'water'];
       const surfaceH = Math.min(w.depth * TILE, 64);
       const sprite = scene.add
-        .tileSprite(w.x * TILE, w.surface * TILE + 4, w.w * TILE, surfaceH, TEX.water)
+        .tileSprite(w.x * TILE, w.surface * TILE + 4, w.w * TILE, surfaceH, look.texture)
         .setOrigin(0, 0)
         .setDepth(DEPTH.water);
-      this.waterSprites.push(sprite);
+      this.waterSprites.push({ sprite, drift: look.drift });
       if (w.depth * TILE > surfaceH) {
-        scene.add.rectangle(w.x * TILE, w.surface * TILE + 4 + surfaceH, w.w * TILE, w.depth * TILE - surfaceH, 0x0c2440).setOrigin(0, 0).setDepth(DEPTH.water);
+        scene.add.rectangle(w.x * TILE, w.surface * TILE + 4 + surfaceH, w.w * TILE, w.depth * TILE - surfaceH, look.deep).setOrigin(0, 0).setDepth(DEPTH.water);
       }
     }
   }
 
   update(dtMs: number): void {
-    for (const s of this.waterSprites) s.tilePositionX += dtMs * 0.012;
+    for (const w of this.waterSprites) w.sprite.tilePositionX += dtMs * w.drift;
   }
 
   isSolid(x: number, y: number): boolean {
@@ -127,6 +140,12 @@ export class LevelWorld {
   /** Feet resting on a water surface (running on water). */
   onWaterSurface(x: number, feetY: number): boolean {
     return this.data.water.some((w) => x >= w.x * TILE && x < (w.x + w.w) * TILE && Math.abs(feetY - w.surface * TILE) <= 3);
+  }
+
+  /** The liquid under (x, feetY), if any (mutagen glows, tar is black). */
+  liquidAt(x: number, feetY: number): 'water' | 'mutagen' | 'tar' | null {
+    const w = this.data.water.find((s) => x >= s.x * TILE && x < (s.x + s.w) * TILE && feetY > s.surface * TILE - 2);
+    return w ? (w.kind ?? 'water') : null;
   }
 
   ambientAt(x: number): LevelData['ambience'][number]['ambient'] {

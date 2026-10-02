@@ -11,6 +11,10 @@ export interface Capabilities {
   canSmash: boolean;
   /** Can run across water surfaces. */
   canRunWater: boolean;
+  /** Can climb walls (and jump off them). */
+  canClimb?: boolean;
+  /** Senses hidden passages (they open for this form). */
+  canSense?: boolean;
 }
 
 /** Each alien declares its own envelope in its definition (`reach`). */
@@ -33,6 +37,16 @@ export function blockedCells(level: LevelData, caps: Capabilities): Set<string> 
     if (e.type === 'crackedWall' && !caps.canSmash) {
       for (let y = e.y; y < e.y + e.h; y++) blocked.add(`${e.x},${y}`);
     }
+    if (e.type === 'hiddenDoor' && !caps.canSense) {
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    }
+    if (e.type === 'vines' && !caps.canBurn) {
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    }
+    // Skylight glass is a floor for everyone but a smasher (a meteor drop goes straight through).
+    if (e.type === 'glassFloor' && !caps.canSmash) {
+      for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${e.y}`);
+    }
   }
   return blocked;
 }
@@ -41,9 +55,9 @@ function isWater(level: LevelData, x: number, y: number): boolean {
   return level.water.some((w) => x >= w.x && x < w.x + w.w && y >= w.surface);
 }
 
-/** The top row of a water span counts as a floor for forms that can run on water. */
+/** The top row of a water span counts as a floor for forms that can run on water (tar is too sticky). */
 function isWaterSurface(level: LevelData, x: number, y: number): boolean {
-  return level.water.some((w) => x >= w.x && x < w.x + w.w && y === w.surface);
+  return level.water.some((w) => x >= w.x && x < w.x + w.w && y === w.surface && w.kind !== 'tar');
 }
 
 function isOpen(grid: TileGrid, blocked: Set<string>, x: number, y: number): boolean {
@@ -79,8 +93,27 @@ export function reachableFrom(level: LevelData, grid: TileGrid, start: Pos, caps
     queue.push(start);
   }
 
+  const solidAt = (x: number, y: number) => isSolidCell(cellAt(grid, x, y)) || blocked.has(`${x},${y}`);
+  const visit = (p: Pos) => {
+    const key = `${p.x},${p.y}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    queue.push(p);
+  };
+
   while (queue.length > 0) {
     const { x, y } = queue.shift()!;
+    // Climbers go up any wall beside them, can jump off it at any height, and pull up onto the top.
+    if (caps.canClimb) {
+      for (const d of [-1, 1]) {
+        let cy = y;
+        while (cy > 0 && (solidAt(x + d, cy) || solidAt(x + d, cy - 1)) && isOpen(grid, blocked, x, cy - 1) && isOpen(grid, blocked, x, cy - 2) && !isWater(level, x, cy - 1)) {
+          cy--;
+          visit({ x, y: cy });
+          if (!solidAt(x + d, cy - 1) && isStandable(level, grid, blocked, x + d, cy - 1, caps)) visit({ x: x + d, y: cy - 1 });
+        }
+      }
+    }
     for (let dy = -caps.jumpUp; dy <= MAX_FALL; dy++) {
       const across = dy <= 0 ? caps.jumpAcross + 1 : caps.jumpAcross + 1 + Math.ceil(dy / 2);
       if (dy < 0 && !headroom(grid, blocked, x, y, -dy)) continue;

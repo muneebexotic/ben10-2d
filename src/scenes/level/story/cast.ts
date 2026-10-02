@@ -1,7 +1,8 @@
 import { PALETTE } from '../../../config/palette';
 import { TEX } from '../../preload/assetKeys';
+import { WILDMUTT_TEX } from '../../../aliens/wildmutt/art';
 
-export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax';
+export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin';
 
 export interface CastMember {
   name: string;
@@ -17,6 +18,10 @@ export const CAST: Record<CastId, CastMember> = {
   gwen: { name: 'GWEN', color: PALETTE.gwen, portrait: TEX.portraitGwen, voicePitch: 1.4 },
   ben: { name: 'BEN', color: PALETTE.omnitrix, portrait: TEX.portraitBen, voicePitch: 1.15 },
   vilgax: { name: 'VILGAX', color: PALETTE.enemy, portrait: TEX.portraitVilgax, voicePitch: 0.55 },
+  animo: { name: 'DR. ANIMO', color: PALETTE.animo, portrait: TEX.portraitAnimo, voicePitch: 0.8 },
+  /** Ben as Wildmutt: he can only growl, so the box subtitles him. */
+  wildmutt: { name: 'WILDMUTT', color: 0xff9a3c, portrait: WILDMUTT_TEX.portrait, voicePitch: 0.5 },
+  kevin: { name: '???', color: PALETTE.kevin, portrait: TEX.portraitKevin, voicePitch: 1.05 },
 };
 
 export function isCastId(id: string): id is CastId {

@@ -7,8 +7,11 @@ export interface Rect {
   h: number;
 }
 
-/** 'smash' is a heavy blow (Four Arms): the only thing that breaks cracked walls and armour. */
-export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform' | 'smash';
+/**
+ * 'smash' is a heavy blow (Four Arms): the only thing that breaks cracked walls and armour.
+ * 'slime' is sticky goo (Stinkfly): weak, but it gums enemies up (see `Hit.slowMs`).
+ */
+export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform' | 'smash' | 'slime';
 
 export interface Hit {
   damage: number;
@@ -20,6 +23,8 @@ export interface Hit {
   heavy?: boolean;
   /** Knocks drones out of the sky for this long (they can be picked up while down). */
   stunMs?: number;
+  /** Gums the target up: it moves and attacks slower for this long, and enough goo sticks it in place. */
+  slowMs?: number;
 }
 
 export type HitResult = 'none' | 'hit' | 'killed' | 'blocked';

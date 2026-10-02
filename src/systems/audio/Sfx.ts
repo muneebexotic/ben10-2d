@@ -304,6 +304,91 @@ const RECIPES = {
     A.tone({ type: 'square', freq: midiToFreq(76), duration: 0.08, volume: 0.06 * v, when: t + 0.12 });
     A.tone({ type: 'square', freq: midiToFreq(83), duration: 0.22, volume: 0.06 * v, when: t + 0.18 });
   },
+  // ---- Dr. Animo's mutants and the museum
+  /** Something soft and wet bursting (mutants, goo, slime landing). */
+  splat: (v, p) => {
+    A.noise({ duration: 0.16, volume: 0.28 * v, filter: 'lowpass', freq: 1600 * p, freqEnd: 200 });
+    A.tone({ type: 'sine', freq: 320 * p, freqEnd: 90 * p, duration: 0.12, volume: 0.18 * v });
+  },
+  squeak: (v, p) => {
+    A.tone({ type: 'square', freq: 1500 * p, freqEnd: 2300 * p, duration: 0.06, volume: 0.05 * v });
+    A.tone({ type: 'square', freq: 2100 * p, freqEnd: 1600 * p, duration: 0.05, volume: 0.04 * v, when: A.now + 0.07 });
+  },
+  screech: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 2600 * p, freqEnd: 1700 * p, duration: 0.32, volume: 0.05 * v, detune: 40, filter: { type: 'bandpass', freq: 2400, q: 4 } });
+    A.noise({ duration: 0.25, volume: 0.08 * v, filter: 'highpass', freq: 3500 });
+  },
+  hiss: (v, p) => A.noise({ duration: 0.45, volume: 0.16 * v, filter: 'highpass', freq: 3000 * p, freqEnd: 6000 * p, attack: 0.05 }),
+  growl: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 95 * p, freqEnd: 70 * p, duration: 0.7, volume: 0.14 * v, detune: 30, filter: { type: 'lowpass', freq: 600 } });
+    A.noise({ duration: 0.6, volume: 0.08 * v, filter: 'bandpass', freq: 380 * p, q: 3 });
+  },
+  skitter: (v, p) => {
+    for (let i = 0; i < 5; i++) A.noise({ duration: 0.02, volume: 0.08 * v, filter: 'bandpass', freq: 3200 * p + i * 300, q: 5, when: A.now + i * 0.035 });
+  },
+  chestPound: (v) => {
+    for (let i = 0; i < 4; i++) A.tone({ type: 'sine', freq: 120, freqEnd: 60, duration: 0.12, volume: 0.35 * v, when: A.now + i * 0.13 });
+  },
+  croak: (v, p) => {
+    A.tone({ type: 'square', freq: 110 * p, freqEnd: 80 * p, duration: 0.35, volume: 0.16 * v, filter: { type: 'lowpass', freq: 900 } });
+    A.tone({ type: 'sawtooth', freq: 140 * p, freqEnd: 70 * p, duration: 0.3, volume: 0.08 * v, when: A.now + 0.18, filter: { type: 'lowpass', freq: 700 } });
+  },
+  tongue: (v, p) => {
+    A.noise({ duration: 0.18, volume: 0.2 * v, filter: 'bandpass', freq: 900 * p, freqEnd: 3200 * p, q: 2 });
+    A.tone({ type: 'sine', freq: 500 * p, freqEnd: 1400 * p, duration: 0.12, volume: 0.08 * v });
+  },
+  gulp: (v) => {
+    A.tone({ type: 'sine', freq: 300, freqEnd: 70, duration: 0.3, volume: 0.35 * v });
+    A.noise({ duration: 0.2, volume: 0.15 * v, filter: 'lowpass', freq: 800, freqEnd: 200, when: A.now + 0.05 });
+  },
+  burp: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 85 * p, freqEnd: 60 * p, duration: 0.55, volume: 0.25 * v, detune: 35, filter: { type: 'lowpass', freq: 500 } });
+    A.noise({ duration: 0.4, volume: 0.12 * v, filter: 'lowpass', freq: 400 });
+  },
+  /** Fire meets a stink cloud. */
+  gasBoom: (v) => {
+    A.noise({ duration: 0.9, volume: 0.5 * v, filter: 'lowpass', freq: 3200, freqEnd: 120 });
+    A.tone({ type: 'sine', freq: 90, freqEnd: 30, duration: 0.7, volume: 0.55 * v });
+    A.tone({ type: 'sawtooth', freq: 400, freqEnd: 60, duration: 0.4, volume: 0.08 * v, filter: { type: 'lowpass', freq: 1500 } });
+  },
+  /** The museum's power dying: generators whining down, then a clunk. */
+  powerDown: (v) => {
+    A.tone({ type: 'sawtooth', freq: 240, freqEnd: 30, duration: 1.4, volume: 0.12 * v, filter: { type: 'lowpass', freq: 900 } });
+    A.tone({ type: 'sine', freq: 60, freqEnd: 25, duration: 0.5, volume: 0.4 * v, when: A.now + 1.3 });
+    A.noise({ duration: 0.12, volume: 0.25 * v, filter: 'lowpass', freq: 900, when: A.now + 1.3 });
+  },
+  lightClunk: (v, p) => {
+    A.tone({ type: 'square', freq: 80 * p, freqEnd: 45 * p, duration: 0.09, volume: 0.25 * v });
+    A.noise({ duration: 0.05, volume: 0.15 * v, filter: 'highpass', freq: 2500 });
+  },
+  glass: (v, p) => {
+    for (let i = 0; i < 6; i++) A.tone({ type: 'triangle', freq: (2400 + Math.random() * 2600) * p, duration: 0.08 + Math.random() * 0.1, volume: 0.05 * v, when: A.now + i * 0.03 });
+    A.noise({ duration: 0.3, volume: 0.3 * v, filter: 'highpass', freq: 3000, freqEnd: 1500 });
+  },
+  /** Animo's Transmodulator: a wobbling, sci-fi mutation ray. */
+  mutateRay: (v) => {
+    A.tone({ type: 'sine', freq: 300, freqEnd: 1200, duration: 0.6, volume: 0.1 * v, detune: 50 });
+    A.tone({ type: 'square', freq: 150, freqEnd: 600, duration: 0.6, volume: 0.05 * v, filter: { type: 'lowpass', freq: 1500 } });
+  },
+  /** A secret passage opening. */
+  secret: (v) => {
+    for (const [i, n] of [67, 74, 79, 86].entries()) A.tone({ type: 'triangle', freq: midiToFreq(n), duration: 0.3, volume: 0.09 * v, when: A.now + i * 0.09 });
+    A.noise({ duration: 0.6, volume: 0.15 * v, filter: 'lowpass', freq: 700, freqEnd: 200 });
+  },
+  /** An act ends: a rising fanfare with a cymbal swell. */
+  fanfare: (v) => {
+    const t = A.now;
+    A.noise({ duration: 1.6, volume: 0.12 * v, filter: 'highpass', freq: 5000, attack: 0.9 });
+    for (const [i, n] of [60, 64, 67, 72, 76, 79, 84].entries()) A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.18, volume: 0.06 * v, when: t + i * 0.09, detune: 6 });
+    A.tone({ type: 'triangle', freq: midiToFreq(88), duration: 1.6, volume: 0.15 * v, when: t + 0.66 });
+    A.tone({ type: 'sawtooth', freq: midiToFreq(76), duration: 1.6, volume: 0.04 * v, when: t + 0.66, filter: { type: 'lowpass', freq: 2400 } });
+    A.tone({ type: 'sine', freq: 70, freqEnd: 35, duration: 1.2, volume: 0.5 * v, when: t + 0.66 });
+  },
+  /** Electricity crawling into Kevin's hand. */
+  zap: (v, p) => {
+    for (let i = 0; i < 8; i++) A.tone({ type: 'square', freq: (800 + Math.random() * 1800) * p, duration: 0.03, volume: 0.05 * v, when: A.now + i * 0.04 });
+    A.noise({ duration: 0.4, volume: 0.15 * v, filter: 'bandpass', freq: 2600, q: 3 });
+  },
 } satisfies Record<string, Recipe>;
 
 export type SfxName = keyof typeof RECIPES;

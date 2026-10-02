@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { BOSS } from '../../config/boss';
 import { DEPTH, FX } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
-import type { DroneKind } from '../../levels/types';
+import type { EnemyKind } from '../../levels/types';
 import { TEX } from '../../scenes/preload/assetKeys';
 import { BOSS_EYE_FRAMES } from '../../scenes/preload/enemies';
 import type { Fx } from '../../systems/Fx';
@@ -28,7 +28,7 @@ export interface BossWorld {
   time: TimeController;
   player: { x: number; y: number; centerY: number; dead: boolean };
   arena: { left: number; right: number; floorY: number; top: number };
-  spawnAdd(kind: DroneKind, x: number, y: number): void;
+  spawnAdd(kind: EnemyKind, x: number, y: number): void;
   aliveAdds(): number;
   dropPickup(x: number, y: number): void;
   onPhase2(): void;
@@ -39,6 +39,12 @@ export interface BossWorld {
   cancelThreat(): void;
   /** A hint at the bottom of the screen (once per id). */
   tip(id: string, text: string, ms: number): void;
+  /** Bosses that bring their own speaker (Dr. Animo): a conversation in the dialogue box, then `onDone`. */
+  dialogue?(lines: ReadonlyArray<{ who: string; text: string; ms: number }>, onDone: () => void): void;
+  /** False the first time Ben reaches this boss in a run (the speech plays once). */
+  readonly introSeen?: boolean;
+  /** Freezes Ben during the boss's own entrance. */
+  holdPlayer?(on: boolean): void;
 }
 
 type BossState = 'intro' | 'idle' | 'attack' | 'transition' | 'dying' | 'dead';

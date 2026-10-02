@@ -73,6 +73,8 @@ export class Banner {
     const text = `${name}!`;
     if (opts.style === 'blur') this.blurSlam(text, color, scale, hold, y);
     else if (opts.style === 'quake') this.quakeSlam(text, color, scale, hold, y);
+    else if (opts.style === 'howl') this.howlSlam(text, color, scale, hold, y);
+    else if (opts.style === 'buzz') this.buzzSlam(text, color, scale, hold, y);
     else this.blazeSlam(text, color, scale, hold, y, opts.first);
   }
 
@@ -180,6 +182,96 @@ export class Banner {
       alpha: 0,
       y: y + 12,
       delay: hold + 190,
+      duration: 260,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /**
+   * Three claw slashes rip across the screen, the name tears in behind them
+   * and shudders with the roar (Wildmutt).
+   */
+  private howlSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const shadow = pixelText(scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color });
+    title.setTint(PALETTE.white, PALETTE.white, color, color);
+    const half = title.width / 2 + 20;
+    const slashes = scene.add.graphics();
+    const c = scene.add.container(GAME_WIDTH / 2, y, [slashes, shadow, title]).setDepth(450);
+    this.current = c;
+    const rake = { t: 0 };
+    scene.tweens.add({
+      targets: rake,
+      t: 1,
+      duration: 170,
+      ease: 'Quad.easeOut',
+      onUpdate: () => {
+        slashes.clear();
+        for (let i = 0; i < 3; i++) {
+          const x0 = -half + i * 14;
+          const len = (half * 2 - 20) * rake.t;
+          slashes.lineStyle(i === 1 ? 3 : 2, i === 1 ? PALETTE.white : color, 0.9);
+          slashes.lineBetween(x0, -20 + i * 7, x0 + len, 6 + i * 7);
+        }
+      },
+    });
+    scene.tweens.add({ targets: slashes, alpha: 0, delay: 260, duration: 380 });
+    for (const t of [title, shadow]) {
+      t.setScale(t.scaleX * 0.3, t.scaleY * 1.6).setAlpha(0);
+      scene.tweens.add({ targets: t, scaleX: t.scaleX / 0.3, scaleY: t.scaleY / 1.6, alpha: 1, delay: 90, duration: 210, ease: 'Back.easeOut' });
+    }
+    // The roar: the letters shudder for a beat after they land.
+    scene.tweens.add({ targets: c, x: GAME_WIDTH / 2 + 3, delay: 300, duration: 40, yoyo: true, repeat: 5, onStart: () => shakeCamera(scene.cameras.main, 240, 0.01, false) });
+    scene.tweens.add({
+      targets: c,
+      alpha: 0,
+      scaleY: 1.3,
+      delay: hold + 100,
+      duration: 240,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /** The name zig-zags in like a fly, wobbles in place, and buzzes off upward (Stinkfly). */
+  private buzzSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const trail = scene.add.graphics();
+    const shadow = pixelText(scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color });
+    title.setTint(PALETTE.white, PALETTE.white, color, color);
+    const c = scene.add.container(GAME_WIDTH + 120, y - 40, [shadow, title]).setDepth(450);
+    trail.setDepth(449);
+    this.current = c;
+    const flight = { t: 0 };
+    let lastX = c.x;
+    let lastY = c.y;
+    scene.tweens.add({
+      targets: flight,
+      t: 1,
+      duration: 420,
+      ease: 'Cubic.easeOut',
+      onUpdate: () => {
+        const k = flight.t;
+        c.x = GAME_WIDTH + 120 - (GAME_WIDTH / 2 + 120) * k;
+        c.y = y - 40 * (1 - k) + Math.sin(k * Math.PI * 5) * 16 * (1 - k);
+        trail.lineStyle(2, color, 0.5).lineBetween(lastX - title.width / 2, lastY, c.x - title.width / 2, c.y);
+        lastX = c.x;
+        lastY = c.y;
+      },
+      onComplete: () => {
+        scene.tweens.add({ targets: trail, alpha: 0, duration: 300, onComplete: () => trail.destroy() });
+        scene.tweens.add({ targets: c, angle: { from: -3, to: 3 }, duration: 70, yoyo: true, repeat: Math.max(1, Math.floor(hold / 140) - 1) });
+      },
+    });
+    scene.tweens.add({
+      targets: c,
+      y: y - 70,
+      x: GAME_WIDTH / 2 - 60,
+      alpha: 0,
+      delay: hold + 420,
       duration: 260,
       ease: 'Quad.easeIn',
       onComplete: () => this.finish(c),

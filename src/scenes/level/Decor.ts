@@ -37,6 +37,13 @@ const GLOWS: Partial<Record<DecorKind, Array<{ dx: number; dy: number; radius: n
   neon: [{ dx: 0, dy: -14, radius: 70, color: PALETTE.neonPink, intensity: 1, flicker: true }],
   gasPump: [{ dx: 0, dy: -18, radius: 26, color: PALETTE.omnitrixGlow, intensity: 0.4 }],
   billboard: [{ dx: 0, dy: -50, radius: 60, color: 0xffe7a0, intensity: 0.5 }],
+  lampPost: [{ dx: 0, dy: -48, radius: 90, color: 0xffd890, intensity: 0.9 }],
+  museumFacade: [{ dx: 0, dy: -50, radius: 110, color: 0xffc870, intensity: 0.9 }],
+  exitSign: [{ dx: 0, dy: -5, radius: 40, color: PALETTE.omnitrix, intensity: 0.7, flicker: true }],
+  meteorite: [{ dx: 0, dy: -26, radius: 70, color: PALETTE.omnitrixGlow, intensity: 0.6 }],
+  mutagenTank: [{ dx: 0, dy: -28, radius: 70, color: PALETTE.mutagen, intensity: 0.9 }],
+  cage: [{ dx: 0, dy: -16, radius: 30, color: PALETTE.mutagen, intensity: 0.4, flicker: true }],
+  labConsole: [{ dx: -6, dy: -26, radius: 60, color: PALETTE.mutagen, intensity: 0.7, flicker: true }],
 };
 
 const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
@@ -72,10 +79,34 @@ const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   neon: { key: TEX.neon },
   haulerWreck: { key: TEX.haulerWreck },
   fence: { key: TEX.fence },
+  lampPost: { key: TEX.lampPost },
+  museumFacade: { key: TEX.museumFacade },
+  trex: { key: TEX.trex },
+  mammoth: { key: TEX.mammoth },
+  whale: { key: TEX.whale },
+  pterosaur: { key: TEX.pterosaur },
+  displayCase: { key: TEX.displayCase },
+  stuffedBear: { key: TEX.stuffedBear },
+  banner: { key: TEX.banner },
+  painting: { key: TEX.painting },
+  velvetRope: { key: TEX.velvetRope },
+  bench: { key: TEX.bench },
+  exitSign: { key: TEX.exitSign },
+  tarSign: { key: TEX.tarSign },
+  meteorite: { key: TEX.meteorite },
+  mutagenTank: { key: TEX.mutagenTank },
+  cage: { key: TEX.cage },
+  labConsole: { key: TEX.labConsole },
+  pipes: { key: TEX.pipes },
+  staffDoor: { key: TEX.staffDoor },
+  columns: { key: TEX.column },
 };
 
 /** Big set dressing that sits behind the action. */
-const BACK_DECOR: readonly DecorKind[] = ['rv', 'tent', 'wreck', 'diner', 'smoothyStand', 'billboard', 'poleSign', 'garage', 'haulerWreck', 'neon', 'girder', 'carWreck', 'bridgeEnd'];
+const BACK_DECOR: readonly DecorKind[] = [
+  'rv', 'tent', 'wreck', 'diner', 'smoothyStand', 'billboard', 'poleSign', 'garage', 'haulerWreck', 'neon', 'girder', 'carWreck', 'bridgeEnd',
+  'museumFacade', 'trex', 'mammoth', 'whale', 'pterosaur', 'columns', 'painting', 'banner', 'staffDoor', 'mutagenTank', 'cage', 'labConsole', 'pipes', 'exitSign', 'lampPost',
+];
 
 function hash(x: number, salt: number): number {
   let h = (x * 374761393 + salt * 668265263) | 0;
@@ -138,6 +169,8 @@ export class Decor {
       this.sprinkleDesert(scene, level, world);
       return;
     }
+    // The museum is dressed by hand.
+    if (level.theme === 'museum') return;
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {

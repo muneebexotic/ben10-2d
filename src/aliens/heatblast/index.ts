@@ -36,6 +36,8 @@ export const HEATBLAST_FORM: FormDefinition = {
       wanted: {
         xlr8: ['I WANTED SPEED, NOT A BARBECUE!', 'FAST? NO. ON FIRE? VERY.'],
         fourarms: ['I WANTED MUSCLES, NOT MATCHES!', "CAN I PUNCH WITH FIRE? ...I CAN'T, RIGHT?"],
+        wildmutt: ['I WANTED A NOSE! I GOT A BONFIRE!', 'HOT DOG? NO. JUST HOT.'],
+        stinkfly: ['WINGS! I SAID WINGS! NOT FLAMES!', "AT LEAST I DON'T SMELL. ...MUCH."],
       },
       any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
     },
