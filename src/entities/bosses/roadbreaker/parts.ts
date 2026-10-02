@@ -6,6 +6,7 @@ import { TEX } from '../../../scenes/preload/assetKeys';
 import type { Fx } from '../../../systems/Fx';
 import { playSfx } from '../../../systems/audio/Sfx';
 import type { Damageable, Hazard, Hit, HitKind, HitResult, Rect } from '../../types';
+import { tireMultiplier } from './rules';
 
 /** What the parts need from the boss they're bolted to. */
 export interface PartOwner {
@@ -55,8 +56,7 @@ export class RbTire implements Damageable {
 
   takeHit(hit: Hit): HitResult {
     if (this.popped || !this.owner.tiresExposed) return 'none';
-    const T = RB.truck.tire;
-    const mult = hit.kind === 'melee' ? T.meleeMultiplier : hit.kind === 'fire' || hit.kind === 'burst' || hit.kind === 'rocket' ? T.fireMultiplier : 1;
+    const mult = tireMultiplier(hit.kind);
     const dmg = hit.damage * mult;
     this.lastDamage = dmg;
     this.hp -= dmg;

@@ -71,9 +71,10 @@ export const CHAPTER_2: LevelData = {
     { x: 116, y: 21, w: 3 },
     // Far bank lookout.
     { x: 214, y: 21, w: 4 },
-    // Truck stop: an old loading dock and the motel balcony.
+    // Truck stop: an old loading dock, a crate step and the motel balcony (the way over the outcrop for anyone).
     { x: 318, y: 21, w: 4 },
-    { x: 341, y: 20, w: 4 },
+    { x: 342, y: 22, w: 2 },
+    { x: 345, y: 20, w: 4 },
     // Boss arena: billboard scaffolds on both sides and a high one in the middle.
     { x: 367, y: 21, w: 5 },
     { x: 395, y: 21, w: 5 },
@@ -182,13 +183,13 @@ export const CHAPTER_2: LevelData = {
     { type: 'decor', kind: 'garage', x: 346, y: 24 },
     { type: 'decor', kind: 'barrel', x: 340, y: 24 },
     { type: 'decor', kind: 'barrel', x: 359, y: 24 },
-    { type: 'smoothy', x: 343, y: 20 },
+    { type: 'smoothy', x: 347, y: 20 },
     { type: 'crackedWall', id: 'ch2-vault-wall', x: 350, y: 21, h: 3, requires: 'fourarms' },
     { type: 'card', id: 'ch2-card-vault', x: 354, y: 24, requires: 'fourarms' },
     { type: 'drone', kind: 'gunner', x: 327, y: 16 },
     { type: 'drone', kind: 'armored', x: 333, y: 20 },
     { type: 'drone', kind: 'hornet', x: 340, y: 18 },
-    { type: 'drone', kind: 'hornet', x: 345, y: 20 },
+    { type: 'drone', kind: 'hornet', x: 345, y: 17 },
     { type: 'drone', kind: 'armored', x: 352, y: 15 },
     { type: 'checkpoint', id: 'cp-arena', x: 359, y: 24, density: 'normal', label: 'ROADBREAKER' },
 

@@ -6,12 +6,13 @@ import { TEX } from '../../../scenes/preload/assetKeys';
 import { RB_TORSO } from '../../../scenes/preload/roadbreaker';
 import { pace } from '../../../systems/Difficulty';
 import { playSfx } from '../../../systems/audio/Sfx';
-import type { Damageable, Hazard, Hit, HitKind, HitResult, Liftable, Rect } from '../../types';
+import type { Damageable, Hazard, Hit, HitResult, Liftable, Rect } from '../../types';
 import { crunch, horn } from '../../vehicles/audio';
 import type { ArenaBoss } from '../ArenaBoss';
 import type { BossWorld } from '../HunterDrone';
 import { RbPlate, RbSaw, RbTire, type PartOwner } from './parts';
 import { RB_ATTACKS, newRbAttack, type RbAttackKind, type RbAttackState } from './rbAttacks';
+import { coreMultiplier, isFire } from './rules';
 
 type Mode = 'truck' | 'robot';
 type RbState = 'intro' | 'idle' | 'attack' | 'stalled' | 'held' | 'thrown' | 'transform' | 'seized' | 'dying' | 'dead';
@@ -26,10 +27,6 @@ const WHEEL_Y = 13;
 const LEGS_H = 30;
 const SHOULDER_DX = 34;
 const ARM_LEN = 46;
-
-function isFire(kind: HitKind): boolean {
-  return kind === 'fire' || kind === 'burst' || kind === 'rocket';
-}
 
 /** The blast where the robot's fists come down. */
 class FistImpact implements Hazard {
@@ -265,14 +262,10 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
       playSfx('armorTink', 0.5, 0.8);
       return 'blocked';
     }
-    let mult: number;
-    if (this.mode === 'truck') {
-      mult = this.state === 'stalled' ? RB.truck.stalledMultiplier : hit.kind === 'smash' ? 1 : RB.truck.armour;
-    } else {
-      mult = RB.robot.coreArmour[this.platesBroken];
-      if (this.state === 'seized') mult *= RB.robot.vent.seizedMultiplier;
-      if (this.ventOpen && isFire(hit.kind)) mult *= RB.robot.vent.fireMultiplier;
-    }
+    const mult = coreMultiplier(
+      { mode: this.mode, stalled: this.state === 'stalled', seized: this.state === 'seized', ventOpen: this.ventOpen, platesBroken: this.platesBroken },
+      hit.kind,
+    );
     const dmg = hit.damage * mult;
     this.lastDamage = dmg;
     this.hp = Math.max(0, this.hp - dmg);
