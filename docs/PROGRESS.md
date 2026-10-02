@@ -2,13 +2,11 @@
 
 ## Status
 
-**Milestone 3 (core systems) is built.** The Omnitrix now **misfires** (with a record-scratch, sepia freeze-frame gag and a unique line from Ben for every pair of aliens), **difficulty** is chosen per save file and changes how enemies fight, there are **three save files** with chapter progress, aliens, cards and per-difficulty bests (old saves migrate), and the whole loop runs through finished menus: title > save files > difficulty > chapter select > play > chapter complete > chapter select. `npm run typecheck`, `npm run build` and `npm test` (215 tests) all pass. Details in [Milestone 3](#milestone-3-core-systems) below.
+**Milestone 4, part 1 (Chapter 2: Road Trip) is built.** A full second chapter: a skippable Rustbucket opening with Grandpa Max and Gwen in portrait dialogue, a rest stop and canyon road, **XLR8's discovery at a washed-out bridge** and a Hornet-swarmed river only he can run across, **the Rustbucket chase** (a roof ride on a treadmill highway, Vilgax's armoured convoy where **the watch finds Four Arms** and he throws trucks off the road, and a runaway hauler dumping barrels he can throw back), a truck stop with a crashed rig, and **ROADBREAKER**, a two-phase war-rig boss built so each of the three aliens has its moment. Misfires are live in the story (three aliens on the dial) and blocked during every scripted moment. Six approved ideas are in too: STRIKE! bowling throws, XLR8's comic-panel multi-cut, swap stats on Chapter Complete, wide phones filled edge to edge, shape-coded telegraphs and one-tap MAKE IT EASIER. `npm run typecheck`, `npm run build` and `npm test` (246 tests) all pass. Details in [Milestone 4, part 1](#milestone-4-part-1-chapter-2-road-trip) below.
 
-Misfires need two aliens on the dial, so in the story they start in Chapter 2. Until then, see them in **Omnitrix Training** (pause > MISFIRES) or with `?aliens=fourarms,xlr8` on Normal or Hard.
+Milestones 1 to 3 are described further down.
 
-Milestones 1 and 2 are described further down.
-
-Next: Milestone 4 (story chapters, starting with Chapter 2: Road Trip).
+Next: Milestone 4, part 2 (Chapter 3: Dr. Animo), when asked.
 
 ## How to run
 
@@ -25,6 +23,7 @@ URL switches for playtesting:
 | Switch | Effect |
 |---|---|
 | `?start=cp-cliff` | Start at a checkpoint (`cp-cliff`, `cp-nest`, `cp-arena`; `cp-ravine`). A practice run on the last-played file (cards and clears count, best times and splits don't); without a file nothing is saved |
+| `?level=ch2` | Play Chapter 2 directly (a practice run). Combine with `&start=`: `cp-canyon`, `cp-river`, `cp-island` (Easy only), `cp-farbank`, `cp-convoy` (straight onto the RV roof, Easy and Normal), `cp-truckstop`, `cp-arena` (ROADBREAKER, Easy and Normal) |
 | `?training=1` | Straight into Omnitrix Training (with the last file's aliens and difficulty) |
 | `?aliens=fourarms,xlr8` | Adds aliens to the Chapter 1 dial (a practice run). With Four Arms the vault card spawns and counts |
 | `?mute=1` | Start muted |
@@ -60,6 +59,65 @@ What ATTACK and SPECIAL do depends on the form (the touch buttons change icon wi
 | Four Arms | Punch, punch, haymaker. Up: overhead clap. Next to a downed drone, boulder or the dummy: lift, then J again to throw (Up: lob) | Ground slam with shockwaves. In the air: meteor drop | |
 
 On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO / ON / OFF). In AUTO, pressing a key hides them and touching the screen brings them back.
+
+## Milestone 4, part 1: Chapter 2, Road Trip
+
+### The chapter, start to finish
+
+Sunset to night across the desert. `levels/chapter2.ts` (408 x 34 tiles), set pieces in `scenes/level/story/`, tuning in `config/chapter2.ts`, `config/story.ts` and `config/roadbreaker.ts`.
+
+1. **The opening (skippable, never replayed on a retry):** the Rustbucket rolling down the highway at golden hour, road, props and sky rushing past, while Max ("NEXT STOP: THE WORLD'S LARGEST BALL OF YARN!"), Gwen ("A WHOLE SUMMER IN AN RV WITH MY DWEEB COUSIN") and Ben talk in a dialogue box with **pixel portraits**. Two drones swoop in behind; cut to the RV skidding into a rest stop and Ben hopping out ("FLYING TOASTERS? THAT'S MY CUE!").
+2. **Rest stop:** a diner (card on the roof), gas pumps, a Mr. Smoothy stand, a drone barricade Heatblast has to burn.
+3. **Canyon road:** a mesa shelf overhead (scaffold up, a hoodoo with a card only the rocket jump reaches), a tunnel, a dry wash.
+4. **The washed-out bridge: XLR8's discovery.** Ben skids to a stop ("THE BRIDGE IS OUT!"), the watch acts up, the HUD's dial blows up to fill the screen and spins through silhouettes while NEW DNA DETECTED decodes, lands on XLR8 (name, tagline, two traits), and the watch throws him straight into it (never a misfire).
+5. **Hornet river:** 72 tiles of water with two rock islands; only XLR8 at full speed stays up. Three Hornet ambushes fly in from the sides and above; a card hangs over open water between the islands.
+6. **Far bank: Max picks Ben up** ("BEN! NEED A LIFT?" / "GRANDPA FORDED THE RIVER. DON'T ASK."). Walk to the RV: Ben climbs onto the roof.
+7. **The Rustbucket chase** (below).
+8. **Truck stop at night:** the runaway rig's smoking wreck, a neon motel, a garage, a cracked vault only Four Arms can open, a pole sign with a card only Stinkfly will reach ("I'D NEED WINGS TO GET UP THERE..." with a locked silhouette: UNLOCKS IN CHAPTER 3), and a mixed drone squad. Gwen, Ben and Max set up the boss ("THE CAB'S EMPTY. WHATEVER WAS DRIVING THAT THING WALKED AWAY.").
+9. **ROADBREAKER** (below), then Max: "WHO WANTS MARINATED MEALWORMS?" / Gwen: "GROSS!" / Ben: "DOUBLE GROSS!" and Chapter Complete.
+
+Checkpoints: CANYON, RIVER, ISLAND (Easy), FAR BANK, CONVOY (hidden, lit mid-chase; Easy and Normal), TRUCK STOP, ROADBREAKER (Easy and Normal). Hard keeps only RIVER, FAR BANK and TRUCK STOP.
+
+### Alien unlocks
+
+- **Data-driven beats:** `story.unlocks` in the level lists each alien, where its beat happens and Ben's line. `UnlockBeat` runs it; a `scripted` beat is started by another set piece (the chase starts Four Arms' on the first truck that hooks onto the RV).
+- The alien stays off the dial until its beat, even on a file that later restarts before it; a restart past the beat (or a file that already has the alien) skips it. The file saves the alien the moment it's revealed.
+- **The reveal is the HUD scene's unlock card** (`ui/UnlockCard.ts`): the dial scaled up, segments spinning, silhouettes cycling, then the alien in colour with its tagline and two traits from its definition (`unlock` in each alien's index).
+- **Forced transforms never misfire** (`Omnitrix.forceInto`): a free swap or transform with full time, recharging the watch if needed. Misfires are also blocked through the opening, both beats, boarding the RV and the chase's finale (`SetPiece.storyLock`).
+
+### The Rustbucket chase (the chapter's big set piece)
+
+The RV stays put mid-arena while a **treadmill** scrolls the road, roadside props, speed lines and the whole sky backdrop (`RoadScroller`, `HighwayBackdrop.travel`). Its roof is a one-way platform and a moving solid (drones land on it, Strikers stick in it, Four Arms' shockwaves ride it) with rails at both ends so nobody falls off by accident; jump over one on purpose and Ben is hurt and put back on the roof.
+
+1. **Ride** (19-32 s): four drone waves (Scouts, Strikers, Hornets, a Gunner; one extra per wave on Hard), **tires bouncing over the roof** (an arrow at the screen edge where they come from, a target where they land; jump them or knock them away) and **potholes** that buck the RV and toss everyone on the roof into the air ("POTHOLE! HOLD ON TO YOUR SNEAKERS!").
+2. **Convoy** (2 trucks on Easy, 3 on Normal, 4 on Hard; one at a time on Easy, two on Normal and Hard). The lead rig **revs** (engine, horn, chevrons on the back of the roof), **rams** (the back of the roof jolts: whoever stands there is hurt and flung forward) and **hooks on** with a harpoon arm, dragging the RV until it yanks (same telegraph) and drops back. A second rig in the far lane **shells marked spots** on the roof. Armour takes only 30% from anything but smash. **The first hook is where the watch finds Four Arms** ("IT'S DRAGGING US OFF THE ROAD!"), and the tip says to rip the truck off: lift (J at the clamp), and the whole truck goes upside down over his head, wheels spinning; J again throws it, spinning, **OFF THE ROAD!** A thrown truck hits like a truck (20 damage): throw it into the next one. Max: "THAT'S MY GRANDSON!"
+3. **The runaway hauler** roars past in the far lane, cuts in ahead and **dumps fuel barrels** onto the roof through a glowing hatch (with Hornets). Barrels roll toward the back; Four Arms can catch one and throw it forward: **BULLSEYE!** Two bullseyes and the driver loses it early; otherwise it runs out of barrels and loses it anyway. It fishtails off the road ahead; cut to the truck stop where it crashed.
+
+A restart at the hidden CONVOY checkpoint drops Ben straight back on the roof with the convoy coming. All numbers in `config/chapter2.ts` (`CHASE`, `CONVOY`, `JUNK`); telegraph lengths are the same on every difficulty.
+
+### ROADBREAKER (boss)
+
+Vilgax's war rig, rebuilt from the crashed hauler. Vilgax's hologram (now with his portrait) introduces it: "MY WAR RIG HAS FLATTENED ARMIES. YOUR LITTLE TIN HOUSE ON WHEELS IS NEXT." / "NOBODY CALLS THE RUSTBUCKET A TIN HOUSE, SQUID FACE!"
+
+- **Phase 1, truck mode:** leaps into the lot off the mesa. **Ram:** drives to the far side, revs (chevrons along the floor the whole way, headlights blazing), charges, smashes into the arena wall and sits dazed. **Barrel lob:** every landing spot marked first. **Drone dispatch.** Its armour takes only 20% from anything but smash; **its tires shred to melee** (x2) and shrug off fire (x0.25). XLR8 can dash straight through a ram (the dash is invulnerable), slashing both tires. **Both tires gone: it spins out and STALLS**; Four Arms lifts the whole truck overhead and throws it: **FLIPPED!** (30 damage). Fresh tires bolt on afterwards.
+- **Phase 2, robot mode** (at 55%): it skids to the middle, rears up and stands as a robot (ROBOT MODE!). **Hammer slam:** walks up, raises both fists (a striped landing zone), slams with shockwaves both ways, fists stuck in the ground (chest in reach, touching it is safe). **Wheel saw:** rips a wheel off its shoulder and bowls it across the floor (chevrons first); jump it, or **punch it back into the robot** (RETURN!, big damage). **Beam:** kneels and fires along the floor at knee height (the Chapter 1 beam tell). **Hazard-striped chest plates only break to smash** (Four Arms); until they're gone the core takes 30-75%. **After every slam its vents open:** fire does x2.5 and builds heat; enough and it **OVERHEATS** into a kneel (x1.5 from everything).
+- So: XLR8 for the tires, Four Arms for the flip and the plates, Heatblast for the vents (and the drones). Any alien, or Ben, can still win, just slower. Damage rules are pure functions with tests (`entities/bosses/roadbreaker/rules.ts`).
+- Arenas now stage any boss kind (`entities/bosses/bossKinds.ts`: music, Vilgax's lines, banners, extra parts like tires and plates); the Hunter-Killer is unchanged.
+
+### Collectibles and secrets
+
+- **Five Sumo Slammers cards:** the diner roof, the hoodoo (rocket jump), over the river (XLR8), the vault (Four Arms) and the pole sign (Stinkfly, Chapter 3). Mr. Smoothy cups in the rest stop, on the mesa shelf, on the far bank and on the motel balcony.
+- **The way back to Chapter 1:** a cracked wall whose alien isn't on the dial now shows that alien's rim-lit silhouette and **UNLOCKS IN CHAPTER N**, so Camp Crash's vault points at Road Trip. When an alien joins mid-chapter, walls update to name it. Smashing a vault in Chapter 2 makes Ben remember the one at camp ("WAIT... THERE WAS ONE OF THESE BACK IN CAMP CRASH!"), and **Chapter Select flags chapters with a secret the file can now open** (a pulsing SECRET WAITING! chip and a glinting card slot).
+- Chapter Select gets a Road Trip diorama (the Rustbucket at sunset, Ben on the roof, a convoy rig on its tail); bests, ranks, per-difficulty medals and splits work for Chapter 2 exactly like Chapter 1.
+
+### Approved ideas built this milestone
+
+- **STRIKE!:** a thrown enemy (or truck, or boss) bowls through ordinary enemies; two or more down pops STRIKE! with a slow-motion beat (`COMBAT.bowlingSlowdown`, `strikeHits`).
+- **Multi-cut freeze-frame:** XLR8's dash cutting 4+ enemies freezes into a comic panel (the HUD draws it) with a slash across each, then they all burst.
+- **Swap stats:** SWAPS and BEST TAG TEAM rows on Chapter Complete with a small, capped score bonus (`config/scoring.ts`).
+- **Wide phones filled:** EXPAND scaling up to 21.6:9; HUD, touch controls and every menu anchor to the real screen edges (`ui/view.ts`); checked on emulated phones for every screen, Chapter 1 included.
+- **Shape-coded telegraphs:** every red danger zone also carries stripes (stay out) or chevrons (the way it travels); impact spots get a target with a cross (`Telegraphs.zone/target`).
+- **MAKE IT EASIER:** after 4 deaths (not on Easy) the game over menu offers a one-tap step down, explained, keeping everything.
 
 ## Milestone 3: core systems
 
@@ -373,26 +431,70 @@ The playtest-notes section of the request was left as the template, so I played 
 - **Way Big is cropped** by his card on purpose.
 - **Play time** counts time spent in levels (menus don't count).
 
+**Milestone 4, part 1 (Chapter 2)**
+
+- **The "Rustbucket driving segment" is a ride on the roof**, not Ben driving: Max drives (he's ten), Ben fights on the roof. The owner asked for "a driving/riding section that changes pace"; riding keeps every alien's moveset in play and lets the convoy and Four Arms' unlock happen on it. The opening is a short driving cinematic.
+- **The runaway truck is the rig the convoy escorts.** The chase ends with it crashing at the truck stop, and its drone core becomes ROADBREAKER, so the set piece leads into the boss.
+- **ROADBREAKER isn't in GAME_DESIGN.md** (Chapter 2 had no boss). It's a Vilgax machine like Chapter 1's, keeping the Vilgax thread (his hologram returns, with his portrait). It transforms at a fixed 55% on every difficulty (the transformation is a story beat), while rests and punish windows follow the difficulty.
+- **Max and Gwen appear as portrait dialogue only.** Gwen's spells and support are Milestone 5; the owner asked for light dialogue with portraits here.
+- **XLR8 unlocks before Four Arms** (the river comes first); both unlock in this chapter as the design says.
+- **Treadmill instead of a moving camera** for every vehicle scene: the RV and trucks stay put and the world scrolls. It keeps physics, hitboxes and the roof platform simple and stable at 60 fps.
+- **A thrown truck (or boss) does at least 20 damage** to whatever it lands on (`Liftable.impactDamage`), and a thrown object no longer hits itself with its own landing blast.
+- **The convoy's armour takes 30% from non-smash** and ROADBREAKER's truck 20%: Heatblast can still chip them (never stuck), Four Arms is the fast answer.
+- **Cards behind an alien a chapter unlocks spawn from the start** (the Chapter 2 vault card is there before Four Arms is), and they count toward the chapter's total like Chapter 1's vault.
+- **Chapter 2's par time is 7:00** (Chapter 1's is shorter): it's a longer chapter.
+
 ## Known issues and limitations
 
 - **Not tuned by hand.** Difficulty was tuned by reasoning, scripted playtests and a reachability test, not by human players. Boss HP (120), drone counts and the jammer ravine may need tuning after real playtests. All numbers are in `src/config/`.
 - **Touch controls are untested on real hardware.** They were tested with emulated phones and multi-touch in headless Chromium. Button sizes and positions live in `config/touch.ts`.
 - **Headless frame rate.** Headless Chromium (software WebGL) runs at about 40–49 FPS, so the frame-rate governor drops to its lowest level there. Not yet verified on a real mid-range Android GPU.
 - **iOS Safari can't go fullscreen** or lock orientation from a web page; the game still fits the screen with the browser bars visible. Adding it to the home screen (web manifest) gives a fullscreen landscape launch.
-- **Wide phones are pillarboxed:** the game keeps its 16:9 frame, so 19.5:9 phones show side bars (see IDEAS.md for an EXPAND-mode proposal).
+- **Phones wider than 21.6:9 still get thin side bars** (the view stops growing at 864 px wide so level design stays readable).
 - **Practice runs still show a rank** on Chapter Complete (it isn't saved).
 - **Settings' difficulty details line** is long; on the smallest phones it reads small.
 - **Zoom shimmer.** The camera zoom punch on transform briefly shows pixel shimmer, because `pixelArt` rendering doesn't zoom by integer steps.
 - **No gamepad support yet** (deferred).
 - **XLR8, Four Arms, the Armored Drone and the Hornet are tuned by scripted playtests,** not by people. Headless Chromium runs the game at about a third of real speed, so feel (XLR8's speed, Four Arms' weight, hit-stop lengths) needs a human pass. All numbers are in `config/aliens/` and `config/enemies.ts`.
 - **Chapter 1 wasn't designed around XLR8 or Four Arms.** With `?aliens=`, XLR8 makes some sections easier than intended. Chapter 2 is where they are designed in.
-- **Misfires can't happen in the Chapter 1 story** (only Heatblast is on the dial). Use Training's MISFIRES switch or `?aliens=` to see them until Chapter 2.
+- **Misfires can't happen in the Chapter 1 story** (only Heatblast is on the dial); from Chapter 2 on they do.
+- **Chapter 2 is tuned by scripted playtests, not people.** The chase's pacing (ride length, convoy size, barrel timing) and ROADBREAKER's health (170) and armour are the first things to check with real players. Every number is in `config/chapter2.ts` and `config/roadbreaker.ts`.
+- **Vehicles don't block Ben.** Trucks and the boss truck are hazards and targets, not physics bodies, so Ben can walk through a parked truck (a dazed or stalled one doesn't hurt). Kept simple on purpose.
+- **Headless runs at about a third of real speed,** so the chase's feel (pothole bounce, the ram's fling, the truck lift slow-motion) needs a human pass.
 - **Headless Chromium runs the misfire gag at about a third of real speed,** so its timing (the 300 ms before the scratch, the 0.76 s freeze) still needs a human pass on real hardware. All timings are in `config/omnitrix.ts` `MISFIRE`.
 - **Difficulty pacing is tuned by reasoning, not playtests.** Hard Chapter 1 in particular (two checkpoints, relentless drones) may need a pass. All numbers are in `config/difficulty.ts`.
 - **Saves live in one browser:** no cloud sync or export yet (see IDEAS.md).
 - **Training options reset** when the game is reloaded (they aren't saved).
 
 ## How to test
+
+**Milestone 4, part 1: Chapter 2, desktop** (`npm run dev`)
+
+1. **Get there:** a file that has cleared Chapter 1 (or clear it), Chapter Select > ROAD TRIP > PLAY. Shortcut for single sections: `?level=ch2&start=<checkpoint>` (see the URL switches; practice runs, nothing saved as a best).
+2. **Opening:** the RV drives at sunset while Max, Gwen and Ben talk with portraits; drones swoop in; cut to the rest stop. Any key skips. Die later and retry: it doesn't replay.
+3. **Rest stop and canyon:** Heatblast burns the barricade. The diner roof card (awning, then roof), the hoodoo card above the mesa shelf (rocket jump from the shelf).
+4. **XLR8:** walk onto the broken bridge: the watch acts up, NEW DNA DETECTED, the XLR8 card, and Ben becomes XLR8 (never a misfire, even on Hard). Run across the river; slow down and you sink. Three Hornet waves. Grab the card over the water between the islands.
+5. **Pick-up:** on the far bank the RV rolls in; walk into it.
+6. **Chase, ride:** drone waves, tires bouncing over the roof (arrow at the right edge, target where it lands: jump it or punch it away), potholes tossing you up. Jump over a rail at the end of the roof: you're hurt and put back.
+7. **Chase, convoy:** a rig revs (chevrons on the back of the roof): step forward or jump as it rams. It hooks on: NEW DNA again, and Four Arms. Walk to the back, J at the clamp to lift the truck, J to throw it; try throwing it into the next one. The far-lane rig marks spots on the roof before each shell. Die here and retry: you're back on the roof with the convoy (Easy and Normal).
+8. **Chase, hauler:** it overtakes and drops barrels and Hornets. As Four Arms, J on a rolling barrel to catch it, face right, J to throw: BULLSEYE! Two and it crashes early.
+9. **Truck stop:** the crashed rig smoulders. The cracked vault: punch it as Four Arms (Ben remembers the one at camp if you haven't opened it). Stand under the tall pole sign: Stinkfly's locked silhouette, UNLOCKS IN CHAPTER 3. Climb the crate and the balcony to get over the outcrop.
+10. **ROADBREAKER:** Vilgax's hologram (with his portrait), then the truck leaps in. Watch for: the ram's floor chevrons (jump it, stand on a scaffold, or dash through as XLR8, slashing tires), barrels' targets, POP! tires, STALLED!, Four Arms lifting the whole truck (FLIPPED!). At about half health: ROBOT MODE. The striped slam zone, fists stuck (walk up and smash the striped plates), the vents glowing after a slam (fire overheats it: OVERHEATED!), the wheel saw (jump it or punch it back: RETURN!), the knee-height beam. Then the mealworms line and Chapter Complete (SWAPS and BEST TAG TEAM rows; STRIKES and MULTI-CUTS called out next to the drone and combo counts).
+11. **Difficulty:** on Easy the convoy is 2 trucks one at a time; on Hard 4 trucks, one extra drone per ride wave, three Hornets per hatch release, fewer checkpoints (RIVER, FAR BANK, TRUCK STOP). Misfires happen in the story now (not during any of the scripted moments).
+12. **Back to Chapter 1:** Chapter Select shows SECRET WAITING! on Camp Crash (its vault card slot glints). Play Camp Crash: the vault wall now names FOUR ARMS; smash it. Before Chapter 2, that wall shows Four Arms' shadow and UNLOCKS IN CHAPTER 2.
+
+**Milestone 4, part 1, phone and wide screens**
+
+1. Any phone in landscape, including 20:9 ones: no side bars; the HUD hugs the corners and the touch buttons the screen edges. Check the title, files, difficulty, Chapter Select (the Road Trip diorama), Settings, pause, game over (MAKE IT EASIER after 4 deaths), Chapter Complete.
+2. The chase on touch: the stick moves along the roof, JUMP clears tires, ATTACK lifts and throws trucks and barrels. The dialogue box sits at the top, clear of thumbs.
+3. ROADBREAKER: the floor and the boss bar stay above the thumbs; the ram's floor chevrons are readable.
+
+**Approved ideas, quick checks**
+
+- **STRIKE!:** Training or the chase: knock drones down, lift one as Four Arms and throw it through two others.
+- **Comic panel:** XLR8 dash through four or more enemies (the river or the ride waves are good spots).
+- **Telegraph shapes:** every red zone has stripes or chevrons; boss bombs and shells show a target with a cross. Reduce Flashing still applies.
+- **MAKE IT EASIER:** die 4 times on Normal or Hard: the game over menu offers it, explains what changes, and retries one step easier.
 
 **Milestone 3, desktop** (`npm run dev`)
 

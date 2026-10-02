@@ -28,7 +28,7 @@ export const CHAPTER_2: LevelData = {
     // Rest stop and the canyon road.
     { material: 'ground', x: 2, top: 24, w: 70 },
     // A dry wash dips under the road.
-    { material: 'ground', x: 72, top: 27, w: 9 },
+    { material: 'ground', x: 72, top: 26, w: 9 },
     { material: 'ground', x: 81, top: 24, w: 47 },
     // The mesa shelf over the road, and the mesa it grows out of (tunnelled through).
     { material: 'rock', x: 88, top: 17, w: 20, h: 3 },
@@ -137,8 +137,8 @@ export const CHAPTER_2: LevelData = {
     { type: 'decor', kind: 'roadSign', x: 64, y: 24 },
     { type: 'drone', kind: 'scout', x: 70, y: 18 },
     { type: 'drone', kind: 'striker', x: 76, y: 17 },
-    { type: 'decor', kind: 'mileMarker', x: 79, y: 27 },
-    { type: 'decor', kind: 'skull', x: 74, y: 27 },
+    { type: 'decor', kind: 'mileMarker', x: 79, y: 26 },
+    { type: 'decor', kind: 'skull', x: 74, y: 26 },
     { type: 'drone', kind: 'scout', x: 86, y: 17 },
     { type: 'drone', kind: 'gunner', x: 96, y: 14 },
     { type: 'smoothy', x: 94, y: 17 },

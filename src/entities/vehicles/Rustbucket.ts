@@ -71,7 +71,7 @@ export class Rustbucket {
     this.roadY = roadY;
     this.updateRoofRect();
     if (this.roof) {
-      this.roof.setPosition(this.x + (R.roofFrom + R.roofTo) / 2, this.roofY + 4);
+      this.roof.setPosition(this.x + (R.roofFrom + R.roofTo) / 2, this.roofY + R.roofThickness / 2);
       this.roof.refreshBody();
     }
   }
@@ -80,7 +80,7 @@ export class Rustbucket {
   enableRoof(collideWith: Phaser.GameObjects.GameObject): void {
     if (this.roof) return;
     const roof = this.scene.physics.add.staticImage(0, 0, TEX.whitePx).setVisible(false);
-    roof.setDisplaySize(R.roofTo - R.roofFrom, 8);
+    roof.setDisplaySize(R.roofTo - R.roofFrom, R.roofThickness);
     const body = roof.body as Phaser.Physics.Arcade.StaticBody;
     body.checkCollision.down = false;
     body.checkCollision.left = false;

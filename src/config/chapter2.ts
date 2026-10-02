@@ -5,6 +5,12 @@ export const RUSTBUCKET_CFG = {
   roofTo: 58,
   /** Roof height above the road (px). */
   roofHeight: 56,
+  /**
+   * The roof's collision body reaches this far down (px). Thicker than any
+   * one-frame fall (Four Arms' meteor at a 34 ms frame is about 22 px), so a
+   * slow phone can't drop Ben straight through it.
+   */
+  roofThickness: 24,
   bobAmplitude: 1,
   headlightRadius: 140,
 } as const;
@@ -84,8 +90,6 @@ export const CHASE = {
   },
 } as const;
 
-export type ChaseWaveFrom = 'left' | 'right' | 'above';
-
 /** Vilgax's convoy rigs. */
 export const CONVOY = {
   /** Trucks in the convoy, and how many come at once. */
@@ -121,8 +125,6 @@ export const CONVOY = {
   shellDamage: 1,
   shellGravity: 520,
   shellBlastRadius: 16,
-  /** Following trucks keep this much distance behind the one in front. */
-  columnGap: 128,
   /** The wreck rolling off after it was thrown or wrecked. */
   wreckMs: 1300,
 } as const;
@@ -139,6 +141,4 @@ export const JUNK = {
   gravity: 700,
   damage: 1,
   radius: 7,
-  /** Barrels: a fireball or a punch sets them off; a throw is a missile. */
-  blastRadius: 26,
 } as const;
