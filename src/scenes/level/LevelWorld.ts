@@ -4,6 +4,9 @@ import { autotile, buildCells, cellAt, type TileGrid } from '../../levels/buildL
 import { CELL, ONE_WAY_FRAMES, SOLID_FRAMES } from '../../levels/tiles';
 import type { LevelData } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
+import type { Rect } from '../../entities/types';
+
+const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert } as const;
 
 /** Tilemap, collision setup and spatial queries for a level. */
 export class LevelWorld {
@@ -14,6 +17,11 @@ export class LevelWorld {
   private readonly waterSprites: Phaser.GameObjects.TileSprite[] = [];
   /** Thin one-way floors on every water surface. The level only lets them collide for forms that run on water. */
   readonly waterSurfaces: Phaser.Physics.Arcade.StaticGroup;
+  /**
+   * Moving solids that aren't tiles (the Rustbucket's roof during the chase).
+   * Drones, shots and ground checks treat them like terrain.
+   */
+  private readonly extraSolids: Rect[] = [];
 
   constructor(
     scene: Phaser.Scene,
@@ -25,7 +33,7 @@ export class LevelWorld {
 
     const frames = autotile(this.grid);
     const map = scene.make.tilemap({ data: frames, tileWidth: TILE, tileHeight: TILE });
-    const tilesKey = data.theme === 'sim' ? TEX.tilesSim : TEX.tiles;
+    const tilesKey = TILESETS[data.theme ?? 'forest'];
     const tileset = map.addTilesetImage(tilesKey, tilesKey, TILE, TILE, 0, 0)!;
     this.layer = map.createLayer(0, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer;
     this.layer.setDepth(DEPTH.terrain);
@@ -43,6 +51,11 @@ export class LevelWorld {
       for (let x = c.x * TILE; x < (c.x + c.w) * TILE; x += 12) caves.fillRect(x + ((x / 12) % 2) * 5, c.y * TILE + 2, 3, c.h * TILE - 4);
     }
 
+    // Asphalt laid over the ground where the highway runs.
+    for (const r of data.roads ?? []) {
+      scene.add.tileSprite(r.x * TILE, r.y * TILE, r.w * TILE, TILE, TEX.roadCap).setOrigin(0, 0).setDepth(DEPTH.terrain + 1);
+    }
+
     this.waterSurfaces = scene.physics.add.staticGroup();
     for (const w of data.water) {
       const top = w.surface * TILE;
@@ -53,11 +66,16 @@ export class LevelWorld {
       body.checkCollision.left = false;
       body.checkCollision.right = false;
       this.waterSurfaces.add(floor);
+      // The water texture is one surface deep (64 px); deeper water continues in its darkest blue.
+      const surfaceH = Math.min(w.depth * TILE, 64);
       const sprite = scene.add
-        .tileSprite(w.x * TILE, w.surface * TILE + 4, w.w * TILE, w.depth * TILE, TEX.water)
+        .tileSprite(w.x * TILE, w.surface * TILE + 4, w.w * TILE, surfaceH, TEX.water)
         .setOrigin(0, 0)
         .setDepth(DEPTH.water);
       this.waterSprites.push(sprite);
+      if (w.depth * TILE > surfaceH) {
+        scene.add.rectangle(w.x * TILE, w.surface * TILE + 4 + surfaceH, w.w * TILE, w.depth * TILE - surfaceH, 0x0c2440).setOrigin(0, 0).setDepth(DEPTH.water);
+      }
     }
   }
 
@@ -67,7 +85,19 @@ export class LevelWorld {
 
   isSolid(x: number, y: number): boolean {
     const c = cellAt(this.grid, Math.floor(x / TILE), Math.floor(y / TILE));
-    return c === CELL.GROUND || c === CELL.ROCK;
+    if (c === CELL.GROUND || c === CELL.ROCK) return true;
+    for (const r of this.extraSolids) if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) return true;
+    return false;
+  }
+
+  /** Registers a moving solid; the caller keeps updating the same rect object. */
+  addSolid(rect: Rect): void {
+    if (!this.extraSolids.includes(rect)) this.extraSolids.push(rect);
+  }
+
+  removeSolid(rect: Rect): void {
+    const i = this.extraSolids.indexOf(rect);
+    if (i >= 0) this.extraSolids.splice(i, 1);
   }
 
   isOneWay(x: number, y: number): boolean {
@@ -77,10 +107,15 @@ export class LevelWorld {
   /** World y of the first solid or platform surface at or below y (level floor if none). */
   groundBelow(x: number, y: number): number {
     const tx = Math.floor(x / TILE);
+    let ground = this.heightPx;
     for (let ty = Math.max(0, Math.floor(y / TILE)); ty < this.data.height; ty++) {
-      if (cellAt(this.grid, tx, ty) !== CELL.EMPTY) return ty * TILE;
+      if (cellAt(this.grid, tx, ty) !== CELL.EMPTY) {
+        ground = ty * TILE;
+        break;
+      }
     }
-    return this.heightPx;
+    for (const r of this.extraSolids) if (x >= r.x && x < r.x + r.w && r.y >= y && r.y < ground) ground = r.y;
+    return ground;
   }
 
   inWater(x: number, feetY: number): boolean {

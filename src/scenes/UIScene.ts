@@ -20,6 +20,7 @@ import { SplitDisplay } from '../ui/SplitDisplay';
 import { playSfx } from '../systems/audio/Sfx';
 import { DialogBox } from '../ui/DialogBox';
 import { ComicPanel } from '../ui/ComicPanel';
+import { UnlockCard } from '../ui/UnlockCard';
 import { MISFIRE, SWAP } from '../config/omnitrix';
 import { frameView } from '../ui/view';
 
@@ -36,6 +37,7 @@ export class UIScene extends Phaser.Scene {
   private splits!: SplitDisplay;
   private dialog!: DialogBox;
   private comic!: ComicPanel;
+  private unlockCard!: UnlockCard;
   private vignette!: Phaser.GameObjects.Image;
   private readonly pops: (Phaser.GameObjects.BitmapText | null)[] = [];
   private hp: number = PLAYER.maxHealth;
@@ -63,6 +65,7 @@ export class UIScene extends Phaser.Scene {
     this.splits = new SplitDisplay(this, 54);
     this.dialog = new DialogBox(this);
     this.comic = new ComicPanel(this, frame);
+    this.unlockCard = new UnlockCard(this);
     // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
     frame.onResize((w) => {
       this.vignette.setX(frame.left).setScale(w / 320, 2);
@@ -132,6 +135,7 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('hud:omnitrixSymbol', (p) => this.banner.omnitrixSymbol(p.color, p.big), this);
     on('hud:strike', (p) => this.banner.strike(p.hits), this);
+    on('hud:unlock', (p) => this.unlockCard.show(p.alienId, p.stage), this);
     on('hud:comicPanel', (p) => this.comic.show(p.count, p.x, p.y, p.dir, p.color, p.ms), this);
     on('player:health', (p) => {
       this.hp = p.hp;
@@ -168,7 +172,7 @@ export class UIScene extends Phaser.Scene {
     on('hud:promptClear', (p) => this.prompts.clear(p.id), this);
     on('hud:banner', (p) => this.banner.show(p), this);
     on('hud:letterbox', (p) => this.letterbox.set(p.visible), this);
-    on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip), this);
+    on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip, p.portrait), this);
     on('hud:dialogClear', () => this.dialog.clear(), this);
     on('boss:show', (p) => this.bossBar.show(p.name), this);
     on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
@@ -211,6 +215,7 @@ export class UIScene extends Phaser.Scene {
     this.splits.update(now);
     this.dialog.update(delta, now);
     this.comic.update(delta);
+    this.unlockCard.update(delta);
 
     const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
     const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;

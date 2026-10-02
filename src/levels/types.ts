@@ -40,8 +40,11 @@ export type FormFilter = 'any' | 'human' | 'alien';
 export type EntitySpawn =
   | { type: 'drone'; kind: DroneKind; x: number; y: number }
   | { type: 'barricade'; id: string; x: number; y: number; w: number; h: number }
-  /** `label` names the speedrun split. */
-  | { type: 'checkpoint'; id: string; x: number; y: number; density: Density; label: string }
+  /**
+   * `label` names the speedrun split. A `hidden` checkpoint has no post: a set
+   * piece reaches it (mid-chase), and a restart there hands back to that set piece.
+   */
+  | { type: 'checkpoint'; id: string; x: number; y: number; density: Density; label: string; hidden?: boolean }
   | { type: 'smoothy'; x: number; y: number }
   /** `requires` hides the card until that alien is on the dial (a reason to replay chapters). */
   | { type: 'card'; id: string; x: number; y: number; requires?: string }
@@ -53,8 +56,17 @@ export type EntitySpawn =
   | { type: 'dummy'; x: number; y: number }
   | { type: 'jammer'; x: number; y: number; fieldFrom: number; gateX: number; gateTop: number }
   | { type: 'pod'; x: number; y: number }
-  | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number }
-  | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean };
+  /** `floor`: the arena's floor row (default 24). `kind` picks the boss. */
+  | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number; kind?: BossKind; floor?: number }
+  /** Drones that fly in from off-screen once Ben passes `triggerX` (each spawn's x is where it heads). */
+  | { type: 'wave'; id: string; triggerX: number; from: 'left' | 'right' | 'above'; spawns: Array<{ kind: DroneKind; x: number; y: number }> }
+  /**
+   * A secret only a later alien can reach (a card out of every current alien's
+   * reach). Standing in the zone shows that alien's locked silhouette and the
+   * chapter it unlocks in.
+   */
+  | { type: 'alienHint'; id: string; alien: string; x: number; y: number; w: number; h: number; line: string }
+  | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean; frame?: number };
 
 export type DecorKind =
   | 'rv'
@@ -68,7 +80,28 @@ export type DecorKind =
   | 'wreck'
   | 'crater'
   | 'debris'
-  | 'fire';
+  | 'fire'
+  // Road Trip (desert highway).
+  | 'cactus'
+  | 'cactusSmall'
+  | 'diner'
+  | 'gasPump'
+  | 'smoothyStand'
+  | 'billboard'
+  | 'roadSign'
+  | 'mileMarker'
+  | 'bridgeEnd'
+  | 'girder'
+  | 'guardrail'
+  | 'tumbleweed'
+  | 'skull'
+  | 'barrel'
+  | 'carWreck'
+  | 'poleSign'
+  | 'garage'
+  | 'neon'
+  | 'haulerWreck'
+  | 'fence';
 
 export interface PromptZone {
   id: string;
@@ -81,17 +114,56 @@ export interface PromptZone {
   humanText?: string;
   /** Shown while human with the Omnitrix ready to use. */
   readyText?: string;
+  /** Shown instead while Ben is a particular alien (by id). */
+  formText?: Partial<Record<string, string>>;
 }
 
-export type AmbientKind = 'camp' | 'forest' | 'ravine' | 'crash' | 'sim';
+export type AmbientKind = 'camp' | 'forest' | 'ravine' | 'crash' | 'sim' | 'sunset' | 'dusk' | 'night' | 'neon';
 
 export interface AmbientZone {
   x: number;
   ambient: AmbientKind;
 }
 
-/** Visual set: the night forest, or the Omnitrix's holographic training simulation. */
-export type LevelTheme = 'forest' | 'sim';
+/** Visual set: the night forest, the Omnitrix's training simulation, or the desert highway at sundown. */
+export type LevelTheme = 'forest' | 'sim' | 'highway';
+
+export type BossKind = 'hunter' | 'roadbreaker';
+
+/** A strip of asphalt drawn over the ground (row `y` is the road surface). */
+export interface RoadSpan {
+  x: number;
+  w: number;
+  y: number;
+}
+
+/** Highway sky: time of day (0 golden hour, 0.5 dusk, 1 night) by position. */
+export interface SkyKey {
+  x: number;
+  t: number;
+}
+
+/**
+ * Where a chapter's story moments happen. Each one is optional; the level
+ * builds the set pieces it has. Positions are in tiles.
+ */
+export interface StoryPlan {
+  /** Opening cinematic: the Rustbucket on the highway, then it pulls in at `parkX`. */
+  roadIntro?: { parkX: number; parkY: number };
+  /**
+   * The new-DNA moment for an alien, when Ben passes `x` (skipped once the file
+   * has it). A `scripted` one is started by another set piece (the chase);
+   * its `x` still decides whether a restart is past it.
+   */
+  unlocks?: Array<{ alien: string; x: number; line: string; scripted?: boolean }>;
+  /**
+   * The Rustbucket chase: Ben boards the RV at `boardX` (its roof), the chase
+   * runs on the road at `arenaX` (centre), and afterwards play picks up at `endX`.
+   */
+  chase?: { boardX: number; boardY: number; arenaX: number; roadY: number; endX: number; endY: number; checkpoint: string };
+  /** Lines after the boss falls. */
+  outro?: Array<{ who: string; text: string; ms: number }>;
+}
 
 export interface LevelData {
   id: string;
@@ -114,4 +186,7 @@ export interface LevelData {
   /** Story intro: where the pod cutscene starts and the drones that crash it. Unused without a pod. */
   podTriggerX: number;
   introSpawns: Array<{ kind: DroneKind; x: number; y: number }>;
+  roads?: RoadSpan[];
+  sky?: SkyKey[];
+  story?: StoryPlan;
 }

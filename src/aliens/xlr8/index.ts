@@ -42,6 +42,7 @@ export const XLR8_FORM: FormDefinition = {
     intro: { id: 'xlr8', text: 'HOLD {J}: STRIKES   {K}: DASH THROUGH', ms: 7000, priority: 5, doneAfter: { action: 'dashStrike', count: 1 } },
     advanced: { id: 'xlr8-dodge', text: '{K} THROUGH A SHOT = TOO SLOW!', ms: 6000, priority: 4, afterKills: 3, doneAfter: { action: 'tooSlow', count: 1 } },
   },
+  unlock: { tagline: 'THE FASTEST THING ALIVE', traits: ['RUNS ON WATER', 'DASHES RIGHT THROUGH ENEMIES'] },
   moves: ['HOLD {J}: BLUR STRIKES (6TH HIT KICKS)', '{K}: DASH THROUGH  ({UP}: UPWARD)', 'RUN FULL SPEED TO CROSS WATER'],
   audio: { transform: xlr8Transform, music: XLR8_MUSIC },
   art: { assets: XLR8_ASSETS, anims: XLR8_ANIMS },

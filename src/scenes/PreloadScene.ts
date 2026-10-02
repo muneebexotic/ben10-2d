@@ -8,6 +8,7 @@ import { SCENES } from './SceneKeys';
 import { launchParams } from '../systems/LaunchParams';
 import { session } from '../systems/Session';
 import { saveSystem } from '../systems/SaveSystem';
+import { hasLevel } from '../levels/registry';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -28,10 +29,11 @@ export class PreloadScene extends Phaser.Scene {
     createAnimations(this);
     const params = launchParams();
     // URL playtest switches skip the menus: they play on the last file (if there is one).
-    if (params.training || params.start) session.useSlot(saveSystem.lastSlot);
+    const level = params.level && hasLevel(params.level) ? params.level : undefined;
+    if (params.training || params.start || level) session.useSlot(saveSystem.lastSlot);
     if (params.gallery) this.scene.start(SCENES.gallery);
     else if (params.training) this.scene.start(SCENES.level, { levelId: 'training' });
-    else if (params.start) this.scene.start(SCENES.level, { checkpoint: params.start });
+    else if (params.start || level) this.scene.start(SCENES.level, { levelId: level, checkpoint: params.start });
     else this.scene.start(SCENES.menu);
   }
 }

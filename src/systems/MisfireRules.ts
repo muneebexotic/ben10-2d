@@ -8,14 +8,17 @@ export interface MisfireContext {
   introPlaying: boolean;
   /** A boss is making its entrance (arena lock, hologram, drop-in). */
   bossIntro: boolean;
+  /** A scripted story moment is running (a new alien's unlock, boarding the Rustbucket). */
+  storyMoment?: boolean;
 }
 
 /**
  * The watch only misfires in normal play: never on the first transformation
  * of a story run (the tutorial moment), in the intro, or while a boss makes
- * its entrance. Forced story misfires (Chapter 5) will bypass this.
+ * its entrance, or during scripted story moments (a new alien unlocking).
+ * Forced story misfires (Chapter 5) will bypass this.
  */
 export function misfireAllowed(c: MisfireContext): boolean {
   if (c.training) return true;
-  return c.transformations > 0 && !c.introPlaying && !c.bossIntro;
+  return c.transformations > 0 && !c.introPlaying && !c.bossIntro && !c.storyMoment;
 }

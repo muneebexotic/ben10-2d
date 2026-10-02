@@ -30,3 +30,12 @@ function dialOrder(include: (a: ReturnType<typeof allAliens>[number]) => boolean
     .filter(include)
     .map((a) => a.id);
 }
+
+/**
+ * Aliens a level unlocks with a story moment that hasn't happened yet this
+ * run: not owned, and not behind the restart point (`resumeTileX`, null for a
+ * fresh start). They stay off the dial until their moment.
+ */
+export function pendingUnlocks(unlocks: ReadonlyArray<{ alien: string; x: number }>, owned: readonly string[], resumeTileX: number | null): string[] {
+  return unlocks.filter((u) => !owned.includes(u.alien) && !(resumeTileX !== null && u.x < resumeTileX)).map((u) => u.alien);
+}

@@ -247,6 +247,8 @@ export interface FormDefinition {
     misfire?: { wanted: Partial<Record<string, string[]>>; any: string[] };
   };
   tips: FormTips;
+  /** The new-DNA card when the Omnitrix unlocks this alien in the story. */
+  unlock?: { tagline: string; traits: readonly [string, string] };
   /** Move list for the pause screen, with control tokens ("{J} FIREBALL"). */
   moves: string[];
   audio: {

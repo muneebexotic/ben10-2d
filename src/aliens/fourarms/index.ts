@@ -42,6 +42,7 @@ export const FOURARMS_FORM: FormDefinition = {
     intro: { id: 'fourarms', text: '{J} PUNCH   {K} SLAM   {UP}+{J} CLAP', ms: 7000, priority: 5, doneAfter: { action: 'slam', count: 1 } },
     advanced: { id: 'fourarms-grab', text: 'DRONE DOWN? {J} TO LIFT IT, {J} TO THROW!', ms: 6500, priority: 4, afterKills: 2, doneAfter: { action: 'throw', count: 1 } },
   },
+  unlock: { tagline: 'FOUR ARMS. ZERO CHILL.', traits: ['SMASHES ARMOUR AND WALLS', 'LIFTS AND THROWS ANYTHING'] },
   moves: ['{J} PUNCH, PUNCH, HAYMAKER  ({UP}: CLAP)', '{K} GROUND SLAM  (IN THE AIR: METEOR)', '{J} BY A DOWNED DRONE: LIFT, THEN THROW'],
   audio: { transform: fourArmsTransform, music: FOURARMS_MUSIC },
   art: { assets: FOURARMS_ASSETS, anims: FOURARMS_ANIMS },

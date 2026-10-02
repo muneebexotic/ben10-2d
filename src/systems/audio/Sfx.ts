@@ -269,6 +269,21 @@ const RECIPES = {
     A.tone({ type: 'triangle', freq: midiToFreq(100), duration: 0.9, volume: 0.16 * v, when: A.now + 0.12 });
     A.tone({ type: 'sine', freq: midiToFreq(76), duration: 0.9, volume: 0.12 * v, when: A.now + 0.12 });
   },
+  /** New DNA: the watch scanning, a rising sweep stuttering with data blips. */
+  dnaScan: (v) => {
+    const t = A.now;
+    A.tone({ type: 'sawtooth', freq: 120, freqEnd: 900, duration: 1.2, volume: 0.06 * v, filter: { type: 'lowpass', freq: 1600 } });
+    for (let i = 0; i < 12; i++) A.tone({ type: 'square', freq: 700 + i * 90 + (i % 3) * 260, duration: 0.03, volume: 0.05 * v, when: t + i * 0.09 });
+  },
+  /** A new alien unlocked: a bright Omnitrix fanfare over a deep boom. */
+  unlock: (v) => {
+    const t = A.now;
+    A.tone({ type: 'sine', freq: 90, freqEnd: 40, duration: 0.8, volume: 0.5 * v });
+    A.noise({ duration: 0.5, volume: 0.22 * v, filter: 'lowpass', freq: 5000, freqEnd: 300 });
+    for (const [i, n] of [72, 79, 84, 88, 91].entries()) A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.16, volume: 0.07 * v, when: t + 0.1 + i * 0.08, detune: 5 });
+    A.tone({ type: 'triangle', freq: midiToFreq(96), duration: 1.1, volume: 0.13 * v, when: t + 0.5 });
+    A.tone({ type: 'square', freq: midiToFreq(84), duration: 1.0, volume: 0.05 * v, when: t + 0.5, detune: -8 });
+  },
   /** STRIKE!: a heavy ball thunk, pins clattering everywhere, then a bowling-alley fanfare. */
   strike: (v) => {
     const t = A.now;

@@ -29,3 +29,16 @@ export const STORY = {
     blipEvery: 2,
   },
 } as const;
+
+/** Timings of Chapter 2's scripted moments (real milliseconds). */
+export const STORY_BEATS = {
+  /** A new alien's discovery: obstacle line, the watch acting up, the scan, the reveal, the forced transformation. */
+  unlock: {
+    skipGraceMs: 900,
+    beepAt: 900,
+    scanAt: 1500,
+    revealAt: 2900,
+    transformAt: 4500,
+    doneAt: 5000,
+  },
+} as const;

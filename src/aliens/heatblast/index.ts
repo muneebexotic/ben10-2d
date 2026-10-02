@@ -44,6 +44,7 @@ export const HEATBLAST_FORM: FormDefinition = {
     intro: { id: 'fireball', text: '{J} FIREBALL  (HOLD {UP} TO AIM HIGH)', ms: 7000, priority: 5, doneAfter: { action: 'fireball', count: 4 } },
     advanced: { id: 'burst', text: 'HOLD {K}, THEN RELEASE: FIRE BURST!', ms: 6000, priority: 4, afterKills: 3, doneAfter: { action: 'burst', count: 1 } },
   },
+  unlock: { tagline: 'LIVING FIRE', traits: ['THROWS FIREBALLS', 'ROCKET JUMPS SKY HIGH'] },
   moves: ['{J} FIREBALLS  (HOLD {UP}: AIM HIGH)', 'HOLD {K}, RELEASE: FIRE BURST', '{JUMP} IN THE AIR: ROCKET JUMP, HOLD TO GLIDE'],
   audio: { transform: heatblastTransform, music: HEATBLAST_MUSIC },
   art: { assets: HEATBLAST_ASSETS, anims: HEATBLAST_ANIMS },

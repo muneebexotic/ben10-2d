@@ -165,10 +165,55 @@ export class Omnitrix {
     return this.unlocked.includes(alienId);
   }
 
-  unlock(alienId: string): OmnitrixEvent[] {
+  /**
+   * Adds an alien to the dial. With `order` (every alien in dial order) it
+   * slots in where it belongs instead of at the end; the selection stays on
+   * the same alien.
+   */
+  unlock(alienId: string, order?: readonly string[]): OmnitrixEvent[] {
     if (this.unlocked.includes(alienId)) return [];
+    const selected = this.selectedAlien;
     this.unlocked.push(alienId);
+    if (order) {
+      const rank = (id: string) => {
+        const i = order.indexOf(id);
+        return i < 0 ? order.length : i;
+      };
+      this.unlocked.sort((a, b) => rank(a) - rank(b));
+      if (selected !== null) this.selectedIndex = this.unlocked.indexOf(selected);
+    }
     return [{ type: 'unlocked', alienId }];
+  }
+
+  /** The watch charges up at once (a story moment: new DNA floods it). */
+  recharge(): OmnitrixEvent[] {
+    if (this._state !== 'cooldown') return [];
+    return this.finishCooldown();
+  }
+
+  /**
+   * A story moment turns Ben into a specific alien: never a misfire, never
+   * refused. From the ready state it is a normal transformation; while already
+   * transformed it swaps for free.
+   */
+  forceInto(alienId: string): OmnitrixEvent[] {
+    if (!this.unlocked.includes(alienId)) return [];
+    const events: OmnitrixEvent[] = [];
+    if (this._state === 'cooldown') events.push(...this.finishCooldown());
+    events.push(...this.select(alienId));
+    if (this._state === 'ready') {
+      events.push(...this.transform({ allowMisfire: false }));
+      return events;
+    }
+    const fromId = this.activeAlien;
+    if (fromId === null || fromId === alienId) return events;
+    this.activeAlien = alienId;
+    this.sinceChangeMs = 0;
+    this.lastWarningSecond = -1;
+    this.remainingMs = Math.max(this.remainingMs, this.config.transformDurationMs);
+    this.setMisfire(null, alienId);
+    events.push({ type: 'swapped', fromId, alienId, requestedId: alienId, wrong: false, costMs: 0, fix: false });
+    return events;
   }
 
   canTransform(): boolean {

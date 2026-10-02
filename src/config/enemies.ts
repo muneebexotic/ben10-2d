@@ -137,3 +137,10 @@ export const LASER = {
   lifetimeMs: 2600,
   radius: 3,
 } as const;
+
+/** Ambush waves (drones flying in from off screen when Ben passes a trigger). */
+export const WAVES = {
+  /** They need a moment to arrive before attacking; each one after the first waits a little longer. */
+  firstAttackMs: 1300,
+  staggerMs: 350,
+} as const;

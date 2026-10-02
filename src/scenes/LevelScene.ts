@@ -51,6 +51,13 @@ import { MisfireBeat } from './level/MisfireBeat';
 import { misfireAllowed } from '../systems/MisfireRules';
 import { Tutorial } from './level/Tutorial';
 import { TrainingDirector } from './level/TrainingDirector';
+import { HighwayBackdrop } from './level/HighwayBackdrop';
+import { Dialogue } from './level/story/Dialogue';
+import { StoryDirector } from './level/story/StoryDirector';
+import type { StoryKit } from './level/story/StoryKit';
+import { pendingUnlocks } from '../systems/Unlocks';
+import { aliensUnlockedBy, allAliens } from '../aliens/registry';
+import type { TrackName } from '../systems/audio/Music';
 import { createDroneWorld, createFxApi } from './level/levelApis';
 import { SCENES } from './SceneKeys';
 import { a11y, blinkOn, flashCamera } from '../systems/Accessibility';
@@ -80,6 +87,10 @@ const AMBIENT: Record<AmbientKind, number> = {
   ravine: LIGHTING.ambientRavine,
   crash: LIGHTING.ambientCrash,
   sim: LIGHTING.ambientSim,
+  sunset: LIGHTING.ambientSunset,
+  dusk: LIGHTING.ambientDusk,
+  night: LIGHTING.ambientNight,
+  neon: LIGHTING.ambientNeon,
 };
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
@@ -115,6 +126,12 @@ export class LevelScene extends Phaser.Scene {
   private tutorial!: Tutorial;
   private arena: BossArena | null = null;
   private training: TrainingDirector | null = null;
+  private story: StoryDirector | null = null;
+  private dialogue!: Dialogue;
+  private highway: HighwayBackdrop | null = null;
+  /** Letterbox and HUD as set pieces left them (re-sent when the HUD scene asks). */
+  private storyLetterbox = false;
+  private storyHudHidden = false;
   private droneWorld!: DroneWorld;
   private drones: Drone[] = [];
   private barricades: Barricade[] = [];
@@ -164,10 +181,11 @@ export class LevelScene extends Phaser.Scene {
     this.level = getLevel(data.levelId ?? CHAPTER_1.id);
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
     const extra = this.mode === 'story' ? knownAliens(launchParams().aliens) : [];
+    this.checkpointId = data.checkpoint ?? null;
     this.dialAliens = this.resolveAliens(extra);
     this.reachableCards = availableCards(this.level, this.dialAliens).length;
     // Starting mid-level (?start=) or with playtest aliens (?aliens=) is practice: no best times or splits.
-    const fullRun = this.mode === 'story' && !data.checkpoint && extra.length === 0;
+    const fullRun = this.mode === 'story' && !data.checkpoint && extra.length === 0 && !launchParams().level;
     this.stats = data.stats ? cloneRunStats(data.stats) : createRunStats(countedCards(this.level).length, fullRun, activeDifficultyId());
     // Picked up on a different difficulty than it started on: still a clear, but not a timed run.
     if (this.stats.difficulty !== activeDifficultyId()) this.stats.mixedDifficulty = true;
@@ -193,7 +211,8 @@ export class LevelScene extends Phaser.Scene {
     if (quality.lowest) this.onQualityChanged();
 
     const bossSpawn = this.level.entities.find((e): e is BossSpawn => e.type === 'boss') ?? null;
-    this.backdrop = this.level.theme === 'sim' ? new SimBackdrop(this) : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx);
+    this.highway = this.level.theme === 'highway' ? new HighwayBackdrop(this, this.level.sky ?? []) : null;
+    this.backdrop = this.highway ?? (this.level.theme === 'sim' ? new SimBackdrop(this) : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
     this.decor = new Decor(this, this.level, this.world);
     this.lighting = new Lighting(this);
     this.time2 = new TimeController();
@@ -215,6 +234,9 @@ export class LevelScene extends Phaser.Scene {
     );
     this.inputMap = new InputMap(this);
     this.speech = new SpeechBubble(this);
+    this.dialogue = new Dialogue(this.speech);
+    this.storyLetterbox = false;
+    this.storyHudHidden = false;
 
     const start = this.resolveStart();
     this.camRig = new CameraRig(this.cameras.main);
@@ -252,6 +274,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.intro) this.intro.lightHook = (x, y, r, c, i) => this.lighting.add(x, y, r, c, i);
     this.arena = bossSpawn ? this.createArena(bossSpawn) : null;
     this.training = this.mode === 'training' ? this.createTraining() : null;
+    this.story = this.mode === 'story' && this.level.story !== undefined ? this.createStory(data, this.checkpointId ? start.x : 0) : null;
 
     if (resuming || !this.intro) {
       if (resuming) this.player.setInvulnerable(PLAYER.respawnInvulnMs);
@@ -271,7 +294,7 @@ export class LevelScene extends Phaser.Scene {
     }, this);
     music.setLayer(null);
     music.setIntensity(0);
-    music.play(this.mode === 'training' ? 'simulation' : 'forest');
+    music.play(this.levelTrack());
     bindAudioUnlock(this);
     bindMuteKey(this);
     if (this.training) this.showTrainingPrompt();
@@ -302,7 +325,107 @@ export class LevelScene extends Phaser.Scene {
     const story = storyAliens(this.level.chapter, completed, extra);
     // Aliens a file unlocked some other way (a later chapter's story moment) come along too, in dial order.
     const owned = file?.unlockedAliens.filter((id) => hasAlien(id) && !story.includes(id)) ?? [];
-    return owned.length > 0 ? storyAliens(this.level.chapter, completed, [...extra, ...owned]) : story;
+    const dial = owned.length > 0 ? storyAliens(this.level.chapter, completed, [...extra, ...owned]) : story;
+    // Aliens this chapter unlocks with a story moment stay off the dial until it happens (or a restart is past it).
+    const have = [...extra, ...(file?.unlockedAliens ?? []), ...aliensUnlockedBy(Math.max(0, ...completed))];
+    const pending = pendingUnlocks(this.level.story?.unlocks ?? [], have, this.resumeTileX());
+    return dial.filter((id) => !pending.includes(id));
+  }
+
+  /** Tile x the run restarts from (a checkpoint or ?at=), or null for a fresh start. */
+  private resumeTileX(): number | null {
+    const id = this.checkpointId;
+    if (!id) return null;
+    if (id.startsWith('@')) return Number(id.slice(1));
+    const cp = this.level.entities.find((e) => e.type === 'checkpoint' && e.id === id);
+    return cp && cp.type === 'checkpoint' ? cp.x : null;
+  }
+
+  private levelTrack(): TrackName {
+    if (this.mode === 'training') return 'simulation';
+    return this.level.theme === 'highway' ? 'highway' : 'forest';
+  }
+
+  private createStory(data: LevelStartData, resumeX: number): StoryDirector {
+    const self = this;
+    const kit: StoryKit = {
+      scene: this,
+      level: this.level,
+      world: this.world,
+      player: this.player,
+      fx: this.fx,
+      lighting: this.lighting,
+      time: this.time2,
+      telegraph: this.telegraph,
+      projectiles: this.projectiles,
+      combat: this.combat,
+      camera: this.camRig,
+      speech: this.speech,
+      dialogue: this.dialogue,
+      tutorial: this.tutorial,
+      omni: this.omni,
+      droneWorld: this.droneWorld,
+      backdrop: this.highway,
+      now: () => this.gameNow,
+      startCheckpoint: this.checkpointId,
+      continuing: data.stats !== undefined,
+      unlockAlien: (id) => this.unlockAlien(id),
+      hasAlien: (id) => this.dialAliens.includes(id),
+      spawnDrone: (kind, x, y, opts) => this.spawnStoryDrone(kind, x, y, opts),
+      reachCheckpoint: (id) => this.reachCheckpoint(id),
+      playMusic: (track) => music.play(track),
+      setHud: (visible) => {
+        self.storyHudHidden = !visible;
+        EventBus.emit('hud:visible', { visible, omnitrix: visible ? this.omni.acquired : false });
+      },
+      setLetterbox: (visible) => {
+        self.storyLetterbox = visible;
+        EventBus.emit('hud:letterbox', { visible });
+      },
+      rescue: (x, feetY) => this.rescue(x, feetY),
+    };
+    return new StoryDirector(kit, resumeX, { onIntroControl: () => this.spawnIntroDrones() });
+  }
+
+  /** A drone a set piece brings in (ambush waves, the convoy's escorts). */
+  private spawnStoryDrone(kind: DroneKind, x: number, y: number, opts: { roam?: boolean; delayMs?: number } = {}): Drone {
+    const d = new Drone(this, this.droneWorld, x, y, createBrain(kind));
+    d.awake = true;
+    d.nextActionAt = this.gameNow + (opts.delayMs ?? 1200);
+    if (opts.roam) d.homeX = -1;
+    this.drones.push(d);
+    this.registerDrone(d);
+    return d;
+  }
+
+  /** A story unlock: the alien joins the dial for good. */
+  private unlockAlien(id: string): void {
+    if (!hasAlien(id) || this.dialAliens.includes(id)) return;
+    const order = allAliens().map((a) => a.id);
+    this.dialAliens = [...this.dialAliens, id].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    this.omni.unlock(id);
+    if (this.mode === 'story' && session.slot !== null && launchParams().aliens.length === 0) saveSystem.unlockAliens(session.slot, [id]);
+    this.reachableCards = availableCards(this.level, this.dialAliens).length;
+    EventBus.emit('stats:update', this.statsPayload());
+  }
+
+  /** Lights a checkpoint from a set piece (the hidden one mid-chase). */
+  private reachCheckpoint(id: string): void {
+    const c = this.checkpoints.find((cp) => cp.id === id);
+    if (!c || c.lit) return;
+    this.lightCheckpoint(c);
+  }
+
+  /** Ben fell where he can't be (off the Rustbucket): a hit, and back at a safe spot. */
+  private rescue(x: number, feetY: number): void {
+    const p = this.player;
+    if (p.dead) return;
+    p.lastSafe.x = x;
+    p.lastSafe.y = feetY;
+    this.fx.burst('dust', p.x, p.y, 12);
+    playSfx('hurt');
+    const outcome = p.pitRespawn();
+    this.onPlayerHurt(outcome);
   }
 
   private resolveStart(): { x: number; y: number } {
@@ -506,14 +629,15 @@ export class LevelScene extends Phaser.Scene {
     return misfireAllowed({
       training: this.mode === 'training',
       transformations: this.omni.transformations,
-      introPlaying: this.intro !== null && !this.intro.done,
+      introPlaying: (this.intro !== null && !this.intro.done) || (this.story?.introPlaying ?? false),
+      storyMoment: this.story?.storyLock ?? false,
       bossIntro: this.arena?.introducing ?? false,
     });
   }
 
   /** The intro cutscene or the Vilgax hologram is playing. */
   private get cinematic(): boolean {
-    return (this.intro?.cinematic ?? false) || (this.arena?.cinematic ?? false);
+    return (this.intro?.cinematic ?? false) || (this.arena?.cinematic ?? false) || (this.story?.cinematic ?? false);
   }
 
   // ------------------------------------------------------------ Frame
@@ -541,6 +665,8 @@ export class LevelScene extends Phaser.Scene {
     this.telegraph.begin();
 
     this.intro?.update(realDt, controls);
+    this.dialogue.update(realDt, controls);
+    this.story?.update(dt, realDt, controls);
     if (this.state === 'play') {
       this.omni.handleInput(controls, this.gameNow);
       this.player.update(dt, controls);
@@ -588,7 +714,7 @@ export class LevelScene extends Phaser.Scene {
     this.speech.update(this.player.x, this.player.y - this.player.headHeight, realDt);
     if (!this.intro?.cinematic) {
       const ready = this.omni.acquired && this.omni.omnitrix.state === 'ready' && !this.omni.jammed;
-      this.tutorial.update(realDt, this.player.x, this.player.isAlien, ready);
+      this.tutorial.update(realDt, this.player.x, this.player.isAlien, ready, this.player.form.id);
     }
     this.updateLighting(realDt);
     this.debug();
@@ -630,16 +756,7 @@ export class LevelScene extends Phaser.Scene {
     if (p.dead) return;
 
     for (const c of this.checkpoints) {
-      if (!c.lit && c.contains(p.x, p.y)) {
-        c.light();
-        this.checkpointId = c.id;
-        playSfx('checkpoint');
-        this.fx.burst('green', c.x, c.y - 24, 16);
-        this.fx.ring(c.x, c.y - 24, PALETTE.omnitrix, 30, 400);
-        EventBus.emit('hud:banner', { title: 'CHECKPOINT', color: PALETTE.omnitrix, durationMs: 1100, style: 'soft' });
-        this.split(c.id, c.label);
-        this.saveResume();
-      }
+      if (!c.lit && !c.hidden && c.contains(p.x, p.y)) this.lightCheckpoint(c);
     }
 
     for (const pk of this.pickups) {
@@ -692,6 +809,19 @@ export class LevelScene extends Phaser.Scene {
     if (!p.isAlien && this.drones.some((d) => d.alive && d.state === 'stuck' && Math.abs(d.x - p.x) < 120)) {
       this.tutorial.tip('striker', "IT'S STUCK! PUNCH IT!", 2500, 7);
     }
+  }
+
+  private lightCheckpoint(c: Checkpoint): void {
+    c.light();
+    this.checkpointId = c.id;
+    playSfx('checkpoint');
+    if (!c.hidden) {
+      this.fx.burst('green', c.x, c.y - 24, 16);
+      this.fx.ring(c.x, c.y - 24, PALETTE.omnitrix, 30, 400);
+    }
+    EventBus.emit('hud:banner', { title: 'CHECKPOINT', color: PALETTE.omnitrix, durationMs: 1100, style: 'soft' });
+    this.split(c.id, c.label);
+    this.saveResume();
   }
 
   // ------------------------------------------------------------ Events
@@ -965,8 +1095,8 @@ export class LevelScene extends Phaser.Scene {
   /** Pushes the full current state to the HUD (it only learns things through events). */
   private syncHud(): void {
     const arena = this.arena;
-    EventBus.emit('hud:letterbox', { visible: (this.intro?.cinematic ?? false) || (arena !== null && arena.started && !arena.fighting && !arena.boss?.defeated) });
-    if (!this.intro?.inOpening) EventBus.emit('hud:visible', { visible: true, omnitrix: this.omni.acquired });
+    EventBus.emit('hud:letterbox', { visible: this.storyLetterbox || (this.intro?.cinematic ?? false) || (arena !== null && arena.started && !arena.fighting && !arena.boss?.defeated) });
+    if (!this.intro?.inOpening && !this.storyHudHidden) EventBus.emit('hud:visible', { visible: true, omnitrix: this.omni.acquired });
     else EventBus.emit('hud:visible', { visible: false });
     this.emitHealth(0);
     this.emitFormHealth(0);
@@ -1017,6 +1147,8 @@ export class LevelScene extends Phaser.Scene {
     this.intro?.destroy();
     this.arena?.destroy();
     this.training?.destroy();
+    this.story?.destroy();
+    this.dialogue?.stop(false);
     this.time2?.clearSlowMo();
     this.tweens.timeScale = 1;
     this.anims.globalTimeScale = 1;

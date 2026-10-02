@@ -3,7 +3,7 @@ import { activeDifficulty } from '../../systems/Difficulty';
 import { MISFIRE, PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
 import { MisfireQuips } from '../../aliens/misfire';
 import { PALETTE } from '../../config/palette';
-import { getAlien } from '../../aliens/registry';
+import { allAliens, getAlien } from '../../aliens/registry';
 import type { Player } from '../../entities/Player';
 import { Omnitrix, type OmnitrixConfig, type OmnitrixEvent, type RevertReason } from '../../systems/Omnitrix';
 import { EventBus } from '../../systems/EventBus';
@@ -29,6 +29,8 @@ export class OmnitrixController {
   private deniedFlashUntil = 0;
   private pendingPerfect = false;
   private readonly quips = new MisfireQuips();
+  /** A story moment is driving the watch: its swap doesn't count as the player's. */
+  private forcing = false;
   /** False while the story needs the watch to behave (first transform, boss intro). */
   misfireAllowed: () => boolean = () => true;
   private readonly wrongOverride: number | null;
@@ -129,6 +131,21 @@ export class OmnitrixController {
     });
   }
 
+  /** A new alien joins the dial (story unlock), slotted into dial order and selected. */
+  unlock(alienId: string): void {
+    this.omnitrix.unlock(alienId, allAliens().map((a) => a.id));
+    for (const e of this.omnitrix.select(alienId)) {
+      if (e.type === 'dial') EventBus.emit('omnitrix:dial', { selectedId: e.selectedId, index: e.index, count: e.count, direction: 1 });
+    }
+  }
+
+  /** A story moment turns Ben into this alien: never a misfire, recharges the watch if needed. */
+  forceInto(alienId: string): void {
+    this.forcing = true;
+    this.handle(this.omnitrix.forceInto(alienId));
+    this.forcing = false;
+  }
+
   /** Forces an early revert (alien shield broken, jammer field). */
   forceRevert(reason: RevertReason): void {
     this.handle(this.omnitrix.revert(reason));
@@ -163,7 +180,7 @@ export class OmnitrixController {
           break;
         }
         case 'swapped': {
-          this.swaps++;
+          if (!this.forcing) this.swaps++;
           const perfect = this.pendingPerfect;
           const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId) : undefined;
           this.sequence.swap(getAlien(e.alienId), { perfect, fix: e.fix, misfire });

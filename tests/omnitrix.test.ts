@@ -224,3 +224,47 @@ describe('Omnitrix', () => {
     expect(types(omni.revert('forced'))).toEqual(['reverted', 'ready']);
   });
 });
+
+describe('story unlocks', () => {
+  const cfg = { transformDurationMs: 20000, cooldownMs: 10000, warningMs: 5000, wrongTransformChance: 1, swapEnabled: true, swapCostMs: 3000, swapLockoutMs: 1200 };
+  const ORDER = ['heatblast', 'fourarms', 'xlr8'];
+
+  it('a new alien slots into dial order and keeps the selection', () => {
+    const o = new Omnitrix(cfg, ['heatblast']);
+    o.unlock('xlr8', ORDER);
+    o.select('xlr8');
+    o.unlock('fourarms', ORDER);
+    expect(o.unlockedAliens).toEqual(ORDER);
+    expect(o.selectedAlien).toBe('xlr8');
+  });
+
+  it('a forced transform never misfires, even at 100%', () => {
+    const o = new Omnitrix(cfg, ORDER, () => 0);
+    const events = o.forceInto('xlr8');
+    expect(events.find((e) => e.type === 'transformed')).toMatchObject({ alienId: 'xlr8', wrong: false });
+    expect(o.activeAlienId).toBe('xlr8');
+  });
+
+  it('forcing from the cooldown recharges the watch first', () => {
+    const o = new Omnitrix(cfg, ORDER, () => 0.99);
+    o.transform();
+    o.revert('damage');
+    expect(o.state).toBe('cooldown');
+    o.forceInto('fourarms');
+    expect(o.state).toBe('active');
+    expect(o.activeAlienId).toBe('fourarms');
+  });
+
+  it('forcing while transformed swaps for free, without a lockout, and clears a misfire', () => {
+    const o = new Omnitrix(cfg, ORDER, () => 0);
+    o.transform();
+    expect(o.misfireState).not.toBeNull();
+    o.update(5000);
+    // The misfire (rng 0, 100%) gave Four Arms instead of Heatblast.
+    expect(o.activeAlienId).toBe('fourarms');
+    const events = o.forceInto('xlr8');
+    expect(events.find((e) => e.type === 'swapped')).toMatchObject({ alienId: 'xlr8', costMs: 0 });
+    expect(o.timeRemainingMs).toBe(20000);
+    expect(o.fixSwapOwed).toBe(false);
+  });
+});

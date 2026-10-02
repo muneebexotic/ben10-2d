@@ -1,7 +1,7 @@
 /**
  * URL switches for playtesting: ?start=<checkpoint id>, ?gallery=1, ?debug=1, ?mute=1,
  * ?aliens=fourarms,xlr8 (adds aliens to the story dial; the run counts as practice),
- * ?training=1 (straight into Omnitrix Training).
+ * ?training=1 (straight into Omnitrix Training), ?level=ch2 (which chapter ?start= and a direct start play).
  * Dev builds only: ?at=<tile x> spawns Ben anywhere, ?god=1 makes him invulnerable.
  */
 export interface LaunchParams {
@@ -14,6 +14,8 @@ export interface LaunchParams {
   /** Extra aliens for the story dial (playtesting). */
   aliens: string[];
   training: boolean;
+  /** Level for ?start= (and a direct start with ?level= alone). */
+  level: string | null;
 }
 
 export function launchParams(): LaunchParams {
@@ -38,5 +40,6 @@ export function launchParams(): LaunchParams {
       .map((id) => id.trim().toLowerCase())
       .filter((id) => id.length > 0),
     training: q.has('training'),
+    level: q.get('level'),
   };
 }

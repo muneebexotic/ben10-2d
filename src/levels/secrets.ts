@@ -1,5 +1,6 @@
 import type { HitKind } from '../entities/types';
 import { hasAlien } from '../aliens/registry';
+import { inRoster } from '../config/roster';
 import type { EntitySpawn, LevelData } from './types';
 
 /** Only a heavy smash (Four Arms) cracks a cracked wall. Everything else bounces off. */
@@ -23,9 +24,10 @@ export function lockedCards(level: LevelData, aliens: readonly string[]): CardSp
 }
 
 /**
- * Cards that count toward a chapter's total: every card whose alien exists in
- * the game, even if the player hasn't unlocked it yet ("come back with Four Arms").
+ * Cards that count toward a chapter's total: every card whose alien is in the
+ * roster, even one the player (or the game) doesn't have yet ("come back with
+ * Stinkfly"). The totals never change as new aliens arrive.
  */
 export function countedCards(level: LevelData): CardSpawn[] {
-  return level.entities.filter((e): e is CardSpawn => e.type === 'card' && (!e.requires || hasAlien(e.requires)));
+  return level.entities.filter((e): e is CardSpawn => e.type === 'card' && (!e.requires || hasAlien(e.requires) || inRoster(e.requires)));
 }

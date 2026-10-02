@@ -68,6 +68,11 @@ export const LIGHTING = {
   ambientAlarm: 0x8a3444,
   /** Omnitrix Training: a bright, cool simulation. */
   ambientSim: 0xa8bcb8,
+  /** Road Trip: golden hour, dusk over the river, night on the highway, the truck stop's neon. */
+  ambientSunset: 0xffdcc0,
+  ambientDusk: 0xc49ab4,
+  ambientNight: 0x7078b0,
+  ambientNeon: 0x8a6c9e,
   ambientBlendMs: 900,
 } as const;
 

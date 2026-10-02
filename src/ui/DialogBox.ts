@@ -18,6 +18,8 @@ export class DialogBox {
   private readonly name: Phaser.GameObjects.BitmapText;
   private readonly body: Phaser.GameObjects.BitmapText;
   private readonly skip: Phaser.GameObjects.BitmapText;
+  private readonly portrait: Phaser.GameObjects.Image;
+  private readonly portraitFrame: Phaser.GameObjects.Graphics;
   private full = '';
   private shown = 0;
   private voicePitch = 1;
@@ -26,7 +28,9 @@ export class DialogBox {
     this.bg = scene.add.graphics();
     this.name = pixelText(scene, -W / 2 + 10, -H / 2 - 4, '', { scale: 2, originY: 0.5, color: PALETTE.enemy });
     this.body = pixelText(scene, -W / 2 + 12, -H / 2 + 12, '', { color: PALETTE.cream, maxWidth: W - 24 });
-    this.root = scene.add.container(GAME_WIDTH / 2, Y, [this.bg, this.name, this.body]).setDepth(950).setVisible(false);
+    this.portraitFrame = scene.add.graphics();
+    this.portrait = scene.add.image(-W / 2 + 30, -4, '__DEFAULT').setVisible(false);
+    this.root = scene.add.container(GAME_WIDTH / 2, Y, [this.bg, this.portraitFrame, this.portrait, this.name, this.body]).setDepth(950).setVisible(false);
     this.skip = pixelText(scene, GAME_WIDTH - 12, GAME_HEIGHT - 17, '', { originX: 1, originY: 0.5, color: PALETTE.uiDim }).setDepth(950);
   }
 
@@ -35,12 +39,29 @@ export class DialogBox {
     this.skip.setX(right - 12);
   }
 
-  show(speaker: string, text: string, color: number, voicePitch = 1, skip = false): void {
+  /** `portrait`: a texture key; the speaker's bust pops out of the box's left edge. */
+  show(speaker: string, text: string, color: number, voicePitch = 1, skip = false, portrait?: string): void {
     this.full = text;
     this.shown = 0;
     this.voicePitch = voicePitch;
-    this.name.setText(speaker).setTint(color);
-    this.body.setText('');
+    const inset = portrait ? 58 : 0;
+    this.name.setText(speaker).setTint(color).setX(-W / 2 + 10 + inset);
+    this.body.setText('').setX(-W / 2 + 12 + inset).setMaxWidth(W - 24 - inset);
+    const pf = this.portraitFrame;
+    pf.clear();
+    if (portrait) {
+      const changed = !this.portrait.visible || this.portrait.texture.key !== portrait;
+      this.portrait.setTexture(portrait).setVisible(true);
+      pf.fillStyle(PALETTE.ink, 1).fillRect(-W / 2 + 4, -H / 2 - 9, 52, 52);
+      pf.lineStyle(2, color, 1).strokeRect(-W / 2 + 4, -H / 2 - 9, 52, 52);
+      if (changed) {
+        // A little hop when a new speaker cuts in.
+        this.portrait.setScale(1, 0.85).setY(0);
+        this.scene.tweens.add({ targets: this.portrait, scaleY: 1, y: -4, duration: 160, ease: 'Back.easeOut' });
+      }
+    } else {
+      this.portrait.setVisible(false);
+    }
     const g = this.bg;
     g.clear();
     g.fillStyle(PALETTE.ink, 0.88);
@@ -51,9 +72,9 @@ export class DialogBox {
     g.fillRect(-W / 2, -H / 2, 4, H);
     const tagW = this.name.width + 16;
     g.fillStyle(PALETTE.ink, 1);
-    g.fillRect(-W / 2 + 4, -H / 2 - 12, tagW, 14);
+    g.fillRect(-W / 2 + 4 + inset, -H / 2 - 12, tagW, 14);
     g.lineStyle(1, color, 0.9);
-    g.strokeRect(-W / 2 + 4.5, -H / 2 - 11.5, tagW - 1, 13);
+    g.strokeRect(-W / 2 + 4.5 + inset, -H / 2 - 11.5, tagW - 1, 13);
     if (!this.root.visible) {
       this.root.setVisible(true).setAlpha(0).setY(Y - 10);
       this.scene.tweens.add({ targets: this.root, alpha: 1, y: Y, duration: 220, ease: 'Cubic.easeOut' });
@@ -63,6 +84,7 @@ export class DialogBox {
 
   clear(): void {
     this.full = '';
+    this.portrait.setVisible(false);
     this.root.setVisible(false);
     this.skip.setVisible(false);
   }

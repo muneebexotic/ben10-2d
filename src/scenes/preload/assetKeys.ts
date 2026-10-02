@@ -21,6 +21,9 @@ import * as story from './story';
 import * as ui from './uiArt';
 import * as world from './world';
 import { SILHOUETTE_ASSETS } from './silhouettes';
+import * as hw from './highway';
+import * as veh from './vehicles';
+import * as portraits from './portraits';
 
 /**
  * Keys for every shared texture (world, enemies, UI, human Ben). Each alien
@@ -121,6 +124,45 @@ export const TEX = {
   touchPunch: 'ui-touch-punch',
   touchRoll: 'ui-touch-roll',
   touchPause: 'ui-touch-pause',
+  // Road Trip.
+  tilesDesert: 'tiles-desert',
+  road: 'road-scroll',
+  roadCap: 'road-cap',
+  sunsetSky: 'bg-sunset-sky',
+  duskSky: 'bg-dusk-sky',
+  sun: 'bg-sun',
+  farMesas: 'bg-far-mesas',
+  nearButtes: 'bg-near-buttes',
+  poles: 'bg-poles',
+  scrub: 'bg-scrub',
+  cactus: 'prop-cactus',
+  cactusSmall: 'prop-cactus-small',
+  diner: 'prop-diner',
+  gasPump: 'prop-gas-pump',
+  smoothyStand: 'prop-smoothy-stand',
+  billboard: 'prop-billboard',
+  roadSign: 'prop-road-sign',
+  mileMarker: 'prop-mile-marker',
+  bridgeEnd: 'prop-bridge-end',
+  girder: 'prop-girder',
+  guardrail: 'prop-guardrail',
+  tumbleweed: 'prop-tumbleweed',
+  skull: 'prop-skull',
+  barrel: 'prop-barrel',
+  carWreck: 'prop-car-wreck',
+  poleSign: 'prop-pole-sign',
+  garage: 'prop-garage',
+  neon: 'prop-neon',
+  haulerWreck: 'prop-hauler-wreck',
+  fence: 'prop-fence',
+  rustbucket: 'vehicle-rustbucket',
+  convoy: 'vehicle-convoy',
+  haulerCab: 'vehicle-hauler-cab',
+  haulerTrailer: 'vehicle-hauler-trailer',
+  portraitMax: 'portrait-max',
+  portraitGwen: 'portrait-gwen',
+  portraitBen: 'portrait-ben',
+  portraitVilgax: 'portrait-vilgax',
 } as const;
 
 export type TextureKey = (typeof TEX)[keyof typeof TEX];
@@ -232,6 +274,45 @@ export const ASSETS: AssetDef[] = [
   one(TEX.touchRoll, 16, 16, ui.drawTouchRoll),
   one(TEX.touchPause, 16, 16, ui.drawTouchPause),
   ...SILHOUETTE_ASSETS,
+
+  sheet(TEX.tilesDesert, 16, 16, TILESET_FRAME_COUNT, hw.drawDesertTile),
+  one(TEX.road, 64, 160, hw.drawRoad),
+  one(TEX.roadCap, 64, 16, hw.drawRoadCap),
+  one(TEX.sunsetSky, 8, 360, hw.drawSunsetSky),
+  one(TEX.duskSky, 8, 360, hw.drawDuskSky),
+  one(TEX.sun, 72, 72, hw.drawSun),
+  one(TEX.farMesas, 512, 140, hw.drawFarMesas),
+  one(TEX.nearButtes, 384, 170, hw.drawNearButtes),
+  one(TEX.poles, 256, 110, hw.drawPoles),
+  one(TEX.scrub, 320, 40, hw.drawScrub),
+  one(TEX.cactus, 22, 40, hw.drawCactus),
+  one(TEX.cactusSmall, 14, 14, hw.drawCactusSmall),
+  one(TEX.diner, 120, 88, hw.drawDiner),
+  one(TEX.gasPump, 14, 26, hw.drawGasPump),
+  one(TEX.smoothyStand, 48, 56, hw.drawSmoothyStand),
+  sheet(TEX.billboard, 96, 64, 2, hw.drawBillboard),
+  one(TEX.roadSign, 16, 28, hw.drawRoadSign),
+  one(TEX.mileMarker, 8, 16, hw.drawMileMarker),
+  one(TEX.bridgeEnd, 48, 40, hw.drawBridgeEnd),
+  one(TEX.girder, 62, 26, hw.drawGirder),
+  one(TEX.guardrail, 32, 12, hw.drawGuardrail),
+  one(TEX.tumbleweed, 14, 12, hw.drawTumbleweed),
+  one(TEX.skull, 14, 8, hw.drawSkull),
+  one(TEX.barrel, 12, 16, hw.drawBarrel),
+  one(TEX.carWreck, 56, 26, hw.drawCarWreck),
+  one(TEX.poleSign, 40, 192, hw.drawPoleSign),
+  one(TEX.garage, 96, 64, hw.drawGarage),
+  sheet(TEX.neon, 52, 24, 2, hw.drawNeon),
+  one(TEX.haulerWreck, 160, 56, hw.drawHaulerWreck),
+  one(TEX.fence, 32, 14, hw.drawFence),
+  sheet(TEX.rustbucket, veh.RUSTBUCKET.w, veh.RUSTBUCKET.h, 3, veh.drawRustbucket),
+  sheet(TEX.convoy, veh.CONVOY.w, veh.CONVOY.h, 4, veh.drawConvoyTruck),
+  sheet(TEX.haulerCab, veh.HAULER_CAB.w, veh.HAULER_CAB.h, 2, veh.drawHaulerCab),
+  sheet(TEX.haulerTrailer, veh.HAULER_TRAILER.w, veh.HAULER_TRAILER.h, 2, veh.drawHaulerTrailer),
+  one(TEX.portraitMax, portraits.PORTRAIT.w, portraits.PORTRAIT.h, portraits.drawPortraitMax),
+  one(TEX.portraitGwen, portraits.PORTRAIT.w, portraits.PORTRAIT.h, portraits.drawPortraitGwen),
+  one(TEX.portraitBen, portraits.PORTRAIT.w, portraits.PORTRAIT.h, portraits.drawPortraitBen),
+  one(TEX.portraitVilgax, portraits.PORTRAIT.w, portraits.PORTRAIT.h, portraits.drawPortraitVilgax),
 ];
 
 const benAnims = (prefix: string, texture: string): AnimDef[] => [
@@ -264,4 +345,7 @@ export const ANIMS: AnimDef[] = [
   { key: 'arena-hum', texture: TEX.arenaWall, frames: [0, 1, 2, 3], frameRate: 12, repeat: -1 },
   { key: 'jammer-pulse', texture: TEX.jammer, frames: [0, 0, 1], frameRate: 4, repeat: -1 },
   { key: 'boss-arm-snap', texture: TEX.bossArm, frames: [0, 1, 0], frameRate: 10, repeat: 0 },
+  { key: 'rustbucket-drive', texture: TEX.rustbucket, frames: [0, 1], frameRate: 14, repeat: -1 },
+  { key: 'convoy-drive', texture: TEX.convoy, frames: [0, 1], frameRate: 14, repeat: -1 },
+  { key: 'neon-flicker', texture: TEX.neon, frames: [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0], frameRate: 8, repeat: -1 },
 ];

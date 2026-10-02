@@ -15,6 +15,30 @@ interface FireSpot {
   seed: number;
 }
 
+interface Glow {
+  x: number;
+  y: number;
+  radius: number;
+  color: number;
+  intensity: number;
+  /** Flickers like a neon tube. */
+  flicker: boolean;
+}
+
+/** Lit signs and windows: where the light sits relative to the prop's bottom centre. */
+const GLOWS: Partial<Record<DecorKind, Array<{ dx: number; dy: number; radius: number; color: number; intensity: number; flicker?: boolean }>>> = {
+  diner: [
+    { dx: 0, dy: -64, radius: 70, color: PALETTE.neonPink, intensity: 0.9, flicker: true },
+    { dx: -20, dy: -22, radius: 80, color: 0xffd890, intensity: 0.7 },
+    { dx: 24, dy: -22, radius: 70, color: 0xffd890, intensity: 0.6 },
+  ],
+  smoothyStand: [{ dx: 0, dy: -40, radius: 70, color: 0xff8fc8, intensity: 0.8 }],
+  poleSign: [{ dx: 0, dy: -178, radius: 110, color: PALETTE.neonBlue, intensity: 0.9, flicker: true }],
+  neon: [{ dx: 0, dy: -14, radius: 70, color: PALETTE.neonPink, intensity: 1, flicker: true }],
+  gasPump: [{ dx: 0, dy: -18, radius: 26, color: PALETTE.omnitrixGlow, intensity: 0.4 }],
+  billboard: [{ dx: 0, dy: -50, radius: 60, color: 0xffe7a0, intensity: 0.5 }],
+};
+
 const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   rv: { key: TEX.rv },
   tent: { key: TEX.tent },
@@ -28,7 +52,30 @@ const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   crater: { key: TEX.crater },
   debris: { key: TEX.debris },
   fire: { key: TEX.burningLogs },
+  cactus: { key: TEX.cactus },
+  cactusSmall: { key: TEX.cactusSmall },
+  diner: { key: TEX.diner },
+  gasPump: { key: TEX.gasPump },
+  smoothyStand: { key: TEX.smoothyStand },
+  billboard: { key: TEX.billboard },
+  roadSign: { key: TEX.roadSign },
+  mileMarker: { key: TEX.mileMarker },
+  bridgeEnd: { key: TEX.bridgeEnd },
+  girder: { key: TEX.girder },
+  guardrail: { key: TEX.guardrail },
+  tumbleweed: { key: TEX.tumbleweed },
+  skull: { key: TEX.skull },
+  barrel: { key: TEX.barrel },
+  carWreck: { key: TEX.carWreck },
+  poleSign: { key: TEX.poleSign },
+  garage: { key: TEX.garage },
+  neon: { key: TEX.neon },
+  haulerWreck: { key: TEX.haulerWreck },
+  fence: { key: TEX.fence },
 };
+
+/** Big set dressing that sits behind the action. */
+const BACK_DECOR: readonly DecorKind[] = ['rv', 'tent', 'wreck', 'diner', 'smoothyStand', 'billboard', 'poleSign', 'garage', 'haulerWreck', 'neon', 'girder', 'carWreck', 'bridgeEnd'];
 
 function hash(x: number, salt: number): number {
   let h = (x * 374761393 + salt * 668265263) | 0;
@@ -42,6 +89,7 @@ export class Decor {
   private readonly mushrooms: Array<{ x: number; y: number }> = [];
   private readonly fireflies: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private readonly windowLight: { x: number; y: number } | null = null;
+  private readonly glows: Glow[] = [];
 
   constructor(scene: Phaser.Scene, level: LevelData, world: LevelWorld) {
     let tentCount = 0;
@@ -50,10 +98,12 @@ export class Decor {
       const tex = DECOR_TEXTURE[e.kind];
       const x = e.x * TILE + TILE / 2;
       const y = e.y * TILE;
-      const frame = e.kind === 'tent' ? tentCount++ % 2 : 0;
+      const frame = e.frame ?? (e.kind === 'tent' ? tentCount++ % 2 : 0);
       const img = scene.add.image(x, y + (e.kind === 'crater' ? 3 : 0), tex.key, frame).setOrigin(0.5, 1);
-      img.setDepth(e.kind === 'crater' ? DEPTH.terrain + 1 : e.kind === 'rv' || e.kind === 'tent' || e.kind === 'wreck' ? DEPTH.decorBack : DEPTH.decor);
+      img.setDepth(e.kind === 'crater' ? DEPTH.terrain + 1 : BACK_DECOR.includes(e.kind) ? DEPTH.decorBack : DEPTH.decor);
       img.setFlipX(e.flip === true);
+      if (e.kind === 'neon') scene.add.sprite(x, y, tex.key, 0).setOrigin(0.5, 1).setDepth(DEPTH.emissive).play({ key: 'neon-flicker', startFrame: Math.floor(e.x % 5) });
+      for (const g of GLOWS[e.kind] ?? []) this.glows.push({ x: x + g.dx * (e.flip ? -1 : 1), y: y + g.dy, radius: g.radius, color: g.color, intensity: g.intensity, flicker: g.flicker ?? false });
       if (e.kind === 'campfire' || e.kind === 'fire') {
         this.fires.push({ x, y: y - 6, radius: e.kind === 'campfire' ? 120 : 90, seed: e.x });
         const emitter = scene.add.particles(x, y - 4, TEX.soft, {
@@ -84,6 +134,10 @@ export class Decor {
 
     // Grass, mushrooms and fireflies belong to the forest, not the training simulation.
     if (level.theme === 'sim') return;
+    if (level.theme === 'highway') {
+      this.sprinkleDesert(scene, level, world);
+      return;
+    }
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {
@@ -102,7 +156,7 @@ export class Decor {
 
   private sprinkle(scene: Phaser.Scene, level: LevelData, world: LevelWorld): void {
     const grid = world.grid;
-    const avoid = level.entities.filter((e) => e.type !== 'drone').map((e) => e.x);
+    const avoid = level.entities.filter((e): e is Extract<typeof e, { x: number }> => e.type !== 'drone' && 'x' in e).map((e) => e.x);
     for (let x = 2; x < level.width - 2; x++) {
       for (let y = 1; y < level.height; y++) {
         const c = cellAt(grid, x, y);
@@ -131,6 +185,29 @@ export class Decor {
     }
   }
 
+  /** Desert floor: pebbles, scrub, the odd cactus, cow skull or tumbleweed. Never on the road. */
+  private sprinkleDesert(scene: Phaser.Scene, level: LevelData, world: LevelWorld): void {
+    const grid = world.grid;
+    const avoid = level.entities.filter((e): e is Extract<typeof e, { x: number }> => e.type !== 'drone' && 'x' in e).map((e) => e.x);
+    const onRoad = (x: number, y: number) => (level.roads ?? []).some((r) => x >= r.x && x < r.x + r.w && y === r.y);
+    for (let x = 2; x < level.width - 2; x++) {
+      for (let y = 1; y < level.height; y++) {
+        const c = cellAt(grid, x, y);
+        if (c !== CELL.GROUND && c !== CELL.ROCK) continue;
+        if (cellAt(grid, x, y - 1) !== CELL.EMPTY) continue;
+        if (level.water.some((w) => x >= w.x && x < w.x + w.w && y >= w.surface)) break;
+        if (onRoad(x, y) || avoid.some((ax) => Math.abs(ax - x) <= 1)) break;
+        const wx = x * TILE + TILE / 2;
+        const wy = y * TILE;
+        const r = hash(x, y + 13);
+        if (r < 0.06) scene.add.image(wx, wy + 1, TEX.cactusSmall).setOrigin(0.5, 1).setDepth(DEPTH.decor);
+        else if (r < 0.075 && c === CELL.GROUND) scene.add.image(wx, wy + 1, TEX.skull).setOrigin(0.5, 1).setDepth(DEPTH.decor);
+        else if (r > 0.97 && c === CELL.GROUND) scene.add.image(wx, wy + 1, TEX.cactus).setOrigin(0.5, 1).setDepth(DEPTH.decorBack);
+        break;
+      }
+    }
+  }
+
   update(camera: Phaser.Cameras.Scene2D.Camera, lighting: Lighting, now: number): void {
     const view = camera.worldView;
     const zone = this.fireflies?.emitZones[0] as unknown as { source: Phaser.Geom.Rectangle } | undefined;
@@ -146,5 +223,10 @@ export class Decor {
       lighting.add(m.x, m.y, 26, 0x5ee6ff, 0.7);
     }
     if (this.windowLight) lighting.add(this.windowLight.x, this.windowLight.y, 70, 0xffd890, 0.8);
+    for (const g of this.glows) {
+      if (g.x < view.x - 200 || g.x > view.right + 200) continue;
+      const k = g.flicker ? 0.85 + Math.sin(now * 0.021 + g.x) * 0.1 + (Math.sin(now * 0.13 + g.y) > 0.97 ? -0.4 : 0) : 1;
+      lighting.add(g.x, g.y, g.radius, g.color, g.intensity * k);
+    }
   }
 }

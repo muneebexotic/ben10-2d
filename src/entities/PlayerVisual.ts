@@ -60,6 +60,11 @@ export class PlayerVisual {
     this.scene.tweens.add({ targets: ghost, alpha: 0, duration: lifeMs, ease: 'Quad.easeIn', onComplete: () => ghost.setVisible(false) });
   }
 
+  /** Hidden while Ben is somewhere else in a cutscene (inside the RV). */
+  setVisible(on: boolean): void {
+    this.sprite.setVisible(on);
+  }
+
   setPrefix(prefix: string): void {
     if (prefix === this.prefix) return;
     this.prefix = prefix;

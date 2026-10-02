@@ -62,6 +62,8 @@ export interface GameEvents {
   /** A thrown enemy bowled over `hits` others. */
   'hud:strike': { hits: number };
   /** XLR8's dash cut `count` enemies at once: a comic-panel freeze. `x`/`y` are screen coordinates of XLR8. */
+  /** A new alien's DNA lands in the Omnitrix: the scanning card, its reveal, then it clears. */
+  'hud:unlock': { alienId: string; stage: 'scan' | 'reveal' | 'hide' };
   'hud:comicPanel': { count: number; x: number; y: number; dir: 1 | -1; color: number; ms: number };
   /** `reachableCards`: cards that exist this run; the rest of `totalCards` wait behind a later alien. */
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number; reachableCards: number };
@@ -71,7 +73,7 @@ export interface GameEvents {
   'hud:promptClear': { id: string };
   'hud:banner': BannerPayload;
   'hud:letterbox': { visible: boolean };
-  'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean };
+  'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean; portrait?: string };
   'hud:dialogClear': undefined;
   'hud:visible': { visible: boolean; omnitrix?: boolean };
   'hud:omnitrixSymbol': { color: number; big: boolean };
