@@ -440,7 +440,7 @@ export class Player implements PlayerHandle {
       return outcome;
     }
     this.body.reset(this.lastSafe.x, this.lastSafe.y - this.body.height / 2);
-    this.invulnUntil = this.now + PLAYER.pitRespawnInvulnMs;
+    this.invulnUntil = Math.max(this.invulnUntil, this.now + PLAYER.pitRespawnInvulnMs);
     this.visual.flash(PALETTE.white, 120);
     return outcome;
   }

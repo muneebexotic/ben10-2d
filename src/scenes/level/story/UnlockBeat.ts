@@ -63,7 +63,8 @@ export class UnlockBeat implements SetPiece {
 
   update(_dtMs: number, realDtMs: number, controls: Controls): void {
     if (this.stage === 'wait') {
-      if (!this.scripted && this.kit.player.x >= this.spec.x * TILE && this.kit.player.grounded && !this.kit.player.dead) this.begin();
+      // Mid-jump counts too: a run-up and a leap off the broken bridge must not reach the water first.
+      if (!this.scripted && this.kit.player.x >= this.spec.x * TILE && !this.kit.player.dead) this.begin();
       return;
     }
     if (this.stage !== 'beat') return;
@@ -89,7 +90,8 @@ export class UnlockBeat implements SetPiece {
     this.t = 0;
     player.controlsEnabled = false;
     player.scriptedMove = null;
-    if (player.grounded) player.setVelocityX(0);
+    // Stop dead (a leap drops straight down onto the ledge it started from).
+    player.setVelocityX(0);
     player.setInvulnerable(STORY_BEATS.unlock.doneAt + 1500);
     time.slowMo(0.18, STORY_BEATS.unlock.transformAt, 400);
     music.setIntensity(0);
