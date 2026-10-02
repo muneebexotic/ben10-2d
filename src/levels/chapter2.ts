@@ -170,7 +170,7 @@ export const CHAPTER_2: LevelData = {
     { type: 'decor', kind: 'tumbleweed', x: 238, y: 24 },
 
     // ---- Chase (the chase director runs everything here)
-    { type: 'checkpoint', id: 'cp-convoy', x: 278, y: 26, density: 'normal', label: 'CONVOY', hidden: true },
+    { type: 'checkpoint', id: 'cp-convoy', x: 278, y: 26, density: 'sparse', label: 'CONVOY', hidden: true },
 
     // ---- Truck stop
     { type: 'checkpoint', id: 'cp-truckstop', x: 318, y: 24, density: 'sparse', label: 'TRUCK STOP' },
@@ -191,7 +191,7 @@ export const CHAPTER_2: LevelData = {
     { type: 'drone', kind: 'hornet', x: 340, y: 18 },
     { type: 'drone', kind: 'hornet', x: 345, y: 17 },
     { type: 'drone', kind: 'armored', x: 352, y: 15 },
-    { type: 'checkpoint', id: 'cp-arena', x: 359, y: 24, density: 'normal', label: 'ROADBREAKER' },
+    { type: 'checkpoint', id: 'cp-arena', x: 359, y: 24, density: 'sparse', label: 'ROADBREAKER' },
 
     // ---- ROADBREAKER's arena
     { type: 'decor', kind: 'neon', x: 371, y: 21, flip: true },

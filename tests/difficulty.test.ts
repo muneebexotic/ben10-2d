@@ -4,6 +4,7 @@ import { activeDifficultyId, pace, setActiveDifficulty } from '../src/systems/Di
 import { misfireAllowed } from '../src/systems/MisfireRules';
 import { checkpointsFor } from '../src/levels/checkpoints';
 import { CHAPTER_1 } from '../src/levels/chapter1';
+import { storyLevels } from '../src/levels/registry';
 import { createRunStats, sanitizeRunStats } from '../src/systems/RunStats';
 
 describe('difficulty presets', () => {
@@ -51,6 +52,23 @@ describe('difficulty presets', () => {
       setActiveDifficulty(was);
     }
     expect(count).toEqual({ easy: 4, normal: 3, hard: 2 });
+  });
+
+  it('Hard still checkpoints every major set piece: each boss arena and each chase stage', () => {
+    for (const level of storyLevels()) {
+      const sparse = checkpointsFor(level, 'sparse');
+      for (const boss of level.entities.filter((e) => e.type === 'boss')) {
+        if (boss.type !== 'boss') continue;
+        // A checkpoint right before the arena (nothing in between to replay).
+        const before = sparse.filter((c) => c.x <= boss.triggerX && boss.triggerX - c.x <= 12);
+        expect(before.length, `${level.id}: checkpoint before the boss on Hard`).toBeGreaterThan(0);
+      }
+      const chase = level.story?.chase;
+      if (chase) {
+        expect(sparse.map((c) => c.id), `${level.id}: the convoy checkpoint on Hard`).toContain(chase.checkpoint);
+        expect(sparse.some((c) => c.x <= chase.boardX && chase.boardX - c.x <= 24), `${level.id}: a checkpoint before the ride`).toBe(true);
+      }
+    }
   });
 
   it('recognises difficulty ids', () => {
