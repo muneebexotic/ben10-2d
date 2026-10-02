@@ -25,6 +25,10 @@ export interface CrackedWallOptions {
   rebuildMs?: number;
   /** Set when the alien that can break it is on the dial: the hint names it instead of a locked silhouette. */
   breaker?: WallBreaker | null;
+  /** The alien that can break it. */
+  requires?: string;
+  /** Otherwise: that alien's silhouette (sprite or drawn) and the chapter it arrives in. */
+  locked?: { texture: string; frame: number; scale: number; chapter: number | null } | null;
 }
 
 /**
@@ -34,7 +38,9 @@ export interface CrackedWallOptions {
 export class CrackedWall implements Damageable {
   readonly countsAsEnemy = false;
   readonly body: Phaser.Physics.Arcade.Image;
-  private readonly hint: Phaser.GameObjects.Container;
+  private hint: Phaser.GameObjects.Container;
+  /** The alien that can break it is on the dial (the hint says so). */
+  private breakable: boolean;
   private readonly rect: Rect;
   alive = true;
   private hp: number = SECRETS.crackedWallHp;
@@ -60,14 +66,41 @@ export class CrackedWall implements Damageable {
     this.body = scene.physics.add.staticImage(tx * TILE + TILE / 2, ty * TILE + h / 2, TEX.crackedWall).setDepth(DEPTH.props);
     this.body.setDisplaySize(TILE, h).refreshBody();
 
-    const breaker = opts.breaker ?? null;
+    this.breakable = (opts.breaker ?? null) !== null;
+    this.hint = this.buildHint(opts.breaker ?? null, opts.locked ?? null);
+  }
+
+  get requires(): string | undefined {
+    return this.opts.requires;
+  }
+
+  /** Its alien just joined the dial (a story unlock mid-chapter): the hint names it now. */
+  setBreaker(breaker: WallBreaker): void {
+    if (this.breakable) return;
+    this.breakable = true;
+    this.hint.destroy();
+    this.hint = this.buildHint(breaker, null);
+  }
+
+  private buildHint(breaker: WallBreaker | null, locked: CrackedWallOptions['locked']): Phaser.GameObjects.Container {
+    const scene = this.scene;
     const color = breaker ? breaker.color : PALETTE.omnitrix;
     const glow = scene.add.image(0, 0, TEX.light).setTint(color).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setScale(1.4);
-    const silhouette = breaker ? scene.add.image(0, 4, breaker.icon).setTint(color).setScale(2) : scene.add.image(0, 0, TEX.lockedAlien).setTint(PALETTE.omnitrix);
+    const art: Phaser.GameObjects.GameObject[] = [];
+    if (breaker) art.push(scene.add.image(0, 4, breaker.icon).setTint(color).setScale(2));
+    else if (locked) {
+      // The alien who can do it, as a rim-lit shadow with a question mark: who is that?
+      for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1]]) {
+        art.push(scene.add.image(dx, 4 + dy, locked.texture, locked.frame).setTintMode(Phaser.TintModes.FILL).setTint(PALETTE.omnitrix).setScale(locked.scale).setAlpha(0.9));
+      }
+      art.push(scene.add.image(0, 4, locked.texture, locked.frame).setTintMode(Phaser.TintModes.FILL).setTint(0x090b16).setScale(locked.scale));
+      art.push(pixelText(scene, 0, 2, '?', { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix }));
+    } else art.push(scene.add.image(0, 0, TEX.lockedAlien).setTint(PALETTE.omnitrix));
     const label = pixelText(scene, 0, 30, breaker ? `${breaker.name} CAN SMASH THIS!` : 'LOCKED ALIEN', { originX: 0.5, originY: 0.5, color });
-    const sub = pixelText(scene, 0, 41, breaker ? 'ONLY SMASH HITS CRACK IT' : 'TOO TOUGH... FOR NOW', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
-    this.hint = scene.add
-      .container(this.rect.x - 6, this.rect.y - HINT_RISE, [glow, silhouette, label, sub])
+    const later = locked?.chapter ? `UNLOCKS IN CHAPTER ${locked.chapter}` : 'TOO TOUGH... FOR NOW';
+    const sub = pixelText(scene, 0, 41, breaker ? 'ONLY SMASH HITS CRACK IT' : later, { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    return scene.add
+      .container(this.rect.x - 6, this.rect.y - HINT_RISE, [glow, ...art, label, sub])
       .setDepth(DEPTH.worldUi)
       .setVisible(false);
   }

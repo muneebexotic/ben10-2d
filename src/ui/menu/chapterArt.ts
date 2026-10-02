@@ -27,6 +27,8 @@ export function chapterArt(scene: Phaser.Scene, chapter: ChapterInfo, open: bool
   const out: Phaser.GameObjects.GameObject[] = [bg];
   if (open && chapter.number === 1) {
     out.push(...campCrash(scene, bg, w, h));
+  } else if (open && chapter.number === 2) {
+    out.push(...roadTrip(scene, bg, w, h));
   } else {
     const rim = ACT_COLORS[chapter.act] ?? PALETTE.omnitrix;
     bg.fillGradientStyle(0x05070f, 0x05070f, 0x141a33, 0x141a33, 1).fillRect(-w / 2, -h / 2, w, h);
@@ -85,6 +87,46 @@ function campCrash(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: numbe
   place();
   scene.tweens.add({ targets: fall, t: 1, duration: 1300, repeat: -1, repeatDelay: 1800, onUpdate: place });
   out.push(streak, head);
+  return out;
+}
+
+/** Chapter 2's window: the Rustbucket tearing down the highway at sunset, Ben on the roof, a convoy rig on its tail. */
+function roadTrip(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number, h: number): Phaser.GameObjects.GameObject[] {
+  const left = -w / 2;
+  const top = -h / 2;
+  const road = h / 2 - 12;
+  g.fillGradientStyle(PALETTE.sunsetTop, PALETTE.sunsetTop, PALETTE.sunsetLow, PALETTE.sunsetLow, 1).fillRect(left, top, w, road - top);
+  const out: Phaser.GameObjects.GameObject[] = [];
+  out.push(scene.add.image(left + w * 0.7, road - 18, TEX.sun).setScale(0.5));
+  // Mesas against the sun.
+  const mesas = scene.add.graphics();
+  mesas.fillStyle(PALETTE.mesa1, 1);
+  for (const [x0, x1, hh] of [[-0.5, -0.22, 24], [-0.05, 0.2, 18], [0.3, 0.5, 28]] as const) {
+    mesas.fillRect(left + (x0 + 0.5) * w, road - hh, (x1 - x0) * w, hh);
+    mesas.fillTriangle(left + (x0 + 0.5) * w - 6, road, left + (x0 + 0.5) * w, road - hh, left + (x0 + 0.5) * w, road);
+  }
+  mesas.fillStyle(PALETTE.mesa0, 1).fillRect(left, road - 4, w, 4);
+  out.push(mesas);
+  // The road, its lane dashes rushing past.
+  g.fillStyle(PALETTE.asphalt1, 1).fillRect(left, road, w, h / 2 - road);
+  g.fillStyle(PALETTE.asphalt2, 1).fillRect(left, road, w, 1);
+  const dashes = scene.add.tileSprite(0, road + 5, w, 4, TEX.roadCap).setTilePosition(0, 5);
+  scene.tweens.add({ targets: dashes, tilePositionX: 64, duration: 380, repeat: -1 });
+  out.push(dashes);
+  // Speed lines.
+  for (let i = 0; i < 3; i++) {
+    const line = scene.add.rectangle(w / 2, top + 10 + i * 14, 18, 1, PALETTE.white, 0.6);
+    scene.tweens.add({ targets: line, x: left - 20, duration: 520, delay: i * 170, repeat: -1 });
+    out.push(line);
+  }
+  const rv = scene.add.sprite(6, road + 4, TEX.rustbucket, 0).setOrigin(0.5, 1).setScale(0.42).play('rustbucket-drive');
+  scene.tweens.add({ targets: rv, y: rv.y - 1, yoyo: true, repeat: -1, duration: 140 });
+  const ben = scene.add.sprite(6 + 4, road + 4 - 68 * 0.42 + 4, TEX.ben, 0).setOrigin(0.5, 1).setScale(0.55);
+  scene.tweens.add({ targets: ben, y: ben.y - 1, yoyo: true, repeat: -1, duration: 140 });
+  const truck = scene.add.sprite(left + 26, road + 5, TEX.convoy, 0).setOrigin(0.5, 1).setScale(0.42).play('convoy-drive');
+  scene.tweens.add({ targets: truck, x: truck.x + 8, yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut' });
+  const glare = scene.add.image(left + 46, road - 6, TEX.light).setScale(0.4).setTint(PALETTE.enemy).setAlpha(0.5).setBlendMode(Phaser.BlendModes.ADD);
+  out.push(truck, glare, rv, ben);
   return out;
 }
 

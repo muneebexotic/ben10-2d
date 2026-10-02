@@ -9,7 +9,7 @@ import { Pickup } from '../../entities/props/Pickup';
 import { Drone, type DroneWorld } from '../../entities/enemies/Drone';
 import { createBrain } from '../../entities/enemies/brains';
 import type { Fx } from '../../systems/Fx';
-import { CrackedWall, type WallBreaker } from '../../entities/props/CrackedWall';
+import { CrackedWall, type CrackedWallOptions, type WallBreaker } from '../../entities/props/CrackedWall';
 import { Boulder } from '../../entities/props/Boulder';
 import { Dummy } from '../../entities/props/Dummy';
 import { cardAvailable } from '../../levels/secrets';
@@ -35,6 +35,8 @@ export interface SpawnOptions {
   aliens: readonly string[];
   /** The alien that can break a cracked wall, if it is on the dial. */
   breakerFor(alienId: string): WallBreaker | null;
+  /** The locked silhouette a wall shows when its alien isn't on the dial yet. */
+  lockedFor(alienId: string): CrackedWallOptions['locked'];
   /** Thrown boulders reform (Training). */
   respawningProps: boolean;
 }
@@ -69,11 +71,19 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         out.pickups.push(new Pickup(scene, 'smoothy', `smoothy-${e.x}`, e.x, e.y));
         break;
       case 'card':
-        if (collectedCards.includes(e.id) || !cardAvailable(e, aliens)) break;
+        // Cards behind an alien this chapter unlocks on the way are there from the start.
+        if (collectedCards.includes(e.id) || !cardAvailable(e, [...aliens, ...(level.story?.unlocks ?? []).map((u) => u.alien)])) break;
         out.pickups.push(new Pickup(scene, 'card', e.id, e.x, e.y));
         break;
       case 'crackedWall':
-        out.walls.push(new CrackedWall(scene, e.id, e.x, e.y, e.h, fx, { rebuildMs: e.rebuildMs, breaker: aliens.includes(e.requires) ? opts.breakerFor(e.requires) : null }));
+        out.walls.push(
+          new CrackedWall(scene, e.id, e.x, e.y, e.h, fx, {
+            rebuildMs: e.rebuildMs,
+            requires: e.requires,
+            breaker: aliens.includes(e.requires) ? opts.breakerFor(e.requires) : null,
+            locked: aliens.includes(e.requires) ? null : opts.lockedFor(e.requires),
+          }),
+        );
         break;
       case 'boulder':
         out.boulders.push(new Boulder(scene, e.x, e.y, fx, opts.respawningProps));

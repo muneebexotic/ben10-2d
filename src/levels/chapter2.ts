@@ -184,7 +184,7 @@ export const CHAPTER_2: LevelData = {
     { type: 'decor', kind: 'barrel', x: 359, y: 24 },
     { type: 'smoothy', x: 343, y: 20 },
     { type: 'crackedWall', id: 'ch2-vault-wall', x: 350, y: 21, h: 3, requires: 'fourarms' },
-    { type: 'card', id: 'ch2-card-vault', x: 354, y: 24 },
+    { type: 'card', id: 'ch2-card-vault', x: 354, y: 24, requires: 'fourarms' },
     { type: 'drone', kind: 'gunner', x: 327, y: 16 },
     { type: 'drone', kind: 'armored', x: 333, y: 20 },
     { type: 'drone', kind: 'hornet', x: 340, y: 18 },

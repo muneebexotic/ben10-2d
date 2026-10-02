@@ -6,7 +6,7 @@ import { RANK_COLOR } from '../config/scoring';
 import { MENU } from '../config/ui';
 import { ACTS, CHAPTERS, chapterState, defaultChapterIndex, titleRevealed, type ChapterInfo, type ChapterState } from '../levels/chapters';
 import { getLevel } from '../levels/registry';
-import { availableCards, countedCards } from '../levels/secrets';
+import { availableCards, countedCards, waitingSecrets } from '../levels/secrets';
 import { flashCamera } from '../systems/Accessibility';
 import { audio } from '../systems/audio/AudioEngine';
 import { music } from '../systems/audio/Music';
@@ -156,8 +156,19 @@ export class ChapterSelectScene extends Phaser.Scene {
     const record = info.levelId && this.file ? this.file.chapters[info.levelId] : undefined;
 
     items.push(pixelText(this, -CARD_W / 2 + 12, top + 14, `CHAPTER ${info.number}`, { originY: 0.5, color: PALETTE.uiDim }));
-    const chip = open ? (record?.completed ? ['COMPLETE', PALETTE.omnitrix] : ['NEW!', PALETTE.gold]) : state === 'locked' ? ['LOCKED', PALETTE.uiDim] : ['COMING SOON', PALETTE.uiDim];
+    // A secret here that a newer alien can now open: worth a trip back.
+    const waiting = open && info.levelId && this.file ? waitingSecrets(getLevel(info.levelId), fileAliens(this.file), record?.cards ?? []).length > 0 : false;
+    const chip = waiting
+      ? ['SECRET WAITING!', PALETTE.gold]
+      : open
+        ? record?.completed
+          ? ['COMPLETE', PALETTE.omnitrix]
+          : ['NEW!', PALETTE.gold]
+        : state === 'locked'
+          ? ['LOCKED', PALETTE.uiDim]
+          : ['COMING SOON', PALETTE.uiDim];
     const chipText = pixelText(this, CARD_W / 2 - 12, top + 14, chip[0] as string, { originX: 1, originY: 0.5, color: chip[1] as number });
+    if (waiting) this.tweens.add({ targets: chipText, alpha: 0.45, yoyo: true, repeat: -1, duration: 520, ease: 'Sine.easeInOut' });
     items.push(chipText);
     const revealed = titleRevealed(info, this.completed);
     const title = pixelText(this, 0, top + 32, revealed ? info.title : '? ? ?', { scale: 2, originX: 0.5, originY: 0.5, color: open ? PALETTE.white : PALETTE.cream });
@@ -220,6 +231,8 @@ export class ChapterSelectScene extends Phaser.Scene {
       const got = found.includes(c.id);
       const img = this.add.image(startX + i * 13, y0 + 46, TEX.cardIcon, got ? 1 : 0);
       if (!got && !reachable.includes(c.id)) img.setAlpha(0.35);
+      // A card behind an alien the file has now: it glints.
+      if (!got && c.requires && reachable.includes(c.id)) this.tweens.add({ targets: img, scale: 1.3, yoyo: true, repeat: -1, duration: 420, ease: 'Sine.easeInOut' });
       out.push(img);
     });
     out.push(pixelText(this, CARD_W / 2 - 14, y0 + 46, `${found.filter((id) => counted.some((c) => c.id === id)).length}/${counted.length}`, { originX: 1, originY: 0.5, color: PALETTE.gold }));

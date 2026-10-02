@@ -31,3 +31,11 @@ export function lockedCards(level: LevelData, aliens: readonly string[]): CardSp
 export function countedCards(level: LevelData): CardSpawn[] {
   return level.entities.filter((e): e is CardSpawn => e.type === 'card' && (!e.requires || hasAlien(e.requires) || inRoster(e.requires)));
 }
+
+/**
+ * Secrets worth going back for: cards behind an alien's obstacle that the
+ * file now has the alien for, still not found.
+ */
+export function waitingSecrets(level: LevelData, aliens: readonly string[], found: readonly string[]): CardSpawn[] {
+  return availableCards(level, aliens).filter((c) => c.requires !== undefined && !found.includes(c.id));
+}

@@ -52,6 +52,7 @@ import { Tutorial } from './level/Tutorial';
 import { TrainingDirector } from './level/TrainingDirector';
 import { HighwayBackdrop } from './level/HighwayBackdrop';
 import { Dialogue } from './level/story/Dialogue';
+import { lockedSilhouette } from './level/lockedSilhouette';
 import { StoryDirector } from './level/story/StoryDirector';
 import type { StoryKit } from './level/story/StoryKit';
 import { pendingUnlocks } from '../systems/Unlocks';
@@ -68,7 +69,8 @@ import { saveSystem } from '../systems/SaveSystem';
 import { session } from '../systems/Session';
 import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
-import { availableCards, countedCards } from '../levels/secrets';
+import { availableCards, countedCards, waitingSecrets } from '../levels/secrets';
+import { CHAPTERS } from '../levels/chapters';
 import { TRAINING } from '../config/training';
 import { quality } from '../systems/Quality';
 import { knownAliens, storyAliens, trainingAliens } from '../systems/Unlocks';
@@ -408,6 +410,8 @@ export class LevelScene extends Phaser.Scene {
     const order = allAliens().map((a) => a.id);
     this.dialAliens = [...this.dialAliens, id].sort((a, b) => order.indexOf(a) - order.indexOf(b));
     this.omni.unlock(id);
+    const breaker = this.breakerFor(id);
+    if (breaker) for (const w of this.walls) if (w.requires === id) w.setBreaker(breaker);
     if (this.mode === 'story' && session.slot !== null && launchParams().aliens.length === 0) saveSystem.unlockAliens(session.slot, [id]);
     this.reachableCards = availableCards(this.level, this.dialAliens).length;
     EventBus.emit('stats:update', this.statsPayload());
@@ -495,6 +499,7 @@ export class LevelScene extends Phaser.Scene {
       collectedCards: this.stats.cardsFound,
       aliens: this.dialAliens,
       breakerFor: (id) => this.breakerFor(id),
+      lockedFor: (id) => lockedSilhouette(id),
       respawningProps: this.mode === 'training',
     });
     this.drones = spawned.drones;
@@ -954,7 +959,21 @@ export class LevelScene extends Phaser.Scene {
     this.time2.slowMo(0.3, 600, 300);
     this.fx.shake(FX.shakeHeavy, 360);
     EventBus.emit('hud:banner', { title: 'SECRET VAULT!', subtitle: 'SMASHED OPEN', color: PALETTE.gold, durationMs: 1600, style: 'slam' });
-    this.speech.show("NOW THAT'S WHAT I CALL A SECRET!", 2200);
+    // An earlier chapter has a secret this file can open now: point Ben back to it.
+    const back = this.earlierSecret();
+    this.speech.show(back ? `WAIT... THERE WAS ONE OF THESE BACK IN ${back}!` : "NOW THAT'S WHAT I CALL A SECRET!", 2600);
+  }
+
+  /** The title of an earlier chapter with a secret this file's aliens can open and hasn't found yet. */
+  private earlierSecret(): string | null {
+    const file = session.file;
+    if (!file) return null;
+    for (const info of CHAPTERS) {
+      if (info.number >= this.level.chapter || !info.levelId) continue;
+      const found = file.chapters[info.levelId]?.cards ?? [];
+      if (waitingSecrets(getLevel(info.levelId), this.dialAliens, found).length > 0) return info.title;
+    }
+    return null;
   }
 
   private dropSmoothy(x: number, y: number): void {
