@@ -2,6 +2,9 @@ import { GHOST } from '../config/ghost';
 import { allAliens } from '../aliens/registry';
 import { getBrowserStorage, type StorageLike } from './SaveSystem';
 
+/** A sample's frame when Ben was hidden (inside the RV): the ghost hides too. */
+export const GHOST_HIDDEN_FRAME = 255;
+
 /** Ben at one moment of a run. `form` is an index into the run's form list. */
 export interface GhostSample {
   x: number;

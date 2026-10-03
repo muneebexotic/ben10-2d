@@ -79,7 +79,7 @@ import { knownAliens, storyAliens, trainingAliens } from '../systems/Unlocks';
 import { AchievementTracker, fileAchievements } from '../systems/Achievements';
 import { FULL_OMNITRIX_FORMS, STRIKE_ACHIEVEMENT_HITS } from '../config/achievements';
 import { jokeId } from '../aliens/jokes';
-import { GhostRecorder, ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
+import { GHOST_HIDDEN_FRAME, GhostRecorder, ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
 import { GhostRunner } from '../entities/GhostRunner';
 import { getSettings } from '../systems/Settings';
 import type { PauseData } from './PauseScene';
@@ -1186,13 +1186,18 @@ export class LevelScene extends Phaser.Scene {
   private ghostSample(): { x: number; y: number; form: number; frame: number; flip: boolean } {
     const s = this.player.visual.sprite;
     const frame = Number(s.frame.name);
-    return { x: s.x, y: s.y, form: Math.max(0, ghostForms().indexOf(this.player.form.id)), frame: Number.isFinite(frame) ? frame : 0, flip: s.flipX };
+    // Ben hidden in a cutscene (inside the RV): the ghost hides there too.
+    const shown = s.visible && s.alpha > 0;
+    return { x: s.x, y: s.y, form: Math.max(0, ghostForms().indexOf(this.player.form.id)), frame: !shown ? GHOST_HIDDEN_FRAME : Number.isFinite(frame) ? frame : 0, flip: s.flipX };
   }
 
   /** A misfire line this file hasn't heard yet goes in the JOKES FOUND log. */
   private onJoke(gotId: string, line: string): void {
-    if (this.mode !== 'story' || session.slot === null) return;
-    if (saveSystem.addJoke(session.slot, jokeId(gotId, line))) this.achievements.reach('jokes', session.file?.jokes.length ?? 0);
+    const slot = session.slot;
+    if (slot === null || !saveSystem.addJoke(slot, jokeId(gotId, line))) return;
+    // Jokes count anywhere, Training's CHAOS misfires included (the rest of Training doesn't).
+    const tracker = this.mode === 'story' ? this.achievements : new AchievementTracker(fileAchievements(slot), (def) => EventBus.emit('achievement:unlocked', { id: def.id }));
+    tracker.reach('jokes', session.file?.jokes.length ?? 0);
   }
 
   /** Cards this file has, counting the ones picked up this run. */

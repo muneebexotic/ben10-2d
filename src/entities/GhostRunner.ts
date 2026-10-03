@@ -3,7 +3,7 @@ import { getForm, hasAlien } from '../aliens/registry';
 import { DEPTH } from '../config/constants';
 import { GHOST } from '../config/ghost';
 import { PALETTE } from '../config/palette';
-import { ghostAt, type LoadedGhost } from '../systems/Ghost';
+import { GHOST_HIDDEN_FRAME, ghostAt, type LoadedGhost } from '../systems/Ghost';
 import { pixelText } from '../ui/text';
 import { TEX } from '../scenes/preload/assetKeys';
 
@@ -46,8 +46,11 @@ export class GhostRunner {
       const form = getForm(this.formId(s.form));
       this.sprite.setTexture(form.texture, 0).setOrigin(0.5, form.frame.feetY / form.frame.h);
     }
+    const hidden = s.frame === GHOST_HIDDEN_FRAME;
+    this.sprite.setVisible(!hidden);
+    this.tag.setVisible(!hidden);
     const frames = this.sprite.texture.frameTotal - 1;
-    if (s.frame < frames) this.sprite.setFrame(s.frame);
+    if (!hidden && s.frame < frames) this.sprite.setFrame(s.frame);
     this.sprite.setPosition(s.x, s.y).setFlipX(s.flip);
     this.tag.setPosition(s.x, s.y - this.sprite.displayHeight * this.sprite.originY - 2);
   }
