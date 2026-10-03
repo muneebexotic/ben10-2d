@@ -25,8 +25,13 @@ const LIGHT_TEX_SIZE = 64;
  */
 export class Lighting {
   private readonly rt: Phaser.GameObjects.RenderTexture;
+  /** This frame's lights; the objects are reused frame to frame (no garbage in the hot path). */
   private readonly frameLights: Light[] = [];
+  private frameCount = 0;
   private readonly timed: TimedLight[] = [];
+  private readonly stampConfig = { scale: 1, tint: 0xffffff, alpha: 1, blendMode: Phaser.BlendModes.ADD as Phaser.BlendModes };
+  private originX = 0;
+  private originY = 0;
   private ambient: number = LIGHTING.ambientCamp;
   private ambientFrom: number = LIGHTING.ambientCamp;
   private ambientTo: number = LIGHTING.ambientCamp;
@@ -57,7 +62,17 @@ export class Lighting {
   /** Immediate-mode light for this frame only. */
   add(x: number, y: number, radius: number, color = 0xffffff, intensity = 1): void {
     if (!this.enabled || radius <= 0 || intensity <= 0) return;
-    this.frameLights.push({ x, y, radius, color, intensity });
+    let l = this.frameLights[this.frameCount];
+    if (!l) {
+      l = { x: 0, y: 0, radius: 0, color: 0, intensity: 0 };
+      this.frameLights.push(l);
+    }
+    l.x = x;
+    l.y = y;
+    l.radius = radius;
+    l.color = color;
+    l.intensity = intensity;
+    this.frameCount++;
   }
 
   /** A light that fades out on its own (explosions, muzzle flashes). */
@@ -81,7 +96,7 @@ export class Lighting {
     const rt = this.rt;
     if (!this.enabled) {
       rt.setVisible(false);
-      this.frameLights.length = 0;
+      this.frameCount = 0;
       return;
     }
     rt.setVisible(true);
@@ -90,25 +105,29 @@ export class Lighting {
     const ox = Math.floor(view.centerX - (this.w * s) / 2);
     const oy = Math.floor(view.centerY - (this.h * s) / 2);
     rt.setPosition(ox, oy);
+    this.originX = ox;
+    this.originY = oy;
 
     rt.clear();
     rt.fill(this.ambient, 1);
-    const stamp = (l: Light, intensity: number) => {
-      const lx = (l.x - ox) / s;
-      const ly = (l.y - oy) / s;
-      const r = l.radius / s;
-      if (lx + r < 0 || ly + r < 0 || lx - r > this.w || ly - r > this.h) return;
-      rt.stamp(TEX.light, undefined, lx, ly, {
-        scale: (r * 2) / LIGHT_TEX_SIZE,
-        tint: l.color,
-        alpha: Math.min(1, intensity),
-        blendMode: Phaser.BlendModes.ADD,
-      });
-    };
-    for (const l of this.frameLights) stamp(l, l.intensity);
-    for (const t of this.timed) stamp(t, t.intensity * (t.life / t.maxLife));
+    for (let i = 0; i < this.frameCount; i++) this.stamp(this.frameLights[i], this.frameLights[i].intensity);
+    for (const t of this.timed) this.stamp(t, t.intensity * (t.life / t.maxLife));
     rt.render();
-    this.frameLights.length = 0;
+    this.frameCount = 0;
+  }
+
+  private stamp(l: Light, intensity: number): void {
+    const s = LIGHTING.scale;
+    const lx = (l.x - this.originX) / s;
+    const ly = (l.y - this.originY) / s;
+    const r = l.radius / s;
+    if (lx + r < 0 || ly + r < 0 || lx - r > this.w || ly - r > this.h) return;
+    // Phaser copies these values into its command buffer, so one config object serves every light.
+    const c = this.stampConfig;
+    c.scale = (r * 2) / LIGHT_TEX_SIZE;
+    c.tint = l.color;
+    c.alpha = Math.min(1, intensity);
+    this.rt.stamp(TEX.light, undefined, lx, ly, c);
   }
 
   destroy(): void {

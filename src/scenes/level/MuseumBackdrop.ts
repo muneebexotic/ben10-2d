@@ -3,6 +3,7 @@ import { DEPTH, GAME_HEIGHT, GAME_MAX_WIDTH as W, TILE } from '../../config/cons
 import { PALETTE } from '../../config/palette';
 import type { LevelData } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
+import { StaticCuller } from './StaticCuller';
 
 /**
  * Chapter 3's backdrop: the town's night sky and rooftops outside, and
@@ -14,6 +15,8 @@ export class MuseumBackdrop {
   private readonly stars: Phaser.GameObjects.TileSprite;
   private readonly city: Phaser.GameObjects.TileSprite;
   private readonly beams: Phaser.GameObjects.Image[] = [];
+  /** Interior walls and moonbeams stay put: only the ones near the camera are drawn. */
+  private readonly culler = new StaticCuller();
   private time = 0;
 
   constructor(scene: Phaser.Scene, level: LevelData) {
@@ -29,7 +32,7 @@ export class MuseumBackdrop {
       const w = room.w * TILE;
       const tex = room.wall === 'lab' ? TEX.labWall : TEX.hallWall;
       // Lined up so the panelling sits on the main floor (row 30): the pattern is 192 px tall.
-      const wall = scene.add.tileSprite(x, 0, w, heightPx, tex).setOrigin(0, 0).setDepth(DEPTH.pinesMid);
+      const wall = this.culler.add(scene.add.tileSprite(x, 0, w, heightPx, tex).setOrigin(0, 0).setDepth(DEPTH.pinesMid));
       wall.tilePositionY = 192 - ((30 * TILE) % 192);
       if (room.wall !== 'hall') continue;
       // Moonbeams from each window pair, faint and additive.
@@ -43,7 +46,7 @@ export class MuseumBackdrop {
           .setAlpha(0.08)
           .setBlendMode(Phaser.BlendModes.ADD)
           .setDepth(DEPTH.decorBack - 2);
-        this.beams.push(beam);
+        this.beams.push(this.culler.add(beam));
       }
     }
     scene.add
@@ -65,6 +68,7 @@ export class MuseumBackdrop {
 
   update(camera: Phaser.Cameras.Scene2D.Camera, dtMs: number): void {
     this.time += dtMs;
+    this.culler.update(camera.worldView);
     this.stars.tilePositionX = camera.scrollX * 0.02;
     this.city.tilePositionX = camera.scrollX * 0.12;
     this.city.y = GAME_HEIGHT - 170 - camera.scrollY * 0.06;

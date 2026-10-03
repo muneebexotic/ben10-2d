@@ -7,6 +7,7 @@ import type { DecorKind, LevelData } from '../../levels/types';
 import type { Lighting } from '../../systems/Lighting';
 import { TEX } from '../preload/assetKeys';
 import type { LevelWorld } from './LevelWorld';
+import { StaticCuller } from './StaticCuller';
 
 interface FireSpot {
   x: number;
@@ -121,6 +122,8 @@ export class Decor {
   private readonly fireflies: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private readonly windowLight: { x: number; y: number } | null = null;
   private readonly glows: Glow[] = [];
+  /** Props and sprinkled scenery never move: only what is near the camera is drawn. */
+  private readonly culler = new StaticCuller();
 
   constructor(scene: Phaser.Scene, level: LevelData, world: LevelWorld) {
     let tentCount = 0;
@@ -133,7 +136,8 @@ export class Decor {
       const img = scene.add.image(x, y + (e.kind === 'crater' ? 3 : 0), tex.key, frame).setOrigin(0.5, 1);
       img.setDepth(e.kind === 'crater' ? DEPTH.terrain + 1 : BACK_DECOR.includes(e.kind) ? DEPTH.decorBack : DEPTH.decor);
       img.setFlipX(e.flip === true);
-      if (e.kind === 'neon') scene.add.sprite(x, y, tex.key, 0).setOrigin(0.5, 1).setDepth(DEPTH.emissive).play({ key: 'neon-flicker', startFrame: Math.floor(e.x % 5) });
+      this.culler.add(img);
+      if (e.kind === 'neon') this.culler.add(scene.add.sprite(x, y, tex.key, 0).setOrigin(0.5, 1).setDepth(DEPTH.emissive).play({ key: 'neon-flicker', startFrame: Math.floor(e.x % 5) }));
       for (const g of GLOWS[e.kind] ?? []) this.glows.push({ x: x + g.dx * (e.flip ? -1 : 1), y: y + g.dy, radius: g.radius, color: g.color, intensity: g.intensity, flicker: g.flicker ?? false });
       if (e.kind === 'campfire' || e.kind === 'fire') {
         this.fires.push({ x, y: y - 6, radius: e.kind === 'campfire' ? 120 : 90, seed: e.x });
@@ -201,15 +205,15 @@ export class Decor {
         const r = hash(x, y);
         const nearEntity = avoid.some((ax) => Math.abs(ax - x) <= 1);
         if (c === CELL.GROUND && r < 0.45) {
-          scene.add.image(wx + (hash(x, 7) - 0.5) * 8, wy, TEX.grass, r < 0.2 ? 0 : 1).setOrigin(0.5, 1).setDepth(DEPTH.decor);
+          this.culler.add(scene.add.image(wx + (hash(x, 7) - 0.5) * 8, wy, TEX.grass, r < 0.2 ? 0 : 1).setOrigin(0.5, 1).setDepth(DEPTH.decor));
         }
         if (!nearEntity) {
           const r2 = hash(x, y + 91);
-          if (c === CELL.GROUND && r2 < 0.07) scene.add.image(wx, wy + 1, TEX.bush, r2 < 0.03 ? 1 : 0).setOrigin(0.5, 1).setDepth(DEPTH.decorBack);
-          else if (r2 > 0.93) scene.add.image(wx, wy + 1, TEX.rock, r2 > 0.97 ? 0 : 1).setOrigin(0.5, 1).setDepth(DEPTH.decor);
-          else if (c === CELL.GROUND && r2 > 0.9 && r2 <= 0.93) scene.add.image(wx, wy + 1, TEX.stump).setOrigin(0.5, 1).setDepth(DEPTH.decor);
+          if (c === CELL.GROUND && r2 < 0.07) this.culler.add(scene.add.image(wx, wy + 1, TEX.bush, r2 < 0.03 ? 1 : 0).setOrigin(0.5, 1).setDepth(DEPTH.decorBack));
+          else if (r2 > 0.93) this.culler.add(scene.add.image(wx, wy + 1, TEX.rock, r2 > 0.97 ? 0 : 1).setOrigin(0.5, 1).setDepth(DEPTH.decor));
+          else if (c === CELL.GROUND && r2 > 0.9 && r2 <= 0.93) this.culler.add(scene.add.image(wx, wy + 1, TEX.stump).setOrigin(0.5, 1).setDepth(DEPTH.decor));
           else if (r2 > 0.2 && r2 < 0.25 && x > 40) {
-            scene.add.image(wx, wy, TEX.mushroom).setOrigin(0.5, 1).setDepth(DEPTH.emissive);
+            this.culler.add(scene.add.image(wx, wy, TEX.mushroom).setOrigin(0.5, 1).setDepth(DEPTH.emissive));
             this.mushrooms.push({ x: wx, y: wy - 3 });
           }
         }
@@ -233,9 +237,9 @@ export class Decor {
         const wx = x * TILE + TILE / 2;
         const wy = y * TILE;
         const r = hash(x, y + 13);
-        if (r < 0.06) scene.add.image(wx, wy + 1, TEX.cactusSmall).setOrigin(0.5, 1).setDepth(DEPTH.decor);
-        else if (r < 0.075 && c === CELL.GROUND) scene.add.image(wx, wy + 1, TEX.skull).setOrigin(0.5, 1).setDepth(DEPTH.decor);
-        else if (r > 0.97 && c === CELL.GROUND) scene.add.image(wx, wy + 1, TEX.cactus).setOrigin(0.5, 1).setDepth(DEPTH.decorBack);
+        if (r < 0.06) this.culler.add(scene.add.image(wx, wy + 1, TEX.cactusSmall).setOrigin(0.5, 1).setDepth(DEPTH.decor));
+        else if (r < 0.075 && c === CELL.GROUND) this.culler.add(scene.add.image(wx, wy + 1, TEX.skull).setOrigin(0.5, 1).setDepth(DEPTH.decor));
+        else if (r > 0.97 && c === CELL.GROUND) this.culler.add(scene.add.image(wx, wy + 1, TEX.cactus).setOrigin(0.5, 1).setDepth(DEPTH.decorBack));
         break;
       }
     }
@@ -243,6 +247,7 @@ export class Decor {
 
   update(camera: Phaser.Cameras.Scene2D.Camera, lighting: Lighting, now: number): void {
     const view = camera.worldView;
+    this.culler.update(view);
     const zone = this.fireflies?.emitZones[0] as unknown as { source: Phaser.Geom.Rectangle } | undefined;
     if (zone?.source) zone.source.setTo(view.x, view.y + 40, view.width, view.height - 60);
 
