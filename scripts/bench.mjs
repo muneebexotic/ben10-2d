@@ -396,7 +396,7 @@ async function runLeak(browser, base) {
           if (!sc.sys.settings.active && !sc.sys.settings.visible) continue;
           objects += sc.sys.displayList?.length ?? 0;
           tweens += sc.sys.tweens?.getTweens?.().length ?? 0;
-          timers += sc.sys.time?.getAllEvents?.().length ?? 0;
+          timers += (sc.sys.time?._active?.length ?? 0) + (sc.sys.time?._pendingInsertion?.length ?? 0);
         }
         return {
           bus: window.__bus.listenerTotal(),

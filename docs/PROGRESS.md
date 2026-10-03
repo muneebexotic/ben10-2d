@@ -1,10 +1,12 @@
 # Progress
 
-Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each finished milestone's full record (what was built, playtest notes, how it was tested): [history/](history/).
+Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each finished milestone's full record (what was built, playtest notes, how it was tested): [history/](history/). Performance budget and measurements: [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Status
 
 **Act 1 is complete (Milestones 1 to 4, part 2).** Three story chapters (Camp Crash, Road Trip, Dr. Animo), five aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly), three bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. Chapter 3 and the extras are described in [history/milestone-4-part-2-chapter-3.md](history/milestone-4-part-2-chapter-3.md).
+
+**Latest session: a performance and code-quality pass** (no new features, no gameplay changes). Added `npm run bench` with a budget in CPU time per frame, made per-frame effects and jump arcs independent of the screen's refresh rate (90 and 120 Hz play like 60 Hz), stopped a render-target leak that created a framebuffer every frame on wide screens, baked the HUD and touch controls into textures, culled off-screen scenery, and stopped XLR8's wind and Heatblast's hum from playing on after leaving a level. Before and after numbers are in [PERFORMANCE.md](PERFORMANCE.md). `npm run typecheck`, `npm run build` and `npm test` all pass.
 
 Next, when asked: more Milestone 4 story chapters (Act 2 opens with Kevin 11), or Milestone 5 (characters). Still deferred: Training trials, more Chapter 1 revisits, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
 
@@ -16,6 +18,7 @@ npm run dev        # http://localhost:5173
 npm run build      # typecheck + production build into dist/
 npm run typecheck
 npm test
+npm run bench      # performance benchmark against the budget (docs/PERFORMANCE.md)
 ```
 
 URL switches for playtesting:
@@ -28,10 +31,10 @@ URL switches for playtesting:
 | `?training=1` | Straight into Omnitrix Training (with the last file's aliens and difficulty) |
 | `?aliens=fourarms,xlr8` | Adds aliens to the Chapter 1 dial (a practice run). With Four Arms the vault card spawns and counts |
 | `?mute=1` | Start muted |
-| `?debug=1` | Physics bodies plus a position/FPS/quality-level readout |
+| `?debug=1` | Physics bodies plus a readout: position, quality level (`Q0` best to `Q2`), and the frame meter (CPU per frame, FPS, 1% low, heap, render targets). What to look for on a phone is in `docs/PERFORMANCE.md` |
 | `?gallery=1&per=12&page=0` | Every generated texture, for reviewing or replacing art. `?gallery=1&key=fourarms&scale=6&from=0` shows one sheet's frames large |
 | `?at=<tile x>` | Dev builds only: spawn Ben anywhere with the watch |
-| `?god=1` | Dev builds only: Ben can't take damage from hits |
+| `?god=1` | Dev and bench builds only: Ben can't take damage from hits |
 
 ## Controls
 
@@ -67,7 +70,8 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 
 - **Not tuned by hand.** Difficulty was tuned by reasoning, scripted playtests and a reachability test, not by human players. Boss HP (120), drone counts and the jammer ravine may need tuning after real playtests. All numbers are in `src/config/`.
 - **Touch controls are untested on real hardware.** They were tested with emulated phones and multi-touch in headless Chromium. Button sizes and positions live in `config/touch.ts`.
-- **Headless frame rate.** Headless Chromium (software WebGL) runs at about 40–49 FPS, so the frame-rate governor drops to its lowest level there. Not yet verified on a real mid-range Android GPU.
+- **Performance is measured in headless Chromium, not on a real phone yet.** Headless Chromium draws WebGL in software, so its FPS means nothing (the frame-rate governor drops to its lowest level there); the budget is CPU time per frame instead (`docs/PERFORMANCE.md`). The game hasn't been checked on a real mid-range Android GPU or a 120 Hz screen: the steps are in `docs/PERFORMANCE.md`.
+- **Boot generates all art in code:** about 3 s from a cold start to the title screen at 4x CPU throttle, about 1.3 s of it a single frozen frame on the loading bar. It grows a little with every chapter's art; options are in `docs/PERFORMANCE.md`.
 - **iOS Safari can't go fullscreen** or lock orientation from a web page; the game still fits the screen with the browser bars visible. Adding it to the home screen (web manifest) gives a fullscreen landscape launch.
 - **Phones wider than 21.6:9 still get thin side bars** (the view stops growing at 864 px wide so level design stays readable).
 - **Practice runs still show a rank** on Chapter Complete (it isn't saved).
@@ -92,6 +96,8 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **Training options reset** when the game is reloaded (they aren't saved).
 
 ## How to test the latest chapter
+
+**Performance pass (latest session):** play anything and it should look and feel exactly as before. On a real phone, follow [PERFORMANCE.md, Checking on a real phone](PERFORMANCE.md#checking-on-a-real-phone-debug1) (`?debug=1`). Leaving a level as XLR8 at full speed no longer leaves his wind playing on the menu.
 
 **Milestone 4, part 2: Chapter 3, desktop** (`npm run dev`)
 

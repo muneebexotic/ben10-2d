@@ -2,7 +2,7 @@
 
 ## Project
 
-2D pixel-art Ben 10 action platformer for the browser. Full design is in `docs/GAME_DESIGN.md`. Read it before starting any task. Current status is in `docs/PROGRESS.md`. Read `docs/DECISIONS.md` every session (the decisions and deviations that still apply). Past milestones are written up in `docs/history/`: read those only when a task needs the details.
+2D pixel-art Ben 10 action platformer for the browser. Full design is in `docs/GAME_DESIGN.md`. Read it before starting any task. Current status is in `docs/PROGRESS.md`. Read `docs/DECISIONS.md` every session (the decisions and deviations that still apply). Past milestones are written up in `docs/history/`: read those only when a task needs the details. The performance budget and how to measure it are in `docs/PERFORMANCE.md`.
 
 ## Creative Mandate
 
@@ -36,6 +36,7 @@ Pin dependency versions. Upgrade Phaser or other major dependencies only in a de
 - `npm run build`: production build (must pass before finishing any task)
 - `npm run typecheck`: `tsc --noEmit`
 - `npm test`: Vitest
+- `npm run bench`: performance benchmark (headless Chromium, CPU throttled; see `docs/PERFORMANCE.md`)
 
 ## Folder Structure
 
@@ -50,7 +51,8 @@ src/
   levels/        chapter data
   ui/            HUD, Omnitrix dial, menus
 public/assets/   sprites/, audio/, tilemaps/
-docs/            GAME_DESIGN.md, PROGRESS.md, DECISIONS.md, IDEAS.md, history/ (one file per past milestone)
+docs/            GAME_DESIGN.md, PROGRESS.md, DECISIONS.md, PERFORMANCE.md, IDEAS.md, history/ (one file per past milestone)
+scripts/         bench.mjs and bench/ (the performance benchmark)
 ```
 
 ## Architecture Rules
@@ -64,6 +66,16 @@ docs/            GAME_DESIGN.md, PROGRESS.md, DECISIONS.md, IDEAS.md, history/ (
 - **Accessibility:** every full-screen flash, camera shake and gameplay blink goes through `systems/Accessibility.ts` (`flashCamera`, `shakeCamera`, `blinkOn`) so Reduce Flashing and the shake slider always apply. Never call `cameras.main.flash/shake` directly.
 - **Input:** gameplay reads one `Controls` object from `InputMap`, which merges the keyboard and the on-screen touch controls (`systems/VirtualPad.ts`). Player-facing text that names a control uses tokens (`{T}`, `{J}`, `{K}`, `{JUMP}`, `{UP}`, `{MOVE}`...) rendered by `inputMode.format()`, so it reads correctly on keyboard and touch.
 - **Mobile is a first-class target:** check new UI and HUD at phone sizes (emulated landscape phones in headless Chromium) and keep thumbs clear of gameplay.
+
+## Performance Rules
+
+Every new chapter (and any change to a hot path) must pass `npm run bench` within the budget in `docs/PERFORMANCE.md`. Add the chapter's heaviest moment to `scripts/bench/scenarios.mjs` first. The budget is CPU time per frame, GC and leaks, not headless FPS.
+
+- **Frame-rate independence:** anything that happens "per frame" (a random chance, a damping factor, an easing step, a trail or ember stream) goes through `systems/Pacing.ts` (`chance`, `damp`, `approach`, `perFrame`) or `fx.stream`, so 90 and 120 Hz screens play the same as 60 Hz. Timers use milliseconds.
+- **No per-frame Graphics redraws.** A HUD or UI shape that changes only sometimes is a `BakedGraphics` (`ui/BakedGraphics.ts`) redrawn when its value changes. Keep `Graphics.clear()` + redraw every frame for things that really move every frame.
+- **Static scenery** that never moves goes in the level's `StaticCuller` so it isn't drawn off-screen.
+- **No allocations in hot paths:** reuse objects in `update()` code (see `Lighting.add`), pool projectiles and particles, and never create a texture, render texture or filter per frame.
+- **Clean up on SHUTDOWN:** EventBus listeners with the scene as context plus `offContext`, timers, tweens, and held sounds (an ability with a looping sound implements `dispose()`). The bench's leak check fails if listeners, textures or held sounds grow.
 
 ## Assets
 
