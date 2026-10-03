@@ -29,6 +29,8 @@ export function chapterArt(scene: Phaser.Scene, chapter: ChapterInfo, open: bool
     out.push(...campCrash(scene, bg, w, h));
   } else if (open && chapter.number === 2) {
     out.push(...roadTrip(scene, bg, w, h));
+  } else if (open && chapter.number === 3) {
+    out.push(...museumNight(scene, bg, w, h));
   } else {
     const rim = ACT_COLORS[chapter.act] ?? PALETTE.omnitrix;
     bg.fillGradientStyle(0x05070f, 0x05070f, 0x141a33, 0x141a33, 1).fillRect(-w / 2, -h / 2, w, h);
@@ -127,6 +129,50 @@ function roadTrip(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number
   scene.tweens.add({ targets: truck, x: truck.x + 8, yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut' });
   const glare = scene.add.image(left + 46, road - 6, TEX.light).setScale(0.4).setTint(PALETTE.enemy).setAlpha(0.5).setBlendMode(Phaser.BlendModes.ADD);
   out.push(truck, glare, rv, ben);
+  return out;
+}
+
+/** Chapter 3's window: the museum under the moon, mutagen leaking from the doors, KING CROAK with Animo on its head squaring up to Ben. */
+function museumNight(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number, h: number): Phaser.GameObjects.GameObject[] {
+  const left = -w / 2;
+  const top = -h / 2;
+  const floor = h / 2 - 8;
+  g.fillGradientStyle(PALETTE.sky0, PALETTE.sky0, PALETTE.hall2, PALETTE.hall2, 1).fillRect(left, top, w, floor - top);
+  const rng = seededRng(3);
+  for (let i = 0; i < 18; i++) {
+    g.fillStyle(PALETTE.star, 0.3 + rng() * 0.6).fillRect(Math.round(left + rng() * w), Math.round(top + rng() * h * 0.4), 1, 1);
+  }
+  // A skyline behind the museum.
+  g.fillStyle(PALETTE.hall1, 1);
+  for (let x = left; x < w / 2; x += 9 + Math.round(rng() * 8)) {
+    const bh = 14 + Math.round(rng() * 18);
+    g.fillRect(x, floor - bh, 8 + Math.round(rng() * 6), bh);
+  }
+  g.fillStyle(PALETTE.marble1, 1).fillRect(left, floor, w, h / 2 - floor);
+  g.fillStyle(PALETTE.marble2, 1).fillRect(left, floor, w, 1);
+
+  const out: Phaser.GameObjects.GameObject[] = [];
+  out.push(scene.add.image(left + 26, top + 15, TEX.moon).setScale(0.45));
+  out.push(scene.add.image(-6, floor + 1, TEX.museumFacade).setOrigin(0.5, 1).setScale(0.4));
+  // Mutagen glowing out of the doors.
+  const glow = scene.add.image(-6, floor - 8, TEX.light).setScale(0.9, 0.55).setTint(PALETTE.mutagen).setAlpha(0.5).setBlendMode(Phaser.BlendModes.ADD);
+  scene.tweens.add({ targets: glow, alpha: 0.2, yoyo: true, repeat: -1, duration: 700, ease: 'Sine.easeInOut' });
+  out.push(glow);
+  // Bats across the moon.
+  for (let i = 0; i < 2; i++) {
+    const bat = scene.add.sprite(left + 8, top + 12 + i * 9, TEX.bat, 0).setScale(0.6).play('bat-idle');
+    scene.tweens.add({ targets: bat, x: w / 2 + 12, duration: 3400, delay: i * 500, repeat: -1, repeatDelay: 1400 });
+    out.push(bat);
+  }
+  // KING CROAK, with Animo riding, facing Ben.
+  const fs = 0.38;
+  const fx = w / 2 - 30;
+  const frog = scene.add.sprite(fx, floor + 2, TEX.frog, 0).setOrigin(0.5, 1).setScale(fs).setFlipX(true).play('frog-idle');
+  const animo = scene.add.sprite(fx + 6 * fs, floor + 2 - 56 * fs, TEX.animo, 2).setOrigin(0.5, 1).setScale(0.6).setFlipX(true);
+  scene.tweens.add({ targets: animo, y: animo.y - 1, yoyo: true, repeat: -1, duration: 500 });
+  const ooze = scene.add.image(fx, floor - 10, TEX.light).setScale(0.8).setTint(PALETTE.mutagen).setAlpha(0.3).setBlendMode(Phaser.BlendModes.ADD);
+  out.push(ooze, frog, animo);
+  out.push(scene.add.sprite(left + 40, floor + 1, TEX.ben, 0).setOrigin(0.5, 27 / 28));
   return out;
 }
 

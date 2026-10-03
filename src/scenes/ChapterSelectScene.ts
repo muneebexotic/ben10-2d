@@ -156,8 +156,8 @@ export class ChapterSelectScene extends Phaser.Scene {
     const record = info.levelId && this.file ? this.file.chapters[info.levelId] : undefined;
 
     items.push(pixelText(this, -CARD_W / 2 + 12, top + 14, `CHAPTER ${info.number}`, { originY: 0.5, color: PALETTE.uiDim }));
-    // A secret here that a newer alien can now open: worth a trip back.
-    const waiting = open && info.levelId && this.file ? waitingSecrets(getLevel(info.levelId), fileAliens(this.file), record?.cards ?? []).length > 0 : false;
+    // A secret in a cleared chapter that a newer alien can now open: worth a trip back.
+    const waiting = open && record?.completed && info.levelId && this.file ? waitingSecrets(getLevel(info.levelId), fileAliens(this.file), record?.cards ?? []).length > 0 : false;
     const chip = waiting
       ? ['SECRET WAITING!', PALETTE.gold]
       : open
