@@ -159,7 +159,7 @@ export class TransformSequence {
         return;
       }
       this.d.misfire.start(misfire.line, swap);
-      EventBus.emit('alien:misfire', { wantedId: misfire.wantedId, gotId: alien.id, swap });
+      EventBus.emit('alien:misfire', { wantedId: misfire.wantedId, gotId: alien.id, swap, line: misfire.line });
     });
   }
 

@@ -77,7 +77,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     const items = this.buildItems();
-    this.detail = pixelText(this, GAME_WIDTH / 2, 262, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    this.detail = pixelText(this, GAME_WIDTH / 2, 156 + items.length * 20, '', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     this.menu = new MenuList(this, GAME_WIDTH / 2, 156, items, {
       spacing: 20,
       scale: 2,
@@ -114,6 +114,7 @@ export class MenuScene extends Phaser.Scene {
     } else {
       items.push({ label: 'NEW GAME', action: () => this.go(SCENES.fileSelect), hint: 'A METEOR. A WATCH. A VERY WEIRD SUMMER.' });
     }
+    if (summary) items.push({ label: 'EXTRAS', action: () => this.go(SCENES.extras, { slot: summary.slot }), hint: 'ACHIEVEMENTS, THE CARD ALBUM AND EVERY MISFIRE JOKE FOUND' });
     items.push(
       { label: 'OMNITRIX TRAINING', action: () => this.startTraining(), hint: 'TRY EVERY ALIEN. SPAWN ANY ENEMY.' },
       { label: 'SETTINGS', action: () => this.openSettings(), hint: summary ? 'DIFFICULTY, ACCESSIBILITY, SOUND AND TOUCH' : 'ACCESSIBILITY, SOUND AND TOUCH CONTROLS' },

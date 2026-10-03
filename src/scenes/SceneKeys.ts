@@ -11,6 +11,7 @@ export const SCENES = {
   gameOver: 'GameOver',
   chapterComplete: 'ChapterComplete',
   actEnd: 'ActEnd',
+  extras: 'Extras',
   gallery: 'Gallery',
   settings: 'Settings',
   touch: 'Touch',

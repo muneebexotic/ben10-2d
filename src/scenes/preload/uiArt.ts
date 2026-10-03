@@ -106,3 +106,39 @@ export function drawTouchRoll(pc: PixelCanvas): void {
 export function drawTouchPause(pc: PixelCanvas): void {
   pc.rect(4, 3, 3, 10, P.white).rect(9, 3, 3, 10, P.white);
 }
+
+/** Achievement badge icons, 12x12: 0 Omnitrix, 1 star, 2 skull, 3 laughing face, 4 stopwatch. */
+export const ACH_ICON_FRAMES = { omnitrix: 0, star: 1, skull: 2, laugh: 3, clock: 4 } as const;
+
+export function drawAchievementIcon(pc: PixelCanvas, frame: number): void {
+  if (frame === 0) {
+    pc.circle(6, 6, 5, P.ink);
+    pc.circle(6, 6, 4, P.omnitrixDeep);
+    pc.poly([[3, 2], [9, 2], [7, 6], [9, 10], [3, 10], [5, 6]], P.omnitrix);
+    pc.px(6, 6, P.white);
+  } else if (frame === 1) {
+    pc.poly([[6, 0], [8, 4], [12, 4], [9, 7], [10, 11], [6, 9], [2, 11], [3, 7], [0, 4], [4, 4]], P.gold);
+    pc.px(6, 4, P.white).px(5, 5, 0xfff2b0);
+    pc.outline(P.ink);
+  } else if (frame === 2) {
+    pc.circle(6, 5, 4, P.cream);
+    pc.rect(4, 8, 5, 3, P.cream);
+    pc.rect(3, 4, 2, 2, P.ink).rect(7, 4, 2, 2, P.ink);
+    pc.px(6, 7, P.ink).px(5, 10, P.ink).px(7, 10, P.ink);
+    pc.outline(P.ink);
+  } else if (frame === 3) {
+    pc.circle(6, 6, 5, P.gold);
+    pc.hline(3, 4, 4, P.ink).hline(7, 8, 4, P.ink);
+    pc.rect(3, 7, 6, 2, P.ink);
+    pc.hline(4, 7, 9, P.ink);
+    pc.px(4, 8, 0xff6a6a).px(7, 8, 0xff6a6a);
+    pc.outline(P.ink);
+  } else {
+    pc.rect(5, 0, 2, 2, P.metal2);
+    pc.circle(6, 7, 5, P.cream);
+    pc.vline(6, 3, 7, P.ink);
+    pc.hline(6, 8, 7, P.ink);
+    pc.px(6, 3, 0xd8323e);
+    pc.outline(P.ink);
+  }
+}

@@ -48,7 +48,9 @@ export interface GameEvents {
   /** `swap`: changed alien mid-transformation instead of transforming from human. `fix`: the half-price swap owed after a misfire. */
   'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean; swap: boolean; fix?: boolean };
   /** The record-scratch moment of a misfire: Ben wanted one alien and got another. */
-  'alien:misfire': { wantedId: string; gotId: string; swap: boolean };
+  'alien:misfire': { wantedId: string; gotId: string; swap: boolean; line: string };
+  /** An achievement was just unlocked (the HUD shows a toast). */
+  'achievement:unlocked': { id: string };
   /** A KO as the misfired alien: rolling with it paid out. */
   'omnitrix:improvised': { bonusMs: number; alienId: string };
   /** A swap entrance move hit something. */

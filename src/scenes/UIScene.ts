@@ -23,6 +23,8 @@ import { ComicPanel } from '../ui/ComicPanel';
 import { UnlockCard } from '../ui/UnlockCard';
 import { MISFIRE, SWAP } from '../config/omnitrix';
 import { frameView } from '../ui/view';
+import { AchievementToast } from '../ui/AchievementToast';
+import { achievementById } from '../systems/Achievements';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -66,6 +68,7 @@ export class UIScene extends Phaser.Scene {
     this.dialog = new DialogBox(this);
     this.comic = new ComicPanel(this, frame);
     this.unlockCard = new UnlockCard(this);
+    const toast = new AchievementToast(this, 104);
     // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
     frame.onResize((w) => {
       this.vignette.setX(frame.left).setScale(w / 320, 2);
@@ -75,9 +78,14 @@ export class UIScene extends Phaser.Scene {
       this.combo.setRight(frame.right);
       this.splits.setRight(frame.right);
       this.dialog.setRight(frame.right);
+      toast.setLeft(frame.left);
     });
 
     const on = EventBus.on.bind(EventBus);
+    on('achievement:unlocked', (p) => {
+      const def = achievementById(p.id);
+      if (def) toast.show(def);
+    }, this);
     on('hud:visible', (p) => {
       this.health.setVisible(p.visible);
       this.stats.setVisible(p.visible);
