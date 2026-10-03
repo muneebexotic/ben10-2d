@@ -339,7 +339,7 @@ export class Frog implements ArenaBoss, TongueOwner {
     fx.flash(this.x, this.floorY - 20, PALETTE.animo, 60, 400);
     this.scene.tweens.add({
       targets: this,
-      scale: 1,
+      scale: FROG.scale,
       duration: FROG.introMs * 0.6,
       ease: 'Back.easeOut',
       onUpdate: () => {
@@ -351,7 +351,7 @@ export class Frog implements ArenaBoss, TongueOwner {
         playSfx('croak', 1, 0.6);
         fx.popText(this.x, this.floorY - 90, 'RIBBIT.', PALETTE.mutagen);
         // Animo leaps onto its head.
-        this.scene.tweens.add({ targets: this.rider, x: this.x, y: this.floorY - 62, duration: 450, ease: 'Quad.easeOut', onComplete: () => this.rider.setFrame(6) });
+        this.scene.tweens.add({ targets: this.rider, x: this.x, y: this.floorY - 56 * FROG.scale, duration: 450, ease: 'Quad.easeOut', onComplete: () => this.rider.setFrame(6) });
         this.scene.time.delayedCall(700, () => {
           this.introDone = true;
           this.stateT = 1;
@@ -591,7 +591,7 @@ export class Frog implements ArenaBoss, TongueOwner {
     if (this.stateT < 1600) {
       if (Math.random() < 0.4) fx.burst('goo', this.x + (Math.random() - 0.5) * 80 * this.scale, this.floorY - Math.random() * 60 * this.scale, 4);
       // Shrinks back to an ordinary frog.
-      this.scale = Math.max(0.16, 1 - this.stateT / 1600);
+      this.scale = Math.max(0.16, FROG.scale * (1 - this.stateT / 1600));
       if (this.stateT > 300 && !this.riderFell) {
         this.riderFell = true;
         this.rider.setFrame(7);
@@ -647,7 +647,7 @@ export class Frog implements ArenaBoss, TongueOwner {
     this.shadow.setPosition(this.x, this.floorY).setScale(1.6 * this.scale * shadowK + 0.4, 1).setAlpha(0.45 * shadowK);
     // Animo rides on its head (until it goes down).
     if (this.state !== 'intro' && this.state !== 'dying' && this.state !== 'dead') {
-      this.rider.setPosition(Math.round(this.x - this.facing * 6 * this.scale), Math.round(this.feetY - 60 * this.scale)).setFlipX(this.facing < 0);
+      this.rider.setPosition(Math.round(this.x - this.facing * 6 * this.scale), Math.round(this.feetY - 56 * this.scale)).setFlipX(this.facing < 0);
     }
     this.w.lighting.add(this.x, this.feetY - this.h / 2, 90 * this.scale, PALETTE.mutagen, 0.6);
     if (this.state === 'stunned' && !this.gummed) {

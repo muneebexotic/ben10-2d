@@ -277,3 +277,22 @@ export function drawPortraitKevin(pc: PixelCanvas): void {
   pc.px(31, 24, 0x5a2a2a);
   pc.outline(P.ink);
 }
+
+/** The night guard who runs for his life (2 running frames). 20x30. */
+export function drawGuard(pc: PixelCanvas, frame: number): void {
+  const blue = 0x2a3a6a;
+  const skin = 0xe8b890;
+  const step = frame === 0 ? 2 : -2;
+  pc.rect(7 + step, 20, 3, 9, 0x1a2244).rect(11 - step, 20, 3, 9, 0x1a2244);
+  pc.rect(6 + step, 28, 5, 2, P.ink).rect(10 - step, 28, 5, 2, P.ink);
+  pc.rect(5, 10, 11, 11, blue);
+  pc.rect(9, 12, 2, 2, P.gold);
+  // Arms flailing over his head.
+  pc.line(5, 11, 1, 3 + step, blue, 2).line(15, 11, 19, 3 - step, blue, 2);
+  pc.ellipse(10, 6, 4, 4, skin);
+  pc.rect(5, 1, 10, 3, blue);
+  pc.rect(4, 3, 12, 1, 0x1a2244);
+  pc.rect(8, 6, 1, 2, P.ink).rect(12, 6, 1, 2, P.ink);
+  pc.ellipse(11, 9, 2, 1, 0x5a2a2a);
+  pc.outline(P.ink);
+}

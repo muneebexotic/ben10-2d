@@ -103,6 +103,26 @@ export class LevelWorld {
     return false;
   }
 
+  /** Solid tiles in this rect (tiles) are gone for good: the grid, the collision and the look (neighbours re-tile). */
+  clearCells(rect: { x: number; y: number; w: number; h: number }): void {
+    for (let y = rect.y; y < rect.y + rect.h; y++) {
+      for (let x = rect.x; x < rect.x + rect.w; x++) {
+        if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width) continue;
+        this.grid.cells[y][x] = CELL.EMPTY;
+        this.layer.removeTileAt(x, y);
+      }
+    }
+    const frames = autotile(this.grid);
+    for (let y = rect.y - 1; y <= rect.y + rect.h; y++) {
+      for (let x = rect.x - 1; x <= rect.x + rect.w; x++) {
+        if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width || this.grid.cells[y][x] === CELL.EMPTY) continue;
+        const tile = this.layer.putTileAt(frames[y][x], x, y);
+        if (ONE_WAY_FRAMES.includes(tile.index)) tile.setCollision(false, false, true, false);
+        else tile.setCollision(true);
+      }
+    }
+  }
+
   /** Registers a moving solid; the caller keeps updating the same rect object. */
   addSolid(rect: Rect): void {
     if (!this.extraSolids.includes(rect)) this.extraSolids.push(rect);

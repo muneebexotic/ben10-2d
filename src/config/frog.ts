@@ -17,6 +17,10 @@ export const FROG = {
   phase2At: 0.6,
   phase3At: 0.25,
   body: { width: 72, height: 54 },
+  /** Drawn and collided at this size (it grows again at maximum mutation). */
+  scale: 1.25,
+  /** Thick mutated hide: hits outside its weak moments do this fraction. */
+  hideMultiplier: 0.45,
   contactDamage: 1,
   /** Rest between attacks per phase (scaled by the difficulty's boss rest). */
   idleMs: [1050, 850, 650] as const,
@@ -77,5 +81,5 @@ export const FROG = {
   /** Animo's Transmodulator: every few attacks in phase 2+ he zaps up help. */
   zap: { tellMs: 700, every: 3, maxAdds: 3 },
   /** Phase 2: it grows. */
-  growScale: 1.18,
+  growScale: 1.45,
 } as const;

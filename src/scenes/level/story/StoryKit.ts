@@ -77,4 +77,8 @@ export interface StoryKit {
   /** An attack lands at game time `at` (a perfect transform window); cancel when it won't. */
   threat(key: object, at: number): void;
   cancelThreat(key: object): void;
+  /** The lights are out between these world x positions (null: back on). */
+  setDarkness(zone: { fromX: number; toX: number } | null): void;
+  /** Solid tiles in this rect (tiles) crumble away for good (a collapsing floor). */
+  collapse(rect: { x: number; y: number; w: number; h: number }): void;
 }

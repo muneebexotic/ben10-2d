@@ -28,8 +28,9 @@ export class MuseumBackdrop {
       const x = room.x * TILE;
       const w = room.w * TILE;
       const tex = room.wall === 'lab' ? TEX.labWall : TEX.hallWall;
-      // The wall hangs from the ceiling down to the floor; the tile pattern repeats every 192 px.
-      scene.add.tileSprite(x, 0, w, heightPx, tex).setOrigin(0, 0).setDepth(DEPTH.pinesMid);
+      // Lined up so the panelling sits on the main floor (row 30): the pattern is 192 px tall.
+      const wall = scene.add.tileSprite(x, 0, w, heightPx, tex).setOrigin(0, 0).setDepth(DEPTH.pinesMid);
+      wall.tilePositionY = 192 - ((30 * TILE) % 192);
       if (room.wall !== 'hall') continue;
       // Moonbeams from each window pair, faint and additive.
       for (let bx = x + 32; bx < x + w - 16; bx += 64) {

@@ -19,11 +19,12 @@ export interface FrogExposure {
  * recovering frog is open, and hits from above land on its rider too.
  */
 export function frogMultiplier(hit: Pick<Hit, 'kind' | 'y'>, e: FrogExposure): number {
-  let m = 1;
+  let m: number = FROG.hideMultiplier;
   if (e.inflated) m = Math.max(m, FROG.spit.throatMultiplier);
   if (e.gummed) m = Math.max(m, FROG.gum.stuckMultiplier);
   if (e.recovering) m = Math.max(m, FROG.leap.recoverMultiplier);
-  if (hit.y < e.headTopY + FROG.fromAbove.margin) m *= FROG.fromAbove.multiplier;
+  // From above: the hide is thin on its head, and Animo takes the hit too.
+  if (hit.y < e.headTopY + FROG.fromAbove.margin) m = Math.max(m, 1) * FROG.fromAbove.multiplier;
   return m;
 }
 

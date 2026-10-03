@@ -152,6 +152,8 @@ export class LevelScene extends Phaser.Scene {
   private boulders: Boulder[] = [];
   private dummies: Dummy[] = [];
   private terrain: SpecialTerrain | null = null;
+  /** A stretch of the level with the lights out (Chapter 3's blackout). */
+  private darkZone: { fromX: number; toX: number } | null = null;
   private stats!: RunStats;
   private combo = new ComboCounter(COMBO.windowMs);
   private gameNow = 0;
@@ -188,6 +190,7 @@ export class LevelScene extends Phaser.Scene {
     this.state = 'play';
     this.alarm = false;
     this.desaturate = null;
+    this.darkZone = null;
     this.alienKills.clear();
     this.level = getLevel(data.levelId ?? CHAPTER_1.id);
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
@@ -405,6 +408,8 @@ export class LevelScene extends Phaser.Scene {
       onEnemyKilled: () => this.creditKill(),
       threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),
       cancelThreat: (key) => this.perfect.cancel(key),
+      setDarkness: (zone) => (this.darkZone = zone),
+      collapse: (rect) => this.world.clearCells(rect),
     };
     return new StoryDirector(kit, resumeX, { onIntroControl: () => this.spawnIntroDrones() });
   }
@@ -767,6 +772,7 @@ export class LevelScene extends Phaser.Scene {
     }
     const zone = this.world.ambientAt(p.x);
     let ambient = this.alarm ? this.alarmAmbient() : AMBIENT[zone];
+    if (this.darkZone && p.x >= this.darkZone.fromX && p.x < this.darkZone.toX) ambient = LIGHTING.ambientBlackout;
     // A form that doesn't see like Ben (Wildmutt): the world dims and his own senses light it.
     const vision = p.dead ? undefined : p.form.feel.vision;
     if (vision) {

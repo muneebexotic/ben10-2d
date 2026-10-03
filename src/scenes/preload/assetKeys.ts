@@ -222,6 +222,7 @@ export const TEX = {
   kevin: 'char-kevin',
   arcade: 'prop-arcade',
   portraitKevin: 'portrait-kevin',
+  guard: 'char-guard',
 } as const;
 
 export type TextureKey = (typeof TEX)[keyof typeof TEX];
@@ -425,6 +426,7 @@ export const ASSETS: AssetDef[] = [
   sheet(TEX.kevin, animo.KEVIN_FRAME.w, animo.KEVIN_FRAME.h, 3, animo.drawKevin),
   sheet(TEX.arcade, 26, 44, 2, animo.drawArcade),
   one(TEX.portraitKevin, portraits.PORTRAIT.w, portraits.PORTRAIT.h, animo.drawPortraitKevin),
+  sheet(TEX.guard, 20, 30, 2, animo.drawGuard),
 ];
 
 const benAnims = (prefix: string, texture: string): AnimDef[] => [
@@ -475,6 +477,7 @@ export const ANIMS: AnimDef[] = [
   { key: 'bat-idle', texture: TEX.bat, frames: [0, 1], frameRate: 12, repeat: -1 },
   { key: 'animo-idle', texture: TEX.animo, frames: [0, 1], frameRate: 3, repeat: -1 },
   { key: 'animo-walk', texture: TEX.animo, frames: [4, 0, 5, 0], frameRate: 8, repeat: -1 },
+  { key: 'guard-run', texture: TEX.guard, frames: [0, 1], frameRate: 12, repeat: -1 },
   { key: 'frog-idle', texture: TEX.frog, frames: [0, 1], frameRate: 3, repeat: -1 },
   { key: 'neon-flicker', texture: TEX.neon, frames: [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0], frameRate: 8, repeat: -1 },
 ];
