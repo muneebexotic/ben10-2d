@@ -38,26 +38,38 @@ Approved and built in Milestone 4, part 1 (Chapter 2):
 - **One-tap "make it easier"** on the game over screen after several deaths.
 - **Chapter 2 encounter ideas:** the Hornet river is XLR8's showcase and the armoured convoy on the chase is thrown off the road by Four Arms.
 
+Approved and built in Milestone 4, part 2 (Chapter 3):
+
+- **Omnitrix radial dial:** long-press the touch Omnitrix for a fan of alien faces (slide and let go to pick); swipe still turns the dial. Desktop gets number keys 1 to 5 next to Q/E.
+- **Hard keeps a checkpoint at every set piece** (Chapter 2's convoy and ROADBREAKER; Chapter 3's blackout, atrium, lockdown and boss).
+- **Achievements** (19, with a toast and an EXTRAS page).
+- **Card album** with flavour text for every Sumo Slammers card (EXTRAS).
+- **Ghost of your best run** (Settings: GHOST).
+- **Splits review on Chapter Complete** with gold segments and a sum of best.
+- **Omnitrix Master:** S on every difficulty turns the chapter's card gold, stamps the results and goes in the share line.
+- **Misfire log:** JOKES FOUND in EXTRAS.
+
+Built within Milestone 4, part 2 (not proposed beforehand, recorded here for reference):
+
+- **LOCKDOWN:** a five-lock corridor, one alien per lock, so swapping on the fly is the fast way through.
+- **Hidden doors disguised as terrain** that only Wildmutt's senses open, and a Wildmutt den in Chapter 1.
+- **Stink cloud ignition:** fire sets off Stinkfly's gas (FOOMP! / KA-BOOM!).
+- **Gumming:** three quick slime globs stick a mutant in place; slime on KING CROAK's feet glues it down.
+- **Animo rides KING CROAK** and hits from above land on him.
+
 ## Deferred (approved for later)
 
 | Idea | Target |
 |---|---|
 | **Gwen and Grandpa Max cameos** in the Chapter 1 intro (e.g. Gwen: "Great, now you're even MORE annoying"). | Milestone 5 |
-| **Achievements** (Pyromaniac, Deflector, Smoothie Addict, Untouchable, Speed Demon, Perfectionist...). | After 3 chapters exist |
-| **Card album:** a title-screen page of collected Sumo Slammers cards with flavour text. | After 3 chapters exist |
-| **Chapter 1 Hard Remix:** shorter timer, a Gunner wave in the ravine, a boss "overclock" phase 3. | After 3 chapters exist |
+| **Chapter 1 Hard Remix:** shorter timer, a Gunner wave in the ravine, a boss "overclock" phase 3. | Later (kept deferred at the end of Act 1) |
 | **Auto-clip the transform** (rolling canvas recording, SAVE CLIP after the first transform and the boss kill) and a **share card image** (rank, time, portrait, cards as a PNG). | Milestone 7 (viral layer) |
 | **Gamepad support** through Phaser's gamepad plugin feeding `InputMap`. | Later |
 | **Playtest stats** (time per section, deaths per section, transform uptime) to tune difficulty. | Dev builds only, never shipped |
-| **Ghost of your best run:** a translucent Ben replaying your fastest run. | After 3 chapters exist |
-| **Splits review on Chapter Complete:** every split with its delta and a "sum of best" time. | After 3 chapters exist |
-| **Omnitrix Master:** an S rank on all three difficulties turns a chapter's card gold and adds a badge to the share line. | After 3 chapters exist |
-| **Training trials:** per-alien challenges in Omnitrix Training with bronze/silver/gold medals. | After 3 chapters exist |
-| **Revisit Chapter 1 with new aliens:** alien-gated secrets and shortcuts in Chapter 1 (an XLR8 water route, a Four Arms boulder hiding a card). | After 3 chapters exist |
-| **Misfire log:** a page collecting every misfire reaction line triggered ("JOKES FOUND 7/12"). | After 3 chapters exist |
-| **Perfect-transform counterplay on the boss:** a perfect transform during a boss's big attack stuns it early. | After 3 chapters exist |
-| **"No-transform" challenge badge:** finish a section as human Ben only. | After 3 chapters exist |
-| **Omnitrix radial dial:** a long-press on the touch Omnitrix opens a radial picker instead of swiping through aliens. | Chapter 3 |
+| **Training trials:** per-alien challenges in Omnitrix Training with bronze/silver/gold medals. | Later (kept deferred at the end of Act 1) |
+| **Revisit Chapter 1 with new aliens:** alien-gated secrets and shortcuts in Chapter 1 (an XLR8 water route, a Four Arms boulder hiding a card). | Later (kept deferred at the end of Act 1) |
+| **Perfect-transform counterplay on the boss:** a perfect transform during a boss's big attack stuns it early. | Later (kept deferred at the end of Act 1) |
+| **"No-transform" challenge badge:** finish a section as human Ben only. | Later (kept deferred at the end of Act 1) |
 | **Misfire clip:** save the seconds around every misfire automatically, WANTED/GOT card burned in (rides on the auto-clip). | Milestone 7 (viral layer) |
 | **"Vilgax was here" share line:** the share text calls out perfect transforms and splits. | Milestone 7 (viral layer) |
 | **Haptics on Android:** short vibration pulses on hits, perfect transforms and boss kills, with a Settings toggle. | Later |
@@ -80,3 +92,11 @@ Approved and built in Milestone 4, part 1 (Chapter 2):
 - **Truck-on-truck bonus:** throwing a convoy truck into another truck pops DOUBLE WRECK! (today it just hits hard). A guaranteed clip moment.
 - **Family barks:** Gwen and Max react to what the player does on the chase (a hit on the roof, a STRIKE, a perfect transform) with short portrait lines, so the RV ride feels like a family scene and not a backdrop.
 - **Ride-along Gwen hints:** on Easy, Gwen calls out the next convoy attack ("RAM COMING!") a beat before the telegraph. An extra accessibility layer for younger players.
+
+### From Chapter 3 (Milestone 4)
+
+- **Night at the Museum remix:** after Act 1, Chapter 3 with the lights permanently out (Wildmutt's senses are the only way to see), a timed run for a medal. Short, spooky and very clip-friendly.
+- **Animo's bestiary:** each mutant type gets a page (with the exhibit it used to be) the first time it's defeated, next to the card album.
+- **Frog rematch in Training:** KING CROAK as a Training target, with a "no hits on the hide" challenge (only weak-point hits count).
+- **Stink combo callouts:** a named combo (STINK BOMB!) when a cloud is lit by a Heatblast swap within a second, with a slow-motion beat. A natural clip.
+- **Act 2 cold open:** the Act 1 ending's arcade becomes the first level of Act 2 (Kevin's arcade, the cabinets still dead), so the hook pays off immediately.
