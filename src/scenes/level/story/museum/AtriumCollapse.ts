@@ -14,6 +14,7 @@ export interface AtriumSpec {
   collapse: { x: number; y: number; w: number; h: number };
   toX: number;
   toY: number;
+  alien: string;
 }
 
 type Phase = 'wait' | 'rumble' | 'fall' | 'beat' | 'hover' | 'done';
@@ -128,10 +129,12 @@ export class AtriumCollapse implements SetPiece {
   private catchMidair(): void {
     const kit = this.kit;
     if (!this.beat || this.beat.done) {
-      // Stinkfly's already on the dial: Ben just has to switch and fly.
-      this.phase = 'done';
-      kit.tutorial.tip('atrium-fly', '{DIAL} STINKFLY, {T}: FLY ACROSS!', 5000, 7);
-      this.leave();
+      // A replay: Stinkfly's already on the dial, and the watch still catches him (no fall into the tar for free).
+      this.phase = 'hover';
+      this.t = 0;
+      this.hold(true);
+      if (kit.player.form.id !== this.spec.alien) kit.omni.forceInto(this.spec.alien);
+      kit.tutorial.tip('atrium-fly', '{JUMP}: FLY ACROSS!', 5000, 7);
       return;
     }
     this.phase = 'beat';
