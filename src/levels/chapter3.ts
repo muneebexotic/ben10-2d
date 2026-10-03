@@ -107,7 +107,9 @@ export const CHAPTER_3: LevelData = {
     // Atrium perches.
     { x: 244, y: 19, w: 4 },
     { x: 253, y: 16, w: 3 },
-    // The arena's scaffolds.
+    // The arena's scaffolds, with a low ledge in each corner: human Ben (between transformations) can hop out of a corner the frog pins him in, and up to the scaffolds.
+    { x: 391, y: 27, w: 3 },
+    { x: 419, y: 27, w: 3 },
     { x: 396, y: 24, w: 5 },
     { x: 412, y: 24, w: 5 },
     { x: 403, y: 19, w: 6 },
@@ -245,12 +247,13 @@ export const CHAPTER_3: LevelData = {
     { type: 'alienHint', id: 'ch3-vat-hint', alien: 'ripjaws', x: 341, y: 6, w: 5, h: 3, line: "SOMETHING'S GLINTING AT THE BOTTOM OF THAT VAT..." },
 
     // ---- Animo's lab
-    { type: 'checkpoint', id: 'cp-lab', x: 373, y: 30, density: 'normal', label: "ANIMO'S LAB" },
+    // Lit the moment Ben drops in from the vat pit, so a death in the lab never means redoing LOCKDOWN.
+    { type: 'checkpoint', id: 'cp-lab', x: 370, y: 30, density: 'normal', label: "ANIMO'S LAB" },
     { type: 'decor', kind: 'mutagenTank', x: 374, y: 30 },
     { type: 'decor', kind: 'labConsole', x: 379, y: 30 },
     { type: 'decor', kind: 'cage', x: 383, y: 30 },
     { type: 'decor', kind: 'pipes', x: 381, y: 12 },
-    { type: 'mutant', kind: 'lurker', x: 378, y: 30 },
+    { type: 'mutant', kind: 'lurker', x: 381, y: 30 },
     { type: 'mutant', kind: 'rat', x: 382, y: 30 },
     { type: 'mutant', kind: 'rat', x: 384, y: 30 },
     { type: 'drone', kind: 'bat', x: 380, y: 8 },

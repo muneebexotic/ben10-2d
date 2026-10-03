@@ -17,6 +17,8 @@ export const FROG = {
   phase2At: 0.6,
   phase3At: 0.25,
   body: { width: 72, height: 54 },
+  /** Room always left between its body and each arena wall (px), so a corner is never a trap. */
+  wallGap: 30,
   /** Drawn and collided at this size (it grows again at maximum mutation). */
   scale: 1.25,
   /** Thick mutated hide: hits outside its weak moments do this fraction. */

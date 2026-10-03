@@ -253,9 +253,11 @@ export class Frog implements ArenaBoss, TongueOwner {
     this.stateT = 0;
   }
 
+  /** Its body never reaches the walls: a Ben-sized gap is left in each corner, so it can't pin him there. */
   private clampX(x: number): number {
     const a = this.w.arena;
-    return Phaser.Math.Clamp(x, a.left + 40, a.right - 40);
+    const margin = this.w2 + FROG.wallGap;
+    return Phaser.Math.Clamp(x, a.left + margin, a.right - margin);
   }
 
   private get mouthX(): number {
