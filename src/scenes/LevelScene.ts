@@ -181,7 +181,7 @@ export class LevelScene extends Phaser.Scene {
   private readonly alienKills = new Map<string, number>();
   private debugText: Phaser.GameObjects.BitmapText | null = null;
   private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
-  private vignette: Phaser.Filters.Controller | null = null;
+  private vignette: Phaser.Filters.Vignette | null = null;
   private desaturate: Phaser.Filters.ColorMatrix | null = null;
   private readonly onResume = () => audio.setLoopsMuted(false);
 
@@ -242,7 +242,7 @@ export class LevelScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.world.widthPx, this.world.heightPx);
     this.cameras.main.setBackgroundColor(PALETTE.sky0);
     this.vignette = this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f) ?? null;
-    if (quality.lowest) this.onQualityChanged();
+    if (quality.lowest) this.onQualityChanged(false);
 
     const bossSpawn = this.level.entities.find((e): e is BossSpawn => e.type === 'boss') ?? null;
     this.highway = this.level.theme === 'highway' ? new HighwayBackdrop(this, this.level.sky ?? []) : null;
@@ -1264,11 +1264,14 @@ export class LevelScene extends Phaser.Scene {
   }
 
   /** The frame-rate governor stepped down: at the lowest level drop the full-screen vignette pass too. */
-  private onQualityChanged(): void {
-    if (quality.lowest && this.vignette) {
-      this.cameras.main.filters?.external.remove(this.vignette);
-      this.vignette = null;
-    }
+  private onQualityChanged(fade = true): void {
+    if (!quality.lowest || !this.vignette) return;
+    const vignette = this.vignette;
+    this.vignette = null;
+    const remove = () => this.cameras.main?.filters?.external.remove(vignette);
+    // Mid-fight it fades out rather than popping off.
+    if (fade) this.tweens.add({ targets: vignette, strength: 0, duration: 600, onComplete: remove });
+    else remove();
   }
 
   private openPause(): void {

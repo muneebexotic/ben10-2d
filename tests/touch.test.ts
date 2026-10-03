@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TOUCH } from '../src/config/touch';
 import { QualityGovernor } from '../src/systems/Quality';
+import { QUALITY } from '../src/config/quality';
 import { formatControls } from '../src/systems/controlLabels';
 import { pad, stickDirections } from '../src/systems/VirtualPad';
 import { radialSlot } from '../src/ui/RadialPicker';
@@ -97,6 +98,19 @@ describe('quality governor', () => {
     expect(q.level).toBe(1);
     run(q, 16.7, 2500);
     expect(q.level).toBe(0);
+  });
+
+  it("with the game's settings, a sudden drop is answered within about a second and a steady 60 never is", () => {
+    const q = new QualityGovernor(QUALITY);
+    run(q, 16.7, QUALITY.warmupMs + 30_000);
+    expect(q.level).toBe(0);
+    let ms = 0;
+    while (q.level === 0 && ms < 5000) {
+      q.sample(25);
+      ms += 25;
+    }
+    expect(q.level).toBe(1);
+    expect(ms).toBeLessThanOrEqual(QUALITY.windowMs * 2);
   });
 
   it('scales particle counts without losing small bursts entirely', () => {

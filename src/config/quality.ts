@@ -2,7 +2,8 @@
 export const QUALITY = {
   /** Particle multipliers for each quality level, best first. */
   particleLevels: [1, 0.6, 0.35] as readonly number[],
-  windowMs: 2000,
+  /** Averaging window: 1 s answers a sudden heavy moment (a boss blowing up) while it is still on screen. */
+  windowMs: 1000,
   /** Average FPS below this over a window steps quality down. */
   downgradeFps: 50,
   /** Average FPS above this for `upgradeAfterMs` steps quality back up. */
