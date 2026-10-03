@@ -2,7 +2,7 @@
 
 ## Project
 
-2D pixel-art Ben 10 action platformer for the browser. Full design is in `docs/GAME_DESIGN.md`. Read it before starting any task. Current status is in `docs/PROGRESS.md`.
+2D pixel-art Ben 10 action platformer for the browser. Full design is in `docs/GAME_DESIGN.md`. Read it before starting any task. Current status is in `docs/PROGRESS.md`. Read `docs/DECISIONS.md` every session (the decisions and deviations that still apply). Past milestones are written up in `docs/history/`: read those only when a task needs the details.
 
 ## Creative Mandate
 
@@ -18,7 +18,7 @@ Guardrails:
 - Improve freely **within the current milestone** (better mechanics, effects, level design, enemy behavior, feel).
 - Ideas that change the story, add major features, or affect other milestones go in `docs/IDEAS.md` as proposals. Don't build them until approved.
 - Don't rewrite working systems for style reasons. Extend them.
-- If you deviate from `GAME_DESIGN.md`, explain why in `docs/PROGRESS.md`.
+- If you deviate from `GAME_DESIGN.md`, explain why in `docs/DECISIONS.md`.
 
 ## Stack
 
@@ -28,7 +28,7 @@ Guardrails:
 - Vitest for unit tests on game logic
 - Deployed on Vercel
 
-Always use the latest stable versions of the stack and dependencies. Phaser 4 differs from Phaser 3 in several APIs (tint modes, render textures need `render()`, FX are now filters). Check `node_modules/phaser/skills/` (especially `v3-to-v4-migration`) before using an API from memory.
+Pin dependency versions. Upgrade Phaser or other major dependencies only in a dedicated session with full regression. Phaser 4 differs from Phaser 3 in several APIs (tint modes, render textures need `render()`, FX are now filters). Check `node_modules/phaser/skills/` (especially `v3-to-v4-migration`) before using an API from memory.
 
 ## Commands
 
@@ -50,7 +50,7 @@ src/
   levels/        chapter data
   ui/            HUD, Omnitrix dial, menus
 public/assets/   sprites/, audio/, tilemaps/
-docs/            GAME_DESIGN.md, PROGRESS.md, IDEAS.md
+docs/            GAME_DESIGN.md, PROGRESS.md, DECISIONS.md, IDEAS.md, history/ (one file per past milestone)
 ```
 
 ## Architecture Rules
@@ -75,9 +75,9 @@ docs/            GAME_DESIGN.md, PROGRESS.md, IDEAS.md
 
 - Work on ONE milestone per session, as listed in `docs/GAME_DESIGN.md`. Do not start the next one unless asked.
 - Before finishing: run `typecheck`, `build` and `test`, and fix all errors.
-- Update `docs/PROGRESS.md` at the end of each session: what was built, what's left, known bugs, and how to test it.
+- Update `docs/PROGRESS.md` at the end of each session and keep it short: status, how to run, controls, known issues, and how to test the latest chapter. Write the milestone's full record (what was built, playtest notes, how to test it) to a new file in `docs/history/`, and new decisions to `docs/DECISIONS.md`.
 - Commit with clear messages per feature.
-- If a design decision isn't covered in `GAME_DESIGN.md`, choose the simplest option, note it in `PROGRESS.md`, and keep going.
+- If a design decision isn't covered in `GAME_DESIGN.md`, choose the simplest option, note it in `DECISIONS.md`, and keep going.
 
 ## Code Style
 
