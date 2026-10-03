@@ -66,7 +66,8 @@ export const CHAPTER_3: LevelData = {
     // The vat pit: a low duct ceiling over it, the vat's floor, the far ledge.
     { material: 'rock', x: 346, top: 0, w: 25, h: 6 },
     { material: 'rock', x: 346, top: 38, w: 13 },
-    { material: 'ground', x: 359, top: 9, w: 10 },
+    // One row below the vent, so a straight hover lands on it.
+    { material: 'ground', x: 359, top: 10, w: 10 },
     // Animo's lab and the frog's arena: the far ledge drops through a hole (369-370) into it.
     { material: 'rock', x: 371, top: 0, w: 53, h: 3 },
     { material: 'rock', x: 371, top: 3, w: 1, h: 6 },

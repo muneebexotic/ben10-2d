@@ -122,7 +122,7 @@ describe('chapter 3 progression', () => {
     const pastMoat = (p: Pos) => p.x >= 312 && p.x <= 314 && p.y === 23;
     const inRoom = (p: Pos) => p.x >= 316 && p.x <= 324 && p.y === 23;
     const inVent = (p: Pos) => p.x >= 326 && p.x <= 345 && p.y === 8;
-    const pastPit = (p: Pos) => p.x >= 359 && p.x <= 368 && p.y === 8;
+    const pastPit = (p: Pos) => p.x >= 359 && p.x <= 368 && p.y === 9;
     const only = (from: Pos, goal: (p: Pos) => boolean, who: Capabilities, lvl = level) => {
       for (const caps of ALL) expect(canReach(lvl, grid, from, goal, caps), JSON.stringify(caps)).toBe(caps === who);
     };
@@ -135,7 +135,7 @@ describe('chapter 3 progression', () => {
 
   it('from the far ledge anyone drops into the lab and walks to KING CROAK', () => {
     const boss = entity('boss')[0];
-    for (const caps of ALL) expect(canReach(level, grid, { x: 361, y: 8 }, (p) => p.x >= boss.triggerX && p.y === 29, caps)).toBe(true);
+    for (const caps of ALL) expect(canReach(level, grid, { x: 361, y: 9 }, (p) => p.x >= boss.triggerX && p.y === 29, caps)).toBe(true);
   });
 
   it('every card can be reached with the right form', () => {
