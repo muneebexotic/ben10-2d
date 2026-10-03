@@ -4,6 +4,7 @@ import { PALETTE } from '../../config/palette';
 import { ChargeHum } from '../../systems/audio/Sfx';
 import type { AbilityContext, FormAbilities, ShotSpec } from '../types';
 import { flameNova } from './audio';
+import { chance } from '../../systems/Pacing';
 
 const FB = HEATBLAST.fireball;
 const BURST = HEATBLAST.burst;
@@ -40,8 +41,8 @@ export class HeatblastAbilities implements FormAbilities {
 
     // Living flame: head fire, embers and a warm light that make Heatblast the brightest thing in the forest.
     const headY = player.y - 30;
-    ctx.fx.trail('fire', player.x + (Math.random() - 0.5) * 8, headY + Math.random() * 4);
-    if (Math.random() < 0.25) ctx.fx.trail('ember', player.x + (Math.random() - 0.5) * 12, player.y - 16);
+    ctx.fx.stream('fire', player.x + (Math.random() - 0.5) * 8, headY + Math.random() * 4);
+    if (chance(0.25)) ctx.fx.trail('ember', player.x + (Math.random() - 0.5) * 12, player.y - 16);
     const flicker = 0.9 + Math.sin(ctx.now * 0.03) * 0.05 + Math.random() * 0.05;
     ctx.fx.frameLight(player.x, player.y - 16, HEATBLAST.lightRadius * flicker, HEATBLAST.lightColor, 1);
 
@@ -52,7 +53,7 @@ export class HeatblastAbilities implements FormAbilities {
     }
 
     if (this.rocketUsed && !player.grounded && controls.jumpHeld && player.vy > 0) {
-      ctx.fx.trail('fire', player.x + (Math.random() - 0.5) * 6, player.y);
+      ctx.fx.stream('fire', player.x + (Math.random() - 0.5) * 6, player.y);
     }
   }
 
@@ -99,7 +100,7 @@ export class HeatblastAbilities implements FormAbilities {
       const r = 10 + t * 18;
       for (let i = 0; i < 1 + Math.floor(t * 3); i++) {
         const a = Math.random() * Math.PI * 2;
-        ctx.fx.trail('fire', player.x + Math.cos(a) * r, player.centerY + Math.sin(a) * r);
+        if (chance(1)) ctx.fx.trail('fire', player.x + Math.cos(a) * r, player.centerY + Math.sin(a) * r);
       }
       ctx.fx.frameLight(player.x, player.centerY, 60 + t * 90, PALETTE.fire1, 0.6 + t * 0.4);
       if (t >= 1 && !this.chargeFullNotified) {

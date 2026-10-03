@@ -8,6 +8,7 @@ import { playSfx } from '../../../systems/audio/Sfx';
 import { crunch, engineRev, horn } from '../../vehicles/audio';
 import type { BossWorld } from '../HunterDrone';
 import type { Roadbreaker } from './Roadbreaker';
+import { chance } from '../../../systems/Pacing';
 
 export type RbAttackKind = 'ram' | 'lob' | 'dispatch' | 'slam' | 'saw' | 'beam';
 
@@ -77,7 +78,7 @@ const ram: AttackFn = (b, w, a, dtMs) => {
       const from = b.x + a.dir * 60;
       const to = a.dir > 0 ? arena.right : arena.left;
       w.telegraph.zone(Math.min(from, to), floor - R.height, Math.abs(to - from), R.height, PALETTE.enemy, 0.3 + k * 0.7, a.t * 0.08, a.dir);
-      if (Math.random() < 0.7) w.fx.trail('fire', b.x - a.dir * 4, floor - 58);
+      if (chance(0.7)) w.fx.trail('fire', b.x - a.dir * 4, floor - 58);
       w.lighting.add(b.x + a.dir * 80, floor - 34, 90 + k * 80, 0xfff0c0, 1);
       if (a.t >= R.revMs) {
         b.revving = false;
@@ -101,8 +102,8 @@ const ram: AttackFn = (b, w, a, dtMs) => {
         return false;
       }
       b.vx = a.dir * speed;
-      if (Math.random() < 0.6) w.fx.speedLine(b.x - a.dir * 40, floor - 10 - Math.random() * 40, -a.dir as 1 | -1, PALETTE.white);
-      if (Math.random() < 0.5) w.fx.burst('dust', b.x - a.dir * 50, floor - 2, 2);
+      if (chance(0.6)) w.fx.speedLine(b.x - a.dir * 40, floor - 10 - Math.random() * 40, -a.dir as 1 | -1, PALETTE.white);
+      if (chance(0.5)) w.fx.burst('dust', b.x - a.dir * 50, floor - 2, 2);
       const wall = a.dir > 0 ? arena.right - 62 : arena.left + 62;
       if ((a.dir > 0 && b.x >= wall) || (a.dir < 0 && b.x <= wall)) {
         b.x = wall;
@@ -121,15 +122,15 @@ const ram: AttackFn = (b, w, a, dtMs) => {
     }
     case 3: {
       // Dazed against the wall: the punish window.
-      if (Math.random() < 0.3) w.fx.burst('spark', b.x + a.dir * 60, floor - 20 - Math.random() * 30, 2);
+      if (chance(0.3)) w.fx.burst('spark', b.x + a.dir * 60, floor - 20 - Math.random() * 30, 2);
       return a.t >= pace.punish(R.crashStunMs);
     }
     default: {
       // Skidding out on shredded tires.
       b.vx *= Math.exp(-3.2 * (dtMs / 1000));
       b.shake = 2;
-      if (Math.random() < 0.8) w.fx.burst('spark', b.x + (Math.random() - 0.5) * 80, floor - 2, 2);
-      if (Math.random() < 0.4) w.fx.trail('smoke', b.x, floor - 20);
+      if (chance(0.8)) w.fx.burst('spark', b.x + (Math.random() - 0.5) * 80, floor - 2, 2);
+      if (chance(0.4)) w.fx.trail('smoke', b.x, floor - 20);
       if (Math.abs(b.vx) < 25 || a.t > 1400) {
         a.skids = false;
         b.stall();
@@ -241,7 +242,7 @@ const slam: AttackFn = (b, w, a, dtMs) => {
       }
       b.dazed = true;
       b.crouch = 16;
-      if (Math.random() < 0.15) w.fx.burst('spark', a.x + (Math.random() - 0.5) * 40, floor - 4, 2);
+      if (chance(0.15)) w.fx.burst('spark', a.x + (Math.random() - 0.5) * 40, floor - 4, 2);
       if (a.t >= pace.punish(S.stuckMs)) {
         b.dazed = false;
         next(a);

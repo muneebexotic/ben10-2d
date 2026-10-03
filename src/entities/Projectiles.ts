@@ -7,6 +7,7 @@ import type { Fx, BurstKind } from '../systems/Fx';
 import type { Lighting } from '../systems/Lighting';
 import { playSfx } from '../systems/audio/Sfx';
 import type { Damageable, HitKind } from './types';
+import { chance } from '../systems/Pacing';
 
 export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit';
 export type Team = 'player' | 'enemy';
@@ -151,7 +152,7 @@ export class Projectiles {
       p.sprite.setPosition(p.x, p.y);
       if (style.rotate) p.sprite.setRotation(Math.atan2(p.vy, p.vx));
       if (p.hugGround && p.life < 200) p.sprite.setAlpha(Math.max(0, p.life / 200));
-      if (style.trail && Math.random() < style.trailChance) this.fx.trail(style.trail, p.x - p.vx * 0.012, p.y - p.vy * 0.012 + (p.hugGround ? p.radius : 0));
+      if (style.trail && chance(style.trailChance)) this.fx.trail(style.trail, p.x - p.vx * 0.012, p.y - p.vy * 0.012 + (p.hugGround ? p.radius : 0));
       this.lighting.add(p.x, p.y, style.light, p.reflected ? P.omnitrix : style.lightColor, 0.9);
 
       const far = p.x < view.x - 200 || p.x > view.right + 200 || p.y < view.y - 200 || p.y > view.bottom + 200;

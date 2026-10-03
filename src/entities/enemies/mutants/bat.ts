@@ -6,6 +6,7 @@ import { blinkOn } from '../../../systems/Accessibility';
 import { pace } from '../../../systems/Difficulty';
 import { aimAt, canShoot, rand, steer } from '../brainKit';
 import type { Drone, DroneBrain, DroneWorld } from '../Drone';
+import { damp } from '../../../systems/Pacing';
 
 /**
  * Mutant bat: hangs asleep until Ben comes close, flutters above him, then
@@ -47,8 +48,8 @@ export class BatBrain implements DroneBrain {
         break;
       }
       case 'screech': {
-        d.vx *= 0.85;
-        d.vy *= 0.85;
+        d.vx = damp(d.vx, 0.85);
+        d.vy = damp(d.vy, 0.85);
         if (d.stateT < BAT.screechMs - 120) d.aim = aimAt(d, w);
         const locked = d.stateT >= BAT.screechMs - 120;
         w.telegraph.dashed(d.x, d.y, d.x + Math.cos(d.aim) * 140, d.y + Math.sin(d.aim) * 140, PALETTE.animo, locked ? 0.9 : blinkOn(d.stateT, 60) ? 0.5 : 0.25, d.stateT * 0.06, locked ? 2 : 1);

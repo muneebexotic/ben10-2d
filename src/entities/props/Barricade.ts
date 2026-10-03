@@ -5,6 +5,7 @@ import { barricadeKey } from '../../scenes/preload/assetKeys';
 import type { Fx } from '../../systems/Fx';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Damageable, Hit, HitKind, HitResult, Rect } from '../types';
+import { chance } from '../../systems/Pacing';
 
 const BURN_HP = 6;
 
@@ -75,10 +76,10 @@ export class Barricade implements Damageable {
     this.burning += dtMs;
     const r = this.rect;
     for (let i = 0; i < 3; i++) {
-      this.fx.trail('fire', r.x + Math.random() * r.w, r.y + Math.random() * r.h);
+      if (chance(1)) this.fx.trail('fire', r.x + Math.random() * r.w, r.y + Math.random() * r.h);
     }
-    if (Math.random() < 0.3) this.fx.trail('smoke', r.x + Math.random() * r.w, r.y + Math.random() * r.h * 0.5);
-    this.fx.light(r.x + r.w / 2, r.y + r.h / 2, 110, PALETTE.fire2, 60);
+    if (chance(0.3)) this.fx.trail('smoke', r.x + Math.random() * r.w, r.y + Math.random() * r.h * 0.5);
+    if (chance(1)) this.fx.light(r.x + r.w / 2, r.y + r.h / 2, 110, PALETTE.fire2, 60);
     const t = Math.min(1, this.burning / 700);
     this.image.setScale(1, 1 - t * 0.9).setAlpha(1 - t * 0.6);
     this.image.y = r.y + r.h / 2 + (r.h * t * 0.9) / 2;

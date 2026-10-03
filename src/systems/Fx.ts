@@ -6,6 +6,7 @@ import type { Lighting } from './Lighting';
 import type { TimeController } from './TimeController';
 import { shakeCamera } from './Accessibility';
 import { quality } from './Quality';
+import { frameScale } from './Pacing';
 import { pixelText } from '../ui/text';
 import { FONT_SIZE } from '../ui/PixelFont';
 
@@ -148,6 +149,15 @@ export class Fx {
   /** A few particles every call; use for trails. */
   trail(kind: BurstKind, x: number, y: number, count = 1): void {
     const n = quality.scaleCount(count);
+    if (n > 0) this.emitters.get(kind)?.emitParticleAt(x, y, n);
+  }
+
+  /**
+   * A trail emitted every frame: `count` particles per 60 Hz frame, so the same
+   * number per second at any refresh rate (and exactly `trail` at 60 Hz).
+   */
+  stream(kind: BurstKind, x: number, y: number, count = 1): void {
+    const n = quality.scaleCount(count * frameScale());
     if (n > 0) this.emitters.get(kind)?.emitParticleAt(x, y, n);
   }
 

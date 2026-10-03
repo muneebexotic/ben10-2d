@@ -8,6 +8,7 @@ import { pixelText } from '../../../ui/text';
 import { TEX } from '../../preload/assetKeys';
 import { SILHOUETTE_KEYS, type SilhouetteId } from '../../preload/silhouettes';
 import type { SetPiece, StoryKit } from './StoryKit';
+import { chance } from '../../../systems/Pacing';
 
 type HintSpawn = Extract<EntitySpawn, { type: 'alienHint' }>;
 
@@ -77,7 +78,7 @@ export class AlienHints implements SetPiece {
         const spin = Math.cos(now * 0.0024);
         h.ghost.setScale(Math.max(0.1, Math.abs(spin)), 1).setFrame(spin >= 0 ? 0 : 1).setY(h.ghostY + Math.sin(now * 0.003) * 2);
         lighting.add(h.ghostX, h.ghostY, 40, PALETTE.gold, 0.5);
-        if (Math.random() < 0.03) fx.trail('gold', h.ghostX + (Math.random() - 0.5) * 12, h.ghostY + (Math.random() - 0.5) * 14);
+        if (chance(0.03)) fx.trail('gold', h.ghostX + (Math.random() - 0.5) * 12, h.ghostY + (Math.random() - 0.5) * 14);
       }
       const s = h.spawn;
       const inside = player.x >= s.x * TILE && player.x < (s.x + s.w) * TILE && player.y >= s.y * TILE && player.y <= (s.y + s.h) * TILE;

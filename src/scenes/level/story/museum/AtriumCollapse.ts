@@ -8,6 +8,7 @@ import type { SetPiece, StoryKit } from '../StoryKit';
 import type { UnlockBeat } from '../UnlockBeat';
 import { AnimoActor } from './AnimoActor';
 import { ATRIUM_AFTER, ATRIUM_TAUNT } from './lines';
+import { chance } from '../../../../systems/Pacing';
 
 export interface AtriumSpec {
   triggerX: number;
@@ -69,7 +70,7 @@ export class AtriumCollapse implements SetPiece {
     }
     this.t += realDtMs;
     if (this.phase === 'rumble') {
-      if (Math.random() < 0.3) kit.fx.burst('debris', (this.spec.collapse.x + Math.random() * this.spec.collapse.w) * TILE, this.spec.collapse.y * TILE + 4, 2);
+      if (chance(0.3)) kit.fx.burst('debris', (this.spec.collapse.x + Math.random() * this.spec.collapse.w) * TILE, this.spec.collapse.y * TILE + 4, 2);
       if (this.t >= ATRIUM.rumbleMs) this.collapse();
       return;
     }
@@ -80,7 +81,7 @@ export class AtriumCollapse implements SetPiece {
     if (this.phase === 'hover') {
       // Wings buzz in place until the player flaps.
       p.setVelocity(0, 0);
-      if (Math.random() < 0.4) p.afterimage(0xcff4ff, 0.2, 90);
+      if (chance(0.4)) p.afterimage(0xcff4ff, 0.2, 90);
       if (controls.jumpPressed || this.t >= ATRIUM.flapWaitMs) this.release();
     }
   }

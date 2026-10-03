@@ -11,6 +11,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { TEX } from '../preload/assetKeys';
 import { flashCamera } from '../../systems/Accessibility';
+import { chance } from '../../systems/Pacing';
 
 type Phase = 'opening' | 'explore' | 'pod' | 'firstTransform' | 'done';
 
@@ -147,8 +148,8 @@ export class IntroDirector {
       duration,
       ease: 'Quad.easeIn',
       onUpdate: () => {
-        this.fx.trail(color === PALETTE.omnitrix ? 'green' : 'fire', m.x, m.y, 2);
-        this.fx.trail('smoke', m.x, m.y);
+        this.fx.stream(color === PALETTE.omnitrix ? 'green' : 'fire', m.x, m.y, 2);
+        this.fx.stream('smoke', m.x, m.y);
       },
       onComplete: () => m.destroy(),
     });
@@ -201,7 +202,7 @@ export class IntroDirector {
         y: { from: item.y, to: ty },
         duration: 420,
         ease: (k: number) => k * k * 1.6 - 0.6 * k,
-        onUpdate: () => this.fx.trail('green', item.x, item.y, 2),
+        onUpdate: () => this.fx.stream('green', item.x, item.y, 2),
         onComplete: () => {
           item.destroy();
           this.watchItem = null;
@@ -248,7 +249,7 @@ export class IntroDirector {
   private updatePodGlow(realDt: number): void {
     if (this.podLight <= 0 && this.phase !== 'explore' && this.phase !== 'opening') return;
     const base = this.podLight > 0 ? this.podLight : 0.6;
-    if (Math.random() < 0.25) this.fx.trail('green', this.pod.x + (Math.random() - 0.5) * 16, this.pod.y - 6 - Math.random() * 6);
+    if (chance(0.25)) this.fx.trail('green', this.pod.x + (Math.random() - 0.5) * 16, this.pod.y - 6 - Math.random() * 6);
     if (this.podLight > 0) this.podLight = Math.max(0.25, this.podLight - realDt / 3000);
     this.lightHook?.(this.pod.x, this.pod.y - 10, 90 * base + 30, PALETTE.omnitrix, 1);
   }

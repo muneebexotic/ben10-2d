@@ -7,6 +7,7 @@ import type { Hit } from '../types';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
 import { canShoot, rand, steer } from './brainKit';
 import { pace } from '../../systems/Difficulty';
+import { chance, damp } from '../../systems/Pacing';
 
 const A = ARMORED;
 
@@ -61,8 +62,8 @@ export class ArmoredBrain implements DroneBrain {
         break;
       }
       case 'telegraph': {
-        d.vx *= 0.85;
-        d.vy *= 0.85;
+        d.vx = damp(d.vx, 0.85);
+        d.vy = damp(d.vy, 0.85);
         if (d.stateT < A.telegraphMs - A.aimLockMs) {
           d.lockX = p.x;
           d.lockY = w.groundBelow(p.x, p.y - 8) - 4;
@@ -101,8 +102,8 @@ export class ArmoredBrain implements DroneBrain {
         const dir = d.memo.ramDir ?? 1;
         d.vx = dir * A.ramSpeed;
         d.vy = 0;
-        w.fx.trail('red', d.x - dir * 12, d.y, 2);
-        w.fx.trail('smoke', d.x - dir * 14, d.y + 4);
+        w.fx.stream('red', d.x - dir * 12, d.y, 2);
+        w.fx.stream('smoke', d.x - dir * 14, d.y + 4);
         if (w.isSolid(d.x + dir * (A.body.width / 2 + 2), d.y) || d.stateT > A.ramMs) {
           if (w.isSolid(d.x + dir * (A.body.width / 2 + 2), d.y)) {
             d.kx = -dir * 120;
@@ -115,8 +116,8 @@ export class ArmoredBrain implements DroneBrain {
         break;
       }
       case 'recover': {
-        d.vx *= 0.9;
-        d.vy *= 0.9;
+        d.vx = damp(d.vx, 0.9);
+        d.vy = damp(d.vy, 0.9);
         if (d.stateT > A.recoverMs) {
           d.setState('idle');
           d.nextActionAt = w.now + pace.rest(rand(A.fireIntervalMs));
@@ -192,7 +193,7 @@ export class ArmoredBrain implements DroneBrain {
     if (d.sprite.anims.currentAnim?.key !== key || !d.sprite.anims.isPlaying) d.sprite.play(key, true);
     if (exposed) {
       w.lighting.add(d.x, d.y, 36 + Math.sin(w.now * 0.02) * 6, PALETTE.fire1, 1);
-      if (Math.random() < 0.2) w.fx.trail('fire', d.x + (Math.random() - 0.5) * 12, d.y);
+      if (chance(0.2)) w.fx.trail('fire', d.x + (Math.random() - 0.5) * 12, d.y);
     }
   }
 }

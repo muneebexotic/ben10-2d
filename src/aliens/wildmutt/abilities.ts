@@ -6,6 +6,7 @@ import type { Rect } from '../../entities/types';
 import type { AbilityContext, FormAbilities } from '../types';
 import { WILDMUTT_COLORS as C } from './art';
 import { clawHit, clawSwipe, pounceLand, pounceLeap, roarSound, sniff, wallScratch } from './audio';
+import { chance } from '../../systems/Pacing';
 
 const CL = WILDMUTT.claw;
 const PO = WILDMUTT.pounce;
@@ -225,7 +226,7 @@ export class WildmuttAbilities implements FormAbilities {
       ctx.sfx(wallScratch, 0.9);
       return;
     }
-    if (Math.random() < 0.6) player.afterimage(C.fur, 0.35, 160);
+    if (chance(0.6)) player.afterimage(C.fur, 0.35, 160);
     const falling = player.vy > 40;
     const a = this.area;
     a.w = PO.area.width;

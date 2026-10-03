@@ -11,6 +11,7 @@ import type { ArenaBoss } from '../ArenaBoss';
 import type { BossWorld } from '../HunterDrone';
 import { FrogTongue, type TongueOwner } from './FrogTongue';
 import { frogMultiplier, gumFeet, popsThroat, yanksTongue } from './rules';
+import { chance } from '../../../systems/Pacing';
 
 type State = 'intro' | 'idle' | 'leap' | 'tongue' | 'spit' | 'flop' | 'zap' | 'stunned' | 'transition' | 'dying' | 'dead';
 type Attack = 'leap' | 'tongue' | 'spit' | 'flop' | 'zap';
@@ -301,7 +302,7 @@ export class Frog implements ArenaBoss, TongueOwner {
           this.gummed = false;
           this.toIdle();
         }
-        if (this.gummed && Math.random() < 0.2) this.w.fx.burst('slime', this.x + (Math.random() - 0.5) * this.w2 * 2, this.floorY - 2, 1);
+        if (this.gummed && chance(0.2)) this.w.fx.burst('slime', this.x + (Math.random() - 0.5) * this.w2 * 2, this.floorY - 2, 1);
         break;
       case 'transition':
         this.updateTransition();
@@ -345,7 +346,7 @@ export class Frog implements ArenaBoss, TongueOwner {
       duration: FROG.introMs * 0.6,
       ease: 'Back.easeOut',
       onUpdate: () => {
-        if (Math.random() < 0.4) fx.burst('mutagen', this.x + (Math.random() - 0.5) * 60 * this.scale, this.floorY - Math.random() * 50 * this.scale, 2);
+        if (chance(0.4)) fx.burst('mutagen', this.x + (Math.random() - 0.5) * 60 * this.scale, this.floorY - Math.random() * 50 * this.scale, 2);
       },
       onComplete: () => {
         fx.shake(0.014, 400);
@@ -574,7 +575,7 @@ export class Frog implements ArenaBoss, TongueOwner {
   private updateTransition(): void {
     const fx = this.w.fx;
     if (this.stateT < 900) {
-      if (Math.random() < 0.5) fx.burst('mutagen', this.x + (Math.random() - 0.5) * 70, this.floorY - Math.random() * 60, 2);
+      if (chance(0.5)) fx.burst('mutagen', this.x + (Math.random() - 0.5) * 70, this.floorY - Math.random() * 60, 2);
       this.w.lighting.add(this.x, this.floorY - 40, 120, PALETTE.animo, 0.8);
       return;
     }
@@ -591,7 +592,7 @@ export class Frog implements ArenaBoss, TongueOwner {
   private updateDying(): void {
     const fx = this.w.fx;
     if (this.stateT < 1600) {
-      if (Math.random() < 0.4) fx.burst('goo', this.x + (Math.random() - 0.5) * 80 * this.scale, this.floorY - Math.random() * 60 * this.scale, 4);
+      if (chance(0.4)) fx.burst('goo', this.x + (Math.random() - 0.5) * 80 * this.scale, this.floorY - Math.random() * 60 * this.scale, 4);
       // Shrinks back to an ordinary frog.
       this.scale = Math.max(0.16, FROG.scale * (1 - this.stateT / 1600));
       if (this.stateT > 300 && !this.riderFell) {

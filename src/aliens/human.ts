@@ -6,6 +6,7 @@ import { TEX } from '../scenes/preload/assetKeys';
 import { HUMAN_CAPS } from '../levels/reachability';
 import type { AbilityContext, FormAbilities, FormDefinition } from './types';
 import type { Rect } from '../entities/types';
+import { chance } from '../systems/Pacing';
 
 const PUNCH = HUMAN_COMBAT.punch;
 const ROLL = HUMAN_COMBAT.roll;
@@ -28,9 +29,9 @@ class HumanAbilities implements FormAbilities {
       this.rollLeft -= dt;
       const t = this.rollLeft / ROLL.durationMs;
       player.setVelocityX(this.rollDir * ROLL.speed * (t > 0.3 ? 1 : 0.4 + t * 2));
-      if (Math.random() < 0.5) ctx.fx.trail('dust', player.x - this.rollDir * 4, player.y - 2);
+      if (chance(0.5)) ctx.fx.trail('dust', player.x - this.rollDir * 4, player.y - 2);
       // The roll is untouchable: a faint trail says so.
-      if (Math.random() < 0.6) player.afterimage(0xffffff, 0.3, 140);
+      if (chance(0.6)) player.afterimage(0xffffff, 0.3, 140);
       if (this.rollLeft <= 0) this.rollReadyAt = ctx.now + ROLL.cooldownMs;
     } else if (ctx.inputEnabled && controls.specialPressed && player.grounded && ctx.now >= this.rollReadyAt && this.punchT < 0) {
       this.rollDir = controls.left ? -1 : controls.right ? 1 : player.facing;

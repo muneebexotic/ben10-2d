@@ -4,6 +4,7 @@ import { PALETTE } from '../../config/palette';
 import type { AbilityContext, FormAbilities, ShotSpec } from '../types';
 import { STINKFLY_COLORS as C } from './art';
 import { buzz, slimeSpit, stinkVent, takeoff } from './audio';
+import { chance } from '../../systems/Pacing';
 
 const FL = STINKFLY.flight;
 const SL = STINKFLY.slime;
@@ -53,7 +54,7 @@ export class StinkflyAbilities implements FormAbilities {
     }
     if (this.flying) this.fly(ctx, dt);
     this.gliding = !this.flying && !player.grounded && ctx.inputEnabled && controls.jumpHeld && player.vy > 0;
-    if (this.gliding && Math.random() < 0.3) ctx.fx.trail('slime', player.x - player.facing * 8, player.centerY + 4);
+    if (this.gliding && chance(0.3)) ctx.fx.trail('slime', player.x - player.facing * 8, player.centerY + 4);
 
     if (ctx.inputEnabled && controls.attackHeld && ctx.now >= this.fireReadyAt) this.spit(ctx);
     if (ctx.inputEnabled && controls.specialPressed && ctx.now >= this.stinkReadyAt) this.vent(ctx);
@@ -101,7 +102,7 @@ export class StinkflyAbilities implements FormAbilities {
       this.buzzT = low ? 120 : 80;
       ctx.sfx(buzz, low ? 0.35 : 0.45, (low ? 0.8 : 1) + Math.random() * 0.08);
     }
-    if (Math.random() < 0.35) player.afterimage(C.wing, 0.18, 90);
+    if (chance(0.35)) player.afterimage(C.wing, 0.18, 90);
   }
 
   gravityScale(): number | null {

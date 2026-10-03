@@ -5,6 +5,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { BossWorld, HunterDrone } from './HunterDrone';
 import { blinkOn } from '../../systems/Accessibility';
 import { pace } from '../../systems/Difficulty';
+import { chance } from '../../systems/Pacing';
 
 export type AttackKind = 'volley' | 'slam' | 'summon' | 'beam' | 'rain';
 
@@ -131,7 +132,7 @@ const slam: AttackFn = (b, w, a, dt) => {
       b.stuck = lastInChain;
       b.eye = lastInChain ? 'vulnerable' : 'charge';
       b.setTarget(b.x, floor - 30, 0);
-      if (lastInChain && Math.random() < 0.15) w.fx.burst('spark', b.x + (Math.random() - 0.5) * 60, b.y - 10, 3);
+      if (lastInChain && chance(0.15)) w.fx.burst('spark', b.x + (Math.random() - 0.5) * 60, b.y - 10, 3);
       if (a.t >= stuck) {
         b.stuck = false;
         a.count++;

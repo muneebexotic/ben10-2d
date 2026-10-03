@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { ACT_END } from '../config/actEnd';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { GAME_HEIGHT, GAME_WIDTH, PHYSICS } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { allAliens } from '../aliens/registry';
 import { ACTS, CHAPTERS } from '../levels/chapters';
@@ -21,6 +21,7 @@ import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { AchievementTracker, fileAchievements } from '../systems/Achievements';
 import { AchievementToast } from '../ui/AchievementToast';
+import { chance, setFrameLength } from '../systems/Pacing';
 
 export interface ActEndData {
   act: number;
@@ -96,6 +97,7 @@ export class ActEndScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number): void {
+    setFrameLength(Math.min(delta, PHYSICS.maxFrameMs));
     this.t += delta;
     if (this.phase === 'meanwhile' && this.t >= ACT_END.meanwhileMs) {
       this.phase = 'arcade';
@@ -191,7 +193,7 @@ export class ActEndScene extends Phaser.Scene {
       }
       g.strokePath();
     }
-    if (Math.random() < 0.15) playSfx('zap', 0.4, 0.8 + Math.random() * 0.4);
+    if (chance(0.15)) playSfx('zap', 0.4, 0.8 + Math.random() * 0.4);
   }
 
   // ------------------------------------------------------------ KEVIN 11

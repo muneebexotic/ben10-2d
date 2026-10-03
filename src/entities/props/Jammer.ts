@@ -6,6 +6,7 @@ import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Damageable, Hit, HitResult, Rect } from '../types';
+import { chance } from '../../systems/Pacing';
 
 const JAMMER_HP = 3;
 
@@ -127,7 +128,7 @@ export class Jammer implements Damageable {
     this.fieldOverlay.tilePositionY -= dtMs * 0.02;
     this.edge.tilePositionY += dtMs * 0.05;
     if (!this.alive) {
-      if (Math.random() < 0.05) this.fx.trail('smoke', this.pylon.x, this.pylon.y - 30);
+      if (chance(0.05)) this.fx.trail('smoke', this.pylon.x, this.pylon.y - 30);
       return;
     }
     this.flashLeft = Math.max(0, this.flashLeft - dtMs);

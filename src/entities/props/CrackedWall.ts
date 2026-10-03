@@ -9,6 +9,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import { pixelText } from '../../ui/text';
 import type { Damageable, Hit, HitKind, HitResult, Rect } from '../types';
 import { breaksCrackedWall } from '../../levels/secrets';
+import { chance } from '../../systems/Pacing';
 
 /** The silhouette floats this far above the wall top, clear of Ben's speech bubble. */
 const HINT_RISE = 72;
@@ -188,7 +189,7 @@ export class CrackedWall implements Damageable {
     this.hintCooldown = Math.max(0, this.hintCooldown - dtMs);
     // Gold glints through the cracks.
     lighting.add(this.rect.x + 8, this.rect.y + this.rect.h / 2, 26 + Math.sin(now * 0.004) * 4, PALETTE.gold, 0.45);
-    if (Math.random() < 0.02) this.fx.trail('gold', this.rect.x + 4 + Math.random() * 8, this.rect.y + Math.random() * this.rect.h);
+    if (chance(0.02)) this.fx.trail('gold', this.rect.x + 4 + Math.random() * 8, this.rect.y + Math.random() * this.rect.h);
     if (this.hintLeft > 0) {
       this.hintLeft -= dtMs;
       this.hint.setY(this.rect.y - HINT_RISE + Math.sin(now * 0.004) * 2);

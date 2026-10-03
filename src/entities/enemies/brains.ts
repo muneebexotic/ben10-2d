@@ -14,6 +14,7 @@ import { LurkerBrain } from './mutants/lurker';
 import { RatBrain } from './mutants/rat';
 import { RoachBrain } from './mutants/roach';
 import { pace } from '../../systems/Difficulty';
+import { chance, damp } from '../../systems/Pacing';
 
 /** Hovers at a comfortable offset, telegraphs with a flickering aim line, then fires one aimed laser. */
 export class ScoutBrain implements DroneBrain {
@@ -37,8 +38,8 @@ export class ScoutBrain implements DroneBrain {
         playSfx('laserCharge', 0.6);
       }
     } else if (d.state === 'telegraph') {
-      d.vx *= 0.85;
-      d.vy *= 0.85;
+      d.vx = damp(d.vx, 0.85);
+      d.vy = damp(d.vy, 0.85);
       if (d.stateT < SCOUT.telegraphMs - SCOUT.aimLockMs) d.aim = aimAt(d, w);
       const t = d.stateT / SCOUT.telegraphMs;
       const locked = d.stateT >= SCOUT.telegraphMs - SCOUT.aimLockMs;
@@ -56,8 +57,8 @@ export class ScoutBrain implements DroneBrain {
         d.setState('recover');
       }
     } else if (d.state === 'recover') {
-      d.vx *= 0.9;
-      d.vy *= 0.9;
+      d.vx = damp(d.vx, 0.9);
+      d.vy = damp(d.vy, 0.9);
       if (d.stateT > 420) {
         d.setState('idle');
         d.nextActionAt = w.now + pace.rest(rand(SCOUT.fireIntervalMs));
@@ -126,7 +127,7 @@ export class StrikerBrain implements DroneBrain {
       case 'dive': {
         d.vx = Math.cos(d.aim) * STRIKER.diveSpeed;
         d.vy = Math.sin(d.aim) * STRIKER.diveSpeed;
-        w.fx.trail('red', d.x, d.y, 2);
+        w.fx.stream('red', d.x, d.y, 2);
         // Keep diving through the target until it hits ground or water: a miss ends embedded and helpless.
         if (d.y >= d.lockY) d.aim = Math.PI / 2;
         const splash = w.isWater(d.x, d.y + 6);
@@ -144,7 +145,7 @@ export class StrikerBrain implements DroneBrain {
       case 'stuck': {
         d.vx = 0;
         d.vy = 0;
-        if (Math.random() < 0.08) w.fx.burst('spark', d.x + (Math.random() - 0.5) * 12, d.y - 4, 2);
+        if (chance(0.08)) w.fx.burst('spark', d.x + (Math.random() - 0.5) * 12, d.y - 4, 2);
         if (d.stateT >= pace.punish(STRIKER.stuckMs)) {
           d.sprite.setAngle(0);
           d.setCharging(false);
@@ -208,8 +209,8 @@ export class GunnerBrain implements DroneBrain {
         playSfx('laserCharge', 0.8, 0.7);
       }
     } else if (d.state === 'telegraph') {
-      d.vx *= 0.8;
-      d.vy *= 0.8;
+      d.vx = damp(d.vx, 0.8);
+      d.vy = damp(d.vy, 0.8);
       if (d.stateT < GUNNER.telegraphMs - GUNNER.aimLockMs) d.aim = aimAt(d, w);
       const t = d.stateT / GUNNER.telegraphMs;
       const locked = d.stateT >= GUNNER.telegraphMs - GUNNER.aimLockMs;
@@ -228,8 +229,8 @@ export class GunnerBrain implements DroneBrain {
         d.setState('recover');
       }
     } else if (d.state === 'recover') {
-      d.vx *= 0.9;
-      d.vy *= 0.9;
+      d.vx = damp(d.vx, 0.9);
+      d.vy = damp(d.vy, 0.9);
       if (d.stateT > 600) {
         d.setState('idle');
         d.nextActionAt = w.now + pace.rest(rand(GUNNER.fireIntervalMs));

@@ -3,6 +3,7 @@ import { DEPTH, GAME_HEIGHT, GAME_MAX_WIDTH as W, TILE } from '../../config/cons
 import { lerpColor, PALETTE } from '../../config/palette';
 import type { SkyKey } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
+import { approach } from '../../systems/Pacing';
 
 interface Layer {
   sprite: Phaser.GameObjects.TileSprite;
@@ -93,7 +94,7 @@ export class HighwayBackdrop {
 
   update(camera: Phaser.Cameras.Scene2D.Camera, _dtMs: number): void {
     const target = this.override ?? timeOfDayAt(this.keys, camera.worldView.centerX / TILE);
-    this.t += (target - this.t) * 0.08;
+    this.t = approach(this.t, target, 0.08);
     const t = this.t;
     const sx = camera.scrollX + this.travel;
     const sy = camera.scrollY;

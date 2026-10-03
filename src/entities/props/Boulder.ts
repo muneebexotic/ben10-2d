@@ -6,6 +6,7 @@ import { TEX } from '../../scenes/preload/assetKeys';
 import type { Fx } from '../../systems/Fx';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Liftable, Rect } from '../types';
+import { chance } from '../../systems/Pacing';
 
 const W = 18;
 const H = 16;
@@ -63,7 +64,7 @@ export class Boulder implements Liftable {
   fly(x: number, y: number, angle: number): void {
     this.state = 'thrown';
     this.image.setPosition(x, y).setRotation(angle);
-    if (Math.random() < 0.5) this.fx.trail('dust', x, y);
+    if (chance(0.5)) this.fx.trail('dust', x, y);
   }
 
   shatter(x: number, y: number): void {

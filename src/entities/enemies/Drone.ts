@@ -12,6 +12,7 @@ import type { Telegraphs } from './Telegraphs';
 import { pace } from '../../systems/Difficulty';
 import { COMBAT } from '../../config/combat';
 import { SlimeStatus } from './slime';
+import { chance } from '../../systems/Pacing';
 
 export interface DroneWorld {
   now: number;
@@ -252,7 +253,7 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.flashLeft = Math.max(0, this.flashLeft - dtMs);
     this.render(w.now);
     w.lighting.add(this.x, this.y, 30, this.brain.organic?.glow ?? PALETTE.enemy, this.downed ? 0.4 : 0.8);
-    if (this.slime.slowed && Math.random() < 0.08) w.fx.burst('slime', this.x + (Math.random() - 0.5) * 8, this.y + 4, 1);
+    if (this.slime.slowed && chance(0.08)) w.fx.burst('slime', this.x + (Math.random() - 0.5) * 8, this.y + 4, 1);
   }
 
   private updateDowned(dtMs: number, dt: number): void {
@@ -270,7 +271,7 @@ export class Drone implements Damageable, Hazard, Liftable {
         w.fx.burst('spark', this.x, this.y, 6);
         playSfx('land', 0.9, 0.7);
       }
-    } else if (Math.random() < 0.1) {
+    } else if (chance(0.1)) {
       w.fx.burst('spark', this.x + (Math.random() - 0.5) * 10, this.y - 4, 2);
     }
     this.downedLeft -= dtMs;
@@ -340,7 +341,7 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.x = x;
     this.y = bottomY - this.brain.body.height / 2;
     this.sprite.setFlipX(facing < 0);
-    if (Math.random() < 0.08) this.world.fx.burst('spark', x, this.y, 2);
+    if (chance(0.08)) this.world.fx.burst('spark', x, this.y, 2);
   }
 
   fly(x: number, y: number, angle: number): void {
@@ -348,8 +349,8 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.x = x;
     this.y = y;
     this.sprite.setRotation(angle);
-    if (Math.random() < 0.6) this.world.fx.trail('smoke', x, y);
-    this.world.fx.trail('spark', x, y);
+    if (chance(0.6)) this.world.fx.trail('smoke', x, y);
+    this.world.fx.stream('spark', x, y);
   }
 
   shatter(x: number, y: number): void {

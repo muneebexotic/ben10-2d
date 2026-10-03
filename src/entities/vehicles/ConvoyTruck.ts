@@ -10,6 +10,7 @@ import type { Projectile } from '../Projectiles';
 import type { Damageable, Hit, HitResult, Liftable, Rect } from '../types';
 import { crunch, engineRev, horn, wreck as wreckSound } from './audio';
 import type { ChaseWorld } from './chaseWorld';
+import { chance } from '../../systems/Pacing';
 
 export type TruckState = 'approach' | 'tail' | 'rev' | 'ram' | 'clamped' | 'dropBack' | 'held' | 'thrown' | 'wreck' | 'gone';
 
@@ -178,7 +179,7 @@ export class ConvoyTruck implements Damageable, Liftable {
     this.nose -= 14 * dt;
     const k = 1 - Math.max(0, this.stateLeft) / C.revMs;
     this.drawRamZone(k);
-    if (Math.random() < 0.6) this.w.fx.trail('fire', this.nose - 44, this.roadY - 44);
+    if (chance(0.6)) this.w.fx.trail('fire', this.nose - 44, this.roadY - 44);
     if (this.stateLeft <= 0) {
       this.enter('ram');
       playSfx('dive', 0.6, 0.6);
@@ -203,7 +204,7 @@ export class ConvoyTruck implements Damageable, Liftable {
   private updateClamped(): void {
     this.nose = this.hookedNose;
     const { fx, rv } = this.w;
-    if (Math.random() < 0.25) fx.burst('spark', rv.rearX + Math.random() * 6, rv.roofY + 4 + Math.random() * 10, 1);
+    if (chance(0.25)) fx.burst('spark', rv.rearX + Math.random() * 6, rv.roofY + 4 + Math.random() * 10, 1);
     if (!Number.isFinite(this.stateLeft)) return;
     // The yank: same telegraph as the ram.
     if (this.stateLeft <= C.revMs) {
@@ -366,8 +367,8 @@ export class ConvoyTruck implements Damageable, Liftable {
   fly(x: number, y: number, angle: number): void {
     this.state = 'thrown';
     this.sprite.setPosition(x, y).setRotation(angle);
-    this.w.fx.trail('smoke', x, y);
-    if (Math.random() < 0.5) this.w.fx.trail('spark', x, y);
+    this.w.fx.stream('smoke', x, y);
+    if (chance(0.5)) this.w.fx.trail('spark', x, y);
   }
 
   shatter(x: number, y: number): void {

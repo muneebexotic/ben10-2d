@@ -5,6 +5,7 @@ import type { Rect } from '../../entities/types';
 import type { AbilityContext, FormAbilities } from '../types';
 import { XLR8_COLORS as C } from './art';
 import { WindLoop, dashSlash, dashWhoosh, kickHit, strikeHit, strikeWhiff, tooSlow, waterStep } from './audio';
+import { chance } from '../../systems/Pacing';
 
 const S = XLR8.strike;
 const D = XLR8.dash;
@@ -85,8 +86,8 @@ export class Xlr8Abilities implements FormAbilities {
       this.dashLeft -= dt;
       player.setVelocity(this.dashVx, this.dashVy);
       this.sweep(ctx);
-      player.afterimage(C.blue, 0.55, 200);
-      ctx.fx.speedLine(player.x - this.dashDir * 4, player.y - 4 - Math.random() * 20, this.dashDir, C.light);
+      if (chance(1)) player.afterimage(C.blue, 0.55, 200);
+      if (chance(1)) ctx.fx.speedLine(player.x - this.dashDir * 4, player.y - 4 - Math.random() * 20, this.dashDir, C.light);
       if (this.dashLeft <= 0) this.endDash(ctx);
       return;
     }
@@ -261,9 +262,9 @@ export class Xlr8Abilities implements FormAbilities {
     }
     if (!player.grounded) return;
     if (player.onWater) {
-      fx.trail('splash', player.x - dir * 6, player.y - 1, 2);
-      if (Math.random() < 0.3) fx.ring(player.x - dir * 10, player.y, C.light, 10, 260);
-    } else if (Math.random() < 0.3) {
+      fx.stream('splash', player.x - dir * 6, player.y - 1, 2);
+      if (chance(0.3)) fx.ring(player.x - dir * 10, player.y, C.light, 10, 260);
+    } else if (chance(0.3)) {
       fx.trail('dust', player.x - dir * 6, player.y - 1);
     }
   }

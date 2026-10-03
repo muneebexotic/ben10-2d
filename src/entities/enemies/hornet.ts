@@ -6,6 +6,7 @@ import { blinkOn } from '../../systems/Accessibility';
 import type { Drone, DroneBrain, DroneWorld } from './Drone';
 import { aimAt, canShoot, rand, steer } from './brainKit';
 import { pace } from '../../systems/Difficulty';
+import { damp } from '../../systems/Pacing';
 
 const H = HORNET;
 const DEG = Math.PI / 180;
@@ -59,8 +60,8 @@ export class HornetBrain implements DroneBrain {
         break;
       }
       case 'telegraph': {
-        d.vx *= 0.8;
-        d.vy *= 0.8;
+        d.vx = damp(d.vx, 0.8);
+        d.vy = damp(d.vy, 0.8);
         if (d.stateT < H.telegraphMs - H.aimLockMs) d.aim = aimAt(d, w);
         const locked = d.stateT >= H.telegraphMs - H.aimLockMs;
         const alpha = locked ? 0.95 : blinkOn(d.stateT, 50) ? 0.6 : 0.25;
@@ -89,7 +90,7 @@ export class HornetBrain implements DroneBrain {
       case 'dash': {
         d.vx = Math.cos(d.aim) * H.dashSpeed;
         d.vy = Math.sin(d.aim) * H.dashSpeed;
-        w.fx.trail('red', d.x, d.y, 2);
+        w.fx.stream('red', d.x, d.y, 2);
         const hitWall = w.isSolid(d.x + Math.cos(d.aim) * 8, d.y + Math.sin(d.aim) * 8);
         if (hitWall || d.stateT > H.dashMs) {
           if (hitWall) {
@@ -102,8 +103,8 @@ export class HornetBrain implements DroneBrain {
         break;
       }
       case 'recover': {
-        d.vx *= 0.88;
-        d.vy *= 0.88;
+        d.vx = damp(d.vx, 0.88);
+        d.vy = damp(d.vy, 0.88);
         if (d.stateT > H.recoverMs) {
           d.setState('idle');
           d.nextActionAt = w.now + pace.rest(rand(H.attackIntervalMs));

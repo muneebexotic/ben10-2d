@@ -5,6 +5,7 @@ import { pace } from '../../../systems/Difficulty';
 import { rand } from '../brainKit';
 import type { Drone, DroneBrain, DroneWorld } from '../Drone';
 import { faceOf, notices, patrol, setFace, walkPhysics } from './kit';
+import { damp } from '../../../systems/Pacing';
 
 /**
  * Mutant rat: comes in packs. Scurries at Ben, crouches with a squeak (the
@@ -41,7 +42,7 @@ export class RatBrain implements DroneBrain {
         break;
       }
       case 'crouch':
-        d.vx *= 0.7;
+        d.vx = damp(d.vx, 0.7);
         if (d.stateT >= RAT.crouchMs) {
           const dir = faceOf(d);
           d.vx = dir * RAT.leapVx;
@@ -61,7 +62,7 @@ export class RatBrain implements DroneBrain {
         }
         break;
       case 'recover':
-        d.vx *= 0.8;
+        d.vx = damp(d.vx, 0.8);
         if (d.stateT > 300) {
           d.nextActionAt = w.now + pace.rest(rand(RAT.recoverMs));
           d.setState('chase');

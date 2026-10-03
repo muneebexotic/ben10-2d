@@ -7,6 +7,7 @@ import type { Fx } from '../../../systems/Fx';
 import { playSfx } from '../../../systems/audio/Sfx';
 import type { Damageable, Hazard, Hit, HitKind, HitResult, Rect } from '../../types';
 import { tireMultiplier } from './rules';
+import { chance } from '../../../systems/Pacing';
 
 /** What the parts need from the boss they're bolted to. */
 export interface PartOwner {
@@ -288,7 +289,7 @@ export class RbSaw implements Damageable, Hazard {
     }
     this.sprite.setPosition(Math.round(this.x), Math.round(this.y));
     this.sprite.rotation += (this.vx / r) * dt;
-    if (Math.random() < 0.6) this.fx.trail('spark', this.x - Math.sign(this.vx) * r, this.bounds.floorY - 1);
+    if (chance(0.6)) this.fx.trail('spark', this.x - Math.sign(this.vx) * r, this.bounds.floorY - 1);
   }
 
   burst(): void {

@@ -9,6 +9,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { Telegraphs } from '../enemies/Telegraphs';
 import type { Hazard, Rect } from '../types';
 import { blinkOn } from '../../systems/Accessibility';
+import { chance } from '../../systems/Pacing';
 
 /** Ground shockwave from a slam. Jump over it. */
 class Shockwave implements Hazard {
@@ -151,7 +152,7 @@ export class BossHazards {
       s.x += s.dir * BOSS.slam.shockwaveSpeed * dt;
       s.life -= dtMs;
       s.sprite.setPosition(s.x, this.floorY);
-      if (Math.random() < 0.5) this.fx.trail('red', s.x, this.floorY - 4);
+      if (chance(0.5)) this.fx.trail('red', s.x, this.floorY - 4);
       this.lighting.add(s.x, this.floorY - 6, 40, PALETTE.enemy, 0.9);
       if (s.life <= 0) {
         s.active = false;
@@ -164,7 +165,7 @@ export class BossHazards {
       const b = this.beam;
       const flick = 0.85 + Math.random() * 0.15;
       this.beamSprite.setAlpha(flick).setDisplaySize(Math.abs(b.x1 - b.x0), (BOSS.beam.height + 8) * (0.9 + Math.random() * 0.2));
-      for (let i = 0; i < 3; i++) this.fx.trail('red', Math.min(b.x0, b.x1) + Math.random() * Math.abs(b.x1 - b.x0), b.y);
+      for (let i = 0; i < 3; i++) if (chance(1)) this.fx.trail('red', Math.min(b.x0, b.x1) + Math.random() * Math.abs(b.x1 - b.x0), b.y);
       for (let x = Math.min(b.x0, b.x1); x < Math.max(b.x0, b.x1); x += 90) this.lighting.add(x, b.y, 80, PALETTE.enemy, 1);
       if (this.beamLeft <= 0) {
         b.active = false;

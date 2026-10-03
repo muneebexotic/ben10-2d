@@ -8,6 +8,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { Damageable, Hazard, Hit, HitResult, Liftable, Rect } from '../types';
 import { boing, clang } from './audio';
 import type { ChaseWorld } from './chaseWorld';
+import { chance } from '../../systems/Pacing';
 
 export type JunkKind = 'tire' | 'barrel';
 type JunkState = 'warn' | 'flying' | 'rolling' | 'falling' | 'held' | 'thrown' | 'gone';
@@ -121,7 +122,7 @@ export class RoadJunk implements Damageable, Hazard, Liftable {
         this.w.fx.burst('dust', this.x, rv.roofY, 3);
       } else {
         this.vy = 0;
-        if (Math.random() < 0.2) this.w.fx.trail('spark', this.x, rv.roofY);
+        if (chance(0.2)) this.w.fx.trail('spark', this.x, rv.roofY);
       }
     }
     // Off the back: it drops onto the road and is left behind.
@@ -252,7 +253,7 @@ export class RoadJunk implements Damageable, Hazard, Liftable {
     this.x = x;
     this.y = y;
     this.sprite.setPosition(x, y).setRotation(angle);
-    this.w.fx.trail('smoke', x, y);
+    this.w.fx.stream('smoke', x, y);
   }
 
   shatter(x: number, y: number): void {

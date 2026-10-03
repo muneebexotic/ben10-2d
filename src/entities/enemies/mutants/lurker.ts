@@ -8,6 +8,7 @@ import type { Hit } from '../../types';
 import { rand } from '../brainKit';
 import type { Drone, DroneBrain, DroneWorld } from '../Drone';
 import { faceOf, setFace, walkPhysics } from './kit';
+import { chance, damp, approach } from '../../../systems/Pacing';
 
 /**
  * Should a hidden lurker show? Pure, so the rules are unit tested: Wildmutt's
@@ -45,7 +46,7 @@ export class LurkerBrain implements DroneBrain {
     this.visible = lurkerVisible(dist, p.senseRadius, d.slime.slowed, d.memo.revealUntil ?? 0, w.now, d.state === 'aim');
     switch (d.state) {
       case 'idle':
-        d.vx *= 0.8;
+        d.vx = damp(d.vx, 0.8);
         if (w.aggressive && !p.dead && dist < LURKER.range && w.now >= d.nextActionAt && d.stunLeft <= 0 && w.onScreen(d.x, d.y, 0)) {
           setFace(d, p.x - d.x);
           d.setState('aim');
@@ -68,7 +69,7 @@ export class LurkerBrain implements DroneBrain {
         break;
     }
     // A wanted-poster shimmer where it sits: hidden, but never completely.
-    if (!this.visible && Math.random() < 0.02) w.fx.burst('sense', d.x + (Math.random() - 0.5) * 12, d.y, 1);
+    if (!this.visible && chance(0.02)) w.fx.burst('sense', d.x + (Math.random() - 0.5) * 12, d.y, 1);
   }
 
   private spit(d: Drone, w: DroneWorld): void {
@@ -116,7 +117,7 @@ export class LurkerBrain implements DroneBrain {
     d.sprite.setFlipX(faceOf(d) < 0);
     // Fade in and out rather than pop.
     const target = this.visible || d.downed ? 1 : LURKER.hiddenAlpha;
-    this.shown += (target - this.shown) * 0.2;
+    this.shown = approach(this.shown, target, 0.2);
     d.sprite.setAlpha(this.shown);
     if (d.state === 'aim') {
       const glint = blinkOn(d.stateT, 90);

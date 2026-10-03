@@ -107,6 +107,8 @@ export interface CombatApi {
 export interface FxApi {
   burst(kind: BurstKind, x: number, y: number, count: number): void;
   trail(kind: BurstKind, x: number, y: number, count?: number): void;
+  /** For trails emitted every frame: `count` per 60 Hz frame, the same per second at any refresh rate. */
+  stream(kind: BurstKind, x: number, y: number, count?: number): void;
   ring(x: number, y: number, color: number, radius: number, durationMs: number): void;
   flash(x: number, y: number, color: number, radius: number, durationMs: number): void;
   rays(x: number, y: number, color: number, radius: number, durationMs: number): void;

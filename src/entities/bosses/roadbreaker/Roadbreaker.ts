@@ -13,6 +13,7 @@ import type { BossWorld } from '../HunterDrone';
 import { RbPlate, RbSaw, RbTire, type PartOwner } from './parts';
 import { RB_ATTACKS, newRbAttack, type RbAttackKind, type RbAttackState } from './rbAttacks';
 import { coreMultiplier, isFire } from './rules';
+import { chance, approach, perFrame } from '../../../systems/Pacing';
 
 type Mode = 'truck' | 'robot';
 type RbState = 'intro' | 'idle' | 'attack' | 'stalled' | 'held' | 'thrown' | 'transform' | 'seized' | 'dying' | 'dead';
@@ -361,8 +362,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
     this.enter('thrown');
     this.x = this.clampX(x);
     this.truck.setOrigin(0.5, 0.5).setPosition(this.x, y).setRotation(angle);
-    this.w.fx.trail('smoke', this.x, y);
-    this.w.fx.trail('spark', this.x, y);
+    this.w.fx.stream('smoke', this.x, y);
+    this.w.fx.stream('spark', this.x, y);
   }
 
   /** It comes down on its roof: a huge hit, then it rights itself (or stands up as a robot). */
@@ -549,8 +550,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
 
   private updateStalled(dtMs: number): void {
     this.stallLeft -= dtMs;
-    if (Math.random() < 0.3) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 60, this.floorY - 40);
-    if (Math.random() < 0.15) this.w.fx.burst('spark', this.x + (Math.random() - 0.5) * 80, this.floorY - 20, 2);
+    if (chance(0.3)) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 60, this.floorY - 40);
+    if (chance(0.15)) this.w.fx.burst('spark', this.x + (Math.random() - 0.5) * 80, this.floorY - 20, 2);
     if (this.stallLeft > 0 || this.pendingTransform) return;
     this.flipped = false;
     // Fresh tires bolt on and it's back in business.
@@ -577,7 +578,7 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
   private updateVent(dtMs: number): void {
     if (!this.ventOpen) return;
     this.ventLeft -= dtMs;
-    if (Math.random() < 0.35) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 20, this.torsoTop + 46);
+    if (chance(0.35)) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 20, this.torsoTop + 46);
     if (this.ventLeft <= 0) {
       this.ventOpen = false;
       this.heat = 0;
@@ -602,10 +603,10 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
 
   private updateSeized(dtMs: number): void {
     const T = pace.punish(RB.robot.vent.seizeMs);
-    this.crouch += (20 - this.crouch) * 0.15;
-    this.armAngle += (20 - this.armAngle) * 0.1;
-    if (Math.random() < 0.4) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 50, this.torsoTop + 10);
-    if (Math.random() < 0.2) this.w.fx.burst('spark', this.x + (Math.random() - 0.5) * 60, this.torsoTop + 30, 2);
+    this.crouch = approach(this.crouch, 20, 0.15);
+    this.armAngle = approach(this.armAngle, 20, 0.1);
+    if (chance(0.4)) this.w.fx.trail('smoke', this.x + (Math.random() - 0.5) * 50, this.torsoTop + 10);
+    if (chance(0.2)) this.w.fx.burst('spark', this.x + (Math.random() - 0.5) * 60, this.torsoTop + 30, 2);
     void dtMs;
     if (this.stateT >= T) this.enter('idle');
   }
@@ -639,9 +640,9 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
     const cx = (this.w.arena.left + this.w.arena.right) / 2;
     if (t < 700) {
       // Skids to the middle of the lot.
-      this.x += (cx - this.x) * 0.06;
+      this.x = approach(this.x, cx, 0.06);
       this.shake = 2;
-      if (Math.random() < 0.5) fx.burst('dust', this.x, this.floorY - 2, 2);
+      if (chance(0.5)) fx.burst('dust', this.x, this.floorY - 2, 2);
     } else if (t < 1200) {
       // Rears up on its back wheels.
       this.spin = -this.facing * 1.1 * ((t - 700) / 500);
@@ -702,7 +703,7 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
 
   private updateDying(dtMs: number): void {
     this.shake = 4;
-    if (this.mode === 'robot') this.crouch = Math.min(26, this.crouch + 0.5);
+    if (this.mode === 'robot') this.crouch = Math.min(26, this.crouch + perFrame(0.5));
     this.explodeTimer -= dtMs;
     const top = this.mode === 'robot' ? this.torsoTop : this.floorY - 56;
     if (this.explodeTimer <= 0) {

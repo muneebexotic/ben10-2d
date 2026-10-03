@@ -17,6 +17,7 @@ export function createFxApi(fx: Fx, lighting: Lighting, hooks?: FxHooks): FxApi 
   return {
     burst: (k, x, y, n) => fx.burst(k, x, y, n),
     trail: (k, x, y, n) => fx.trail(k, x, y, n),
+    stream: (k, x, y, n) => fx.stream(k, x, y, n),
     ring: (x, y, c, r, ms) => fx.ring(x, y, c, r, ms),
     flash: (x, y, c, r, ms) => fx.flash(x, y, c, r, ms),
     rays: (x, y, c, r, ms) => fx.rays(x, y, c, r, ms),

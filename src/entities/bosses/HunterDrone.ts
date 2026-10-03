@@ -17,6 +17,7 @@ import { ATTACKS, newAttack, type AttackKind, type AttackState } from './bossAtt
 import type { BossHazards } from './BossHazards';
 import { blinkOn } from '../../systems/Accessibility';
 import { activeDifficulty, pace } from '../../systems/Difficulty';
+import { chance } from '../../systems/Pacing';
 
 export interface BossWorld {
   readonly now: number;
@@ -395,6 +396,6 @@ export class HunterDrone implements ArenaBoss {
     const eyeColor = this.eye === 'vulnerable' ? PALETTE.fire1 : PALETTE.enemy;
     this.w.lighting.add(x, y - 2, this.eye === 'charge' ? 110 : 80, eyeColor, 1);
     this.w.lighting.add(x, y + 34, 70, PALETTE.enemy, 0.8);
-    if (this.phase === 1 && Math.random() < 0.2) this.w.fx.trail('smoke', x + (Math.random() - 0.5) * 60, y - 10);
+    if (this.phase === 1 && chance(0.2)) this.w.fx.trail('smoke', x + (Math.random() - 0.5) * 60, y - 10);
   }
 }

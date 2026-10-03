@@ -144,7 +144,7 @@ export class FourArmsAbilities implements FormAbilities {
         break;
       case 'meteor':
         ctx.player.setVelocity(0, ME.speed);
-        ctx.fx.trail('dust', ctx.player.x + (Math.random() - 0.5) * 12, ctx.player.y - 30);
+        ctx.fx.stream('dust', ctx.player.x + (Math.random() - 0.5) * 12, ctx.player.y - 30);
         if (t > 2500) this.action = 'none';
         break;
       case 'lift': {

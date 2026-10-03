@@ -5,6 +5,7 @@ import { TEX } from '../../scenes/preload/assetKeys';
 import type { Fx } from '../../systems/Fx';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Rect } from '../types';
+import { chance } from '../../systems/Pacing';
 
 /**
  * A secret passage that looks exactly like the stone around it. A form that
@@ -57,7 +58,7 @@ export class HiddenDoor {
     const k = Math.min(1, this.sensedMs / 500);
     this.outline.lineStyle(2, 0xffb070, 0.4 + 0.5 * k * (0.7 + Math.sin(this.sensedMs * 0.02) * 0.3));
     this.outline.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
-    if (Math.random() < 0.2) this.fx.burst('sense', r.x + Math.random() * r.w, r.y + Math.random() * r.h, 1);
+    if (chance(0.2)) this.fx.burst('sense', r.x + Math.random() * r.w, r.y + Math.random() * r.h, 1);
     if (this.sensedMs < 700) return false;
     this.openNow();
     return true;

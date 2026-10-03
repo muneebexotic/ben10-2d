@@ -8,6 +8,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { Damageable, Hit, HitKind, HitResult, Rect } from '../types';
 import { bullseye, horn } from './audio';
 import type { ChaseWorld } from './chaseWorld';
+import { chance } from '../../systems/Pacing';
 
 const H = CHASE.hauler;
 type HaulerState = 'enter' | 'cruise' | 'crash' | 'gone';
@@ -106,8 +107,8 @@ export class Hauler implements Damageable {
     const k = this.crashT / H.crashMs;
     this.rearX += (90 + 520 * k * k) * dt;
     this.swerve = Math.sin(this.crashT * 0.018) * (4 + 14 * k);
-    if (Math.random() < 0.7) this.w.fx.burst('spark', this.rearX + 20 + Math.random() * 200, this.roadY - 2, 2);
-    if (Math.random() < 0.4) this.w.fx.trail('smoke', this.rearX + 100, this.roadY - 50);
+    if (chance(0.7)) this.w.fx.burst('spark', this.rearX + 20 + Math.random() * 200, this.roadY - 2, 2);
+    if (chance(0.4)) this.w.fx.trail('smoke', this.rearX + 100, this.roadY - 50);
     if (this.crashT >= H.crashMs) {
       this.state = 'gone';
       this.cab.setVisible(false);

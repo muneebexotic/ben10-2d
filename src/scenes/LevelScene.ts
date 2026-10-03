@@ -26,6 +26,8 @@ import { EventBus } from '../systems/EventBus';
 import { Fx } from '../systems/Fx';
 import { InputMap } from '../systems/InputMap';
 import { DEV_TOOLS, launchParams } from '../systems/LaunchParams';
+import { setFrameLength } from '../systems/Pacing';
+import { installReferenceIntegration } from '../systems/ReferenceIntegration';
 import { Lighting } from '../systems/Lighting';
 import { cloneRunStats, createRunStats, type RunStats } from '../systems/RunStats';
 import { TimeController } from '../systems/TimeController';
@@ -236,6 +238,7 @@ export class LevelScene extends Phaser.Scene {
     this.world = new LevelWorld(this, this.level);
     this.physics.world.setBounds(0, 0, this.world.widthPx, this.world.heightPx + PHYSICS.worldBottomPadding);
     this.physics.world.checkCollision.down = false;
+    installReferenceIntegration(this.physics.world);
     this.cameras.main.setBounds(0, 0, this.world.widthPx, this.world.heightPx);
     this.cameras.main.setBackgroundColor(PALETTE.sky0);
     this.vignette = this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f) ?? null;
@@ -715,6 +718,7 @@ export class LevelScene extends Phaser.Scene {
   override update(time: number, delta: number): void {
     if (quality.sample(delta)) this.onQualityChanged();
     const realDt = Math.min(delta, PHYSICS.maxFrameMs);
+    setFrameLength(realDt);
     const controls = this.inputMap.read();
 
     // During cinematics the pause button skips instead.

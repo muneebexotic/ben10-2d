@@ -4,6 +4,7 @@ import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
 import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
+import { chance } from '../../systems/Pacing';
 
 export type PickupKind = 'smoothy' | 'card';
 
@@ -42,7 +43,7 @@ export class Pickup {
       const spin = Math.cos(t * 2.4);
       this.sprite.setScale(Math.max(0.1, Math.abs(spin)), 1);
       this.sprite.setFrame(spin >= 0 ? 0 : 1);
-      if (Math.random() < 0.06) fx.trail('gold', this.x + (Math.random() - 0.5) * 14, y + (Math.random() - 0.5) * 16);
+      if (chance(0.06)) fx.trail('gold', this.x + (Math.random() - 0.5) * 14, y + (Math.random() - 0.5) * 16);
       lighting.add(this.x, y, 46, PALETTE.gold, 0.7 + Math.sin(t * 5) * 0.2);
     } else {
       lighting.add(this.x, y, 36, 0xff8fc8, 0.6);

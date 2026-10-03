@@ -7,6 +7,7 @@ import type { Hit } from '../../types';
 import { rand } from '../brainKit';
 import type { Drone, DroneBrain, DroneWorld } from '../Drone';
 import { faceOf, notices, patrol, setFace, walkPhysics } from './kit';
+import { chance, damp } from '../../../systems/Pacing';
 
 /**
  * Does a hit get past the brute's tusks? Its front shrugs off everything but a
@@ -65,7 +66,7 @@ export class BruteBrain implements DroneBrain {
         break;
       case 'charge':
         d.vx = faceOf(d) * BRUTE.chargeSpeed;
-        if (Math.random() < 0.6) w.fx.burst('dust', d.x - faceOf(d) * 14, d.y + BRUTE.body.height / 2, 2);
+        if (chance(0.6)) w.fx.burst('dust', d.x - faceOf(d) * 14, d.y + BRUTE.body.height / 2, 2);
         if (Math.floor(d.stateT / 260) !== Math.floor((d.stateT - dtMs) / 260)) w.fx.shake(0.003, 80);
         if (f.wall) {
           // Head first into a wall: out cold.
@@ -84,8 +85,8 @@ export class BruteBrain implements DroneBrain {
         }
         break;
       case 'skid':
-        d.vx *= 0.88;
-        if (Math.random() < 0.5) w.fx.burst('dust', d.x + faceOf(d) * 12, d.y + BRUTE.body.height / 2, 2);
+        d.vx = damp(d.vx, 0.88);
+        if (chance(0.5)) w.fx.burst('dust', d.x + faceOf(d) * 12, d.y + BRUTE.body.height / 2, 2);
         if (d.stateT >= BRUTE.skidMs) {
           d.nextActionAt = w.now + pace.rest(rand(BRUTE.restMs));
           d.setState('idle');
