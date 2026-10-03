@@ -27,6 +27,7 @@ import { Fx } from '../systems/Fx';
 import { InputMap } from '../systems/InputMap';
 import { DEV_TOOLS, launchParams } from '../systems/LaunchParams';
 import { setFrameLength } from '../systems/Pacing';
+import { frameStats } from '../systems/FrameStats';
 import { installReferenceIntegration } from '../systems/ReferenceIntegration';
 import { Lighting } from '../systems/Lighting';
 import { cloneRunStats, createRunStats, type RunStats } from '../systems/RunStats';
@@ -180,6 +181,7 @@ export class LevelScene extends Phaser.Scene {
   /** Kills per alien this run (advanced tips appear after a few). */
   private readonly alienKills = new Map<string, number>();
   private debugText: Phaser.GameObjects.BitmapText | null = null;
+  private debugRefreshIn = 0;
   private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
   private vignette: Phaser.Filters.Vignette | null = null;
   private desaturate: Phaser.Filters.ColorMatrix | null = null;
@@ -356,6 +358,8 @@ export class LevelScene extends Phaser.Scene {
     if (launchParams().debug) {
       this.physics.world.createDebugGraphic();
       this.debugText = pixelText(this, 4, 40, '', { color: PALETTE.omnitrix, scrollFactor: 0, depth: 999 });
+      frameStats(this.game);
+      this.debugRefreshIn = 0;
     }
     if (DEV_TOOLS) (window as unknown as { __level: LevelScene }).__level = this;
   }
@@ -797,7 +801,7 @@ export class LevelScene extends Phaser.Scene {
       this.tutorial.update(realDt, this.player.x, this.player.isAlien, ready, this.player.form.id);
     }
     this.updateLighting(realDt);
-    this.debug();
+    this.debug(realDt);
   }
 
   private updateLighting(realDt: number): void {
@@ -1332,11 +1336,15 @@ export class LevelScene extends Phaser.Scene {
     this.tweens.add({ targets: t, y: y - 22, alpha: 0, duration: 900, ease: 'Quad.easeOut', onComplete: () => t.destroy() });
   }
 
-  private debug(): void {
+  /** ?debug=1 readout, refreshed four times a second (so it doesn't cost what it measures). */
+  private debug(realDt: number): void {
     if (!this.debugText) return;
+    this.debugRefreshIn -= realDt;
+    if (this.debugRefreshIn > 0) return;
+    this.debugRefreshIn = 250;
     const p = this.player;
     this.debugText.setText(
-      `X ${Math.round(p.x / TILE)} Y ${Math.round(p.y / TILE)} VX ${Math.round(p.vx)} VY ${Math.round(p.vy)} G ${p.grounded} FPS ${Math.round(this.game.loop.actualFps)} Q${quality.level}\nOMNI ${this.omni.omnitrix.state} ${Math.round(this.omni.omnitrix.timeRemainingMs / 100) / 10} DRONES ${this.drones.filter((d) => d.alive).length}`,
+      `X ${Math.round(p.x / TILE)} Y ${Math.round(p.y / TILE)} VX ${Math.round(p.vx)} VY ${Math.round(p.vy)} G ${p.grounded} Q${quality.level}\n${frameStats(this.game).summary()}\nOMNI ${this.omni.omnitrix.state} ${Math.round(this.omni.omnitrix.timeRemainingMs / 100) / 10} DRONES ${this.drones.filter((d) => d.alive).length}`,
     );
   }
 
