@@ -25,7 +25,7 @@ import { ComboCounter } from '../systems/Combo';
 import { EventBus } from '../systems/EventBus';
 import { Fx } from '../systems/Fx';
 import { InputMap } from '../systems/InputMap';
-import { launchParams } from '../systems/LaunchParams';
+import { DEV_TOOLS, launchParams } from '../systems/LaunchParams';
 import { Lighting } from '../systems/Lighting';
 import { cloneRunStats, createRunStats, type RunStats } from '../systems/RunStats';
 import { TimeController } from '../systems/TimeController';
@@ -354,7 +354,7 @@ export class LevelScene extends Phaser.Scene {
       this.physics.world.createDebugGraphic();
       this.debugText = pixelText(this, 4, 40, '', { color: PALETTE.omnitrix, scrollFactor: 0, depth: 999 });
     }
-    if (import.meta.env.DEV) (window as unknown as { __level: LevelScene }).__level = this;
+    if (DEV_TOOLS) (window as unknown as { __level: LevelScene }).__level = this;
   }
 
   // ------------------------------------------------------------ Setup helpers

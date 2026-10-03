@@ -4,6 +4,10 @@
  * ?training=1 (straight into Omnitrix Training), ?level=ch2 (which chapter ?start= and a direct start play).
  * Dev builds only: ?at=<tile x> spawns Ben anywhere, ?god=1 makes him invulnerable.
  */
+
+/** Dev builds and the benchmark build (`vite build --mode bench`) expose playtest hooks; release builds strip them. */
+export const DEV_TOOLS = import.meta.env.DEV || import.meta.env.MODE === 'bench';
+
 export interface LaunchParams {
   start: string | null;
   gallery: boolean;
@@ -26,7 +30,7 @@ export function launchParams(): LaunchParams {
     search = '';
   }
   const q = new URLSearchParams(search);
-  const dev = import.meta.env.DEV;
+  const dev = DEV_TOOLS;
   const at = dev && q.has('at') ? Number(q.get('at')) : null;
   return {
     start: q.get('start') ?? (at !== null && Number.isFinite(at) ? `@${at}` : null),

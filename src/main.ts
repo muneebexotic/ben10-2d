@@ -18,6 +18,9 @@ import { DifficultyScene } from './scenes/DifficultyScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { applySavedSettings } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
+import { DEV_TOOLS } from './systems/LaunchParams';
+import { trainingOptions } from './systems/TrainingState';
+import { EventBus } from './systems/EventBus';
 
 applySavedSettings();
 
@@ -44,6 +47,6 @@ const game = new Phaser.Game(
 
 installDeviceGuards(game);
 
-if (import.meta.env.DEV) {
-  (window as unknown as { __game: Phaser.Game }).__game = game;
+if (DEV_TOOLS) {
+  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus });
 }

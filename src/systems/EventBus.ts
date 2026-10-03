@@ -29,6 +29,13 @@ class TypedEventBus {
     return this;
   }
 
+  /** Every live listener across all events (leak checks: it must not grow as scenes come and go). */
+  listenerTotal(): number {
+    let n = 0;
+    for (const name of this.emitter.eventNames()) n += this.emitter.listenerCount(name);
+    return n;
+  }
+
   /** Removes every listener registered with the given context (call from a scene's shutdown). */
   offContext(context: unknown): void {
     for (const name of this.emitter.eventNames()) {
