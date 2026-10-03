@@ -249,6 +249,7 @@ export class LevelScene extends Phaser.Scene {
           this.bumpCombo(n);
         },
         onThrowLanded: (hits, x, y) => this.onThrowLanded(hits, x, y),
+        onGasIgnite: (x, y, radius, hits) => this.onGasIgnite(x, y, radius, hits),
       },
       { isSolid: (x, y) => this.world.isSolid(x, y) },
     );
@@ -930,6 +931,15 @@ export class LevelScene extends Phaser.Scene {
     this.fx.burst('gold', x, y, 30);
     playSfx('strike');
     EventBus.emit('hud:strike', { hits });
+  }
+
+  /** Fire met one of Stinkfly's stink clouds: it goes up in a fireball. */
+  private onGasIgnite(x: number, y: number, radius: number, hits: number): void {
+    this.fx.explosion(x, y, hits >= 2 ? 'big' : 'medium');
+    this.fx.ring(x, y, PALETTE.fire1, radius, 420, 0.8);
+    this.fx.hitStop(hits > 0 ? 70 : 30);
+    this.fx.popText(x, y - radius * 0.5, hits >= 2 ? 'KA-BOOM!' : 'FOOMP!', PALETTE.fire2, hits >= 2 ? 1.4 : 1);
+    playSfx('explode', 0.9, 0.8);
   }
 
   private bumpCombo(n: number): void {
