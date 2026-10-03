@@ -59,7 +59,8 @@ export type EntitySpawn =
   /** `requires` hides the card until that alien is on the dial (a reason to replay chapters). */
   | { type: 'card'; id: string; x: number; y: number; requires?: string }
   /** One tile wide, `h` tall, starting at row `y`. Only a smash hit (Four Arms) breaks it. `rebuildMs` (Training) makes it reform. */
-  | { type: 'crackedWall'; id: string; x: number; y: number; h: number; requires: string; rebuildMs?: number }
+  /** `opened`: what breaking it announces, when it isn't a secret vault (a lock on the way, say). */
+  | { type: 'crackedWall'; id: string; x: number; y: number; h: number; requires: string; rebuildMs?: number; opened?: { title: string; subtitle: string; line: string } }
   /** A boulder strong aliens can lift and throw. `y` is the surface it rests on. */
   | { type: 'boulder'; x: number; y: number }
   /** Training dummy: takes any hit, shows damage numbers, never breaks. */

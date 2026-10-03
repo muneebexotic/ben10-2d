@@ -233,7 +233,7 @@ export const CHAPTER_3: LevelData = {
     // ---- The security wing: five locks, one per alien
     { type: 'checkpoint', id: 'cp-lockdown', x: 269, y: 14, density: 'sparse', label: 'LOCKDOWN' },
     { type: 'vines', id: 'ch3-lock-vines', x: 280, y: 18, w: 2, h: 6 },
-    { type: 'crackedWall', id: 'ch3-lock-wall', x: 315, y: 21, h: 3, requires: 'fourarms' },
+    { type: 'crackedWall', id: 'ch3-lock-wall', x: 315, y: 21, h: 3, requires: 'fourarms', opened: { title: 'LOCK BUSTED!', subtitle: 'THREE DOWN, TWO TO GO', line: 'WHO NEEDS A KEY CARD?' } },
     // The whole vent hides behind it: it looks like more wall until Wildmutt sniffs it out.
     { type: 'hiddenDoor', id: 'ch3-lock-door', x: 325, y: 6, w: 21, h: 3 },
     { type: 'mutant', kind: 'roach', x: 320, y: 24 },

@@ -71,7 +71,8 @@ export const FROG = {
     trackMs: 1100,
     lockMs: 420,
     fallMs: 260,
-    damage: 3,
+    // As heavy as ROADBREAKER's biggest hits: the frog is harder through its hide and tempo, not one-shots.
+    damage: 2,
     dazedMs: 1300,
   },
   /** Slime globs on its feet: enough of them glue it down. */
