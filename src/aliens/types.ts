@@ -163,6 +163,8 @@ export interface FormAbilities {
   tryAirJump?(ctx: AbilityContext): boolean;
   onEnter?(ctx: AbilityContext): void;
   onExit?(ctx: AbilityContext): void;
+  /** The level is ending: stop held sounds and other resources, with no gameplay effects. */
+  dispose?(): void;
   /** `impact` is 0..1: landing speed as a fraction of the max fall speed. */
   onLand?(ctx: AbilityContext, impact: number): void;
   /** Each footstep while running on the ground. */

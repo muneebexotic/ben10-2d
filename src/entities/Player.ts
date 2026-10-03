@@ -452,6 +452,11 @@ export class Player implements PlayerHandle {
     return outcome;
   }
 
+  /** The level is ending: release the current form's held sounds (no gameplay effects). */
+  dispose(): void {
+    this.abilities.dispose?.();
+  }
+
   private die(): void {
     this.dead = true;
     this.abilities.onExit?.(this.ctx);

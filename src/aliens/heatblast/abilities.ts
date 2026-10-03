@@ -202,6 +202,10 @@ export class HeatblastAbilities implements FormAbilities {
     ctx.player.glow(PALETTE.fire0, 0);
   }
 
+  dispose(): void {
+    this.hum.stop();
+  }
+
   speedMultiplier(): number {
     return this.chargeMs >= 0 ? BURST.moveMultiplier : 1;
   }

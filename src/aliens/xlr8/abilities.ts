@@ -302,6 +302,10 @@ export class Xlr8Abilities implements FormAbilities {
     this.startDash(ctx, true);
   }
 
+  dispose(): void {
+    this.wind.stop();
+  }
+
   onExit(ctx: AbilityContext): void {
     this.wind.stop();
     if (this.dashKey) this.pending.push({ key: this.dashKey, at: 0, dir: this.dashDir, swap: this.swapDash, count: this.dashMarks, frozen: true });

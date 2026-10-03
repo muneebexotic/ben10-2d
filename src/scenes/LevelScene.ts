@@ -1342,6 +1342,7 @@ export class LevelScene extends Phaser.Scene {
 
   private shutdown(): void {
     this.flushPlayTime();
+    this.player?.dispose();
     this.misfireBeat?.cancel();
     this.intro?.destroy();
     this.arena?.destroy();
