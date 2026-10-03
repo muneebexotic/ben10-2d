@@ -109,7 +109,8 @@ export class TouchScene extends Phaser.Scene {
     this.buttons.jump.moveTo(w - B.jump.right, B.jump.y);
     this.buttons.attack.moveTo(w - B.attack.right, B.attack.y);
     this.buttons.special.moveTo(w - B.special.right, B.special.y);
-    this.buttons.pause.moveTo(w / 2, B.pause.y);
+    // Whole pixels: the baked ring then lands exactly where the drawn one did.
+    this.buttons.pause.moveTo(Math.round(w / 2), B.pause.y);
     this.dial.moveTo(w - B.omnitrix.right, B.omnitrix.y);
     this.releaseAll();
   }

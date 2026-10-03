@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { GAME_HEIGHT, GAME_MAX_WIDTH, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { pixelText } from './text';
 import { inputMode } from '../systems/InputMode';
+import { BakedGraphics } from './BakedGraphics';
 
 interface Prompt {
   id: string;
@@ -14,14 +15,15 @@ interface Prompt {
 export class PromptBar {
   private readonly prompts: Prompt[] = [];
   private readonly root: Phaser.GameObjects.Container;
-  private readonly bg: Phaser.GameObjects.Graphics;
+  private readonly bg: BakedGraphics;
   private readonly label: Phaser.GameObjects.BitmapText;
   private shownId = '';
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.bg = scene.add.graphics();
+    // Wide enough for the longest prompt on the widest view.
+    this.bg = new BakedGraphics(scene, -GAME_MAX_WIDTH / 2, -10, GAME_MAX_WIDTH, 20);
     this.label = pixelText(scene, 0, 0, '', { originX: 0.5, originY: 0.5, color: PALETTE.white });
-    this.root = scene.add.container(GAME_WIDTH / 2, GAME_HEIGHT - 52, [this.bg, this.label]).setVisible(false).setDepth(300);
+    this.root = scene.add.container(GAME_WIDTH / 2, GAME_HEIGHT - 52, [this.bg.image, this.label]).setVisible(false).setDepth(300);
   }
 
   add(id: string, text: string, priority = 1): void {
@@ -58,11 +60,12 @@ export class PromptBar {
     }
     this.label.setText(inputMode.format(top.text));
     const w = Math.ceil(this.label.width) + 18;
-    this.bg.clear();
-    this.bg.fillStyle(PALETTE.ink, 0.85);
-    this.bg.fillRoundedRect(-w / 2, -9, w, 18, 4);
-    this.bg.lineStyle(1, PALETTE.omnitrixDark, 1);
-    this.bg.strokeRoundedRect(-w / 2, -9, w, 18, 4);
+    this.bg.draw((g) => {
+      g.fillStyle(PALETTE.ink, 0.85);
+      g.fillRoundedRect(-w / 2, -9, w, 18, 4);
+      g.lineStyle(1, PALETTE.omnitrixDark, 1);
+      g.strokeRoundedRect(-w / 2, -9, w, 18, 4);
+    });
     if (top.id !== this.shownId) {
       this.root.setVisible(true).setScale(0.6).setAlpha(0);
       this.scene.tweens.add({ targets: this.root, scale: 1, alpha: 1, duration: 200, ease: 'Back.easeOut' });

@@ -7,6 +7,7 @@ import type { OmnitrixTick } from '../systems/events';
 import { pixelText } from './text';
 import { blinkOn } from '../systems/Accessibility';
 import { inputMode } from '../systems/InputMode';
+import { arcSteps, BakedGraphics } from './BakedGraphics';
 
 const R = 20;
 
@@ -26,14 +27,16 @@ function colorFor(id: string | null): number {
  */
 export class OmnitrixDial {
   private readonly root: Phaser.GameObjects.Container;
-  private readonly ring: Phaser.GameObjects.Graphics;
+  private readonly ring: BakedGraphics;
+  private ringKey = '';
   private readonly glow: Phaser.GameObjects.Image;
   private readonly icon: Phaser.GameObjects.Image;
   private readonly status: Phaser.GameObjects.BitmapText;
-  private readonly pips: Phaser.GameObjects.Graphics;
+  private readonly pips: BakedGraphics;
+  private pipsKey = '';
   private readonly badge: Phaser.GameObjects.Container;
   private readonly badgeIcon: Phaser.GameObjects.Image;
-  private readonly badgeRing: Phaser.GameObjects.Graphics;
+  private readonly badgeRing: Phaser.GameObjects.Image;
   private readonly fixLabel: Phaser.GameObjects.BitmapText;
   private glitchLeft = 0;
   private readonly carousel: Phaser.GameObjects.Container;
@@ -50,24 +53,25 @@ export class OmnitrixDial {
   constructor(private readonly scene: Phaser.Scene, private x: number, private readonly y: number) {
     this.glow = scene.add.image(0, 0, TEX.soft).setScale(4.5).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setTint(PALETTE.omnitrix);
     const frame = scene.add.image(0, 0, TEX.dialFrame);
-    this.ring = scene.add.graphics();
+    this.ring = BakedGraphics.round(scene, R);
     this.icon = scene.add.image(0, 0, TEX.iconBen).setTint(PALETTE.omnitrix);
     this.status = pixelText(scene, 0, R + 6, '', { originX: 0.5, originY: 0, color: PALETTE.omnitrix });
-    this.pips = scene.add.graphics();
+    // One pip per alien on the dial, in a row under the ring (room for every alien there will be).
+    this.pips = new BakedGraphics(scene, -32, R + 16, 64, 5);
 
-    const badgeBg = scene.add.graphics();
-    badgeBg.fillStyle(PALETTE.ink, 0.9).fillCircle(0, 0, 8);
-    badgeBg.lineStyle(1, PALETTE.omnitrix, 1).strokeCircle(0, 0, 8);
+    const badgeBg = BakedGraphics.round(scene, 8).draw((g) => {
+      g.fillStyle(PALETTE.ink, 0.9).fillCircle(0, 0, 8);
+      g.lineStyle(1, PALETTE.omnitrix, 1).strokeCircle(0, 0, 8);
+    }).image;
     this.badgeIcon = scene.add.image(0, 0, TEX.iconBen).setScale(0.6);
-    this.badgeRing = scene.add.graphics();
-    this.badgeRing.lineStyle(1, PALETTE.gold, 1).strokeCircle(0, 0, 9);
+    this.badgeRing = BakedGraphics.round(scene, 9).draw((g) => g.lineStyle(1, PALETTE.gold, 1).strokeCircle(0, 0, 9)).image;
     // After a misfire the swap back is half price: the badge says so.
     this.fixLabel = pixelText(scene, 12, 0, 'FIX', { originX: 0, originY: 0.5, color: PALETTE.gold });
     this.badge = scene.add.container(R - 2, R - 4, [badgeBg, this.badgeRing, this.badgeIcon, this.fixLabel]).setVisible(false);
 
     this.carouselName = pixelText(scene, 0, DIAL_UI.carouselNameY, '', { originX: 0.5, originY: 0, color: PALETTE.white });
     this.carousel = scene.add.container(0, 0, [this.carouselName]).setVisible(false);
-    this.root = scene.add.container(x, y, [this.glow, frame, this.ring, this.icon, this.status, this.pips, this.badge]).setVisible(false);
+    this.root = scene.add.container(x, y, [this.glow, frame, this.ring.image, this.icon, this.status, this.pips.image, this.badge]).setVisible(false);
   }
 
   setVisible(visible: boolean, animate: boolean): void {
@@ -162,14 +166,6 @@ export class OmnitrixDial {
       if (this.carouselLeft <= 0) this.carousel.setVisible(false);
     }
 
-    const g = this.ring;
-    g.clear();
-    g.lineStyle(4, 0x0a0d18, 1);
-    g.beginPath();
-    g.arc(0, 0, R, 0, Math.PI * 2);
-    g.strokePath();
-
-    const start = -Math.PI / 2;
     const active = t.state === 'active';
     const shownId = active ? t.activeId : t.selectedId;
     const alienColor = colorFor(shownId);
@@ -210,15 +206,7 @@ export class OmnitrixDial {
       this.shownIcon = iconKey;
     }
 
-    g.lineStyle(3, color, 1);
-    g.beginPath();
-    g.arc(0, 0, R, start, start + Math.PI * 2 * fraction, false);
-    g.strokePath();
-    if ((active && !t.frozen) || t.state === 'cooldown') {
-      const a = start + Math.PI * 2 * fraction;
-      g.fillStyle(PALETTE.white, 1);
-      g.fillCircle(Math.cos(a) * R, Math.sin(a) * R, 1.5);
-    }
+    this.drawRing(color, fraction, (active && !t.frozen) || t.state === 'cooldown');
 
     if (this.glitchLeft > 0 && blinkOn(now, 70)) {
       iconColor = PALETTE.enemy;
@@ -246,18 +234,51 @@ export class OmnitrixDial {
     this.fixLabel.setVisible(t.fixOwed);
   }
 
+  /**
+   * The timer ring. Its end only moves in whole pixels of the circumference, so it is
+   * redrawn when the colour, that pixel or the end dot changes, not every frame.
+   */
+  private drawRing(color: number, fraction: number, dot: boolean): void {
+    const steps = arcSteps(R);
+    const shown = Math.round(fraction * steps);
+    const key = `${color}|${shown}|${dot}`;
+    if (key === this.ringKey) return;
+    this.ringKey = key;
+    const start = -Math.PI / 2;
+    const end = start + Math.PI * 2 * (shown / steps);
+    this.ring.draw((g) => {
+      g.lineStyle(4, 0x0a0d18, 1);
+      g.beginPath();
+      g.arc(0, 0, R, 0, Math.PI * 2);
+      g.strokePath();
+      g.lineStyle(3, color, 1);
+      g.beginPath();
+      g.arc(0, 0, R, start, end, false);
+      g.strokePath();
+      if (dot) {
+        g.fillStyle(PALETTE.white, 1);
+        g.fillCircle(Math.cos(end) * R, Math.sin(end) * R, 1.5);
+      }
+    });
+  }
+
   /** One dot per alien on the dial; the selected one is lit. */
   private drawPips(t: OmnitrixTick): void {
-    const g = this.pips;
-    g.clear();
     const n = t.unlocked.length;
-    if (n < 2 || this.carouselLeft > 0) return;
+    const show = n >= 2 && this.carouselLeft <= 0;
     const index = t.selectedId ? t.unlocked.indexOf(t.selectedId) : -1;
+    const key = show ? `${t.unlocked.join(',')}|${index}` : '';
+    this.pips.image.setVisible(show);
+    if (key === this.pipsKey) return;
+    this.pipsKey = key;
+    if (!show) return;
     const y = R + 17;
-    for (let i = 0; i < n; i++) {
-      const x = (i - (n - 1) / 2) * 5;
-      g.fillStyle(i === index ? colorFor(t.unlocked[i]) : PALETTE.inkSoft, 1);
-      g.fillRect(x - 1, y, 3, 3);
-    }
+    this.pips.draw((g) => {
+      for (let i = 0; i < n; i++) {
+        const x = (i - (n - 1) / 2) * 5;
+        g.fillStyle(i === index ? colorFor(t.unlocked[i]) : PALETTE.inkSoft, 1);
+        g.fillRect(x - 1, y, 3, 3);
+      }
+    });
   }
 }

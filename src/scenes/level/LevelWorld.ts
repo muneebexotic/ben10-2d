@@ -5,6 +5,7 @@ import { CELL, ONE_WAY_FRAMES, SOLID_FRAMES } from '../../levels/tiles';
 import type { LevelData } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
 import type { Rect } from '../../entities/types';
+import { BakedGraphics } from '../../ui/BakedGraphics';
 
 const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum } as const;
 
@@ -53,12 +54,18 @@ export class LevelWorld {
     });
 
     // Carved tunnels and alcoves get a dark back wall so they read as caves, not floating blocks.
-    const caves = scene.add.graphics().setDepth(DEPTH.decorBack - 1);
+    // Each wall is baked once (a Graphics would be rebuilt every frame, on screen or not).
     for (const c of data.carves) {
-      caves.fillStyle(0x120c14, 1);
-      caves.fillRect(c.x * TILE, c.y * TILE, c.w * TILE, c.h * TILE);
-      caves.fillStyle(0x1e1622, 1);
-      for (let x = c.x * TILE; x < (c.x + c.w) * TILE; x += 12) caves.fillRect(x + ((x / 12) % 2) * 5, c.y * TILE + 2, 3, c.h * TILE - 4);
+      const left = c.x * TILE;
+      const w = c.w * TILE;
+      const h = c.h * TILE;
+      const wall = new BakedGraphics(scene, 0, 0, w, h).draw((g) => {
+        g.fillStyle(0x120c14, 1);
+        g.fillRect(0, 0, w, h);
+        g.fillStyle(0x1e1622, 1);
+        for (let x = left; x < left + w; x += 12) g.fillRect(x - left + ((x / 12) % 2) * 5, 2, 3, h - 4);
+      });
+      wall.image.setPosition(left, c.y * TILE).setDepth(DEPTH.decorBack - 1);
     }
 
     // Asphalt laid over the ground where the highway runs.

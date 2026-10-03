@@ -4,12 +4,18 @@ import { TEX } from '../scenes/preload/assetKeys';
 import { HEART_FRAMES } from '../scenes/preload/uiArt';
 import type { FormTheme } from '../aliens/types';
 import { pixelText } from './text';
+import { BakedGraphics } from './BakedGraphics';
+
+const SEG = 7;
+/** The shield bar's texture fits this many segments (Four Arms has 9). */
+const MAX_SEGMENTS = 16;
 
 /** Hearts for Ben, plus a segmented alien shield bar (in the alien's colours) while transformed. */
 export class HealthDisplay {
   private readonly hearts: Phaser.GameObjects.Image[] = [];
   private readonly shieldLabel: Phaser.GameObjects.BitmapText;
-  private readonly shield: Phaser.GameObjects.Graphics;
+  private readonly shield: BakedGraphics;
+  private shieldKey = '';
   private hp = 5;
   private formHp = 0;
   private formMax = 0;
@@ -23,7 +29,7 @@ export class HealthDisplay {
       this.hearts.push(scene.add.image(x + i * 11, y, TEX.heart, HEART_FRAMES.full).setOrigin(0, 0).setScale(1));
     }
     this.shieldLabel = pixelText(scene, x, y + 12, 'HEAT', { color: PALETTE.fire1 });
-    this.shield = scene.add.graphics();
+    this.shield = new BakedGraphics(scene, -1, -1, MAX_SEGMENTS * (SEG + 1) + 2, 7);
     this.setVisible(false);
   }
 
@@ -36,7 +42,7 @@ export class HealthDisplay {
   setVisible(v: boolean): void {
     for (const h of this.hearts) h.setVisible(v);
     this.shieldLabel.setVisible(v && this.formVisible);
-    this.shield.setVisible(v);
+    this.shield.image.setVisible(v && this.formVisible && this.formMax > 0);
   }
 
   setHealth(hp: number, delta: number): void {
@@ -79,26 +85,32 @@ export class HealthDisplay {
       h.setX(this.x + i * 11 + sx);
       if (low && i === Math.ceil(this.hp) - 1) h.setScale(1 + this.lowPulse * 0.3);
     }
-    const g = this.shield;
-    g.clear();
-    if (!this.formVisible || !this.hearts[0].visible || this.formMax <= 0) return;
-    const bx = this.x + Math.max(24, this.shieldLabel.width + 4) + sx;
-    const by = this.y + 13;
-    const seg = 7;
-    for (let i = 0; i < this.formMax; i++) {
-      g.fillStyle(PALETTE.ink, 1);
-      g.fillRect(bx + i * (seg + 1) - 1, by - 1, seg + 2, 7);
-      const filled = this.formHp - i;
-      g.fillStyle(this.theme.dark, 1);
-      g.fillRect(bx + i * (seg + 1), by, seg, 5);
-      if (filled > 0) {
-        g.fillStyle(this.theme.color, 1);
-        g.fillRect(bx + i * (seg + 1), by, filled >= 1 ? seg : Math.ceil(seg / 2), 5);
+    const shown = this.formVisible && this.hearts[0].visible && this.formMax > 0;
+    this.shield.image.setVisible(shown);
+    if (!shown) return;
+    // The shake moves the bar; it is only redrawn when the segments change.
+    this.shield.image.setPosition(this.x + Math.max(24, this.shieldLabel.width + 4) + sx, this.y + 13);
+    const { dark, color, light } = this.theme;
+    const key = `${this.formMax}|${this.formHp}|${dark}|${color}|${light}`;
+    if (key === this.shieldKey) return;
+    this.shieldKey = key;
+    this.shield.draw((g) => {
+      for (let i = 0; i < Math.min(this.formMax, MAX_SEGMENTS); i++) {
+        const x = i * (SEG + 1);
+        g.fillStyle(PALETTE.ink, 1);
+        g.fillRect(x - 1, -1, SEG + 2, 7);
+        const filled = this.formHp - i;
+        g.fillStyle(dark, 1);
+        g.fillRect(x, 0, SEG, 5);
+        if (filled > 0) {
+          g.fillStyle(color, 1);
+          g.fillRect(x, 0, filled >= 1 ? SEG : Math.ceil(SEG / 2), 5);
+        }
+        if (filled >= 1) {
+          g.fillStyle(light, 0.8);
+          g.fillRect(x, 0, SEG, 1);
+        }
       }
-      if (filled >= 1) {
-        g.fillStyle(this.theme.light, 0.8);
-        g.fillRect(bx + i * (seg + 1), by, seg, 1);
-      }
-    }
+    });
   }
 }
