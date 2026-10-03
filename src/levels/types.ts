@@ -223,7 +223,7 @@ export interface StoryPlan {
    * the chapter's scripted unlock for `alien` follows.
    */
   atrium?: { triggerX: number; collapse: { x: number; y: number; w: number; h: number }; toX: number; toY: number; alien: string };
-  /** After the boss, before the results: a cliffhanger plays once, on the file's first clear (see ActEndScene). */
+  /** The chapter closes act `actEnd`: after its results, on the first clear, the cliffhanger and ACT COMPLETE (ActEndScene). */
   actEnd?: number;
 }
 

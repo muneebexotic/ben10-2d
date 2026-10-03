@@ -44,7 +44,8 @@ describe('training dial', () => {
 describe('Chapter 1 cards', () => {
   it('the vault card counts toward the total now that Four Arms exists', () => {
     expect(countedCards(CHAPTER_1).map((c) => c.id)).toContain('ch1-card-vault');
-    expect(countedCards(CHAPTER_1)).toHaveLength(4);
+    // Plus Wildmutt's den under the ridge (Chapter 3 opens it).
+    expect(countedCards(CHAPTER_1)).toHaveLength(5);
   });
 
   it('but it only appears in the level once Four Arms is on the dial', () => {

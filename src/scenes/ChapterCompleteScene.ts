@@ -94,7 +94,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const rows: Row[] = [
       { label: 'TIME', value: () => formatTime(s.timeMs), ...this.timeHighlight(previousBest) },
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
-      { label: 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
+      { label: getLevel(this.levelId).theme === 'museum' ? 'MUTANTS DEFEATED' : 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` }, highlight: s.multiCuts > 0 ? `${s.multiCuts} MULTI-CUT${s.multiCuts === 1 ? '' : 'S'}!` : undefined, highlightColor: 0x9fd8ff },
       { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
@@ -295,8 +295,12 @@ export class ChapterCompleteScene extends Phaser.Scene {
     if (!this.ready) return;
     music.stop(300);
     playSfx('uiConfirm');
-    if (session.slot === null) leaveTo(this, SCENES.menu, undefined, null);
-    else leaveTo(this, SCENES.chapterSelect, { cleared: this.levelId, firstClear: this.outcome.firstClear }, null);
+    const then = { cleared: this.levelId, firstClear: this.outcome.firstClear };
+    // The act's last chapter, cleared for the first time: its cliffhanger and the ACT COMPLETE screen.
+    const act = getLevel(this.levelId).story?.actEnd;
+    if (act !== undefined && this.outcome.firstClear) leaveTo(this, SCENES.actEnd, { act, levelId: this.levelId, then }, null);
+    else if (session.slot === null) leaveTo(this, SCENES.menu, undefined, null);
+    else leaveTo(this, SCENES.chapterSelect, then, null);
   }
 
   override update(_time: number, delta: number): void {

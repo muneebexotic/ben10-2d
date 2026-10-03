@@ -49,6 +49,8 @@ export const CHAPTER_1: LevelData = {
     { x: 201, y: 21, w: 5, h: 3 },
     // Sealed vault in the cliff face; the cracked wall at x 102 closes it.
     { x: 102, y: 21, w: 4, h: 3 },
+    // A den under the ridge top, behind a hatch only senses find.
+    { x: 112, y: 17, w: 4, h: 3 },
   ],
 
   platforms: [
@@ -92,6 +94,10 @@ export const CHAPTER_1: LevelData = {
     { type: 'checkpoint', id: 'cp-cliff', x: 98, y: 24, density: 'normal', label: 'CLIFF' },
     { type: 'crackedWall', id: 'ch1-vault-wall', x: 102, y: 21, h: 3, requires: 'fourarms' },
     { type: 'card', id: 'ch1-card-vault', x: 104, y: 24, requires: 'fourarms' },
+    // Wildmutt's secret (Chapter 3): the ridge top is hollow here; he sniffs the hatch open.
+    { type: 'hiddenDoor', id: 'ch1-den-hatch', x: 112, y: 17, w: 4, h: 3 },
+    { type: 'card', id: 'ch1-card-den', x: 113, y: 20, requires: 'wildmutt' },
+    { type: 'alienHint', id: 'ch1-den-hint', alien: 'wildmutt', x: 110, y: 14, w: 8, h: 3, line: 'SOMETHING SMELLS FUNNY UNDER HERE...' },
     { type: 'decor', kind: 'sign', x: 100, y: 24 },
 
     { type: 'smoothy', x: 106, y: 17 },

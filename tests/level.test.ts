@@ -67,7 +67,7 @@ describe('chapter 1 layout', () => {
 
   it('has three secret cards now, one vault card for later, and a boss', () => {
     expect(availableCards(level, aliensUnlockedBy(level.chapter))).toHaveLength(3);
-    expect(lockedCards(level, aliensUnlockedBy(level.chapter)).map((c) => c.id)).toEqual(['ch1-card-vault']);
+    expect(lockedCards(level, aliensUnlockedBy(level.chapter)).map((c) => c.id)).toEqual(['ch1-card-vault', 'ch1-card-den']);
     expect(availableCards(level, ['heatblast', 'fourarms'])).toHaveLength(4);
     expect(entity('boss')).toHaveLength(1);
   });
@@ -129,6 +129,15 @@ describe('chapter 1 progression', () => {
     expect(canReach(level, grid, start, at, smasher)).toBe(true);
     expect(breaksCrackedWall('smash')).toBe(true);
     for (const kind of ['melee', 'fire', 'burst', 'rocket', 'reflect', 'transform'] as const) expect(breaksCrackedWall(kind)).toBe(false);
+  });
+
+  it("Wildmutt's den under the ridge opens only to senses", () => {
+    const den = lockedCards(level, aliensUnlockedBy(level.chapter)).find((c) => c.id === 'ch1-card-den')!;
+    expect(den.requires).toBe('wildmutt');
+    const at = (p: Pos) => p.x === den.x && p.y === den.y - 1;
+    expect(canReach(level, grid, start, at, HEATBLAST_CAPS)).toBe(false);
+    expect(canReach(level, grid, start, at, { ...HEATBLAST_CAPS, canSmash: true })).toBe(false);
+    expect(canReach(level, grid, start, at, { ...HEATBLAST_CAPS, canSense: true })).toBe(true);
   });
 
   it('every checkpoint is reachable', () => {

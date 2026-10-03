@@ -127,10 +127,17 @@ describe('chapter 2 progression', () => {
     for (const caps of [HUMAN_CAPS, HEATBLAST, XLR8]) expect(canReach(level, grid, truckStop, at, caps)).toBe(false);
   });
 
-  it("the sign card is out of every current alien's reach (Stinkfly's, in Chapter 3)", () => {
+  it("the sign card is out of every Chapter 2 alien's reach, and Stinkfly flies right up to it", () => {
     const sign = card('ch2-card-sign');
     expect(sign.requires).toBe('stinkfly');
     for (const caps of [HUMAN_CAPS, HEATBLAST, XLR8, FOURARMS]) expect(canReach(level, grid, truckStop, grabs(sign, caps), caps)).toBe(false);
+    const stinkfly = getAlien('stinkfly').reach;
+    expect(canReach(level, grid, truckStop, grabs(sign, stinkfly), stinkfly)).toBe(true);
+  });
+
+  it('once Stinkfly is on the file the sign card is a secret worth going back for', () => {
+    const all = ['heatblast', 'xlr8', 'fourarms', 'wildmutt', 'stinkfly'];
+    expect(waitingSecrets(level, all, ['ch2-card-vault']).map((c) => c.id)).toEqual(['ch2-card-sign']);
   });
 
   it('every checkpoint is reachable in its stretch of the level', () => {

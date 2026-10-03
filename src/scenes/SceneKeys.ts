@@ -10,6 +10,7 @@ export const SCENES = {
   pause: 'Pause',
   gameOver: 'GameOver',
   chapterComplete: 'ChapterComplete',
+  actEnd: 'ActEnd',
   gallery: 'Gallery',
   settings: 'Settings',
   touch: 'Touch',

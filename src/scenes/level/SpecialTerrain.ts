@@ -6,7 +6,9 @@ import { GlassFloor } from '../../entities/museum/GlassFloor';
 import { HiddenDoor } from '../../entities/museum/HiddenDoor';
 import { Puddles } from '../../entities/museum/Puddles';
 import { Vines } from '../../entities/museum/Vines';
-import type { LevelData } from '../../levels/types';
+import type { EntitySpawn, LevelData } from '../../levels/types';
+import { autotile, cellAt, type TileGrid } from '../../levels/buildLevel';
+import { CELL, isSolidCell } from '../../levels/tiles';
 import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import type { Combat } from './Combat';
@@ -27,6 +29,28 @@ export interface SpecialTerrainDeps {
 }
 
 /**
+ * The tiles a hidden door's cells would show if they were ordinary terrain:
+ * fill the door with whatever it's set into (rock or ground, by majority of
+ * its neighbours) and autotile, so it matches the wall around it.
+ */
+function disguise(grid: TileGrid, door: Extract<EntitySpawn, { type: 'hiddenDoor' }>): number[][] {
+  let ground = 0;
+  let rock = 0;
+  for (let y = door.y - 1; y <= door.y + door.h; y++) {
+    for (let x = door.x - 1; x <= door.x + door.w; x++) {
+      const c = cellAt(grid, x, y);
+      if (c === CELL.GROUND) ground++;
+      else if (c === CELL.ROCK) rock++;
+    }
+  }
+  const fill = ground > rock ? CELL.GROUND : CELL.ROCK;
+  const cells = grid.cells.map((row) => [...row]);
+  for (let y = door.y; y < door.y + door.h; y++) for (let x = door.x; x < door.x + door.w; x++) if (!isSolidCell(cells[y][x])) cells[y][x] = fill;
+  const frames = autotile({ width: grid.width, height: grid.height, cells });
+  return Array.from({ length: door.h }, (_, j) => Array.from({ length: door.w }, (_, i) => frames[door.y + j][door.x + i]));
+}
+
+/**
  * Terrain that changes during play: hidden doors a sensing form opens,
  * mutant vines fire burns away, skylight glass a big smash breaks, and the
  * mutagen puddles spit leaves behind. Each blocks like terrain until it's gone.
@@ -41,7 +65,7 @@ export class SpecialTerrain {
     const { scene, level, world, fx, combat, player } = d;
     for (const e of level.entities) {
       if (e.type === 'hiddenDoor') {
-        const door = new HiddenDoor(scene, e.id, e.x, e.y, e.w, e.h, fx, d.tilesKey);
+        const door = new HiddenDoor(scene, e.id, e.x, e.y, e.w, e.h, fx, d.tilesKey, disguise(world.grid, e));
         world.addSolid(door.rect);
         scene.physics.add.collider(player.zone, door.body);
         door.onOpened = () => {

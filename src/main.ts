@@ -9,6 +9,7 @@ import { TouchScene } from './scenes/TouchScene';
 import { PauseScene } from './scenes/PauseScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { ChapterCompleteScene } from './scenes/ChapterCompleteScene';
+import { ActEndScene } from './scenes/ActEndScene';
 import { GalleryScene } from './scenes/GalleryScene';
 import { SettingsScene } from './scenes/SettingsScene';
 import { FileSelectScene } from './scenes/FileSelectScene';
@@ -33,6 +34,7 @@ const game = new Phaser.Game(
     PauseScene,
     GameOverScene,
     ChapterCompleteScene,
+    ActEndScene,
     GalleryScene,
     SettingsScene,
   ]),

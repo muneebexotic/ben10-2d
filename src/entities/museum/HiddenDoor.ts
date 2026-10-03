@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { DEPTH, TILE } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
-import { FRAME } from '../../levels/tiles';
 import { TEX } from '../../scenes/preload/assetKeys';
 import type { Fx } from '../../systems/Fx';
 import { playSfx } from '../../systems/audio/Sfx';
@@ -15,7 +14,7 @@ import type { Rect } from '../types';
 export class HiddenDoor {
   readonly body: Phaser.Physics.Arcade.Image;
   readonly rect: Rect;
-  private readonly face: Phaser.GameObjects.TileSprite;
+  private readonly face: Phaser.GameObjects.Container;
   private readonly outline: Phaser.GameObjects.Graphics;
   private sensedMs = 0;
   open = false;
@@ -29,12 +28,16 @@ export class HiddenDoor {
     tw: number,
     th: number,
     private readonly fx: Fx,
-    textureKey: string = TEX.tilesMuseum,
+    textureKey: string,
+    /** The tileset frame each of its cells would have as ordinary terrain (row by row), so it blends in exactly. */
+    frames: readonly (readonly number[])[],
   ) {
     this.rect = { x: tx * TILE, y: ty * TILE, w: tw * TILE, h: th * TILE };
     const cx = this.rect.x + this.rect.w / 2;
     const cy = this.rect.y + this.rect.h / 2;
-    this.face = scene.add.tileSprite(this.rect.x, this.rect.y, this.rect.w, this.rect.h, textureKey, FRAME.ROCK).setOrigin(0, 0).setDepth(DEPTH.terrain + 1);
+    const tiles: Phaser.GameObjects.Image[] = [];
+    frames.forEach((row, j) => row.forEach((frame, i) => tiles.push(scene.add.image(i * TILE, j * TILE, textureKey, frame).setOrigin(0, 0))));
+    this.face = scene.add.container(this.rect.x, this.rect.y, tiles).setDepth(DEPTH.terrain + 1);
     this.body = scene.physics.add.staticImage(cx, cy, TEX.whitePx).setVisible(false);
     this.body.setDisplaySize(this.rect.w, this.rect.h).refreshBody();
     this.outline = scene.add.graphics().setDepth(DEPTH.emissive);
@@ -71,7 +74,7 @@ export class HiddenDoor {
     this.fx.popText(r.x + r.w / 2, r.y - 6, 'HIDDEN PATH!', PALETTE.gold);
     this.fx.shake(0.004, 300);
     playSfx('secret');
-    this.face.scene.tweens.add({ targets: this.face, y: r.y - r.h, alpha: 0, duration: 650, ease: 'Quad.easeIn', onComplete: () => this.face.setVisible(false) });
+    this.face.scene.tweens.add({ targets: this.face, y: r.y + 6, alpha: 0, duration: 650, ease: 'Quad.easeIn', onComplete: () => this.face.setVisible(false) });
     this.onOpened?.();
   }
 }
