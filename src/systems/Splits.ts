@@ -36,3 +36,41 @@ export function formatDelta(deltaMs: number): string {
   const cc = String(centis).padStart(2, '0');
   return minutes > 0 ? `${sign}${minutes}:${String(seconds).padStart(2, '0')}.${cc}` : `${sign}${seconds}.${cc}`;
 }
+
+/** One row of the splits review on Chapter Complete. */
+export interface SplitReviewRow {
+  id: string;
+  label: string;
+  timeMs: number;
+  /** Against the best time ever reached here before this run (null: first time past it). */
+  deltaMs: number | null;
+  segmentMs: number;
+  /** This segment beat its best ever: a gold split. */
+  goldSegment: boolean;
+}
+
+export function reviewSplits(splits: ReadonlyArray<{ id: string; label: string; timeMs: number; bestMs: number | null; segmentMs: number; bestSegmentMs: number | null }>): SplitReviewRow[] {
+  return splits.map((s) => ({
+    id: s.id,
+    label: s.label,
+    timeMs: s.timeMs,
+    deltaMs: s.bestMs === null ? null : s.timeMs - s.bestMs,
+    segmentMs: s.segmentMs,
+    goldSegment: s.bestSegmentMs !== null && s.segmentMs < s.bestSegmentMs,
+  }));
+}
+
+/**
+ * Sum of best: the fastest each segment of this route has ever been, added
+ * up. The time a perfect run would get. Null until every segment has a best.
+ */
+export function sumOfBest(ids: readonly string[], bestSegments: Readonly<Record<string, number>>): number | null {
+  if (ids.length === 0) return null;
+  let sum = 0;
+  for (const id of ids) {
+    const best = bestSegments[id];
+    if (best === undefined) return null;
+    sum += best;
+  }
+  return sum;
+}

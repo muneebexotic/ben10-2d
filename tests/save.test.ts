@@ -91,7 +91,7 @@ describe('SaveSystem basics', () => {
   it('saves settings changes for every file', () => {
     const storage = new MemoryStorage();
     new SaveSystem(storage, 'k').setSettings({ reduceFlashing: true, shake: 0.3 });
-    expect(new SaveSystem(storage, 'k').load().settings).toEqual({ reduceFlashing: true, shake: 0.3, touchControls: 'auto' });
+    expect(new SaveSystem(storage, 'k').load().settings).toEqual({ reduceFlashing: true, shake: 0.3, touchControls: 'auto', ghost: true });
   });
 });
 
@@ -256,12 +256,12 @@ describe('migration', () => {
     const ch1 = file.chapters.ch1;
     expect(ch1).toMatchObject({ completed: true, clears: 3, cards: ['ch1-card-ridge', 'ch1-card-creek'] });
     expect(bestOn(ch1, 'normal')).toMatchObject({ bestTimeMs: 312_450, bestRank: 'A', bestScore: 1010, clears: 3, bestSplits: {} });
-    expect(save.settings).toEqual({ reduceFlashing: null, shake: null, touchControls: 'auto' });
+    expect(save.settings).toEqual({ reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true });
   });
 
   it('turns a Milestone 2 save into File 1 on Normal, keeping settings and splits', () => {
     const save = migrateSave(MILESTONE_2, NOW);
-    expect(save.settings).toEqual({ reduceFlashing: true, shake: 0.4, touchControls: 'on' });
+    expect(save.settings).toEqual({ reduceFlashing: true, shake: 0.4, touchControls: 'on', ghost: true });
     const ch1 = save.slots[0]!.chapters.ch1;
     expect(ch1.cards).toEqual(['ch1-card-ridge', 'ch1-card-vault']);
     expect(bestOn(ch1, 'normal').bestSplits).toEqual({ 'cp-cliff': 61_000, 'cp-nest': 150_000, finish: 249_000 });
@@ -299,7 +299,7 @@ describe('migration', () => {
     expect(ch1.clears).toBe(1);
     expect(bestOn(ch1, 'normal').bestSplits).toEqual({ 'cp-cliff': 61_000 });
     expect(migrated.slots[0]!.chapters.bad).toBeUndefined();
-    expect(migrated.settings).toEqual({ reduceFlashing: null, shake: 1, touchControls: 'auto' });
+    expect(migrated.settings).toEqual({ reduceFlashing: null, shake: 1, touchControls: 'auto', ghost: true });
     expect(migrateSave('nope').slots).toEqual([null, null, null]);
   });
 

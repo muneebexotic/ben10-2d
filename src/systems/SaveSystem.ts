@@ -9,8 +9,11 @@ import { sanitizeRunStats, type RunStats } from './RunStats';
  * 3. Milestone 3: three save files, each with its own difficulty, unlocked
  *    aliens, cards, per-difficulty bests and splits, and a resume point.
  *    Older progress becomes File 1 on Normal (the only difficulty there was).
+ * 4. After Act 1: achievements, lifetime counters and misfire jokes per file,
+ *    best segments (sum of best) per difficulty, and the ghost setting.
+ *    Everything new starts empty, so older files load unchanged.
  */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const SAVE_KEY = 'ben10-omnitrix-summer';
 export const SLOT_COUNT = 3;
 
@@ -22,6 +25,8 @@ export interface DifficultyRecord {
   clears: number;
   /** Fastest run time ever reached at each split (checkpoint id or 'finish'). */
   bestSplits: Record<string, number>;
+  /** Fastest time ever from the previous split to this one (their sum is the "sum of best"). */
+  bestSegments: Record<string, number>;
 }
 
 export interface ChapterRecord {
@@ -50,6 +55,12 @@ export interface SlotData {
   /** Aliens this file has on the dial (story unlocks). */
   unlockedAliens: string[];
   resume: ResumePoint | null;
+  /** Achievement id -> when it was unlocked. */
+  achievements: Record<string, number>;
+  /** Lifetime counters behind the achievements (enemies burned, parries, smoothies...). */
+  lifetime: Record<string, number>;
+  /** Misfire jokes this file has seen (ids from aliens/jokes.ts). */
+  jokes: string[];
 }
 
 export type TouchMode = 'auto' | 'on' | 'off';
@@ -60,6 +71,8 @@ export interface SettingsData {
   /** Screen shake strength, 0..1. */
   shake: number | null;
   touchControls: TouchMode;
+  /** Race a ghost of your best run. */
+  ghost: boolean;
 }
 
 export interface SaveData {
@@ -97,7 +110,7 @@ export interface RecordOutcome {
 }
 
 export function createDefaultSettings(): SettingsData {
-  return { reduceFlashing: null, shake: null, touchControls: 'auto' };
+  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true };
 }
 
 export function createDefaultSave(): SaveData {
@@ -109,11 +122,11 @@ export function createChapterRecord(): ChapterRecord {
 }
 
 export function createDifficultyRecord(): DifficultyRecord {
-  return { bestTimeMs: null, bestRank: null, bestScore: null, clears: 0, bestSplits: {} };
+  return { bestTimeMs: null, bestRank: null, bestScore: null, clears: 0, bestSplits: {}, bestSegments: {} };
 }
 
 export function createSlot(difficulty: DifficultyId, now: number = Date.now()): SlotData {
-  return { createdAt: now, lastPlayedAt: now, playTimeMs: 0, difficulty, chapters: {}, unlockedAliens: [], resume: null };
+  return { createdAt: now, lastPlayedAt: now, playTimeMs: 0, difficulty, chapters: {}, unlockedAliens: [], resume: null, achievements: {}, lifetime: {}, jokes: [] };
 }
 
 /** The bests on one difficulty (an empty record if it was never cleared there). */
@@ -172,6 +185,7 @@ function migrateLegacyChapters(raw: Record<string, unknown>): Record<string, Cha
       bestScore: num(rec.bestScore),
       clears,
       bestSplits: migrateSplits(rec.bestSplits),
+      bestSegments: {},
     };
     const touched = normal.bestTimeMs !== null || normal.bestRank !== null || clears > 0 || Object.keys(normal.bestSplits).length > 0;
     out[id] = { completed, clears, cards: strings(rec.cards), bests: touched ? { normal } : {} };
@@ -193,6 +207,9 @@ function migrateSlot(raw: unknown, now: number): SlotData | null {
     }
   }
   slot.resume = migrateResume(s.resume);
+  slot.achievements = migrateSplits(s.achievements);
+  slot.lifetime = migrateSplits(s.lifetime);
+  slot.jokes = strings(s.jokes);
   return slot;
 }
 
@@ -213,6 +230,7 @@ function migrateChapter(raw: unknown): ChapterRecord | null {
         bestScore: num(b.bestScore),
         clears: num(b.clears) ?? 0,
         bestSplits: migrateSplits(b.bestSplits),
+        bestSegments: migrateSplits(b.bestSegments),
       };
     }
   }
@@ -234,9 +252,11 @@ function migrateSettings(raw: unknown): SettingsData {
   if (typeof s.reduceFlashing === 'boolean') settings.reduceFlashing = s.reduceFlashing;
   if (typeof s.shake === 'number' && Number.isFinite(s.shake)) settings.shake = Math.min(1, Math.max(0, s.shake));
   if (s.touchControls === 'on' || s.touchControls === 'off' || s.touchControls === 'auto') settings.touchControls = s.touchControls;
+  if (typeof s.ghost === 'boolean') settings.ghost = s.ghost;
   return settings;
 }
 
+/** A map of positive numbers (splits, segments, unlock times, counters); anything else is dropped. */
 function migrateSplits(raw: unknown): Record<string, number> {
   const out: Record<string, number> = {};
   if (!raw || typeof raw !== 'object') return out;
@@ -412,6 +432,55 @@ export class SaveSystem {
     return previous;
   }
 
+  /** Stores a segment (previous split to this one) if it's the fastest on that difficulty. Returns the previous best. */
+  recordSegment(slot: number, chapterId: string, difficulty: DifficultyId, splitId: string, segmentMs: number): number | null {
+    const s = this.getSlot(slot);
+    if (!s || !(segmentMs > 0)) return null;
+    const record = s.chapters[chapterId] ?? createChapterRecord();
+    const best = bestOn(record, difficulty);
+    const previous = best.bestSegments[splitId] ?? null;
+    if (previous === null || segmentMs < previous) {
+      best.bestSegments = { ...best.bestSegments, [splitId]: segmentMs };
+      record.bests[difficulty] = best;
+      s.chapters[chapterId] = record;
+      this.save();
+    }
+    return previous;
+  }
+
+  // ---------------------------------------------------------------- Extras
+
+  /** Marks an achievement unlocked. True if it's new. */
+  unlockAchievement(slot: number, id: string): boolean {
+    const s = this.getSlot(slot);
+    if (!s || s.achievements[id] !== undefined) return false;
+    s.achievements[id] = this.clock();
+    this.save();
+    return true;
+  }
+
+  /** Adds to the file's lifetime counters (one write for a batch). */
+  addLifetime(slot: number, counts: Readonly<Record<string, number>>): void {
+    const s = this.getSlot(slot);
+    if (!s) return;
+    let changed = false;
+    for (const [key, n] of Object.entries(counts)) {
+      if (!(n > 0)) continue;
+      s.lifetime[key] = (s.lifetime[key] ?? 0) + n;
+      changed = true;
+    }
+    if (changed) this.save();
+  }
+
+  /** Records a misfire joke as seen. True if it's new. */
+  addJoke(slot: number, id: string): boolean {
+    const s = this.getSlot(slot);
+    if (!s || s.jokes.includes(id)) return false;
+    s.jokes.push(id);
+    this.save();
+    return true;
+  }
+
   recordChapter(slot: number, chapterId: string, result: ChapterResult): RecordOutcome {
     const s = this.getSlot(slot);
     const previous = s?.chapters[chapterId] ?? createChapterRecord();
@@ -429,6 +498,7 @@ export class SaveSystem {
       bestScore: timed ? Math.max(prevBest.bestScore ?? -Infinity, result.score) : prevBest.bestScore,
       clears: prevBest.clears + 1,
       bestSplits: prevBest.bestSplits,
+      bestSegments: prevBest.bestSegments,
     };
     const record: ChapterRecord = {
       completed: true,

@@ -1,6 +1,18 @@
 import { SCORING, type Rank } from '../config/scoring';
 import { isDifficultyId, type DifficultyId } from '../config/difficulty';
 
+/** One split reached this run, with the bests it was up against (null on the first run past it). */
+export interface RunSplit {
+  id: string;
+  label: string;
+  timeMs: number;
+  /** The fastest time ever reached here before this run. */
+  bestMs: number | null;
+  /** Time since the previous split this run, and the fastest that segment had ever been before. */
+  segmentMs: number;
+  bestSegmentMs: number | null;
+}
+
 export interface RunStats {
   timeMs: number;
   damageTaken: number;
@@ -30,6 +42,8 @@ export interface RunStats {
   difficulty: DifficultyId;
   /** The difficulty changed mid-run: it still counts as a clear, but isn't timed. */
   mixedDifficulty: boolean;
+  /** Splits reached so far (timed runs only), for the review on Chapter Complete. */
+  splits: RunSplit[];
 }
 
 export interface RankResult {
@@ -59,6 +73,7 @@ export function createRunStats(totalCards: number, fullRun = true, difficulty: D
     sawVilgax: false,
     difficulty,
     mixedDifficulty: false,
+    splits: [],
   };
 }
 
@@ -89,11 +104,26 @@ export function sanitizeRunStats(raw: unknown): RunStats | null {
     sawVilgax: r.sawVilgax === true,
     difficulty: isDifficultyId(r.difficulty) ? r.difficulty : 'normal',
     mixedDifficulty: r.mixedDifficulty === true,
+    splits: sanitizeSplits(r.splits),
   };
 }
 
+function sanitizeSplits(raw: unknown): RunSplit[] {
+  if (!Array.isArray(raw)) return [];
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
+  const out: RunSplit[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const r = item as Record<string, unknown>;
+    const timeMs = num(r.timeMs);
+    if (typeof r.id !== 'string' || typeof r.label !== 'string' || timeMs === null) continue;
+    out.push({ id: r.id, label: r.label, timeMs, bestMs: num(r.bestMs), segmentMs: num(r.segmentMs) ?? 0, bestSegmentMs: num(r.bestSegmentMs) });
+  }
+  return out;
+}
+
 export function cloneRunStats(stats: RunStats): RunStats {
-  return { ...stats, cardsFound: [...stats.cardsFound] };
+  return { ...stats, cardsFound: [...stats.cardsFound], splits: stats.splits.map((s) => ({ ...s })) };
 }
 
 /** `parTimeMs`: the chapter's par (longer chapters get a longer one). */
