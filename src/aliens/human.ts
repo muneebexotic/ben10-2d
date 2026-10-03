@@ -29,6 +29,8 @@ class HumanAbilities implements FormAbilities {
       const t = this.rollLeft / ROLL.durationMs;
       player.setVelocityX(this.rollDir * ROLL.speed * (t > 0.3 ? 1 : 0.4 + t * 2));
       if (Math.random() < 0.5) ctx.fx.trail('dust', player.x - this.rollDir * 4, player.y - 2);
+      // The roll is untouchable: a faint trail says so.
+      if (Math.random() < 0.6) player.afterimage(0xffffff, 0.3, 140);
       if (this.rollLeft <= 0) this.rollReadyAt = ctx.now + ROLL.cooldownMs;
     } else if (ctx.inputEnabled && controls.specialPressed && player.grounded && ctx.now >= this.rollReadyAt && this.punchT < 0) {
       this.rollDir = controls.left ? -1 : controls.right ? 1 : player.facing;
@@ -137,7 +139,7 @@ export const HUMAN_FORM: FormDefinition = {
     revert: ['AW MAN!', 'NOT NOW!', 'COME ON, COME ON!', 'SERIOUSLY?!', 'UH OH...', 'STUPID WATCH!'],
   },
   tips: {},
-  moves: ['{J} PUNCH (KNOCKS LASERS BACK)', '{K} DODGE ROLL'],
+  moves: ['{J} PUNCH (KNOCKS LASERS BACK)', '{K} DODGE ROLL (UNTOUCHABLE FOR AN INSTANT)'],
   audio: { music: null },
   // Ben's sprites are part of the shared asset map (he exists before the Omnitrix does).
   art: { assets: [], anims: [] },
