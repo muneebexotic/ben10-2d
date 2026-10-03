@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, PHYSICS } from './constants';
+import { snapGameWidth } from '../systems/PixelScale';
 
 export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[]): Phaser.Types.Core.GameConfig {
   return {
@@ -21,6 +22,8 @@ export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[]): Phase
       mode: Phaser.Scale.EXPAND,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
+    // Whole-pixel game width on every screen (see PixelScale.ts).
+    callbacks: { preBoot: snapGameWidth },
     physics: {
       default: 'arcade',
       arcade: {

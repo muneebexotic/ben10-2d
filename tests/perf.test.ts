@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import EventEmitter from 'eventemitter3';
 
-// Phaser needs a browser; the EventBus only uses its event emitter (eventemitter3).
-vi.mock('phaser', () => ({ default: { Events: { EventEmitter } } }));
+// Phaser needs a browser; these modules only use its event emitter (eventemitter3) and a constant.
+vi.mock('phaser', () => ({ default: { Events: { EventEmitter }, Scale: { EXPAND: 4 } } }));
 
 import { EventBus } from '../src/systems/EventBus';
+import { wholeWidth } from '../src/systems/PixelScale';
 
 describe('scene listeners', () => {
   it('a scene that subscribes in create and clears its context on shutdown leaves nothing behind', () => {
@@ -31,5 +32,13 @@ describe('scene listeners', () => {
     expect(EventBus.listenerTotal()).toBe(before + 1);
     EventBus.offContext(hud);
     expect(EventBus.listenerTotal()).toBe(before);
+  });
+});
+
+describe('whole-pixel game width', () => {
+  it('drops the fraction EXPAND gives a wide screen, but not float noise under a whole number', () => {
+    expect(wholeWidth(799.5145631067961)).toBe(799);
+    expect(wholeWidth(639.9999999)).toBe(640);
+    expect(wholeWidth(864)).toBe(864);
   });
 });
