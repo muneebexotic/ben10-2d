@@ -75,6 +75,18 @@ export class OmnitrixController {
 
   handleInput(c: Controls, now: number): void {
     if (!this.acquired || this.player.dead || !this.player.controlsEnabled) return;
+    if (c.dialPick !== null) {
+      // Straight to a slot: number keys or the radial picker.
+      const from = this.omnitrix.unlockedAliens.indexOf(this.omnitrix.selectedAlien ?? '');
+      const id = this.omnitrix.unlockedAliens[c.dialPick];
+      if (id !== undefined && c.dialPick !== from) {
+        const dir: 1 | -1 = c.dialPick > from ? 1 : -1;
+        for (const e of this.omnitrix.select(id)) {
+          if (e.type === 'dial') EventBus.emit('omnitrix:dial', { selectedId: e.selectedId, index: e.index, count: e.count, direction: dir });
+        }
+        playSfx('uiMove', 1, 1 + c.dialPick * 0.05);
+      }
+    }
     if (c.dialPrev || c.dialNext) {
       const dir = c.dialNext ? 1 : -1;
       for (const e of this.omnitrix.cycle(dir)) {

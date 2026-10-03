@@ -3,6 +3,7 @@ import { TOUCH } from '../src/config/touch';
 import { QualityGovernor } from '../src/systems/Quality';
 import { formatControls } from '../src/systems/controlLabels';
 import { pad, stickDirections } from '../src/systems/VirtualPad';
+import { radialSlot } from '../src/ui/RadialPicker';
 
 const tuning = { radius: 30, deadZone: 0.3, upSlope: 0.6, downSlope: 1 };
 
@@ -105,5 +106,21 @@ describe('quality governor', () => {
     expect(q.scaleCount(10, () => 0.99)).toBe(5);
     expect(q.scaleCount(1, () => 0.1)).toBe(1);
     expect(q.scaleCount(1, () => 0.9)).toBe(0);
+  });
+});
+
+describe('radial picker', () => {
+  const R = { from: 115, to: 255, dead: 26 };
+  it('ignores a finger still in the middle', () => {
+    expect(radialSlot(5, -5, 5, R.from, R.to, R.dead)).toBeNull();
+  });
+  it('picks the slot the finger points at along the arc', () => {
+    // Down-left is the first slot, straight up-left the middle, nearly straight up the last.
+    expect(radialSlot(-30, 64, 5, R.from, R.to, R.dead)).toBe(0);
+    expect(radialSlot(-70, 0, 5, R.from, R.to, R.dead)).toBe(2);
+    expect(radialSlot(-18, -68, 5, R.from, R.to, R.dead)).toBe(4);
+  });
+  it('a single alien is always the pick', () => {
+    expect(radialSlot(40, 40, 1, R.from, R.to, R.dead)).toBe(0);
   });
 });

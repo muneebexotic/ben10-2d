@@ -280,7 +280,7 @@ export const CHAPTER_3: LevelData = {
       formText: { fourarms: 'SMASH RIGHT THROUGH ITS TUSKS!', wildmutt: 'POUNCE ON ITS HEAD!' },
     },
     { id: 'climb', x: 180, w: 8, text: 'WAY TOO HIGH... I NEED SOMETHING THAT CLIMBS', formText: { wildmutt: 'PUSH INTO THE WALL TO CLIMB!' } },
-    { id: 'lockdown', x: 270, w: 6, text: 'LOCKDOWN! FIVE LOCKS, FIVE ALIENS: {DIAL} PICK, {T} SWAP' },
+    { id: 'lockdown', x: 270, w: 6, text: 'LOCKDOWN! FIVE LOCKS, ONE ALIEN EACH. {T} SWAPS ON THE FLY' },
     { id: 'vines', x: 276, w: 4, text: "MUTANT VINES. CLAWS WON'T CUT IT... FIRE WILL", formText: { heatblast: '{J} BURN THEM DOWN!' } },
     { id: 'moat', x: 282, w: 6, text: 'TOO WIDE, CEILING TOO LOW... RUN ACROSS IT?', formText: { xlr8: "RUN! DON'T STOP OR YOU'LL SINK!" } },
     { id: 'shaft', x: 317, w: 7, text: 'A DEAD END? SOMETHING SMELLS FUNNY UP THERE...', formText: { wildmutt: 'CLIMB UP AND SNIFF IT OUT!' } },

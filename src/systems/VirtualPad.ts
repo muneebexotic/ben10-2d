@@ -42,6 +42,19 @@ class VirtualPad {
   private anyTap = false;
   /** How long the Omnitrix button was held before its tap fired (touch transforms on release). */
   transformLeadMs = 0;
+  /** A dial slot picked on the radial picker, waiting to be read. */
+  private picked: number | null = null;
+
+  /** The radial picker chose dial slot `index`. */
+  choose(index: number): void {
+    this.picked = index;
+  }
+
+  consumePick(): number | null {
+    const p = this.picked;
+    this.picked = null;
+    return p;
+  }
 
   press(button: PadButton): void {
     this.held.add(button);
@@ -86,6 +99,7 @@ class VirtualPad {
     this.latched.clear();
     this.anyTap = false;
     this.transformLeadMs = 0;
+    this.picked = null;
     this.setStick({ left: false, right: false, up: false, down: false });
   }
 }

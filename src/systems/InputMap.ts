@@ -15,6 +15,8 @@ export interface Controls {
   specialReleased: boolean;
   dialPrev: boolean;
   dialNext: boolean;
+  /** A dial slot picked directly (number keys 1-5, the touch radial picker), 0-based, or null. */
+  dialPick: number | null;
   transform: boolean;
   /** How long ago the transform was really pressed (touch fires on release). 0 for keys. */
   transformLeadMs: number;
@@ -38,6 +40,7 @@ export function emptyControls(): Controls {
     specialReleased: false,
     dialPrev: false,
     dialNext: false,
+    dialPick: null,
     transform: false,
     transformLeadMs: 0,
     pause: false,
@@ -65,12 +68,22 @@ const BINDINGS = {
 
 type Action = keyof typeof BINDINGS;
 
+/** Number keys pick a dial slot directly (top row and keypad). */
+const PICK_KEYS: ReadonlyArray<readonly number[]> = [
+  [K.ONE, K.NUMPAD_ONE],
+  [K.TWO, K.NUMPAD_TWO],
+  [K.THREE, K.NUMPAD_THREE],
+  [K.FOUR, K.NUMPAD_FOUR],
+  [K.FIVE, K.NUMPAD_FIVE],
+];
+
 /** Keyboard and on-screen touch controls sampled once per frame into a plain Controls object. */
 export class InputMap {
   private readonly keys: Record<Action, Phaser.Input.Keyboard.Key[]>;
   private readonly wasDown = new Map<Action, boolean>();
   private readonly latched = new Set<Action>();
   private readonly state = emptyControls();
+  private pickedKey: number | null = null;
 
   constructor(scene: Phaser.Scene) {
     const kb = scene.input.keyboard!;
@@ -87,6 +100,14 @@ export class InputMap {
       });
     }
     this.keys = keys;
+    PICK_KEYS.forEach((codes, slot) => {
+      for (const code of codes) {
+        const key = kb.addKey(code, true, false);
+        const onDown = () => (this.pickedKey = slot);
+        key.on(Phaser.Input.Keyboard.Events.DOWN, onDown);
+        listeners.push([key, onDown]);
+      }
+    });
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const [key, fn] of listeners) key.off(Phaser.Input.Keyboard.Events.DOWN, fn);
     });
@@ -110,6 +131,9 @@ export class InputMap {
     this.wasDown.set('special', s.specialHeld);
     s.dialPrev = this.pressed('dialPrev') || pad.consume('dialPrev');
     s.dialNext = this.pressed('dialNext') || pad.consume('dialNext');
+    const touchPick = pad.consumePick();
+    s.dialPick = this.pickedKey ?? touchPick;
+    this.pickedKey = null;
     const keyTransform = this.pressed('transform');
     const padTransform = pad.consume('transform');
     s.transform = keyTransform || padTransform;
@@ -126,6 +150,7 @@ export class InputMap {
     for (const list of Object.values(this.keys)) for (const key of list) key.reset();
     this.wasDown.clear();
     this.latched.clear();
+    this.pickedKey = null;
     pad.reset();
   }
 

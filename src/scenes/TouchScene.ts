@@ -8,7 +8,9 @@ import { pad, stickDirections, type PadButton } from '../systems/VirtualPad';
 import { TouchButton, TouchDial, TouchStick } from '../ui/TouchControls';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
-import { getForm, HUMAN_FORM } from '../aliens/registry';
+import { getAlien, getForm, hasAlien, HUMAN_FORM } from '../aliens/registry';
+import { RadialPicker } from '../ui/RadialPicker';
+import type { OmnitrixTick } from '../systems/events';
 import { viewWidth } from '../ui/view';
 
 type ButtonId = 'jump' | 'attack' | 'special' | 'pause';
@@ -16,7 +18,7 @@ type ButtonId = 'jump' | 'attack' | 'special' | 'pause';
 type Track =
   | { kind: 'stick' }
   | { kind: 'button'; id: ButtonId }
-  | { kind: 'dial'; startX: number; downAt: number; swiped: boolean }
+  | { kind: 'dial'; startX: number; startY: number; downAt: number; swiped: boolean; radial: boolean }
   | { kind: 'tap' };
 
 const PAD_BUTTON: Record<ButtonId, PadButton> = { jump: 'jump', attack: 'attack', special: 'special', pause: 'pause' };
@@ -29,6 +31,8 @@ export class TouchScene extends Phaser.Scene {
   private stick!: TouchStick;
   private buttons!: Record<ButtonId, TouchButton>;
   private dial!: TouchDial;
+  private picker!: RadialPicker;
+  private tick: OmnitrixTick | null = null;
   private readonly tracks = new Map<number, Track>();
   private cinematic = false;
   private hudVisible = true;
@@ -56,6 +60,7 @@ export class TouchScene extends Phaser.Scene {
       pause: new TouchButton(this, 0, B.pause.y, B.pause.r, TEX.touchPause, '', PALETTE.uiDim),
     };
     this.dial = new TouchDial(this, 0, B.omnitrix.y, B.omnitrix.r);
+    this.picker = new RadialPicker(this);
     this.layout();
     const onResize = () => this.layout();
     this.scale.on(Phaser.Scale.Events.RESIZE, onResize);
@@ -76,7 +81,10 @@ export class TouchScene extends Phaser.Scene {
       if (p.omnitrix !== undefined) this.omnitrixVisible = p.omnitrix && p.visible;
     }, this);
     on('omnitrix:acquired', () => (this.omnitrixVisible = true), this);
-    on('omnitrix:tick', (t) => this.dial.setTick(t), this);
+    on('omnitrix:tick', (t) => {
+      this.tick = t;
+      this.dial.setTick(t);
+    }, this);
     on('omnitrix:dial', (p) => this.dial.nudge(p.direction), this);
     on('alien:transformed', (p) => this.setFormIcons(p.alienId), this);
     on('alien:reverted', () => this.setFormIcons(HUMAN_FORM.id), this);
@@ -131,7 +139,7 @@ export class TouchScene extends Phaser.Scene {
     }
 
     if (this.omnitrixVisible && this.dial.contains(p.x, p.y) < this.nearestButton(p.x, p.y).score) {
-      this.tracks.set(p.id, { kind: 'dial', startX: p.x, downAt: performance.now(), swiped: false });
+      this.tracks.set(p.id, { kind: 'dial', startX: p.x, startY: p.y, downAt: performance.now(), swiped: false, radial: false });
       this.dial.setPressed(true);
       return;
     }
@@ -167,6 +175,10 @@ export class TouchScene extends Phaser.Scene {
         pad.press(PAD_BUTTON[hit.id]);
       }
     } else if (track.kind === 'dial') {
+      if (track.radial) {
+        this.picker.point(p.x, p.y);
+        return;
+      }
       const dx = p.x - track.startX;
       if (Math.abs(dx) >= TOUCH.swipePx) {
         track.swiped = true;
@@ -190,7 +202,16 @@ export class TouchScene extends Phaser.Scene {
       pad.release(PAD_BUTTON[track.id]);
     } else if (track.kind === 'dial') {
       this.dial.setPressed(false);
-      if (!track.swiped) {
+      if (track.radial) {
+        // Let go on an alien: pick it and transform (or swap) in one move. In the middle: never mind.
+        const slot = this.picker.close();
+        if (slot !== null) {
+          pad.choose(slot);
+          pad.transformLeadMs = 0;
+          pad.press('transform');
+          pad.release('transform');
+        }
+      } else if (!track.swiped) {
         // A tap transforms on release; the time the finger was down counts toward perfect-transform timing.
         pad.transformLeadMs = performance.now() - track.downAt;
         pad.press('transform');
@@ -223,6 +244,24 @@ export class TouchScene extends Phaser.Scene {
     this.stick?.release();
     if (this.buttons) for (const b of Object.values(this.buttons)) b.setPressed(false);
     this.dial?.setPressed(false);
+    this.picker?.close();
+  }
+
+  /** A held, unswiped Omnitrix opens the radial picker. */
+  private checkRadial(): void {
+    const now = performance.now();
+    for (const track of this.tracks.values()) {
+      if (track.kind !== 'dial' || track.swiped || track.radial || now - track.downAt < TOUCH.radial.holdMs) continue;
+      const aliens = (this.tick?.unlocked ?? []).filter((id) => hasAlien(id));
+      if (aliens.length < 2) continue;
+      track.radial = true;
+      const items = aliens.map((id) => {
+        const a = getAlien(id);
+        return { icon: a.hudIcon, color: a.theme.color, name: a.name };
+      });
+      this.picker.show(this.dial.x, this.dial.y, items, Math.max(0, aliens.indexOf(this.tick?.selectedId ?? '')));
+      this.picker.point(track.startX, track.startY);
+    }
   }
 
   // ------------------------------------------------------------ Frame
@@ -247,5 +286,6 @@ export class TouchScene extends Phaser.Scene {
     for (const b of Object.values(this.buttons)) b.applyAlpha();
     this.dial.applyAlpha();
     this.dial.update(time);
+    this.checkRadial();
   }
 }

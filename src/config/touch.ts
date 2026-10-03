@@ -32,6 +32,12 @@ export const TOUCH = {
   hitPadding: 1.3,
   /** Sideways travel on the Omnitrix button that turns a tap into a dial swipe. */
   swipePx: 16,
+  /**
+   * Holding the Omnitrix this long (without swiping) fans the dial out into a
+   * radial picker: aliens on an arc to the button's left (screen angles: 90 is
+   * down, 180 left, 270 up). Let go on one to pick it and transform.
+   */
+  radial: { holdMs: 300, radius: 70, slotR: 15, fromDeg: 115, toDeg: 255, deadZone: 26 },
   idleAlpha: 0.38,
   pressedAlpha: 0.78,
 } as const;
