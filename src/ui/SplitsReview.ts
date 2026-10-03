@@ -42,7 +42,7 @@ export class SplitsReview {
     const scene = this.scene;
     const h = 74 + rows.length * 14;
     const g = scene.add.graphics();
-    drawPanel(g, 0, 0, W, h, { fill: PALETTE.ink, fillAlpha: 0.97, stroke: PALETTE.omnitrix, radius: 6, bevel: true });
+    drawPanel(g, 0, 0, W, h, { fill: PALETTE.ink, fillAlpha: 1, stroke: PALETTE.omnitrix, radius: 6, bevel: true });
     const items: Phaser.GameObjects.GameObject[] = [g];
     const top = -h / 2;
     const colTime = 60;

@@ -48,7 +48,7 @@ export class AchievementToast {
     const head = pixelText(scene, 38, -8, 'ACHIEVEMENT UNLOCKED', { originY: 0.5, color: PALETTE.gold });
     const title = pixelText(scene, 38, 6, def.title, { originY: 0.5, color: PALETTE.white });
     const shine = scene.add.rectangle(0, 0, 10, H - 4, PALETTE.white, 0.35).setAngle(18);
-    const root = scene.add.container(this.left - W - 8, this.y, [g, badge, head, title, shine]).setDepth(this.depth).setScrollFactor(0);
+    const root = scene.add.container(this.left - W - 8, this.y, [g, badge, head, title, shine]).setDepth(this.depth);
     playSfx('secret', 0.6, 1.25);
     scene.tweens.add({ targets: root, x: this.left + 8, duration: 320, ease: 'Back.easeOut' });
     scene.tweens.add({ targets: badge, scale: { from: 1.6, to: 1 }, angle: { from: -30, to: 0 }, duration: 420, delay: 180, ease: 'Back.easeOut' });
