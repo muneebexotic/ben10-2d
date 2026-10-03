@@ -7,6 +7,7 @@ import { playSfx } from '../systems/audio/Sfx';
 import { EventBus } from '../systems/EventBus';
 import { inputMode } from '../systems/InputMode';
 import { summarize, type FileSummary } from '../systems/Progress';
+import { ghostStore } from '../systems/Ghost';
 import { saveSystem, SLOT_COUNT } from '../systems/SaveSystem';
 import { session } from '../systems/Session';
 import { bindMuteKey } from '../systems/Settings';
@@ -250,6 +251,7 @@ export class FileSelectScene extends Phaser.Scene {
 
   private doErase(slot: number): void {
     saveSystem.deleteSlot(slot);
+    ghostStore.clearSlot(slot);
     playSfx('erase');
     this.confirm?.destroy();
     this.confirm = null;

@@ -29,6 +29,8 @@ export interface DroneWorld {
   isSolid(x: number, y: number): boolean;
   isWater(x: number, y: number): boolean;
   onKilled(drone: Drone): void;
+  /** Slime stuck it in place. */
+  onGummed?(drone: Drone): void;
   /** This drone's attack lands at game time `at` (perfect transform timing). */
   threat(drone: Drone, at: number): void;
   cancelThreat(drone: Drone): void;
@@ -91,6 +93,8 @@ export class Drone implements Damageable, Hazard, Liftable {
   lockY = 0;
   seed = Math.random() * 1000;
   lastDamage = 0;
+  /** What hit it last (a KO by fire counts toward PYROMANIAC). */
+  lastHitKind: HitKind | null = null;
   /** Brains keep their own extra state here (armour, juke timers). */
   readonly memo: Record<string, number> = {};
   /** Stinkfly's goo: slows it, and enough of it gums its wings. */
@@ -171,6 +175,7 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.awake = true;
     const dmg = hit.damage * (this.brain.damageTakenMultiplier?.(this, hit) ?? 1) * (this.downed ? DRONE_SHARED.downedDamageMultiplier : 1);
     this.lastDamage = dmg;
+    this.lastHitKind = hit.kind;
     this.hp -= dmg;
     this.flashLeft = DRONE_SHARED.hitFlashMs;
     const dir = Math.sign(this.x - hit.x) || 1;
@@ -188,6 +193,7 @@ export class Drone implements Damageable, Hazard, Liftable {
       // Gummed wings: down it comes.
       this.knockDown(COMBAT.slime.stuckMs);
       this.world.fx.popText(this.x, this.y - 12, 'GUMMED!', 0xd4e83a);
+      this.world.onGummed?.(this);
     }
     return 'hit';
   }

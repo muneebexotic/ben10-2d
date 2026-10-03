@@ -86,6 +86,12 @@ export class SettingsScene extends Phaser.Scene {
         adjust: (dir) => this.cycleTouch(dir),
         hint: 'AUTO SHOWS THEM ON TOUCH SCREENS AND HIDES THEM WHEN YOU TYPE.',
       },
+      {
+        label: () => `GHOST: ${getSettings().ghost ? 'ON' : 'OFF'}`,
+        action: () => this.toggleGhost(),
+        adjust: () => this.toggleGhost(),
+        hint: 'RACE A SEE-THROUGH REPLAY OF YOUR BEST RUN ON EVERY TIMED RUN.',
+      },
     );
     if (this.scale.fullscreen.available) {
       items.push({
@@ -127,6 +133,11 @@ export class SettingsScene extends Phaser.Scene {
     kb.on('keydown-P', () => this.back());
     bindMuteKey(this);
     this.events.on(Phaser.Scenes.Events.UPDATE, () => this.drawBar());
+  }
+
+  private toggleGhost(): void {
+    updateSettings({ ghost: !getSettings().ghost });
+    playSfx('uiConfirm', 0.6);
   }
 
   /** Changes the file's difficulty and spells out what that means. */

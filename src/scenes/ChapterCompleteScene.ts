@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
-import { RANK_COLOR, type Rank } from '../config/scoring';
+import { RANK_COLOR, SCORING, type Rank } from '../config/scoring';
 import { getDifficulty } from '../config/difficulty';
 import { CHAPTERS, chapterForLevel } from '../levels/chapters';
 import { getLevel } from '../levels/registry';
@@ -19,6 +19,14 @@ import { SCENES } from './SceneKeys';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
 import { formatDelta } from '../systems/Splits';
 import { inputMode } from '../systems/InputMode';
+import type { AchievementDef } from '../config/achievements';
+import { AchievementTracker, fileAchievements } from '../systems/Achievements';
+import { isOmnitrixMaster } from '../systems/Mastery';
+import { reviewSplits, sumOfBest } from '../systems/Splits';
+import { AchievementToast } from '../ui/AchievementToast';
+import { SplitsReview } from '../ui/SplitsReview';
+import { achievementBadge } from '../ui/achievementBadge';
+import { ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
 
 /** Best tag team names, by how many forms joined one combo. */
 const TAG_TEAM_NAMES = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!'];
@@ -49,6 +57,11 @@ export class ChapterCompleteScene extends Phaser.Scene {
   private ready = false;
   private copied!: Phaser.GameObjects.BitmapText;
   private levelId = 'ch1';
+  /** S rank on every difficulty, and whether this run is what made it so. */
+  private master = false;
+  private newMaster = false;
+  private unlocked: AchievementDef[] = [];
+  private splitsReview!: SplitsReview;
 
   constructor() {
     super(SCENES.chapterComplete);
@@ -73,8 +86,22 @@ export class ChapterCompleteScene extends Phaser.Scene {
       // Practice runs and runs that changed difficulty count as clears, not records.
       timed: this.stats.fullRun && !this.stats.mixedDifficulty,
     };
+    const before = slot === null ? undefined : saveSystem.getSlot(slot)?.chapters[this.levelId];
+    const wasMaster = isOmnitrixMaster(before);
     // Without a file (a URL playtest run) nothing is saved; the screen still celebrates.
     this.outcome = slot === null ? new SaveSystem(null).recordChapter(0, this.levelId, run) : saveSystem.recordChapter(slot, this.levelId, run);
+    // A new best time: this run becomes the ghost to race next time.
+    const ghost = ghostRecording.takeFinished(this.levelId, difficulty);
+    if (ghost && slot !== null && this.outcome.newBestTime) ghostStore.save(slot, this.levelId, difficulty, this.stats.timeMs, ghost, ghostForms());
+    this.master = slot !== null && isOmnitrixMaster(this.outcome.record);
+    this.newMaster = this.master && !wasMaster;
+    this.unlocked = [];
+    const tracker = new AchievementTracker(fileAchievements(slot), (def) => this.unlocked.push(def));
+    if (run.timed && this.stats.timeMs <= (getLevel(this.levelId).parTimeMs ?? SCORING.parTimeMs)) tracker.unlock('speed-demon');
+    if (this.stats.fullRun && this.stats.deaths === 0) tracker.unlock('no-sweat');
+    if (this.stats.fullRun && difficulty === 'hard' && !this.stats.mixedDifficulty) tracker.unlock('hard-as-nails');
+    if (this.master) tracker.unlock('omnitrix-master');
+    this.splitsReview = new SplitsReview(this);
     const chapter = chapterForLevel(this.levelId);
     const d = getDifficulty(difficulty);
 
@@ -123,14 +150,19 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const rankAt = 500 + rows.length * 260 + 400;
     this.time.delayedCall(rankAt, () => this.stampRank());
     this.time.delayedCall(rankAt + 900, () => this.showFooter());
+    const toast = new AchievementToast(this, 300, 200);
+    toast.setLeft(frameView(this).left);
+    this.time.delayedCall(rankAt + 700, () => this.unlocked.forEach((def) => toast.show(def)));
 
     bindMuteKey(this);
     const kb = this.input.keyboard!;
-    kb.on('keydown-ENTER', () => this.toChapters());
-    kb.on('keydown-SPACE', () => this.toChapters());
-    kb.on('keydown-ESC', () => this.toChapters());
+    const confirm = () => (this.splitsReview.open ? this.splitsReview.close() : this.toChapters());
+    kb.on('keydown-ENTER', confirm);
+    kb.on('keydown-SPACE', confirm);
+    kb.on('keydown-ESC', confirm);
     kb.on('keydown-R', () => this.again());
     kb.on('keydown-C', () => this.share());
+    kb.on('keydown-S', () => this.toggleSplits());
   }
 
   private revealRow(row: Row, x0: number, x1: number, y: number): void {
@@ -204,7 +236,31 @@ export class ChapterCompleteScene extends Phaser.Scene {
     if (this.outcome.newBestRank && this.outcome.best.clears > 1) {
       pixelText(this, x, y - 50, 'NEW BEST!', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     }
+    if (this.master) this.time.delayedCall(500, () => this.stampMaster(x, 256));
     music.play('victory');
+  }
+
+  /** S on every difficulty: the gold medal (and the first time, a proper celebration). */
+  private stampMaster(x: number, y: number): void {
+    const medal = achievementBadge(this, x - 34, y, 'star', true, 9);
+    const text = pixelText(this, x - 22, y, this.newMaster ? 'OMNITRIX\nMASTER!' : 'OMNITRIX\nMASTER', { originY: 0.5, color: PALETTE.gold });
+    if (!this.newMaster) return;
+    for (const o of [medal, text]) {
+      o.setScale(2.5).setAlpha(0);
+      this.tweens.add({ targets: o, scale: 1, alpha: 1, duration: 300, ease: 'Back.easeOut' });
+    }
+    playSfx('fanfare', 0.8, 1.1);
+    flashCamera(this.cameras.main, 300, 255, 214, 90);
+    const burst = this.add.particles(x, y, TEX.spark, { lifespan: 1100, speed: { min: 60, max: 220 }, scale: { start: 2, end: 0 }, color: [PALETTE.white, PALETTE.gold], blendMode: 'ADD', emitting: false });
+    burst.explode(60);
+  }
+
+  private toggleSplits(): void {
+    if (!this.ready) return;
+    const rows = reviewSplits(this.stats.splits);
+    if (rows.length === 0) return;
+    const best = bestOn(this.outcome.record, this.stats.difficulty).bestSegments;
+    this.splitsReview.toggle(rows, sumOfBest(rows.map((r) => r.id), best), this.stats.timeMs);
   }
 
   private showFooter(): void {
@@ -221,15 +277,18 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const buttons: Array<[string, () => void, number]> = [
       [touch ? 'CONTINUE' : '[ENTER] CONTINUE', () => this.toChapters(), PALETTE.white],
       [touch ? 'PLAY AGAIN' : '[R] PLAY AGAIN', () => this.again(), PALETTE.omnitrix],
+      ...(this.stats.splits.length > 0 ? [[touch ? 'SPLITS' : '[S] SPLITS', () => this.toggleSplits(), 0x9fd8ff] as [string, () => void, number]] : []),
       [touch ? 'SHARE SCORE' : '[C] SHARE SCORE', () => this.share(), PALETTE.gold],
     ];
+    const step = buttons.length > 3 ? 148 : 190;
+    const bw = buttons.length > 3 ? 136 : 160;
     buttons.forEach(([label, action, color], i) => {
-      const x = GAME_WIDTH / 2 + (i - 1) * 190;
+      const x = GAME_WIDTH / 2 + (i - (buttons.length - 1) / 2) * step;
       const frame = this.add.graphics();
-      frame.fillStyle(PALETTE.ink, 0.7).fillRoundedRect(x - 80, 332, 160, 24, 5);
-      frame.lineStyle(1, color, 0.8).strokeRoundedRect(x - 79.5, 332.5, 159, 23, 5);
+      frame.fillStyle(PALETTE.ink, 0.7).fillRoundedRect(x - bw / 2, 332, bw, 24, 5);
+      frame.lineStyle(1, color, 0.8).strokeRoundedRect(x - bw / 2 + 0.5, 332.5, bw - 1, 23, 5);
       const t = pixelText(this, x, 344, label, { originX: 0.5, originY: 0.5, color });
-      const zone = this.add.zone(x, 344, 170, 30).setInteractive({ useHandCursor: true });
+      const zone = this.add.zone(x, 344, bw + 10, 30).setInteractive({ useHandCursor: true });
       zone.on('pointerdown', action);
       if (i === 0) this.tweens.add({ targets: t, alpha: 0.5, yoyo: true, repeat: -1, duration: 700 });
     });
@@ -248,7 +307,8 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const article = this.rank === 'A' || this.rank === 'S' ? 'an' : 'a';
     const misfires = s.misfires > 0 ? ` and survived ${s.misfires} Omnitrix misfire${s.misfires === 1 ? '' : 's'}` : '';
     const tag = s.bestTagTeam >= 3 ? ` with a ${s.bestTagTeam}-form tag team` : '';
-    return `I beat BEN 10: OMNITRIX SUMMER - ${chapter} on ${difficulty} in ${formatTime(s.timeMs)} with ${article} ${this.rank} rank, a ${s.bestCombo}-hit combo, ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards${tag}${misfires}. Your turn! ${url}`.trim();
+    const master = this.master ? ' (OMNITRIX MASTER: S on every difficulty!)' : '';
+    return `I beat BEN 10: OMNITRIX SUMMER - ${chapter} on ${difficulty} in ${formatTime(s.timeMs)} with ${article} ${this.rank} rank${master}, a ${s.bestCombo}-hit combo, ${s.cardsFound.length}/${s.totalCards} Sumo Slammers cards${tag}${misfires}. Your turn! ${url}`.trim();
   }
 
   /** The native share sheet where there is one (phones), otherwise the clipboard. */
@@ -293,6 +353,10 @@ export class ChapterCompleteScene extends Phaser.Scene {
   /** Back to the file's chapters (the title if this run had no file). */
   private toChapters(): void {
     if (!this.ready) return;
+    if (this.splitsReview.open) {
+      this.splitsReview.close();
+      return;
+    }
     music.stop(300);
     playSfx('uiConfirm');
     const then = { cleared: this.levelId, firstClear: this.outcome.firstClear };

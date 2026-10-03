@@ -7,6 +7,7 @@ import { MENU } from '../config/ui';
 import { playSfx } from '../systems/audio/Sfx';
 import { EventBus } from '../systems/EventBus';
 import { inputMode } from '../systems/InputMode';
+import { ghostStore } from '../systems/Ghost';
 import { saveSystem } from '../systems/SaveSystem';
 import { session } from '../systems/Session';
 import { bindMuteKey } from '../systems/Settings';
@@ -139,6 +140,7 @@ export class DifficultyScene extends Phaser.Scene {
     if (isLeaving(this)) return;
     const id = this.cards[this.focus].id;
     saveSystem.createSlot(this.slot, id);
+    ghostStore.clearSlot(this.slot);
     session.useSlot(this.slot);
     playSfx('uiConfirm');
     leaveTo(this, SCENES.chapterSelect, { newFile: true }, null);

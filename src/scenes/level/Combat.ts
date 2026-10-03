@@ -58,7 +58,7 @@ interface Thrown {
 }
 
 /** Fire of any kind (fireballs, bursts, rocket blasts): what sets stink clouds off. */
-function isFlame(kind: HitKind): boolean {
+export function isFlame(kind: HitKind): boolean {
   return kind === 'fire' || kind === 'burst' || kind === 'rocket';
 }
 

@@ -42,6 +42,7 @@ export interface DroneWorldDeps {
   telegraph: Telegraphs;
   world: LevelWorld;
   onKilled(d: Drone): void;
+  onGummed?(d: Drone): void;
   threat(d: Drone, at: number): void;
   cancelThreat(d: Drone): void;
 }
@@ -70,6 +71,7 @@ export function createDroneWorld(d: DroneWorldDeps): DroneWorld {
     isSolid: (x, y) => d.world.isSolid(x, y) || d.world.isOneWay(x, y),
     isWater: (x, y) => d.world.inWater(x, y),
     onKilled: (drone) => d.onKilled(drone),
+    onGummed: (drone) => d.onGummed?.(drone),
     threat: (drone, at) => d.threat(drone, at),
     cancelThreat: (drone) => d.cancelThreat(drone),
   };

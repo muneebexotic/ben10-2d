@@ -19,6 +19,8 @@ import { pixelText } from '../ui/text';
 import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { AchievementTracker, fileAchievements } from '../systems/Achievements';
+import { AchievementToast } from '../ui/AchievementToast';
 
 export interface ActEndData {
   act: number;
@@ -246,6 +248,11 @@ export class ActEndScene extends Phaser.Scene {
       flashCamera(this.cameras.main, 400, 255, 230, 160);
       playSfx('fanfare');
       this.confetti();
+      // THE SUMMER BEGINS: a toast once the stats are up.
+      const toast = new AchievementToast(this, 300, 50);
+      toast.setLeft(frameView(this).left);
+      const tracker = new AchievementTracker(fileAchievements(session.slot), (def) => this.time.delayedCall(A.statsAt, () => toast.show(def)));
+      tracker.unlock(`act-${act}`);
     }
     // The act's aliens fly in one by one.
     const aliens = allAliens().filter((a) => a.unlockChapter > 0 && CHAPTERS.find((c) => c.number === a.unlockChapter)?.act === act);

@@ -7,6 +7,8 @@ import { MENU } from '../config/ui';
 import { ACTS, CHAPTERS, chapterState, defaultChapterIndex, titleRevealed, type ChapterInfo, type ChapterState } from '../levels/chapters';
 import { getLevel } from '../levels/registry';
 import { availableCards, countedCards, waitingSecrets } from '../levels/secrets';
+import { isOmnitrixMaster } from '../systems/Mastery';
+import { clippedSheen } from '../ui/sheen';
 import { flashCamera } from '../systems/Accessibility';
 import { audio } from '../systems/audio/AudioEngine';
 import { music } from '../systems/audio/Music';
@@ -51,6 +53,8 @@ interface Card {
   title: Phaser.GameObjects.BitmapText;
   /** Darkens side cards (alpha would let the silhouettes' rim light show through). */
   shade: Phaser.GameObjects.Graphics;
+  /** S rank on every difficulty: a gold card. */
+  master: boolean;
 }
 
 /**
@@ -158,9 +162,12 @@ export class ChapterSelectScene extends Phaser.Scene {
     items.push(pixelText(this, -CARD_W / 2 + 12, top + 14, `CHAPTER ${info.number}`, { originY: 0.5, color: PALETTE.uiDim }));
     // A secret in a cleared chapter that a newer alien can now open: worth a trip back.
     const waiting = open && record?.completed && info.levelId && this.file ? waitingSecrets(getLevel(info.levelId), fileAliens(this.file), record?.cards ?? []).length > 0 : false;
+    const master = open && isOmnitrixMaster(record);
     const chip = waiting
       ? ['SECRET WAITING!', PALETTE.gold]
-      : open
+      : master
+        ? ['OMNITRIX MASTER', PALETTE.gold]
+        : open
         ? record?.completed
           ? ['COMPLETE', PALETTE.omnitrix]
           : ['NEW!', PALETTE.gold]
@@ -194,7 +201,11 @@ export class ChapterSelectScene extends Phaser.Scene {
     });
     items.push(zone);
     const root = this.add.container(GAME_WIDTH / 2, CARD_Y, items);
-    return { info, state, root, frame, title, shade };
+    if (master) {
+      // A slow gold glint across the card.
+      root.add(clippedSheen(this, -CARD_W / 2 + 3, -CARD_H / 2 + 3, CARD_W - 6, CARD_H - 6, { color: PALETTE.gold, alpha: 0.1, durationMs: 1600, repeatDelayMs: 2400, band: 0.12 }));
+    }
+    return { info, state, root, frame, title, shade, master };
   }
 
   /** Bests on the file's difficulty, a medal per difficulty, and the cards found. */
@@ -280,10 +291,10 @@ export class ChapterSelectScene extends Phaser.Scene {
     this.cards.forEach((card, i) => {
       const offset = i - this.focus;
       const focused = offset === 0;
-      const color = card.state === 'open' ? PALETTE.omnitrix : (ACT_COLORS[card.info.act] ?? PALETTE.uiDim);
+      const color = card.master ? PALETTE.gold : card.state === 'open' ? PALETTE.omnitrix : (ACT_COLORS[card.info.act] ?? PALETTE.uiDim);
       const g = card.frame;
       g.clear();
-      drawPanel(g, 0, 0, CARD_W, CARD_H, { fill: focused ? PALETTE.uiPanel : PALETTE.ink, fillAlpha: 0.93, stroke: focused ? color : PALETTE.uiPanelLight, radius: 8, bevel: true });
+      drawPanel(g, 0, 0, CARD_W, CARD_H, { fill: focused ? PALETTE.uiPanel : PALETTE.ink, fillAlpha: 0.93, stroke: focused || card.master ? color : PALETTE.uiPanelLight, radius: 8, bevel: true });
       if (focused) g.lineStyle(1, color, 0.35).strokeRoundedRect(-CARD_W / 2 - 3.5, -CARD_H / 2 - 3.5, CARD_W + 7, CARD_H + 7, 10);
       const props = {
         x: GAME_WIDTH / 2 + offset * MENU.chapterSpacing,

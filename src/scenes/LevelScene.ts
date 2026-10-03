@@ -37,7 +37,7 @@ import { SpeechBubble } from '../ui/SpeechBubble';
 import { pixelText } from '../ui/text';
 import { BossArena } from './level/BossArena';
 import { CameraRig } from './level/CameraRig';
-import { Combat } from './level/Combat';
+import { Combat, isFlame } from './level/Combat';
 import { Decor } from './level/Decor';
 import { IntroDirector } from './level/IntroDirector';
 import { LevelWorld } from './level/LevelWorld';
@@ -76,6 +76,12 @@ import { CHAPTERS } from '../levels/chapters';
 import { TRAINING } from '../config/training';
 import { quality } from '../systems/Quality';
 import { knownAliens, storyAliens, trainingAliens } from '../systems/Unlocks';
+import { AchievementTracker, fileAchievements } from '../systems/Achievements';
+import { FULL_OMNITRIX_FORMS, STRIKE_ACHIEVEMENT_HITS } from '../config/achievements';
+import { jokeId } from '../aliens/jokes';
+import { GhostRecorder, ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
+import { GhostRunner } from '../entities/GhostRunner';
+import { getSettings } from '../systems/Settings';
 import type { PauseData } from './PauseScene';
 
 export interface LevelStartData {
@@ -155,6 +161,12 @@ export class LevelScene extends Phaser.Scene {
   /** A stretch of the level with the lights out (Chapter 3's blackout). */
   private darkZone: { fromX: number; toX: number } | null = null;
   private stats!: RunStats;
+  private achievements!: AchievementTracker;
+  /** This run being recorded (a timed run from the start), and the best run's ghost racing it. */
+  private recorder: GhostRecorder | null = null;
+  private ghostRunner: GhostRunner | null = null;
+  /** Damage taken when the boss fight began (UNTOUCHABLE), or null outside one. */
+  private bossDamageAtStart: number | null = null;
   private combo = new ComboCounter(COMBO.windowMs);
   private gameNow = 0;
   private checkpointId: string | null = null;
@@ -204,6 +216,11 @@ export class LevelScene extends Phaser.Scene {
     // Picked up on a different difficulty than it started on: still a clear, but not a timed run.
     if (this.stats.difficulty !== activeDifficultyId()) this.stats.mixedDifficulty = true;
     this.playMsUnsaved = 0;
+    // Training is for practice (and spawns endless enemies): only the story counts toward achievements.
+    this.achievements = new AchievementTracker(this.mode === 'story' ? fileAchievements(session.slot) : null, (def) =>
+      EventBus.emit('achievement:unlocked', { id: def.id }),
+    );
+    this.bossDamageAtStart = null;
     if (this.mode === 'story' && session.slot !== null) {
       saveSystem.unlockAliens(session.slot, this.resolveAliens([]));
       // A fresh start of a chapter replaces any saved checkpoint for it.
@@ -246,6 +263,7 @@ export class LevelScene extends Phaser.Scene {
         onPlayerHurt: (o) => this.onPlayerHurt(o),
         onParry: (n) => {
           this.stats.parries += n;
+          this.achievements.count('parries', n);
           this.bumpCombo(n);
         },
         onThrowLanded: (hits, x, y) => this.onThrowLanded(hits, x, y),
@@ -263,6 +281,7 @@ export class LevelScene extends Phaser.Scene {
     this.camRig = new CameraRig(this.cameras.main);
     this.createPlayer(start);
     this.createOmnitrix();
+    this.setupGhost(data);
     this.tutorial = new Tutorial(this.level);
 
     this.droneWorld = createDroneWorld({
@@ -275,6 +294,10 @@ export class LevelScene extends Phaser.Scene {
       telegraph: this.telegraph,
       world: this.world,
       onKilled: (d) => this.onDroneKilled(d),
+      onGummed: () => {
+        this.tutorial.onAction('gummed');
+        this.achievements.count('gummed');
+      },
       threat: (d, at) => this.perfect.register(d, at, d.x, d.y),
       cancelThreat: (d) => this.perfect.cancel(d),
     });
@@ -306,6 +329,7 @@ export class LevelScene extends Phaser.Scene {
     EventBus.on('hud:ready', () => this.syncHud(), this);
     EventBus.on('difficulty:changed', () => this.onDifficultyChanged(), this);
     EventBus.on('level:quit', () => this.onQuit(), this);
+    EventBus.on('alien:misfire', (e) => this.onJoke(e.gotId, e.line), this);
     EventBus.on('alien:misfire', () => {
       const bonus = Math.round(MISFIRE.improviseBonusMs / 1000);
       this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
@@ -536,7 +560,8 @@ export class LevelScene extends Phaser.Scene {
       this.combat.addTarget(w);
       this.physics.add.collider(this.player.zone, w.body);
       w.onFirstTease = () => this.speech.show(this.dialAliens.includes('fourarms') ? 'FOUR ARMS COULD BUST THAT!' : "I'D NEED, LIKE, FOUR ARMS TO BUST THAT...", 2400);
-      if (this.mode === 'story') w.onBroken = () => this.onVaultOpened();
+      const opened = this.level.entities.find((e) => e.type === 'crackedWall' && e.id === w.id);
+      if (this.mode === 'story') w.onBroken = () => this.onWallOpened(opened?.type === 'crackedWall' ? opened.opened : undefined);
     }
     for (const d of this.drones) this.registerDrone(d);
     for (const b of this.barricades) {
@@ -738,12 +763,18 @@ export class LevelScene extends Phaser.Scene {
 
     if (this.state === 'play' && !this.cinematic) this.stats.timeMs += realDt;
     this.playMsUnsaved += realDt;
+    this.achievements.count('transforms', this.omni.transformations - this.stats.transformations);
+    this.achievements.count('perfects', this.omni.perfects - this.stats.perfectTransforms);
+    this.achievements.count('improvised', this.omni.improvised - this.stats.improvised);
     this.stats.transformations = this.omni.transformations;
     this.stats.perfectTransforms = this.omni.perfects;
     this.stats.misfires = this.omni.misfires;
     this.stats.improvised = this.omni.improvised;
     this.stats.swaps = this.omni.swaps;
     this.perfect.prune(this.gameNow);
+    if (this.bossDamageAtStart === null && this.arena?.fighting) this.bossDamageAtStart = this.stats.damageTaken;
+    if (this.recorder && this.state === 'play') this.recorder.sample(this.stats.timeMs, this.ghostSample());
+    this.ghostRunner?.update(this.stats.timeMs);
     this.statsTimer -= realDt;
     if (this.statsTimer <= 0) {
       this.statsTimer = 100;
@@ -816,6 +847,7 @@ export class LevelScene extends Phaser.Scene {
       if (!pk.touches(p.x, p.y)) continue;
       pk.collect(this.fx);
       if (pk.kind === 'smoothy') {
+        this.achievements.count('smoothies');
         const healed = p.heal(activeDifficulty().smoothyHeal);
         playSfx('heal');
         this.floatText(pk.x, pk.baseY - 10, healed > 0 ? `+${healed} HP` : 'BRAIN FREEZE!', 0xff8fc8);
@@ -823,6 +855,7 @@ export class LevelScene extends Phaser.Scene {
         this.emitHealth(healed);
       } else {
         this.stats.cardsFound.push(pk.id);
+        this.achievements.reach('cards', this.fileCardCount());
         playSfx('card');
         this.time2.slowMo(0.4, 350, 250);
         EventBus.emit('card:collected', { id: pk.id, found: this.stats.cardsFound.length, total: this.stats.totalCards });
@@ -881,6 +914,7 @@ export class LevelScene extends Phaser.Scene {
 
   private onAbility(action: AbilityAction): void {
     this.tutorial.onAction(action);
+    if (action === 'pounceHit') this.achievements.count('pounceHits');
     if (action === 'swapStrike' && this.player.isAlien) EventBus.emit('alien:swapStrike', { alienId: this.player.form.id, hits: 1 });
   }
 
@@ -923,6 +957,7 @@ export class LevelScene extends Phaser.Scene {
 
   /** Bowling: a thrown enemy that takes two or more others down with it is a STRIKE! */
   private onThrowLanded(hits: number, x: number, y: number): void {
+    if (hits >= STRIKE_ACHIEVEMENT_HITS) this.achievements.unlock('strike');
     if (hits < COMBAT.strikeHits) return;
     this.stats.strikes++;
     this.time2.slowMo(0.22, 560, 320);
@@ -960,6 +995,7 @@ export class LevelScene extends Phaser.Scene {
   /** A different form joined the live combo: refund some alien time and celebrate. */
   private onTagTeam(): void {
     this.stats.bestTagTeam = Math.max(this.stats.bestTagTeam, this.combo.contributors.length);
+    if (this.combo.contributors.length >= FULL_OMNITRIX_FORMS) this.achievements.unlock('full-omnitrix');
     const refund = this.player.isAlien ? COMBO.tagRefundMs : 0;
     if (refund > 0) this.omni.omnitrix.extend(refund);
     playSfx('tag', 1, 1 + this.combo.contributors.length * 0.08);
@@ -969,6 +1005,7 @@ export class LevelScene extends Phaser.Scene {
   private onDroneKilled(d: Drone): void {
     this.perfect.cancel(d);
     if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
+    if (d.lastHitKind && isFlame(d.lastHitKind)) this.achievements.count('fireKOs');
     this.creditKill();
   }
 
@@ -1006,10 +1043,15 @@ export class LevelScene extends Phaser.Scene {
     this.speech.show('WHO NEEDS ALIENS? ...OK, I DO.', 2000);
   }
 
-  /** The Four Arms vault cracks open: a beat of slow motion so the card reveal lands. */
-  private onVaultOpened(): void {
+  /** A cracked wall gives: a beat of slow motion so the reveal lands. A secret vault unless the level says otherwise. */
+  private onWallOpened(opened?: { title: string; subtitle: string; line: string }): void {
     this.time2.slowMo(0.3, 600, 300);
     this.fx.shake(FX.shakeHeavy, 360);
+    if (opened) {
+      EventBus.emit('hud:banner', { title: opened.title, subtitle: opened.subtitle, color: PALETTE.gold, durationMs: 1400, style: 'slam' });
+      this.speech.show(opened.line, 2000);
+      return;
+    }
     EventBus.emit('hud:banner', { title: 'SECRET VAULT!', subtitle: 'SMASHED OPEN', color: PALETTE.gold, durationMs: 1600, style: 'slam' });
     // An earlier chapter has a secret this file can open now: point Ben back to it.
     const back = this.earlierSecret();
@@ -1018,6 +1060,7 @@ export class LevelScene extends Phaser.Scene {
 
   /** Wildmutt's senses opened a hidden passage. */
   private onHiddenPath(_id: string): void {
+    this.achievements.count('hiddenPaths');
     this.time2.slowMo(0.35, 500, 250);
     EventBus.emit('hud:banner', { title: 'HIDDEN PATH!', subtitle: 'SNIFFED OUT', color: 0xffb070, durationMs: 1500, style: 'slam' });
     if (this.player.form.id === 'wildmutt') this.speech.show('*SNIFF SNIFF* (SOMETHING BACK HERE...)', 2000);
@@ -1099,16 +1142,64 @@ export class LevelScene extends Phaser.Scene {
   /** Speedrun split vs the fastest time ever reached here on this difficulty. Practice runs show nothing. */
   private split(id: string, label: string): void {
     if (!this.stats.fullRun || this.stats.mixedDifficulty || session.slot === null) return;
-    const previous = saveSystem.recordSplit(session.slot, this.level.id, this.stats.difficulty, id, this.stats.timeMs);
-    EventBus.emit('hud:split', compareSplit(id, label, this.stats.timeMs, previous));
+    if (this.stats.splits.some((sp) => sp.id === id)) return;
+    const slot = session.slot;
+    const timeMs = this.stats.timeMs;
+    const previous = saveSystem.recordSplit(slot, this.level.id, this.stats.difficulty, id, timeMs);
+    const segmentMs = timeMs - (this.stats.splits[this.stats.splits.length - 1]?.timeMs ?? 0);
+    const bestSegmentMs = saveSystem.recordSegment(slot, this.level.id, this.stats.difficulty, id, segmentMs);
+    this.stats.splits.push({ id, label, timeMs, bestMs: previous, segmentMs, bestSegmentMs });
+    EventBus.emit('hud:split', compareSplit(id, label, timeMs, previous));
   }
 
   /** Continue picks the chapter back up at the last checkpoint, with the run so far. */
   private saveResume(): void {
     this.flushPlayTime();
+    this.achievements.flush();
     if (this.mode !== 'story' || session.slot === null || this.checkpointId === null || this.checkpointId.startsWith('@')) return;
     if (launchParams().aliens.length > 0) return;
     saveSystem.setResume(session.slot, { levelId: this.level.id, checkpoint: this.checkpointId, stats: cloneRunStats(this.stats) });
+  }
+
+  /**
+   * A timed run from the start records itself (a checkpoint restart carries on
+   * the same recording); the file's best run on this difficulty races it.
+   */
+  private setupGhost(data: LevelStartData): void {
+    this.recorder = null;
+    this.ghostRunner = null;
+    const slot = session.slot;
+    if (this.mode !== 'story' || !this.stats.fullRun || this.stats.mixedDifficulty || slot === null) {
+      ghostRecording.start(null);
+      return;
+    }
+    const current = ghostRecording.current;
+    if (!data.stats) ghostRecording.start(new GhostRecorder(this.level.id, this.stats.difficulty));
+    else if (current && current.levelId === this.level.id && current.difficulty === this.stats.difficulty) current.truncate(this.stats.timeMs);
+    // Picked up from a save: this run can't become a ghost (its start wasn't recorded).
+    else ghostRecording.start(null);
+    this.recorder = ghostRecording.current;
+    const best = getSettings().ghost ? ghostStore.load(slot, this.level.id, this.stats.difficulty) : null;
+    if (best) this.ghostRunner = new GhostRunner(this, best);
+  }
+
+  private ghostSample(): { x: number; y: number; form: number; frame: number; flip: boolean } {
+    const s = this.player.visual.sprite;
+    const frame = Number(s.frame.name);
+    return { x: s.x, y: s.y, form: Math.max(0, ghostForms().indexOf(this.player.form.id)), frame: Number.isFinite(frame) ? frame : 0, flip: s.flipX };
+  }
+
+  /** A misfire line this file hasn't heard yet goes in the JOKES FOUND log. */
+  private onJoke(gotId: string, line: string): void {
+    if (this.mode !== 'story' || session.slot === null) return;
+    if (saveSystem.addJoke(session.slot, jokeId(gotId, line))) this.achievements.reach('jokes', session.file?.jokes.length ?? 0);
+  }
+
+  /** Cards this file has, counting the ones picked up this run. */
+  private fileCardCount(): number {
+    const found = new Set(this.stats.cardsFound);
+    for (const record of Object.values(session.file?.chapters ?? {})) for (const c of record.cards) found.add(c);
+    return found.size;
   }
 
   /** Quitting keeps the run so far (time included) at the last checkpoint, like a checkpoint restart would. */
@@ -1132,6 +1223,10 @@ export class LevelScene extends Phaser.Scene {
 
   private onBossDefeated(x: number, y: number): void {
     this.split(FINISH_SPLIT, 'BOSS DOWN');
+    if (this.recorder) ghostRecording.finish();
+    this.recorder = null;
+    if (this.bossDamageAtStart !== null && this.stats.damageTaken === this.bossDamageAtStart) this.achievements.unlock('untouchable');
+    this.achievements.flush();
     this.state = 'complete';
     this.player.controlsEnabled = false;
     this.player.setInvulnerable(99999);
