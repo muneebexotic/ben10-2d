@@ -52,6 +52,8 @@ export const CHAPTER_4: LevelData = {
     { material: 'ground', x: 198, top: 33, w: 30, h: 2 },
     { material: 'ground', x: 198, top: 38, w: 70 },
     { material: 'ground', x: 236, top: 33, w: 32, h: 2 },
+    // Deck B's end wall drops to the tracks: under the deck is a dead end, never a walk into the live rail.
+    { material: 'ground', x: 266, top: 35, w: 2, h: 3 },
     // The maintenance line: a low tunnel over the live rail.
     { material: 'ground', x: 262, top: 0, w: 42, h: 29 },
     { material: 'rock', x: 268, top: 39, w: 28 },
@@ -96,7 +98,8 @@ export const CHAPTER_4: LevelData = {
     // A maintenance step up out of the station's track bed.
     { x: 234, y: 35, w: 2 },
     // The power depot's grating mezzanine (drop through it anywhere).
-    { x: 341, y: 25, w: 32 },
+    // The grating stops short of the sealed room, so walking off its end drops to the floor.
+    { x: 341, y: 25, w: 29 },
     // KEVIN 11's arena: a low ledge in each corner, scaffolds, a catwalk.
     { x: 391, y: 30, w: 3 },
     { x: 417, y: 30, w: 3 },
@@ -288,7 +291,7 @@ export const CHAPTER_4: LevelData = {
     { type: 'robot', kind: 'trackbot', x: 360, y: 25 },
     { type: 'turret', id: 'depot-t1', x: 367, y: 25, hostile: true, facing: -1 },
     { type: 'smoothy', x: 362, y: 33 },
-    { type: 'smoothy', x: 370, y: 25 },
+    { type: 'smoothy', x: 368, y: 25 },
     { type: 'checkpoint', id: 'cp-kevin', x: 386, y: 33, density: 'sparse', label: 'KEVIN 11' },
 
     // ---- KEVIN 11's arena

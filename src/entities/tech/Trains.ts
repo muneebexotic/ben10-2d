@@ -45,7 +45,8 @@ export class Trains implements Hazard {
     this.wheelsY = y * TILE;
     this.t = firstMs;
     for (let i = 0; i < TR.cars; i++) {
-      this.cars.push(d.scene.add.image(0, this.wheelsY, TEX.trainCar, i === 0 ? 0 : 1).setOrigin(0, 1).setDepth(DEPTH.enemies + 1).setVisible(false));
+      // Behind the terrain: a train runs out of sight into the tunnel at the end of the line.
+      this.cars.push(d.scene.add.image(0, this.wheelsY, TEX.trainCar, i === 0 ? 0 : 1).setOrigin(0, 1).setDepth(DEPTH.terrain - 1).setVisible(false));
     }
     // Warning lamps every few tiles, hanging under the platform's lip over the tracks.
     for (let x = this.left + 40; x < this.right - 20; x += 112) {

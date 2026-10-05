@@ -51,7 +51,7 @@ describe('chapter 4 layout', () => {
   });
 
   it('robots stand on floors, turrets on floors or under ceilings, and every machine is inside the level', () => {
-    for (const s of entity('spawn')) {
+    for (const s of entity('robot')) {
       expect(cellAt(grid, s.x, s.y) !== CELL.EMPTY, `robot floor ${s.x},${s.y}`).toBe(true);
       expect(cellAt(grid, s.x, s.y - 1), `robot ${s.x},${s.y}`).toBe(CELL.EMPTY);
     }
