@@ -5,6 +5,7 @@ import { RANK_COLOR, SCORING, type Rank } from '../config/scoring';
 import { getDifficulty } from '../config/difficulty';
 import { CHAPTERS, chapterForLevel } from '../levels/chapters';
 import { getLevel } from '../levels/registry';
+import type { LevelTheme } from '../levels/types';
 import { music } from '../systems/audio/Music';
 import { playSfx } from '../systems/audio/Sfx';
 import { computeRank, formatTime, type RunStats } from '../systems/RunStats';
@@ -27,6 +28,9 @@ import { AchievementToast } from '../ui/AchievementToast';
 import { SplitsReview } from '../ui/SplitsReview';
 import { achievementBadge } from '../ui/achievementBadge';
 import { ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
+
+/** What the results call the enemies Ben beat, by the level's look. */
+const FOES_LABEL: Partial<Record<LevelTheme, string>> = { museum: 'MUTANTS DEFEATED', city: 'ROBOTS WRECKED' };
 
 /** Best tag team names, by how many forms joined one combo. */
 const TAG_TEAM_NAMES = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!'];
@@ -121,7 +125,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const rows: Row[] = [
       { label: 'TIME', value: () => formatTime(s.timeMs), ...this.timeHighlight(previousBest) },
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
-      { label: getLevel(this.levelId).theme === 'museum' ? 'MUTANTS DEFEATED' : 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
+      { label: FOES_LABEL[getLevel(this.levelId).theme ?? 'forest'] ?? 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` }, highlight: s.multiCuts > 0 ? `${s.multiCuts} MULTI-CUT${s.multiCuts === 1 ? '' : 'S'}!` : undefined, highlightColor: 0x9fd8ff },
       { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
