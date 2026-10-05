@@ -9,6 +9,8 @@ import { AtriumCollapse } from './museum/AtriumCollapse';
 import { Blackout } from './museum/Blackout';
 import { MuseumIntro } from './museum/MuseumIntro';
 import { VillainIntro } from './museum/VillainIntro';
+import { buildKevinStory } from './kevin';
+import type { CityIntro } from './kevin/CityIntro';
 
 /**
  * Builds a chapter's scripted moments from its level data and runs them:
@@ -17,17 +19,19 @@ import { VillainIntro } from './museum/VillainIntro';
 export class StoryDirector {
   private readonly pieces: SetPiece[] = [];
   private readonly unlockBeats = new Map<string, UnlockBeat>();
-  readonly intro: RoadIntro | MuseumIntro | null;
+  readonly intro: RoadIntro | MuseumIntro | CityIntro | null;
 
   constructor(private readonly kit: StoryKit, resumeX: number, hooks: { onIntroControl(): void }) {
     const plan = kit.level.story;
-    this.intro = plan?.roadIntro ? new RoadIntro(kit, plan.roadIntro, () => hooks.onIntroControl()) : plan?.museumIntro ? new MuseumIntro(kit, plan.museumIntro) : null;
-    if (this.intro) this.pieces.push(this.intro);
     for (const u of plan?.unlocks ?? []) {
       const beat = new UnlockBeat(kit, u, u.scripted === true);
       this.unlockBeats.set(u.alien, beat);
-      this.pieces.push(beat);
     }
+    const kevin = plan?.cityIntro || plan?.kevin ? buildKevinStory(kit, resumeX, this.unlockBeats) : null;
+    this.intro = plan?.roadIntro ? new RoadIntro(kit, plan.roadIntro, () => hooks.onIntroControl()) : plan?.museumIntro ? new MuseumIntro(kit, plan.museumIntro) : (kevin?.intro ?? null);
+    if (this.intro && !kevin) this.pieces.push(this.intro);
+    if (kevin) this.pieces.push(...kevin.pieces);
+    this.pieces.push(...this.unlockBeats.values());
     this.pieces.push(new WaveTriggers(kit, resumeX));
     this.pieces.push(new AlienHints(kit));
     if (plan?.villainIntro) this.pieces.push(new VillainIntro(kit, plan.villainIntro, resumeX));

@@ -16,6 +16,7 @@ import { SettingsScene } from './scenes/SettingsScene';
 import { FileSelectScene } from './scenes/FileSelectScene';
 import { DifficultyScene } from './scenes/DifficultyScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
+import { ArcadeScene } from './scenes/ArcadeScene';
 import { applySavedSettings } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
 import { DEV_TOOLS } from './systems/LaunchParams';
@@ -42,6 +43,7 @@ const game = new Phaser.Game(
     ExtrasScene,
     GalleryScene,
     SettingsScene,
+    ArcadeScene,
   ]),
 );
 

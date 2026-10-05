@@ -89,6 +89,16 @@ export class Cabinet implements Machine {
     }
   }
 
+  /** Kevin drinks it dry: the screen dies for good. */
+  drain(): void {
+    if (this.state !== 'ready') return;
+    this.state = 'spent';
+    this.sprite.stop().setFrame(CABINET_SPENT_FRAME);
+    this.glow.setVisible(false);
+    this.d.fx.burst('volt', this.anchorX, this.anchorY - 30, 10);
+    playSfx('powerDown', 0.5, 1.4);
+  }
+
   private gameOver(): void {
     const x = this.anchorX + this.dir * K.blastReach;
     const y = this.anchorY - 24;

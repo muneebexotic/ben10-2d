@@ -33,6 +33,7 @@ import * as tech from './tech';
 import * as robots from './robots';
 import * as city from './city';
 import * as kevin from './kevin';
+import * as sumo from './sumo';
 
 /**
  * Keys for every shared texture (world, enemies, UI, human Ben). Each alien
@@ -269,6 +270,9 @@ export const TEX = {
   catwalkRail: 'prop-catwalk-rail',
   rails: 'prop-rails',
   teslaCoil: 'prop-tesla-coil',
+  sumoBen: 'arcade-sumo-ben',
+  sumoKev: 'arcade-sumo-kev',
+  sumoRing: 'arcade-sumo-ring',
   // Kevin 11: machines.
   shutter: 'tech-shutter',
   shutterBar: 'tech-shutter-bar',
@@ -537,6 +541,9 @@ export const ASSETS: AssetDef[] = [
   one(TEX.catwalkRail, 32, 10, city.drawCatwalkRail),
   one(TEX.rails, 32, 8, city.drawRails),
   sheet(TEX.teslaCoil, 28, 80, 2, city.drawTeslaCoil),
+  sheet(TEX.sumoBen, sumo.SUMO_FRAME.w, sumo.SUMO_FRAME.h, sumo.SUMO_FRAME_COUNT, sumo.drawSumo(0)),
+  sheet(TEX.sumoKev, sumo.SUMO_FRAME.w, sumo.SUMO_FRAME.h, sumo.SUMO_FRAME_COUNT, sumo.drawSumo(1)),
+  one(TEX.sumoRing, 240, 28, sumo.drawSumoRing),
   one(TEX.shutter, 16, 16, tech.drawShutter),
   one(TEX.shutterBar, 16, 5, tech.drawShutterBar),
   sheet(TEX.keypad, 10, 16, 2, tech.drawKeypad),

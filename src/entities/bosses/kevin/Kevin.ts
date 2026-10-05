@@ -666,6 +666,13 @@ export class Kevin implements ArenaBoss, KevinBody {
     this.w.onDefeated(this.x, this.floorY - 20);
   }
 
+  /** The story takes Kevin back after the turn: this sprite goes, his spot is handed over. */
+  handOff(): { x: number; feetY: number; facing: 1 | -1 } {
+    this.look.setVisible(false);
+    this.state = 'dead';
+    return { x: this.x, feetY: this.floorY - this.lift, facing: this.facing };
+  }
+
   // ------------------------------------------------------------ Look
 
   private render(dtMs: number): void {

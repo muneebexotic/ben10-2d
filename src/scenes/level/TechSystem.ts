@@ -39,6 +39,8 @@ export interface TechSystemDeps extends TechDeps {
  */
 export class TechSystem {
   readonly machines: Machine[] = [];
+  /** The third rail still has power (until Kevin drinks it). */
+  private railLive = true;
   readonly turrets: Turret[] = [];
   readonly trains: Trains[] = [];
   private readonly box: Rect = { x: 0, y: 0, w: 0, h: 0 };
@@ -120,6 +122,12 @@ export class TechSystem {
     this.machines.push(m);
   }
 
+  /** The trains run or stop (the drain kills the third rail). */
+  setTrains(running: boolean): void {
+    for (const t of this.trains) t.enabled = running;
+    this.railLive = running;
+  }
+
   /** Every machine with this id (set pieces reach in for their own). */
   get(id: string): Machine | undefined {
     return this.machines.find((m) => m.id === id);
@@ -134,6 +142,7 @@ export class TechSystem {
 
   /** The live third rail crackles. */
   private sparkRails(): void {
+    if (!this.railLive) return;
     const view = this.d.scene.cameras.main.worldView;
     for (const r of this.railSpans) {
       if (r.x > view.right || r.x + r.w < view.x) continue;

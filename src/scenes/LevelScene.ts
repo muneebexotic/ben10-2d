@@ -410,6 +410,7 @@ export class LevelScene extends Phaser.Scene {
   private levelTrack(): TrackName {
     if (this.mode === 'training') return 'simulation';
     if (this.level.theme === 'museum') return 'museum';
+    if (this.level.theme === 'city') return (this.resumeTileX() ?? 0) >= (this.level.story?.drain?.fromX ?? Infinity) ? 'subway' : 'arcade';
     return this.level.theme === 'highway' ? 'highway' : 'forest';
   }
 
@@ -456,8 +457,28 @@ export class LevelScene extends Phaser.Scene {
       cancelThreat: (key) => this.perfect.cancel(key),
       setDarkness: (zone) => (this.darkZone = zone),
       collapse: (rect) => this.world.clearCells(rect),
+      machine: (id) => this.tech?.get(id),
+      setTrains: (running) => this.tech?.setTrains(running),
+      powerOff: (fromX, toX) => this.decor.powerOff(fromX, toX),
+      nearestEnemy: (x, y, range) => this.nearestEnemy(x, y, range),
     };
     return new StoryDirector(kit, resumeX, { onIntroControl: () => this.spawnIntroDrones() });
+  }
+
+  private nearestEnemy(x: number, y: number, range: number): { x: number; y: number } | null {
+    let best: Drone | null = null;
+    let bestD = range * range;
+    for (const d of this.drones) {
+      if (!d.alive || !d.awake) continue;
+      const dx = d.x - x;
+      const dy = d.y - y;
+      const dist = dx * dx + dy * dy;
+      if (dist < bestD) {
+        bestD = dist;
+        best = d;
+      }
+    }
+    return best ? { x: best.x, y: best.y } : null;
   }
 
   /** A drone a set piece brings in (ambush waves, the convoy's escorts). */

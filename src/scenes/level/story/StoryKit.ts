@@ -2,6 +2,7 @@ import type Phaser from 'phaser';
 import type { DamageOutcome, Player } from '../../../entities/Player';
 import type { Projectiles } from '../../../entities/Projectiles';
 import type { Drone, DroneWorld } from '../../../entities/enemies/Drone';
+import type { Machine } from '../../../entities/tech/Machine';
 import type { Telegraphs } from '../../../entities/enemies/Telegraphs';
 import type { EnemyKind, LevelData } from '../../../levels/types';
 import type { Fx } from '../../../systems/Fx';
@@ -81,4 +82,12 @@ export interface StoryKit {
   setDarkness(zone: { fromX: number; toX: number } | null): void;
   /** Solid tiles in this rect (tiles) crumble away for good (a collapsing floor). */
   collapse(rect: { x: number; y: number; w: number; h: number }): void;
+  /** A machine from the level data by id (a door, a turret), if the level has machines. */
+  machine(id: string): Machine | undefined;
+  /** Lamps, signs and screens between these x positions (px) go dark for good. */
+  powerOff(fromX: number, toX: number): void;
+  /** The subway's trains run (or stop: the third rail is dead). */
+  setTrains(running: boolean): void;
+  /** The closest live enemy within `range` of (x, y), or null. */
+  nearestEnemy(x: number, y: number, range: number): { x: number; y: number } | null;
 }

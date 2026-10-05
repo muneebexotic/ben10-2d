@@ -178,7 +178,25 @@ export class Turret implements Machine, Damageable {
     this.render();
   }
 
+  /** A set piece keeps it powered down (the LASER LAIR before the lockdown). */
+  sleep(): void {
+    this.sleeping = true;
+  }
+
+  /** Powers up at once: lights, a beep, then it starts hunting. */
+  wakeNow(): void {
+    this.sleeping = false;
+    if (!this.hostile || this.awake) return;
+    this.awake = true;
+    this.setState('rest');
+    this.d.fx.flash(this.head.x, this.head.y, PALETTE.enemy, 20, 200);
+    playSfx('beep', 0.5, 1.4);
+  }
+
+  private sleeping = false;
+
   private updateHostile(): void {
+    if (this.sleeping) return;
     const d = this.d;
     const p = d.player;
     const now = d.now();

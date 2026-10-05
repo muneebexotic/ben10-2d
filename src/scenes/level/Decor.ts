@@ -24,6 +24,8 @@ interface Glow {
   intensity: number;
   /** Flickers like a neon tube. */
   flicker: boolean;
+  /** The power's out (Kevin drank it). */
+  off?: boolean;
 }
 
 /** Lit signs and windows: where the light sits relative to the prop's bottom centre. */
@@ -163,6 +165,11 @@ function hash(x: number, salt: number): number {
 
 /** Static set dressing: authored props plus deterministic grass, bushes, rocks and glowing mushrooms. */
 export class Decor {
+  /** Every lamp, sign and screen between these x positions (px) goes dark (a power cut). */
+  powerOff(fromX: number, toX: number): void {
+    for (const g of this.glows) if (g.x >= fromX && g.x < toX) g.off = true;
+  }
+
   private readonly fires: FireSpot[] = [];
   private readonly mushrooms: Array<{ x: number; y: number }> = [];
   private readonly fireflies: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
@@ -308,7 +315,7 @@ export class Decor {
     }
     if (this.windowLight) lighting.add(this.windowLight.x, this.windowLight.y, 70, 0xffd890, 0.8);
     for (const g of this.glows) {
-      if (g.x < view.x - 200 || g.x > view.right + 200) continue;
+      if (g.off || g.x < view.x - 200 || g.x > view.right + 200) continue;
       const k = g.flicker ? 0.85 + Math.sin(now * 0.021 + g.x) * 0.1 + (Math.sin(now * 0.13 + g.y) > 0.97 ? -0.4 : 0) : 1;
       lighting.add(g.x, g.y, g.radius, g.color, g.intensity * k);
     }

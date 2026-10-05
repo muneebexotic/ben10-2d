@@ -79,6 +79,21 @@ export class TechDoor implements Machine {
     playSfx('powerUp', 0.8);
   }
 
+  /** Forced open by someone else (Kevin shorting the keypad on his way out). `label` null: already open (a restart past it). */
+  openNow(label: string | null, color: number): void {
+    if (this.state !== 'shut') return;
+    this.state = 'open';
+    for (const p of this.pads) p.setFrame(1);
+    if (label !== null) {
+      this.roll(label, color);
+      return;
+    }
+    this.body.disableBody(true, true);
+    this.d.removeSolid(this.rect);
+    this.face.setVisible(false);
+    this.bar.setVisible(false);
+  }
+
   control(_c: Controls, _dtMs: number): void {
     // Nothing to steer: the door opens on its own once powered.
   }
@@ -114,13 +129,13 @@ export class TechDoor implements Machine {
   }
 
   /** Rolls up into the ceiling for good. */
-  private roll(): void {
+  private roll(label = 'ACCESS GRANTED', color: number = PALETTE.upgrade): void {
     const r = this.rect;
     this.body.disableBody(true, true);
     this.d.removeSolid(this.rect);
     this.d.fx.burst('circuit', r.x + r.w / 2, r.y + r.h - 6, 14);
     this.d.fx.burst('dust', r.x + r.w / 2, r.y + r.h, 8);
-    this.d.fx.popText(r.x + r.w / 2, r.y - 6, 'ACCESS GRANTED', PALETTE.upgrade);
+    this.d.fx.popText(r.x + r.w / 2, r.y - 6, label, color);
     playSfx('shutter');
     this.d.scene.tweens.add({ targets: [this.face, this.bar], y: `-=${r.h}`, scaleY: 0.2, alpha: 0, duration: D.openMs, ease: 'Quad.easeIn' });
   }
