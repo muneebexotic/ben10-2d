@@ -218,7 +218,7 @@ export class UpgradeAbilities implements FormAbilities {
     this.machine = null;
     player.setHidden(false);
     player.ride(m.anchorX, m.anchorY);
-    player.setVelocityX(player.facing * M.popVx);
+    player.setVelocityX(m.popInPlace ? 0 : player.facing * M.popVx);
     player.launch(-M.popVy, false);
     player.squash(0.7, 1.4);
     fx.burst('circuit', m.anchorX, m.anchorY - 8, 14);

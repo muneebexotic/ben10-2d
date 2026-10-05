@@ -161,6 +161,8 @@ export interface MachineHandle {
   control(controls: Controls, dtMs: number): void;
   /** The form leaves (it ejected, reverted or went down). */
   release(): void;
+  /** The form pops straight up out of it instead of hopping forward (a cart over a live rail is the only floor around). */
+  readonly popInPlace?: boolean;
 }
 
 /** Read-only level queries for abilities that react to terrain. */

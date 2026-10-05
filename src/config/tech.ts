@@ -47,6 +47,9 @@ export const TECH = {
     barrierSpeed: 120,
     /** At the end of the line Upgrade pops out after this long. */
     endEjectMs: 450,
+    /** Left out on the line with nobody aboard, it waits this long and then rolls back to the start, so it can't strand Ben. */
+    returnDelayMs: 1500,
+    returnSpeed: 80,
   },
   /** Arcade cabinets: merged, the screen blasts GAME OVER at whatever's in front. */
   cabinet: { bootMs: 300, releaseMs: 460, blastRadius: 66, blastReach: 40, damage: 5, stunMs: 1500, knockback: 320 },

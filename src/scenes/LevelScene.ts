@@ -554,7 +554,8 @@ export class LevelScene extends Phaser.Scene {
       },
     });
     if (launchParams().god) this.player.setInvulnerable(1e9);
-    this.player.isSafeSpot = (x, y) => !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12);
+    this.player.isSafeSpot = (x, y) =>
+      !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12) && !this.world.overRail(x - 12) && !this.world.overRail(x + 12);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
     this.player.isWaterSurface = (x, y) => this.world.onWaterSurface(x, y);
     this.combat.setPlayer(this.player);

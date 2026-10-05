@@ -22,6 +22,7 @@ const H = 30;
  */
 export class RailCart implements Machine {
   readonly kind = 'cart';
+  readonly popInPlace = true;
   readonly rect: Rect;
   readonly body: Phaser.Physics.Arcade.Image;
   private readonly sprite: Phaser.GameObjects.Sprite;
@@ -38,6 +39,7 @@ export class RailCart implements Machine {
   private ramKey: object = {};
   private ramResetAt = 0;
   private soundT = 0;
+  private strandedMs = 0;
   holding = false;
 
   constructor(
@@ -114,15 +116,24 @@ export class RailCart implements Machine {
 
   release(): void {
     this.holding = false;
-    if (this.state === 'driving') this.state = 'stopped';
+    if (this.state === 'driving') {
+      this.state = 'stopped';
+      // The brakes lock, so whoever pops out (or reverts) lands back on the cart, not on the rail.
+      if (Math.abs(this.vx) > 20) {
+        playSfx('screech', 0.5, 1.4);
+        this.d.fx.burst('spark', this.anchorX, this.railY - 2, 10);
+      }
+      this.vx = 0;
+    }
     this.sprite.setFrame(0);
   }
 
   update(dtMs: number): void {
     const dt = dtMs / 1000;
     if (this.state !== 'driving') {
-      // Coasts to a stop with nobody at the controls.
-      this.vx -= Math.sign(this.vx) * Math.min(Math.abs(this.vx), C.friction * 2 * dt);
+      if (this.stranded(dtMs)) this.vx = -C.returnSpeed;
+      // Otherwise it coasts to a stop with nobody at the controls.
+      else this.vx -= Math.sign(this.vx) * Math.min(Math.abs(this.vx), C.friction * 2 * dt);
     }
     if (this.vx !== 0) this.move(dt);
     const lamp = this.sprite.flipX ? this.rect.x : this.rect.x + W;
@@ -135,6 +146,24 @@ export class RailCart implements Machine {
         this.release();
       }
     }
+  }
+
+  /** Out on the line with nobody aboard (Ben fell off, or flew away): after a moment it rolls back to the start of the line. */
+  private stranded(dtMs: number): boolean {
+    const p = this.d.player;
+    const out = this.state === 'stopped' && this.rect.x > this.startX && this.rect.x < this.endX - 1;
+    const aboard = Math.abs(p.x - this.anchorX) < W / 2 + 10 && p.y <= this.rect.y + 4;
+    if (!out || aboard || p.dead) {
+      this.strandedMs = 0;
+      return false;
+    }
+    this.strandedMs += dtMs;
+    if (this.strandedMs < C.returnDelayMs) return false;
+    if (this.vx === 0) {
+      this.d.fx.popText(this.anchorX, this.rect.y - 10, 'BACK TO THE START', PALETTE.workLight);
+      playSfx('beep', 0.6);
+    }
+    return true;
   }
 
   private move(dt: number): void {

@@ -159,6 +159,11 @@ export class LevelWorld {
     return ground;
   }
 
+  /** Over a live rail, at any height: the only floor up there is a cart that moves, so it's never safe ground to respawn on. */
+  overRail(x: number): boolean {
+    return this.data.water.some((w) => w.kind === 'rail' && x >= w.x * TILE && x < (w.x + w.w) * TILE);
+  }
+
   inWater(x: number, feetY: number): boolean {
     return this.data.water.some(
       (w) => x >= w.x * TILE && x < (w.x + w.w) * TILE && feetY > w.surface * TILE + 8,
