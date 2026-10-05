@@ -57,5 +57,6 @@ export const UPGRADE_FORM: FormDefinition = {
   art: { assets: UPGRADE_ASSETS, anims: UPGRADE_ANIMS },
   // An ordinary jumper: his reach is the machines he can ride.
   reach: { jumpUp: 4, jumpAcross: 5, canBurn: false, canSmash: false, canRunWater: false, canMerge: true },
+  copy: { style: 'beam', tell: 'laser', attack: 'laser', cheer: 'YOU WENT INSIDE THE MACHINE. HOW?!' },
   createAbilities: () => new UpgradeAbilities(),
 };

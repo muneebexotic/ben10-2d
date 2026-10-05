@@ -50,5 +50,6 @@ export const FOURARMS_FORM: FormDefinition = {
   audio: { transform: fourArmsTransform, music: FOURARMS_MUSIC },
   art: { assets: FOURARMS_ASSETS, anims: FOURARMS_ANIMS },
   reach: { jumpUp: 4, jumpAcross: 5, canBurn: false, canSmash: true, canRunWater: false },
+  copy: { style: 'slam', tell: 'slamUp', attack: 'slam', cheer: 'FOUR ARMS?! YOU COULD BENCH A BUS!' },
   createAbilities: () => new FourArmsAbilities(),
 };

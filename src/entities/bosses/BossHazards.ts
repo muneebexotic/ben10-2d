@@ -108,7 +108,8 @@ export class BossHazards {
     return [...this.shockwaves, this.beam, ...this.blasts];
   }
 
-  spawnShockwave(x: number, dir: 1 | -1): void {
+  /** `tint`: another villain's colour (Kevin's copies are purple). */
+  spawnShockwave(x: number, dir: 1 | -1, tint?: number): void {
     const s = this.shockwaves.find((w) => !w.active);
     if (!s) return;
     s.active = true;
@@ -116,9 +117,11 @@ export class BossHazards {
     s.dir = dir;
     s.life = BOSS.slam.shockwaveLifeMs;
     s.sprite.setVisible(true).setFlipX(dir < 0).play('shockwave-roll');
+    if (tint === undefined) s.sprite.clearTint();
+    else s.sprite.setTint(tint);
   }
 
-  fireBeam(x0: number, x1: number, y: number): void {
+  fireBeam(x0: number, x1: number, y: number, tint?: number): void {
     const b = this.beam;
     b.active = true;
     b.x0 = x0;
@@ -127,6 +130,8 @@ export class BossHazards {
     this.beamLeft = BOSS.beam.fireMs;
     const left = Math.min(x0, x1);
     this.beamSprite.setPosition(left, y).setDisplaySize(Math.abs(x1 - x0), BOSS.beam.height + 8).setVisible(true).setAlpha(1);
+    if (tint === undefined) this.beamSprite.clearTint();
+    else this.beamSprite.setTint(tint);
   }
 
   dropBomb(x: number, warnMs: number): void {

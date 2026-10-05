@@ -51,5 +51,6 @@ export const STINKFLY_FORM: FormDefinition = {
   art: { assets: STINKFLY_ASSETS, anims: STINKFLY_ANIMS },
   // A normal jump, then up to ~2 s of flapping: tall shafts and long gaps are his.
   reach: { jumpUp: 11, jumpAcross: 13, canBurn: false, canSmash: false, canRunWater: false },
+  copy: { style: 'flyer', tell: 'spit', attack: 'spit', air: 'fly', cheer: 'A GIANT BUG! ...IT SMELLS LIKE MY GYM BAG.' },
   createAbilities: () => new StinkflyAbilities(),
 };

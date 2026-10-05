@@ -24,6 +24,8 @@ export interface OmnitrixTick {
   frozen: boolean;
   /** After a misfire: the next swap is the half-price fix. */
   fixOwed: boolean;
+  /** Aliens on the dial whose DNA was stolen (unusable for now). */
+  blocked: readonly string[];
 }
 
 export interface BannerPayload {
@@ -44,7 +46,11 @@ export interface GameEvents {
   'omnitrix:dial': { selectedId: string; index: number; count: number; direction: 1 | -1 };
   'omnitrix:warning': { secondsLeft: number };
   'omnitrix:ready': undefined;
-  'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' | 'lowTime' };
+  'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' | 'lowTime' | 'stolen' };
+  /** Kevin absorbed an alien's DNA (its dial slot goes dark), or it came back. */
+  'omnitrix:stolen': { alienId: string; stolen: boolean };
+  /** Kevin's copy meter: every alien he has data on, its copy level (0-3), and the one he's copying now. */
+  'boss:copies': { list: ReadonlyArray<{ id: string; level: number }>; current: string | null };
   /** `swap`: changed alien mid-transformation instead of transforming from human. `fix`: the half-price swap owed after a misfire. */
   'alien:transformed': { alienId: string; name: string; wrong: boolean; first: boolean; swap: boolean; fix?: boolean };
   /** The record-scratch moment of a misfire: Ben wanted one alien and got another. */

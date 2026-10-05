@@ -268,3 +268,61 @@ describe('story unlocks', () => {
     expect(o.fixSwapOwed).toBe(false);
   });
 });
+
+describe('stolen DNA (blocked aliens)', () => {
+  const swapConfig: OmnitrixConfig = { ...CONFIG, swapEnabled: true, swapCostMs: 0, swapLockoutMs: 0, wrongTransformChance: 1 };
+
+  it('the dial steps off a blocked alien and skips it when turning', () => {
+    const omni = new Omnitrix(CONFIG, ['heatblast', 'fourarms', 'xlr8']);
+    expect(omni.selectedAlien).toBe('heatblast');
+    omni.setBlocked('heatblast', true);
+    expect(omni.selectedAlien).toBe('fourarms');
+    omni.cycle(1);
+    expect(omni.selectedAlien).toBe('xlr8');
+    omni.cycle(1);
+    expect(omni.selectedAlien).toBe('fourarms');
+    expect(omni.select('heatblast')).toEqual([]);
+    expect(omni.selectedAlien).toBe('fourarms');
+  });
+
+  it('never transforms into, swaps to, misfires into or is forced into a blocked alien', () => {
+    // Misfires always happen here (chance 1) and the only other choice is blocked.
+    const omni = new Omnitrix(swapConfig, ['heatblast', 'fourarms'], () => 0);
+    omni.setBlocked('heatblast', true);
+    const t = omni.transform();
+    expect(t[0]).toMatchObject({ type: 'transformed', alienId: 'fourarms', wrong: false });
+    expect(omni.forceInto('heatblast')).toEqual([]);
+    expect(omni.activeAlienId).toBe('fourarms');
+    expect(omni.blockedAliens).toEqual(['heatblast']);
+  });
+
+  it('a blocked alien comes back when unblocked', () => {
+    const omni = new Omnitrix(swapConfig, ['heatblast', 'fourarms']);
+    omni.setBlocked('heatblast', true);
+    omni.transform({ allowMisfire: false });
+    expect(omni.swapDenial()).toBe('sameAlien');
+    omni.setBlocked('heatblast', false);
+    omni.select('heatblast');
+    expect(omni.swapDenial()).toBeNull();
+    expect(omni.isBlocked('heatblast')).toBe(false);
+  });
+
+  it('with every alien blocked, Ben stays human', () => {
+    const omni = new Omnitrix(CONFIG, ['heatblast']);
+    omni.setBlocked('heatblast', true);
+    expect(omni.canTransform()).toBe(false);
+    expect(omni.transform()).toEqual([]);
+  });
+});
+
+describe('draining alien time', () => {
+  it('takes time off but leaves the timeout to the clock', () => {
+    const omni = new Omnitrix(CONFIG, ['heatblast']);
+    omni.transform({ allowMisfire: false });
+    omni.drain(4000);
+    expect(omni.timeRemainingMs).toBe(CONFIG.transformDurationMs - 4000);
+    omni.drain(999_999);
+    expect(omni.timeRemainingMs).toBe(1);
+    expect(types(omni.update(16))).toContain('reverted');
+  });
+});

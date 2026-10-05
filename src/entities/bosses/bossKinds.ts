@@ -7,6 +7,7 @@ import type { ArenaBoss } from './ArenaBoss';
 import { HunterDrone, type BossWorld } from './HunterDrone';
 import { Roadbreaker } from './roadbreaker/Roadbreaker';
 import { Frog } from './frog/Frog';
+import { Kevin } from './kevin/Kevin';
 
 /** Everything an arena needs to stage a boss: its music, Vilgax's speech before it, and the boss itself. */
 export interface BossKindDef {
@@ -27,5 +28,5 @@ export const BOSS_KINDS: Record<BossKind, BossKindDef> = {
     create: (scene, world, x) => new Roadbreaker(scene, world, x),
   },
   frog: { music: 'animo', hologram: [], create: (scene, world, x) => new Frog(scene, world, x) },
-  kevin: { music: 'animo', hologram: [], create: (scene, world, x) => new Frog(scene, world, x) },
+  kevin: { music: 'animo', hologram: [], create: (scene, world, x) => new Kevin(scene, world, x) },
 };

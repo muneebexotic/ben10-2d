@@ -672,3 +672,29 @@ export function drawRails(pc: PixelCanvas): void {
   pc.rect(0, 1, 32, 2, P.concrete3);
   pc.hline(0, 31, 3, P.concrete1);
 }
+
+/**
+ * A tesla coil in the substation hall: a ribbed column on an insulated base,
+ * a copper torus on top. Frame 0 idle, 1 charged (rings lit). 28x80.
+ */
+export function drawTeslaCoil(pc: PixelCanvas, frame: number): void {
+  const lit = frame === 1;
+  // Base: a squat concrete plinth with hazard stripes.
+  pc.rect(2, 68, 24, 12, 0x3a3e48);
+  for (let x = 2; x < 26; x += 6) pc.poly([[x, 80], [x + 3, 80], [x + 6, 74], [x + 3, 74]], P.hazard);
+  pc.rect(2, 66, 24, 3, 0x5a5e6a);
+  // Ceramic insulator stack.
+  for (let y = 54; y < 66; y += 3) pc.rect(8, y, 12, 2, 0xd8d0c0).hline(8, 19, y + 2, 0x8a8478);
+  // The copper winding column.
+  pc.rect(10, 18, 8, 36, 0x8a4a22);
+  for (let y = 19; y < 54; y += 2) pc.hline(10, 17, y, lit ? 0xffc890 : 0xc87a3a);
+  pc.vline(11, 18, 53, lit ? 0xffe0b0 : 0xd89a5a);
+  // The torus on top.
+  pc.ellipse(14, 12, 13, 6, 0x6a6e7a);
+  pc.ellipse(14, 11, 11, 4, lit ? P.kevin : 0x9aa0ae);
+  pc.ellipse(14, 10, 6, 2, lit ? P.white : 0xc8ccd6);
+  pc.rect(13, 2, 2, 6, 0x9aa0ae);
+  pc.circle(14, 2, 2, lit ? P.white : 0xc8ccd6);
+  if (lit) for (const [x, y] of [[2, 6], [25, 8], [4, 16], [24, 18]] as const) pc.px(x, y, P.kevin);
+  pc.outline(P.ink);
+}

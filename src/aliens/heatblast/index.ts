@@ -52,5 +52,6 @@ export const HEATBLAST_FORM: FormDefinition = {
   audio: { transform: heatblastTransform, music: HEATBLAST_MUSIC },
   art: { assets: HEATBLAST_ASSETS, anims: HEATBLAST_ANIMS },
   reach: { jumpUp: 9, jumpAcross: 9, canBurn: true, canSmash: false, canRunWater: false },
+  copy: { style: 'fire', tell: 'charge', attack: 'shoot', cheer: 'THE FIRE GUY! DO THE FIRE GUY AGAIN!' },
   createAbilities: () => new HeatblastAbilities(),
 };

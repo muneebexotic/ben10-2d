@@ -256,9 +256,10 @@ export class TouchScene extends Phaser.Scene {
       const aliens = (this.tick?.unlocked ?? []).filter((id) => hasAlien(id));
       if (aliens.length < 2) continue;
       track.radial = true;
+      const stolen = this.tick?.blocked ?? [];
       const items = aliens.map((id) => {
         const a = getAlien(id);
-        return { icon: a.hudIcon, color: a.theme.color, name: a.name };
+        return stolen.includes(id) ? { icon: a.hudIcon, color: PALETTE.kevinDark, name: 'DNA STOLEN' } : { icon: a.hudIcon, color: a.theme.color, name: a.name };
       });
       this.picker.show(this.dial.x, this.dial.y, items, Math.max(0, aliens.indexOf(this.tick?.selectedId ?? '')));
       this.picker.point(track.startX, track.startY);

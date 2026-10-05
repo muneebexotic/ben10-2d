@@ -115,6 +115,11 @@ export class TechSystem {
     return null;
   }
 
+  /** A machine that isn't in the level data joins (a boss's coils). The system updates and destroys it from now on. */
+  add(m: Machine): void {
+    this.machines.push(m);
+  }
+
   /** Every machine with this id (set pieces reach in for their own). */
   get(id: string): Machine | undefined {
     return this.machines.find((m) => m.id === id);

@@ -51,5 +51,6 @@ export const XLR8_FORM: FormDefinition = {
   art: { assets: XLR8_ASSETS, anims: XLR8_ANIMS },
   // Ground jump only, but the dash and top speed carry him across wide gaps and water.
   reach: { jumpUp: 3, jumpAcross: 11, canBurn: false, canSmash: false, canRunWater: true },
+  copy: { style: 'dash', tell: 'strikeA', attack: 'dash', cheer: 'WHOA, SPEEDY! I BLINKED AND MISSED IT!' },
   createAbilities: () => new Xlr8Abilities(),
 };

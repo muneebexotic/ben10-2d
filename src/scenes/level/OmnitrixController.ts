@@ -13,6 +13,8 @@ import type { PerfectWindow } from '../../systems/PerfectTransform';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { TransformSequence } from './TransformSequence';
 
+type DenyReason = 'cooldown' | 'jammed' | 'lowTime' | 'stolen';
+
 /**
  * Glue between the pure Omnitrix and the game: reads dial/transform input,
  * runs the transform/revert sequences and keeps the HUD informed.
@@ -37,7 +39,7 @@ export class OmnitrixController {
   onTransformed: ((alienId: string, first: boolean) => void) | null = null;
   onSwapped: ((alienId: string) => void) | null = null;
   onReverted: ((reason: RevertReason) => void) | null = null;
-  onDenied: ((reason: 'cooldown' | 'jammed' | 'lowTime') => void) | null = null;
+  onDenied: ((reason: DenyReason) => void) | null = null;
 
   constructor(
     unlocked: string[],
@@ -79,7 +81,8 @@ export class OmnitrixController {
       // Straight to a slot: number keys or the radial picker.
       const from = this.omnitrix.unlockedAliens.indexOf(this.omnitrix.selectedAlien ?? '');
       const id = this.omnitrix.unlockedAliens[c.dialPick];
-      if (id !== undefined && c.dialPick !== from) {
+      if (id !== undefined && this.omnitrix.isBlocked(id)) this.deny('stolen', now);
+      else if (id !== undefined && c.dialPick !== from) {
         const dir: 1 | -1 = c.dialPick > from ? 1 : -1;
         for (const e of this.omnitrix.select(id)) {
           if (e.type === 'dial') EventBus.emit('omnitrix:dial', { selectedId: e.selectedId, index: e.index, count: e.count, direction: dir });
@@ -103,6 +106,7 @@ export class OmnitrixController {
     const state = this.omnitrix.state;
     const lead = Math.min(c.transformLeadMs, PERFECT_TRANSFORM.touchLeadCapMs);
     if (state === 'cooldown') this.deny('cooldown', now);
+    else if (state === 'ready' && !this.omnitrix.canTransform()) this.deny('stolen', now);
     else if (state === 'ready') {
       // The very first transform is the tutorial moment; perfects start after it.
       this.pendingPerfect = this.transformations > 0 && this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
@@ -114,8 +118,8 @@ export class OmnitrixController {
         this.pendingPerfect = this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
         this.handle(this.omnitrix.swap({ allowMisfire: this.misfireAllowed() }));
         this.pendingPerfect = false;
-      } else if (denial === 'lowTime') {
-        this.deny('lowTime', now);
+      } else if (denial === 'lowTime' || denial === 'stolen') {
+        this.deny(denial, now);
       }
     }
   }
@@ -140,6 +144,7 @@ export class OmnitrixController {
       canSwap: !hide && o.canSwap(),
       frozen: o.timerFrozen,
       fixOwed: !hide && o.fixSwapOwed,
+      blocked: o.blockedAliens,
     });
   }
 
@@ -156,6 +161,24 @@ export class OmnitrixController {
     this.forcing = true;
     this.handle(this.omnitrix.forceInto(alienId));
     this.forcing = false;
+  }
+
+  /** Kevin stole an alien's DNA (it can't be used until he gives it back), or gave it back. */
+  steal(alienId: string, stolen: boolean): void {
+    for (const e of this.omnitrix.setBlocked(alienId, stolen)) {
+      if (e.type === 'dial') EventBus.emit('omnitrix:dial', { selectedId: e.selectedId, index: e.index, count: e.count, direction: 1 });
+    }
+    EventBus.emit('omnitrix:stolen', { alienId, stolen });
+  }
+
+  /** Something drank Ben's alien time (Kevin's absorb). */
+  drain(ms: number): void {
+    this.omnitrix.drain(ms);
+  }
+
+  /** The story recharges the watch at once (so Ben always has something to switch to). */
+  recharge(): void {
+    this.handle(this.omnitrix.recharge());
   }
 
   /** Forces an early revert (alien shield broken, jammer field). */
@@ -232,7 +255,7 @@ export class OmnitrixController {
     EventBus.emit('omnitrix:perfect', { bonusMs: PERFECT_TRANSFORM.bonusMs, count: this.perfects });
   }
 
-  private deny(reason: 'cooldown' | 'jammed' | 'lowTime', now: number): void {
+  private deny(reason: DenyReason, now: number): void {
     if (now < this.deniedFlashUntil) return;
     this.deniedFlashUntil = now + 250;
     playSfx(reason === 'jammed' ? 'jammed' : 'denied');

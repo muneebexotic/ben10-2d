@@ -18,6 +18,7 @@ import { TEX } from '../preload/assetKeys';
 import type { CameraRig } from './CameraRig';
 import type { Combat } from './Combat';
 import type { Controls } from '../../systems/InputMap';
+import type { Machine } from '../../entities/tech/Machine';
 import { VilgaxHologram } from './VilgaxHologram';
 import { inputMode } from '../../systems/InputMode';
 
@@ -51,6 +52,12 @@ export interface ArenaDeps {
   tip(id: string, text: string, ms: number): void;
   /** A conversation in the dialogue box (bosses with their own speaker). */
   dialogue(lines: ReadonlyArray<{ who: string; text: string; ms: number }>, onDone: () => void): void;
+  /** Ben's form right now ('ben' when human). */
+  playerForm(): string;
+  drainAlienTime(ms: number): void;
+  addMachine(m: Machine): void;
+  copies(list: ReadonlyArray<{ id: string; level: number }>, current: string | null): void;
+  achievement(id: string): void;
 }
 
 /** Locks Ben into the boss's arena, runs Vilgax's hologram and the boss's entrance, then hands over the fight. */
@@ -188,6 +195,11 @@ export class BossArena {
         d.player.controlsEnabled = !on;
         if (on) d.player.setVelocityX(0);
       },
+      playerForm: () => d.playerForm(),
+      drainAlienTime: (ms) => d.drainAlienTime(ms),
+      addMachine: (m) => d.addMachine(m),
+      copies: (list, current) => d.copies(list, current),
+      achievement: (id) => d.achievement(id),
     };
     if (this.kind.hologram.length === 0) d.onHologramSeen();
     const boss = this.kind.create(scene, world, (this.left + this.right) / 2);

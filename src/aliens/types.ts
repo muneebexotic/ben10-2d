@@ -283,6 +283,24 @@ export interface FormTips {
   advanced?: FormTip & { afterKills: number };
 }
 
+/**
+ * How a rival who copies Ben's forms (Kevin) fights as this one:
+ * 'fire' aimed volleys, 'slam' leap slams, 'dash' streaks across the floor,
+ * 'pounce' pounces on a marked spot, 'flyer' hovers and rains shots,
+ * 'beam' fires a floor-skimming beam, 'bolt' plain energy volleys.
+ */
+export type CopyStyle = 'fire' | 'slam' | 'dash' | 'pounce' | 'flyer' | 'beam' | 'bolt';
+
+export interface FormCopy {
+  style: CopyStyle;
+  /** Animation (after the prefix) for the wind-up, the strike, and (flyers) staying airborne. */
+  tell: string;
+  attack: string;
+  air?: string;
+  /** What Kevin shouts the first time he sees Ben turn into it (his buddy days). */
+  cheer: string;
+}
+
 export interface FormDefinition {
   id: string;
   name: string;
@@ -330,5 +348,7 @@ export interface FormDefinition {
   art: { assets: AssetDef[]; anims: AnimDef[] };
   /** Coarse movement envelope for level reachability tests. */
   reach: Capabilities;
+  /** How Kevin copies it (missing: plain energy volleys in its colour). */
+  copy?: FormCopy;
   createAbilities(): FormAbilities;
 }

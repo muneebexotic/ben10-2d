@@ -32,6 +32,7 @@ import * as animo from './animo';
 import * as tech from './tech';
 import * as robots from './robots';
 import * as city from './city';
+import * as kevin from './kevin';
 
 /**
  * Keys for every shared texture (world, enemies, UI, human Ben). Each alien
@@ -267,6 +268,7 @@ export const TEX = {
   sealedDoor: 'prop-sealed-door',
   catwalkRail: 'prop-catwalk-rail',
   rails: 'prop-rails',
+  teslaCoil: 'prop-tesla-coil',
   // Kevin 11: machines.
   shutter: 'tech-shutter',
   shutterBar: 'tech-shutter-bar',
@@ -284,6 +286,9 @@ export const TEX = {
   mascot: 'robot-mascot',
   trackbot: 'robot-trackbot',
   sparkWisp: 'enemy-spark',
+  kevinActor: 'char-kevin-actor',
+  portraitKevinGrin: 'portrait-kevin-grin',
+  chimera: 'boss-chimera',
 } as const;
 
 export type TextureKey = (typeof TEX)[keyof typeof TEX];
@@ -296,6 +301,9 @@ export const BARRICADE_SIZES: ReadonlyArray<readonly [number, number]> = [
   [2, 3],
 ];
 export const barricadeKey = (w: number, h: number) => `prop-barricade-${w}x${h}`;
+
+/** KEVIN 11's overlays: one per alien he can wear a piece of. */
+export const chimeraPartKey = (part: kevin.ChimeraPart) => `boss-chimera-${part}`;
 
 export const ASSETS: AssetDef[] = [
   sheet(TEX.ben, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, true)),
@@ -528,6 +536,7 @@ export const ASSETS: AssetDef[] = [
   one(TEX.sealedDoor, 26, 48, city.drawSealedDoor),
   one(TEX.catwalkRail, 32, 10, city.drawCatwalkRail),
   one(TEX.rails, 32, 8, city.drawRails),
+  sheet(TEX.teslaCoil, 28, 80, 2, city.drawTeslaCoil),
   one(TEX.shutter, 16, 16, tech.drawShutter),
   one(TEX.shutterBar, 16, 5, tech.drawShutterBar),
   sheet(TEX.keypad, 10, 16, 2, tech.drawKeypad),
@@ -544,6 +553,10 @@ export const ASSETS: AssetDef[] = [
   sheet(TEX.mascot, robots.MASCOT_FRAME.w, robots.MASCOT_FRAME.h, 4, robots.drawMascot),
   sheet(TEX.trackbot, robots.TRACKBOT_FRAME.w, robots.TRACKBOT_FRAME.h, 4, robots.drawTrackbot),
   sheet(TEX.sparkWisp, 14, 14, 2, robots.drawSparkWisp),
+  sheet(TEX.kevinActor, kevin.KEVIN_ACTOR_FRAME.w, kevin.KEVIN_ACTOR_FRAME.h, kevin.KEVIN_ACTOR_FRAME_COUNT, kevin.drawKevinActor),
+  one(TEX.portraitKevinGrin, portraits.PORTRAIT.w, portraits.PORTRAIT.h, kevin.drawPortraitKevinGrin),
+  sheet(TEX.chimera, kevin.CHIMERA_FRAME.w, kevin.CHIMERA_FRAME.h, kevin.CHIMERA_FRAME_COUNT, kevin.drawChimeraBase),
+  ...kevin.CHIMERA_PARTS.map((p) => sheet(chimeraPartKey(p), kevin.CHIMERA_FRAME.w, kevin.CHIMERA_FRAME.h, kevin.CHIMERA_FRAME_COUNT, kevin.drawChimeraPart(p))),
 ];
 
 const benAnims = (prefix: string, texture: string): AnimDef[] => [
@@ -605,4 +618,12 @@ export const ANIMS: AnimDef[] = [
   { key: 'trackbot-roll', texture: TEX.trackbot, frames: [0, 1], frameRate: 12, repeat: -1 },
   { key: 'voltbot-idle', texture: TEX.trackbot, frames: [0, 1], frameRate: 6, repeat: -1 },
   { key: 'spark-idle', texture: TEX.sparkWisp, frames: [0, 1], frameRate: 14, repeat: -1 },
+  ...(Object.entries(kevin.KEVIN_ACTOR_FRAMES) as Array<[string, readonly number[]]>).map(([name, frames]) => ({
+    key: `kevin-${name}`,
+    texture: TEX.kevinActor,
+    frames,
+    frameRate: name === 'run' ? 12 : name === 'idle' ? 3 : 10,
+    repeat: name === 'idle' || name === 'run' || name === 'absorb' ? -1 : 0,
+  })),
+  { key: 'chimera-idle', texture: TEX.chimera, frames: [0, 1], frameRate: 4, repeat: -1 },
 ];

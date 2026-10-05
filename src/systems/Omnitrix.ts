@@ -42,7 +42,7 @@ export interface MisfireState {
   improvised: boolean;
 }
 
-export type SwapDenial = 'off' | 'notActive' | 'sameAlien' | 'lockout' | 'lowTime';
+export type SwapDenial = 'off' | 'notActive' | 'sameAlien' | 'lockout' | 'lowTime' | 'stolen';
 
 export type OmnitrixEvent =
   | { type: 'transformed'; alienId: string; requestedId: string; wrong: boolean }
@@ -68,6 +68,8 @@ export class Omnitrix {
   private frozen = false;
   private fixOwed = false;
   private misfire: MisfireState | null = null;
+  /** Aliens on the dial that can't be used right now (Kevin stole their DNA). */
+  private readonly blocked = new Set<string>();
 
   constructor(
     private config: OmnitrixConfig,
@@ -161,6 +163,27 @@ export class Omnitrix {
     return this.frozen;
   }
 
+  /** Aliens whose DNA is gone for now: still on the dial, but the watch won't turn into them. */
+  get blockedAliens(): readonly string[] {
+    return [...this.blocked];
+  }
+
+  isBlocked(alienId: string): boolean {
+    return this.blocked.has(alienId);
+  }
+
+  /**
+   * Takes an alien off the menu (or gives it back). The dial steps off a
+   * blocked alien, and misfires never land on one.
+   */
+  setBlocked(alienId: string, blocked: boolean): OmnitrixEvent[] {
+    if (!this.unlocked.includes(alienId) || this.blocked.has(alienId) === blocked) return [];
+    if (blocked) this.blocked.add(alienId);
+    else this.blocked.delete(alienId);
+    if (blocked && this.selectedAlien === alienId) return this.cycle(1);
+    return [];
+  }
+
   isUnlocked(alienId: string): boolean {
     return this.unlocked.includes(alienId);
   }
@@ -197,7 +220,7 @@ export class Omnitrix {
    * transformed it swaps for free.
    */
   forceInto(alienId: string): OmnitrixEvent[] {
-    if (!this.unlocked.includes(alienId)) return [];
+    if (!this.unlocked.includes(alienId) || this.blocked.has(alienId)) return [];
     const events: OmnitrixEvent[] = [];
     if (this._state === 'cooldown') events.push(...this.finishCooldown());
     events.push(...this.select(alienId));
@@ -217,20 +240,24 @@ export class Omnitrix {
   }
 
   canTransform(): boolean {
-    return this._state === 'ready' && this.unlocked.length > 0;
+    const selected = this.selectedAlien;
+    return this._state === 'ready' && selected !== null && !this.blocked.has(selected);
   }
 
-  /** Turns the dial. Allowed in any state so the player can line up the next alien during cooldown. */
+  /** Turns the dial (skipping blocked aliens). Allowed in any state so the player can line up the next alien during cooldown. */
   cycle(direction: 1 | -1): OmnitrixEvent[] {
     const count = this.unlocked.length;
     if (count === 0) return [];
-    this.selectedIndex = (this.selectedIndex + direction + count) % count;
+    for (let step = 0; step < count; step++) {
+      this.selectedIndex = (this.selectedIndex + direction + count) % count;
+      if (!this.blocked.has(this.unlocked[this.selectedIndex])) break;
+    }
     return [this.dialEvent()];
   }
 
   select(alienId: string): OmnitrixEvent[] {
     const index = this.unlocked.indexOf(alienId);
-    if (index < 0) return [];
+    if (index < 0 || this.blocked.has(alienId)) return [];
     this.selectedIndex = index;
     return [this.dialEvent()];
   }
@@ -257,6 +284,7 @@ export class Omnitrix {
     if (this._state !== 'active' || this.activeAlien === null) return 'notActive';
     const selected = this.selectedAlien;
     if (selected === null || selected === this.activeAlien) return 'sameAlien';
+    if (this.blocked.has(selected)) return 'stolen';
     if (this.sinceChangeMs < (this.config.swapLockoutMs ?? 0)) return 'lockout';
     if (!this.frozen && this.remainingMs <= this.swapCostMs) return 'lowTime';
     return null;
@@ -307,6 +335,12 @@ export class Omnitrix {
     if (this._state !== 'active' || ms <= 0) return;
     this.remainingMs += ms;
     if (this.remainingMs > this.config.warningMs) this.lastWarningSecond = -1;
+  }
+
+  /** Takes alien time away (Kevin drinking it). Never below one frame: running out still goes through the timeout. */
+  drain(ms: number): void {
+    if (this._state !== 'active' || ms <= 0 || this.frozen) return;
+    this.remainingMs = Math.max(1, this.remainingMs - ms);
   }
 
   /** Ends the transformation early (heavy damage, jammer field) and starts the full cooldown. */
@@ -377,7 +411,7 @@ export class Omnitrix {
 
   /** The requested alien, or (with probability `chance`) a random other one that isn't `exclude`. */
   private rollAlien(requestedId: string, exclude: string | null, chance: number): string {
-    const others = this.unlocked.filter((id) => id !== requestedId && id !== exclude);
+    const others = this.unlocked.filter((id) => id !== requestedId && id !== exclude && !this.blocked.has(id));
     if (others.length === 0 || chance <= 0) return requestedId;
     if (this.rng() >= chance) return requestedId;
     const pick = Math.min(others.length - 1, Math.floor(this.rng() * others.length));

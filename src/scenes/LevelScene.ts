@@ -731,6 +731,11 @@ export class LevelScene extends Phaser.Scene {
       onHologramSeen: () => (this.stats.sawVilgax = true),
       tip: (id, text, ms) => this.tutorial.tip(id, text, ms, 8),
       dialogue: (lines, onDone) => this.dialogue.play(lines, { skippable: true, onDone }),
+      playerForm: () => this.player.form.id,
+      drainAlienTime: (ms) => this.omni.drain(ms),
+      addMachine: (m) => this.tech?.add(m),
+      copies: (list, current) => EventBus.emit('boss:copies', { list, current }),
+      achievement: (id) => this.achievements.unlock(id),
     });
   }
 

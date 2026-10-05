@@ -9,6 +9,7 @@ import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import type { TimeController } from '../../systems/TimeController';
 import { playSfx } from '../../systems/audio/Sfx';
+import type { Machine } from '../tech/Machine';
 import type { Telegraphs } from '../enemies/Telegraphs';
 import type { Projectiles } from '../Projectiles';
 import type { Damageable, Hazard, Hit, HitResult, Liftable, Rect } from '../types';
@@ -46,6 +47,16 @@ export interface BossWorld {
   readonly introSeen?: boolean;
   /** Freezes Ben during the boss's own entrance. */
   holdPlayer?(on: boolean): void;
+  /** Ben's form right now ('ben' when human). */
+  playerForm?(): string;
+  /** Takes alien time off Ben's watch (Kevin's absorb). */
+  drainAlienTime?(ms: number): void;
+  /** A machine Upgrade can merge into joins the level (the substation's coils). */
+  addMachine?(m: Machine): void;
+  /** Kevin's copy meter under the boss bar: each alien he has data on, with its copy level. */
+  copies?(list: ReadonlyArray<{ id: string; level: number }>, current: string | null): void;
+  /** A chapter achievement the fight itself decides. */
+  achievement?(id: string): void;
 }
 
 type BossState = 'intro' | 'idle' | 'attack' | 'transition' | 'dying' | 'dead';

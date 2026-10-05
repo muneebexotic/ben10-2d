@@ -2,7 +2,7 @@ import { PALETTE } from '../../../config/palette';
 import { TEX } from '../../preload/assetKeys';
 import { WILDMUTT_TEX } from '../../../aliens/wildmutt/art';
 
-export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin';
+export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger';
 
 export interface CastMember {
   name: string;
@@ -21,7 +21,9 @@ export const CAST: Record<CastId, CastMember> = {
   animo: { name: 'DR. ANIMO', color: PALETTE.animo, portrait: TEX.portraitAnimo, voicePitch: 0.8 },
   /** Ben as Wildmutt: he can only growl, so the box subtitles him. */
   wildmutt: { name: 'WILDMUTT', color: 0xff9a3c, portrait: WILDMUTT_TEX.portrait, voicePitch: 0.5 },
-  kevin: { name: '???', color: PALETTE.kevin, portrait: TEX.portraitKevin, voicePitch: 1.05 },
+  kevin: { name: 'KEVIN', color: PALETTE.kevin, portrait: TEX.portraitKevinGrin, voicePitch: 1.05 },
+  /** Kevin before he gives his name (the Act 1 ending's shadowy portrait). */
+  stranger: { name: '???', color: PALETTE.kevin, portrait: TEX.portraitKevin, voicePitch: 1.05 },
 };
 
 export function isCastId(id: string): id is CastId {

@@ -96,8 +96,8 @@ export class UIScene extends Phaser.Scene {
     on('omnitrix:tick', (t) => this.dial.setTick(t), this);
     on('omnitrix:denied', (p) => {
       this.dial.deny();
-      const text = p.reason === 'jammed' ? 'JAMMED!' : p.reason === 'lowTime' ? 'NOT ENOUGH TIME TO SWAP!' : 'RECHARGING!';
-      this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : PALETTE.enemy);
+      const text = p.reason === 'jammed' ? 'JAMMED!' : p.reason === 'lowTime' ? 'NOT ENOUGH TIME TO SWAP!' : p.reason === 'stolen' ? 'DNA STOLEN!' : 'RECHARGING!';
+      this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : p.reason === 'stolen' ? PALETTE.kevin : PALETTE.enemy);
     }, this);
     on('omnitrix:warning', (p) => this.popText(String(p.secondsLeft), PALETTE.enemy, 2), this);
     on('omnitrix:ready', () => {
@@ -185,6 +185,7 @@ export class UIScene extends Phaser.Scene {
     on('boss:show', (p) => this.bossBar.show(p.name), this);
     on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
     on('boss:hide', () => this.bossBar.hide(), this);
+    on('boss:copies', (p) => this.bossBar.setCopies(p.list, p.current), this);
     on('input:mode', () => this.prompts.rerender(), this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));

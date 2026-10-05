@@ -124,6 +124,7 @@ export class OmnitrixDial {
 
   private showCarousel(selectedId: string): void {
     const list = this.tick?.unlocked ?? [selectedId];
+    const stolen = this.tick?.blocked ?? [];
     const key = list.join(',');
     if (key !== this.carouselKey) {
       for (const img of this.carouselIcons) img.destroy();
@@ -143,7 +144,9 @@ export class OmnitrixDial {
       const img = this.carouselIcons[i];
       const selected = id === selectedId;
       img.setPosition(i * DIAL_UI.carouselSpacing - span / 2, 0);
-      img.setScale(selected ? 1.25 : 0.8).setTint(selected ? colorFor(id) : PALETTE.uiDim).setAlpha(selected ? 1 : 0.55);
+      // Stolen DNA: a dark purple ghost of the icon.
+      if (stolen.includes(id)) img.setScale(0.8).setTint(PALETTE.kevinDark).setAlpha(0.45);
+      else img.setScale(selected ? 1.25 : 0.8).setTint(selected ? colorFor(id) : PALETTE.uiDim).setAlpha(selected ? 1 : 0.55);
     });
     const name = hasAlien(selectedId) ? getAlien(selectedId).name : '';
     this.carouselName.setText(name).setTint(colorFor(selectedId)).setX(0);
@@ -267,7 +270,7 @@ export class OmnitrixDial {
     const n = t.unlocked.length;
     const show = n >= 2 && this.carouselLeft <= 0;
     const index = t.selectedId ? t.unlocked.indexOf(t.selectedId) : -1;
-    const key = show ? `${t.unlocked.join(',')}|${index}` : '';
+    const key = show ? `${t.unlocked.join(',')}|${index}|${t.blocked.join(',')}` : '';
     this.pips.image.setVisible(show);
     if (key === this.pipsKey) return;
     this.pipsKey = key;
@@ -276,6 +279,12 @@ export class OmnitrixDial {
     this.pips.draw((g) => {
       for (let i = 0; i < n; i++) {
         const x = (i - (n - 1) / 2) * 5;
+        if (t.blocked.includes(t.unlocked[i])) {
+          // A stolen alien's pip is a small purple cross.
+          g.fillStyle(PALETTE.kevin, 1);
+          g.fillRect(x - 1, y, 1, 1).fillRect(x + 1, y, 1, 1).fillRect(x, y + 1, 1, 1).fillRect(x - 1, y + 2, 1, 1).fillRect(x + 1, y + 2, 1, 1);
+          continue;
+        }
         g.fillStyle(i === index ? colorFor(t.unlocked[i]) : PALETTE.inkSoft, 1);
         g.fillRect(x - 1, y, 3, 3);
       }

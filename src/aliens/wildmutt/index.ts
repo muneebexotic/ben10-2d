@@ -55,5 +55,6 @@ export const WILDMUTT_FORM: FormDefinition = {
   art: { assets: WILDMUTT_ASSETS, anims: WILDMUTT_ANIMS },
   // A strong jump, the high pounce for height, and any wall is a ladder.
   reach: { jumpUp: 5, jumpAcross: 6, canBurn: false, canSmash: false, canRunWater: false, canClimb: true, canSense: true },
+  copy: { style: 'pounce', tell: 'clawA', attack: 'pounce', cheer: 'GROSS! AWESOME! WHERE ARE ITS EYES?!' },
   createAbilities: () => new WildmuttAbilities(),
 };
