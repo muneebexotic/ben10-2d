@@ -139,8 +139,8 @@ function saveFixture() {
         lastPlayedAt: now,
         playTimeMs: 0,
         difficulty: 'normal',
-        chapters: { ch1: chapter, ch2: chapter, ch3: chapter },
-        unlockedAliens: ['heatblast', 'xlr8', 'fourarms', 'wildmutt', 'stinkfly'],
+        chapters: { ch1: chapter, ch2: chapter, ch3: chapter, ch4: chapter },
+        unlockedAliens: ['heatblast', 'xlr8', 'fourarms', 'wildmutt', 'stinkfly', 'upgrade'],
         resume: null,
         achievements: {},
         lifetime: {},
@@ -382,6 +382,8 @@ async function runLeak(browser, base) {
       ['ch2', 'cp-convoy'],
       ['ch2', 'cp-arena'],
       ['ch3', 'cp-frog'],
+      ['ch4', 'cp-station'],
+      ['ch4', 'cp-kevin'],
       ['training', null],
     ];
     const rows = [];

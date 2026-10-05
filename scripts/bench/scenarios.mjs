@@ -126,6 +126,30 @@ export const SCENARIOS = [
     play: (page, ms) => brawl(page, ms),
   },
   {
+    id: 'ch4-arcade',
+    title: 'Ch4 GAME ZONE (neon, cabinets, TOKEN TOONS, Kevin as a buddy)',
+    query: 'level=ch4&start=cp-arcade',
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
+    id: 'ch4-station',
+    title: 'Ch4 Rosewood station (trains, track-bots, turrets)',
+    query: 'level=ch4&start=cp-station',
+    play: (page, ms) => advance(page, ms),
+  },
+  {
+    id: 'ch4-kevin',
+    title: 'Ch4 KEVIN 11 (copies, coils, the hybrid)',
+    query: 'level=ch4&start=cp-kevin',
+    setup: async (page) => {
+      // Into the substation hall, then skip his speech.
+      await page.evaluate(() => window.__level.player.teleport(396 * 16 + 8, 33 * 16));
+      await sleep(600);
+      await skipCinematics(page, 5);
+    },
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
     id: 'misfire',
     title: 'Training, misfires on CHAOS (transform gag every swap)',
     query: 'training=1',
