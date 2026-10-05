@@ -31,6 +31,8 @@ export function chapterArt(scene: Phaser.Scene, chapter: ChapterInfo, open: bool
     out.push(...roadTrip(scene, bg, w, h));
   } else if (open && chapter.number === 3) {
     out.push(...museumNight(scene, bg, w, h));
+  } else if (open && chapter.number === 4) {
+    out.push(...arcadeDusk(scene, bg, w, h));
   } else {
     const rim = ACT_COLORS[chapter.act] ?? PALETTE.omnitrix;
     bg.fillGradientStyle(0x05070f, 0x05070f, 0x141a33, 0x141a33, 1).fillRect(-w / 2, -h / 2, w, h);
@@ -173,6 +175,38 @@ function museumNight(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: num
   const ooze = scene.add.image(fx, floor - 10, TEX.light).setScale(0.8).setTint(PALETTE.mutagen).setAlpha(0.3).setBlendMode(Phaser.BlendModes.ADD);
   out.push(ooze, frog, animo);
   out.push(scene.add.sprite(left + 40, floor + 1, TEX.ben, 0).setOrigin(0.5, 27 / 28));
+  return out;
+}
+
+/** Chapter 4's window: the GAME ZONE at dusk, neon buzzing, Ben and Kevin face to face, Kevin's hand crackling purple. */
+function arcadeDusk(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number, h: number): Phaser.GameObjects.GameObject[] {
+  const left = -w / 2;
+  const top = -h / 2;
+  const floor = h / 2 - 8;
+  g.fillGradientStyle(PALETTE.duskTop, PALETTE.duskTop, PALETTE.duskLow, PALETTE.duskLow, 1).fillRect(left, top, w, floor - top);
+  const rng = seededRng(11);
+  for (let i = 0; i < 12; i++) g.fillStyle(PALETTE.star, 0.3 + rng() * 0.5).fillRect(Math.round(left + rng() * w), Math.round(top + rng() * h * 0.3), 1, 1);
+  // The skyline, windows lit.
+  g.fillStyle(0x1a1430, 1);
+  for (let x = left; x < w / 2; x += 10 + Math.round(rng() * 8)) {
+    const bh = 18 + Math.round(rng() * 22);
+    const bw = 9 + Math.round(rng() * 6);
+    g.fillStyle(0x1a1430, 1).fillRect(x, floor - bh, bw, bh);
+    for (let wy = floor - bh + 3; wy < floor - 4; wy += 5) if (rng() < 0.4) g.fillStyle(0xffd890, 0.7).fillRect(x + 2 + Math.round(rng() * (bw - 4)), wy, 1, 2);
+  }
+  g.fillStyle(PALETTE.concrete1, 1).fillRect(left, floor, w, h / 2 - floor);
+  g.fillStyle(PALETTE.hazard, 1).fillRect(left, floor, w, 1);
+  const out: Phaser.GameObjects.GameObject[] = [];
+  out.push(scene.add.image(4, floor + 1, TEX.arcadeFront).setOrigin(0.5, 1).setScale(0.42));
+  const neon = scene.add.image(4, floor - 30, TEX.light).setScale(1.1, 0.6).setTint(PALETTE.neonPink).setAlpha(0.35).setBlendMode(Phaser.BlendModes.ADD);
+  scene.tweens.add({ targets: neon, alpha: 0.15, yoyo: true, repeat: -1, duration: 90, repeatDelay: 1800 });
+  out.push(neon);
+  out.push(scene.add.sprite(left + 34, floor + 1, TEX.ben, 0).setOrigin(0.5, 27 / 28));
+  const kx = w / 2 - 32;
+  const kevin = scene.add.sprite(kx, floor + 1, TEX.kevinActor, 8).setOrigin(0.5, 36 / 36).setFlipX(true);
+  const spark = scene.add.image(kx - 9, floor - 20, TEX.light).setScale(0.35).setTint(PALETTE.kevin).setAlpha(0.8).setBlendMode(Phaser.BlendModes.ADD);
+  scene.tweens.add({ targets: spark, scale: 0.5, alpha: 0.4, yoyo: true, repeat: -1, duration: 260 });
+  out.push(kevin, spark);
   return out;
 }
 

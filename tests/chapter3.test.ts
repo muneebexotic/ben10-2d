@@ -77,11 +77,11 @@ describe('chapter 3 layout', () => {
     expect(pendingUnlocks(unlocks, before, 269)).toEqual([]);
   });
 
-  it('counts seven cards: five this chapter, two waiting for later aliens', () => {
-    expect(countedCards(level)).toHaveLength(7);
+  it('counts eight cards: five this chapter, three waiting for later aliens', () => {
+    expect(countedCards(level)).toHaveLength(8);
     const now = ['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly'];
     expect(availableCards(level, now)).toHaveLength(5);
-    expect(lockedCards(level, now).map((c) => c.id)).toEqual(['ch3-card-vent', 'ch3-card-vat']);
+    expect(lockedCards(level, now).map((c) => c.id)).toEqual(['ch3-card-security', 'ch3-card-vent', 'ch3-card-vat']);
   });
 
   it('every story checkpoint exists on Hard for each set piece: the blackout, the atrium, the lockdown, the boss', () => {

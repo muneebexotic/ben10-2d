@@ -82,6 +82,8 @@ export const CHAPTER_3: LevelData = {
     { x: 158, y: 28, w: 5, h: 2 },
     // The shaft up out of the locked room, and the vent behind the hidden door.
     { x: 321, y: 6, w: 4, h: 6 },
+    // The guards' security room off the wing, behind a shutter whose keypad died with the power (Upgrade, Chapter 4).
+    { x: 325, y: 21, w: 5, h: 3 },
     { x: 325, y: 6, w: 21, h: 3 },
     // A nook in the vent's ceiling far too small for anyone yet.
     { x: 330, y: 4, w: 1, h: 1 },
@@ -241,6 +243,10 @@ export const CHAPTER_3: LevelData = {
     { type: 'mutant', kind: 'roach', x: 320, y: 24 },
     { type: 'mutant', kind: 'lurker', x: 337, y: 9 },
     { type: 'smoothy', x: 318, y: 24 },
+    { type: 'techDoor', id: 'ch3-security-door', x: 325, y: 21, w: 1, h: 3 },
+    { type: 'decor', kind: 'labConsole', x: 327, y: 24 },
+    { type: 'card', id: 'ch3-card-security', x: 329, y: 24, requires: 'upgrade' },
+    { type: 'alienHint', id: 'ch3-security-hint', alien: 'upgrade', x: 321, y: 20, w: 5, h: 4, line: "THE SECURITY ROOM'S SHUTTER. NO POWER, NO WAY IN... FOR A HUMAN." },
     { type: 'card', id: 'ch3-card-vent', x: 330, y: 5, requires: 'greymatter' },
     { type: 'alienHint', id: 'ch3-vent-hint', alien: 'greymatter', x: 328, y: 6, w: 5, h: 3, line: "SOMETHING'S UP THERE... I'D HAVE TO BE TINY." },
     { type: 'card', id: 'ch3-card-vat', x: 352, y: 38, requires: 'ripjaws' },

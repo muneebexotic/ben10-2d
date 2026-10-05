@@ -151,6 +151,7 @@ export type DecorKind =
   | 'carWreck'
   | 'poleSign'
   | 'garage'
+  | 'shed'
   | 'neon'
   | 'haulerWreck'
   | 'fence'

@@ -59,10 +59,11 @@ export class TechDoor implements Machine {
   mergeBox(out: Rect): boolean {
     if (this.state !== 'shut') return false;
     const r = this.rect;
+    // A little above too, so a floor hatch is reached by a puddle flowing over it.
     out.x = r.x - 12;
-    out.y = r.y;
+    out.y = r.y - 10;
     out.w = r.w + 24;
-    out.h = r.h;
+    out.h = r.h + 10;
     return true;
   }
 

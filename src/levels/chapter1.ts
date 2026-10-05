@@ -51,6 +51,8 @@ export const CHAPTER_1: LevelData = {
     { x: 102, y: 21, w: 4, h: 3 },
     // A den under the ridge top, behind a hatch only senses find.
     { x: 112, y: 17, w: 4, h: 3 },
+    // A Vilgax supply cache sunk into the ground by the crash site; its hatch is dead (Upgrade, Chapter 4).
+    { x: 214, y: 24, w: 4, h: 2 },
   ],
 
   platforms: [
@@ -121,6 +123,11 @@ export const CHAPTER_1: LevelData = {
     { type: 'drone', kind: 'striker', x: 209, y: 16 },
     { type: 'drone', kind: 'scout', x: 214, y: 17 },
     { type: 'smoothy', x: 219, y: 24 },
+    // Upgrade's secret (Chapter 4): a dead Vilgax supply hatch; he wakes it and drops in.
+    { type: 'techDoor', id: 'ch1-supply-hatch', x: 214, y: 24, w: 4, h: 1 },
+    { type: 'card', id: 'ch1-card-hatch', x: 216, y: 26, requires: 'upgrade' },
+    { type: 'alienHint', id: 'ch1-hatch-hint', alien: 'upgrade', x: 211, y: 21, w: 10, h: 3, line: "A VILGAX SUPPLY HATCH. DEAD. ...IF ONLY I COULD TALK TO MACHINES." },
+    { type: 'decor', kind: 'debris', x: 212, y: 24 },
     { type: 'drone', kind: 'gunner', x: 222, y: 15 },
     { type: 'drone', kind: 'striker', x: 227, y: 14 },
     { type: 'drone', kind: 'scout', x: 232, y: 14 },

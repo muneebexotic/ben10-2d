@@ -595,3 +595,32 @@ export function drawFence(pc: PixelCanvas): void {
   pc.rect(0, 3, w, 2, 0xa8844f).rect(0, 8, w, 2, 0xa8844f);
   pc.outline(P.ink);
 }
+
+/**
+ * The truck stop's old service shed: tin roof, cinder-block walls, a faded
+ * GARAGE sign. The right-hand bay is left open (transparent) so its roll-up
+ * shutter, a machine in the level, shows through. 80x64.
+ */
+export function drawShed(pc: PixelCanvas): void {
+  const w = pc.width;
+  const h = pc.height;
+  // Walls: cinder blocks, left four fifths only (the last 16 px are the doorway).
+  pc.rect(0, 10, w - 16, h - 10, 0xb8a888);
+  for (let y = 14; y < h; y += 6) for (let x = (y / 6) % 2 ? 0 : 6; x < w - 16; x += 12) pc.rect(x, y, 11, 5, 0xc8b898);
+  pc.rect(w - 18, 10, 2, h - 10, 0x8a7a5a);
+  // The door frame and lintel around the open bay.
+  pc.rect(w - 16, 10, 16, 6, 0x8a7a5a);
+  pc.rect(w - 2, 10, 2, h - 10, 0x8a7a5a);
+  // Tin roof.
+  pc.poly([[-2, 12], [6, 0], [w - 4, 0], [w + 2, 12]], 0x8a9098);
+  for (let x = 4; x < w; x += 5) pc.vline(x, 1, 11, 0x6a7078);
+  // A faded GARAGE sign and a grimy window.
+  pc.rect(12, 18, 36, 8, 0xe8dcc0);
+  for (const [i, x] of [16, 21, 26, 31, 36, 41].entries()) pc.rect(x, 20, 3, 4, i % 2 ? 0xa83a2a : 0x8a2a1e);
+  pc.rect(18, 34, 22, 14, 0x3a4a5a);
+  pc.line(18, 34, 40, 48, 0x5a6a7a);
+  pc.rect(17, 33, 24, 1, 0x6a5a3a).rect(17, 48, 24, 1, 0x6a5a3a);
+  // An oil stain by the bay.
+  pc.ellipse(w - 22, h - 1, 7, 1, 0x2a2a30);
+  pc.outline(P.ink);
+}

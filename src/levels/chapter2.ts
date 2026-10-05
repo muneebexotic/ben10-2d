@@ -48,6 +48,8 @@ export const CHAPTER_2: LevelData = {
     // Truck stop.
     { material: 'ground', x: 308, top: 24, w: 100 },
     { material: 'rock', x: 308, top: 4, w: 2 },
+    // The old service shed by the gate: its bay's shutter is dead (Upgrade, Chapter 4).
+    { material: 'rock', x: 311, top: 20, w: 5, h: 4 },
     // A rock outcrop behind the garage, with a vault sealed by a cracked wall.
     { material: 'rock', x: 350, top: 18, w: 8 },
     { material: 'rock', x: 404, top: 6, w: 4 },
@@ -58,6 +60,8 @@ export const CHAPTER_2: LevelData = {
     { x: 108, y: 20, w: 5, h: 4 },
     // The vault in the outcrop.
     { x: 350, y: 21, w: 6, h: 3 },
+    // Inside the shed (and its doorway, where the shutter sits).
+    { x: 312, y: 21, w: 4, h: 3 },
   ],
 
   platforms: [
@@ -176,7 +180,10 @@ export const CHAPTER_2: LevelData = {
     { type: 'checkpoint', id: 'cp-truckstop', x: 318, y: 24, density: 'sparse', label: 'TRUCK STOP' },
     { type: 'decor', kind: 'neon', x: 324, y: 24 },
     { type: 'decor', kind: 'haulerWreck', x: 331, y: 24 },
-    { type: 'decor', kind: 'fence', x: 312, y: 24 },
+    { type: 'decor', kind: 'shed', x: 313, y: 24 },
+    { type: 'techDoor', id: 'ch2-shed-door', x: 315, y: 21, w: 1, h: 3 },
+    { type: 'card', id: 'ch2-card-garage', x: 313, y: 24, requires: 'upgrade' },
+    { type: 'alienHint', id: 'ch2-shed-hint', alien: 'upgrade', x: 313, y: 19, w: 6, h: 5, line: 'THE SHUTTER MOTOR IS FRIED. A MACHINE WHISPERER COULD FIX THAT.' },
     { type: 'decor', kind: 'poleSign', x: 336, y: 24 },
     { type: 'card', id: 'ch2-card-sign', x: 336, y: 12, requires: 'stinkfly' },
     { type: 'alienHint', id: 'ch2-sign-hint', alien: 'stinkfly', x: 333, y: 18, w: 7, h: 7, line: "I'D NEED WINGS TO GET UP THERE..." },

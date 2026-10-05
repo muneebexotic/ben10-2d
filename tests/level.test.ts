@@ -65,9 +65,9 @@ describe('chapter 1 layout', () => {
     expect(frames[0][10]).toBe(FRAME.EMPTY);
   });
 
-  it('has three secret cards now, one vault card for later, and a boss', () => {
+  it('has three secret cards now, three for later aliens, and a boss', () => {
     expect(availableCards(level, aliensUnlockedBy(level.chapter))).toHaveLength(3);
-    expect(lockedCards(level, aliensUnlockedBy(level.chapter)).map((c) => c.id)).toEqual(['ch1-card-vault', 'ch1-card-den']);
+    expect(lockedCards(level, aliensUnlockedBy(level.chapter)).map((c) => c.id)).toEqual(['ch1-card-vault', 'ch1-card-den', 'ch1-card-hatch']);
     expect(availableCards(level, ['heatblast', 'fourarms'])).toHaveLength(4);
     expect(entity('boss')).toHaveLength(1);
   });

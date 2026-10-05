@@ -65,11 +65,11 @@ describe('chapter 2 layout', () => {
     expect(canReach(level, grid, { x: 210, y: 23 }, (p) => p.x >= 248, { ...HEATBLAST, canRunWater: true, canSmash: true })).toBe(false);
   });
 
-  it('counts five cards: three now, the vault once Four Arms joins, one waiting for Stinkfly', () => {
-    expect(countedCards(level)).toHaveLength(5);
+  it('counts six cards: three now, the vault once Four Arms joins, one waiting for Stinkfly, one for Upgrade', () => {
+    expect(countedCards(level)).toHaveLength(6);
     expect(availableCards(level, ['heatblast']).map((c) => c.id)).toEqual(['ch2-card-diner', 'ch2-card-hoodoo', 'ch2-card-river']);
     expect(availableCards(level, ['heatblast', 'xlr8', 'fourarms'])).toHaveLength(4);
-    expect(lockedCards(level, ['heatblast', 'xlr8', 'fourarms']).map((c) => c.id)).toEqual(['ch2-card-sign']);
+    expect(lockedCards(level, ['heatblast', 'xlr8', 'fourarms']).map((c) => c.id)).toEqual(['ch2-card-garage', 'ch2-card-sign']);
   });
 
   it('XLR8 and Four Arms join at their story beats; a restart past a beat already has the alien', () => {

@@ -95,6 +95,7 @@ const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   carWreck: { key: TEX.carWreck },
   poleSign: { key: TEX.poleSign },
   garage: { key: TEX.garage },
+  shed: { key: TEX.shed },
   neon: { key: TEX.neon },
   haulerWreck: { key: TEX.haulerWreck },
   fence: { key: TEX.fence },

@@ -38,6 +38,9 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch4-card-laser', number: 23, name: 'MIRROR MATCH MIKI', flavour: 'BOUNCES EVERY ATTACK BACK AT YOU. NOBODY WANTS TO WRESTLE HER.', color: 0xa8e8ff, holo: true },
   { id: 'ch4-card-depot', number: 24, name: 'GENERATOR GENJI', flavour: 'POWERS HIS OWN ARENA. THE LIGHTS DIM WHEN HE SITS DOWN.', color: 0xffc83a, holo: true },
   { id: 'ch4-card-sealed', number: 25, name: 'PHANTOM FUMIO', flavour: 'ONLY WRESTLES AT MIDNIGHT. NOBODY HAS EVER SEEN HIM ARRIVE.', color: 0x9ab0c8, holo: true },
+  { id: 'ch1-card-hatch', number: 26, name: 'HATCH HAYATO', flavour: 'FOUND A SPACESHIP HATCH IN THE WOODS. HAS NOT SLEPT SINCE.', color: 0x6ad8a0, holo: true },
+  { id: 'ch2-card-garage', number: 27, name: 'GREASEMONKEY GOEMON', flavour: 'CHANGES A TIRE MID-MATCH. HIS OPPONENT USUALLY HELPS.', color: 0xa8784a, holo: true },
+  { id: 'ch3-card-security', number: 28, name: 'NIGHT WATCH NOBORU', flavour: 'GUARDS THE MUSEUM BY NIGHT. NOTHING HAS EVER COME BACK TO LIFE ON HIS SHIFT. ONCE.', color: 0x4a6ad8, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {
