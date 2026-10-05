@@ -40,6 +40,7 @@ export const WILDMUTT_FORM: FormDefinition = {
         xlr8: ['WOOF?! (FAST! I SAID FAST!)', 'GRR. (FOUR LEGS. STILL NOT XLR8.)'],
         fourarms: ['RRR... (I COUNT FOUR LEGS. ZERO ARMS.)', 'ARF. (WRONG KIND OF BIG.)'],
         stinkfly: ["GRR?! (I CAN'T FLY! I CAN'T EVEN SEE!)", 'WOOF. (THIS IS NOT A FLY.)'],
+        upgrade: ['GRR... (CAN I SNIFF A COMPUTER?)', 'ARF?! (I WANTED THE ROBOT ONE!)'],
       },
       any: ["GRRR... (WRONG ALIEN, I THINK.)"],
     },

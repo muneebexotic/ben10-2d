@@ -36,6 +36,7 @@ export const FOURARMS_FORM: FormDefinition = {
         xlr8: ['I ASKED FOR FAST. THIS IS THE OPPOSITE!', "I CAN'T EVEN SEE MY FEET!"],
         wildmutt: ['I WANTED TO SNIFF, NOT SMASH!', 'GOOD NEWS: I HAVE EYES AGAIN. FOUR!'],
         stinkfly: ["TOO HEAVY TO FLY. WAY TOO HEAVY.", 'FOUR ARMS. ZERO WINGS. GREAT.'],
+        upgrade: ['I WANTED TO HACK IT, NOT PUNCH IT!', 'FOUR HANDS. ZERO WI-FI.'],
       },
       any: ['WRONG ALIEN! BIG, BUT WRONG!'],
     },

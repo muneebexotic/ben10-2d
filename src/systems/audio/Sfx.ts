@@ -389,6 +389,134 @@ const RECIPES = {
     for (let i = 0; i < 8; i++) A.tone({ type: 'square', freq: (800 + Math.random() * 1800) * p, duration: 0.03, volume: 0.05 * v, when: A.now + i * 0.04 });
     A.noise({ duration: 0.4, volume: 0.15 * v, filter: 'bandpass', freq: 2600, q: 3 });
   },
+
+  // ---- Kevin 11: machines, the arcade, the subway, Kevin himself.
+  /** Upgrade takes a robot over: an alarm chirp climbing as it overloads. */
+  hackIn: (v, p) => {
+    for (let i = 0; i < 5; i++) A.tone({ type: 'square', freq: (700 + i * 260) * p, duration: 0.05, volume: 0.06 * v, when: A.now + i * 0.1 });
+    A.noise({ duration: 0.55, volume: 0.08 * v, filter: 'bandpass', freq: 3000, freqEnd: 6000, q: 4 });
+  },
+  /** The takeover blast: an explosion with a digital crunch on top. */
+  hackBlast: (v, p) => {
+    A.noise({ duration: 0.45, volume: 0.38 * v, filter: 'lowpass', freq: 4200 * p, freqEnd: 180 });
+    A.tone({ type: 'sine', freq: 140 * p, freqEnd: 38, duration: 0.4, volume: 0.45 * v });
+    for (let i = 0; i < 4; i++) A.tone({ type: 'square', freq: 1800 - i * 340, duration: 0.03, volume: 0.06 * v, when: A.now + i * 0.03 });
+  },
+  /** A dead machine wakes up: a rising whine and a relay click. */
+  powerUp: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 90 * p, freqEnd: 520 * p, duration: 0.35, volume: 0.07 * v, filter: { type: 'lowpass', freq: 1800 } });
+    A.noise({ duration: 0.02, volume: 0.2 * v, filter: 'highpass', freq: 3000, when: A.now + 0.33 });
+  },
+  /** A steel shutter rattling up into the ceiling. */
+  shutter: (v) => {
+    for (let i = 0; i < 9; i++) A.noise({ duration: 0.03, volume: 0.12 * v, filter: 'bandpass', freq: 900 + i * 60, q: 2, when: A.now + i * 0.03 });
+    A.tone({ type: 'sine', freq: 60, freqEnd: 120, duration: 0.3, volume: 0.2 * v });
+  },
+  /** A scissor lift's hydraulic hum. */
+  liftHum: (v) => {
+    A.tone({ type: 'sawtooth', freq: 70, freqEnd: 110, duration: 0.9, volume: 0.08 * v, filter: { type: 'lowpass', freq: 500 } });
+    A.noise({ duration: 0.9, volume: 0.05 * v, filter: 'bandpass', freq: 400, q: 1.5 });
+  },
+  /** Wheels over a rail joint. */
+  railClack: (v, p) => {
+    A.noise({ duration: 0.03, volume: 0.14 * v, filter: 'bandpass', freq: 1400 * p, q: 3 });
+    A.noise({ duration: 0.03, volume: 0.1 * v, filter: 'bandpass', freq: 1100 * p, q: 3, when: A.now + 0.06 });
+  },
+  /** The cart's horn: two flat honks. */
+  horn: (v) => {
+    for (const [i, f] of [311, 349].entries()) {
+      A.tone({ type: 'square', freq: f, duration: 0.16, volume: 0.09 * v, when: A.now + i * 0.04, filter: { type: 'lowpass', freq: 1600 } });
+      A.tone({ type: 'sawtooth', freq: f * 1.5, duration: 0.16, volume: 0.04 * v, when: A.now + i * 0.04, filter: { type: 'lowpass', freq: 1600 } });
+    }
+  },
+  /** An arcade cabinet booting: a power thunk and a coin-op jingle. */
+  arcadeBoot: (v, p) => {
+    A.tone({ type: 'sine', freq: 120, freqEnd: 50, duration: 0.12, volume: 0.25 * v });
+    for (const [i, n] of [72, 76, 79, 84].entries()) A.tone({ type: 'square', freq: midiToFreq(n) * p, duration: 0.06, volume: 0.06 * v, when: A.now + 0.08 + i * 0.05 });
+  },
+  /** GAME OVER: the sad descending chiptune, slammed into a blast. */
+  gameOver: (v) => {
+    for (const [i, n] of [72, 67, 64, 60].entries()) A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.08, volume: 0.08 * v, when: A.now + i * 0.06 });
+    A.noise({ duration: 0.35, volume: 0.3 * v, filter: 'lowpass', freq: 5000, freqEnd: 300 });
+    A.tone({ type: 'sine', freq: 110, freqEnd: 40, duration: 0.3, volume: 0.35 * v });
+  },
+  /** Prize tickets spewing out of a machine. */
+  tickets: (v) => {
+    for (let i = 0; i < 10; i++) A.noise({ duration: 0.015, volume: 0.1 * v, filter: 'highpass', freq: 4000, when: A.now + i * 0.035 });
+    A.tone({ type: 'triangle', freq: midiToFreq(88), duration: 0.2, volume: 0.06 * v, when: A.now + 0.1 });
+  },
+  /** A subway train's horn from down the tunnel. */
+  trainHorn: (v) => {
+    for (const f of [233, 294, 349]) A.tone({ type: 'sawtooth', freq: f, duration: 0.9, volume: 0.04 * v, attack: 0.08, filter: { type: 'lowpass', freq: 1300 } });
+  },
+  /** The train roaring through: a long wash of rumble and wheel clatter. */
+  trainPass: (v) => {
+    A.noise({ duration: 1.3, volume: 0.32 * v, filter: 'lowpass', freq: 900, freqEnd: 300, attack: 0.15 });
+    A.tone({ type: 'sine', freq: 55, freqEnd: 40, duration: 1.2, volume: 0.3 * v, attack: 0.1 });
+    for (let i = 0; i < 8; i++) A.noise({ duration: 0.03, volume: 0.14 * v, filter: 'bandpass', freq: 1300, q: 3, when: A.now + 0.1 + i * 0.13 });
+  },
+  /** An animatronic's servos whirring. */
+  servo: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 300 * p, freqEnd: 480 * p, duration: 0.18, volume: 0.05 * v, filter: { type: 'bandpass', freq: 1200, q: 2 } });
+  },
+  /** Cymbals crashing into the floor. */
+  clang: (v, p) => {
+    A.noise({ duration: 0.5, volume: 0.28 * v, filter: 'highpass', freq: 3500 * p, freqEnd: 2000 * p });
+    A.tone({ type: 'square', freq: 620 * p, freqEnd: 580 * p, duration: 0.3, volume: 0.06 * v, detune: 30 });
+    A.tone({ type: 'sine', freq: 90, freqEnd: 40, duration: 0.25, volume: 0.35 * v });
+  },
+  /** A track-bot's grinder revving up. */
+  grinder: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 120 * p, freqEnd: 900 * p, duration: 0.5, volume: 0.07 * v, filter: { type: 'lowpass', freq: 2600 } });
+    A.noise({ duration: 0.5, volume: 0.1 * v, filter: 'bandpass', freq: 2400 * p, q: 2 });
+  },
+  /** One of Kevin's sparks discharging. */
+  sparkZap: (v, p) => {
+    A.noise({ duration: 0.12, volume: 0.18 * v, filter: 'bandpass', freq: 3600 * p, freqEnd: 1200 * p, q: 3 });
+    A.tone({ type: 'square', freq: 1400 * p, freqEnd: 300 * p, duration: 0.08, volume: 0.06 * v });
+  },
+  /** Kevin drinking power: a rising electric slurp. */
+  absorb: (v, p) => {
+    A.tone({ type: 'sawtooth', freq: 80 * p, freqEnd: 640 * p, duration: 0.7, volume: 0.09 * v, filter: { type: 'lowpass', freq: 2200 } });
+    for (let i = 0; i < 10; i++) A.noise({ duration: 0.025, volume: 0.07 * v, filter: 'bandpass', freq: 2000 + Math.random() * 2400, q: 4, when: A.now + i * 0.06 });
+  },
+  /** Kevin's bolt: a purple crack. */
+  kevinBolt: (v, p) => {
+    A.noise({ duration: 0.1, volume: 0.2 * v, filter: 'bandpass', freq: 2800 * p, freqEnd: 900 * p, q: 2 });
+    A.tone({ type: 'square', freq: 900 * p, freqEnd: 180 * p, duration: 0.12, volume: 0.07 * v });
+  },
+  /** A breaker slammed with stolen power: the whole building surges on. */
+  powerSurge: (v) => {
+    A.tone({ type: 'sine', freq: 40, freqEnd: 120, duration: 0.7, volume: 0.35 * v });
+    A.tone({ type: 'sawtooth', freq: 60, freqEnd: 240, duration: 0.7, volume: 0.07 * v, filter: { type: 'lowpass', freq: 900 } });
+    A.noise({ duration: 0.6, volume: 0.15 * v, filter: 'bandpass', freq: 1800, freqEnd: 5200, q: 2 });
+  },
+  /** A tesla coil building charge. */
+  coilCharge: (v) => {
+    A.tone({ type: 'sawtooth', freq: 60, freqEnd: 300, duration: 0.8, volume: 0.06 * v, filter: { type: 'lowpass', freq: 1200 } });
+    A.noise({ duration: 0.8, volume: 0.06 * v, filter: 'bandpass', freq: 4000, q: 6, attack: 0.5 });
+  },
+  /** A coil discharging: a sharp crack of lightning. */
+  coilZap: (v) => {
+    A.noise({ duration: 0.3, volume: 0.42 * v, filter: 'highpass', freq: 1500, freqEnd: 400 });
+    A.tone({ type: 'square', freq: 2000, freqEnd: 100, duration: 0.2, volume: 0.1 * v });
+    A.tone({ type: 'sine', freq: 80, freqEnd: 40, duration: 0.3, volume: 0.35 * v });
+  },
+  /** Sumo Slammers mini-game: a slap, a big shove, the win and the loss jingles. */
+  sumoSlap: (v, p) => {
+    A.noise({ duration: 0.04, volume: 0.22 * v, filter: 'bandpass', freq: 1500 * p, q: 2 });
+    A.tone({ type: 'square', freq: 260 * p, freqEnd: 180 * p, duration: 0.05, volume: 0.06 * v });
+  },
+  sumoShove: (v) => {
+    A.tone({ type: 'sine', freq: 160, freqEnd: 60, duration: 0.25, volume: 0.4 * v });
+    A.noise({ duration: 0.15, volume: 0.2 * v, filter: 'lowpass', freq: 1500 });
+  },
+  sumoWin: (v) => {
+    for (const [i, n] of [60, 64, 67, 72, 76, 72, 79].entries()) A.tone({ type: 'square', freq: midiToFreq(n), duration: 0.09, volume: 0.07 * v, when: A.now + i * 0.08 });
+  },
+  sumoLose: (v) => {
+    for (const [i, n] of [67, 63, 60, 55].entries()) A.tone({ type: 'triangle', freq: midiToFreq(n), duration: 0.16, volume: 0.1 * v, when: A.now + i * 0.13 });
+  },
 } satisfies Record<string, Recipe>;
 
 export type SfxName = keyof typeof RECIPES;

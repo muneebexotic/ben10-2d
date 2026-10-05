@@ -32,4 +32,11 @@ export const COMBAT = {
     stuckMs: 1700,
     stuckFactor: 0.05,
   },
+  /** Upgrade's nanotech against machines: tech hits do extra to anything that isn't alive. */
+  techVsMachine: 1.5,
+  /**
+   * A takeover: Upgrade pours into a machine enemy, it shakes with green
+   * circuitry for `overloadMs`, then blows up and hits everything around it.
+   */
+  hack: { overloadMs: 650, blastRadius: 66, blastDamage: 6, blastKnockback: 320, blastStunMs: 900 },
 } as const;

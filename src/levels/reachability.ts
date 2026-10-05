@@ -15,6 +15,8 @@ export interface Capabilities {
   canClimb?: boolean;
   /** Senses hidden passages (they open for this form). */
   canSense?: boolean;
+  /** Merges with machines (Upgrade): opens security shutters, rides lifts and carts. */
+  canMerge?: boolean;
 }
 
 /** Each alien declares its own envelope in its definition (`reach`). */
@@ -47,17 +49,46 @@ export function blockedCells(level: LevelData, caps: Capabilities): Set<string> 
     if (e.type === 'glassFloor' && !caps.canSmash) {
       for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${e.y}`);
     }
+    if (e.type === 'techDoor' && !caps.canMerge) {
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    }
+    // A lift pad and a parked cart are solid blocks; only a speeding cart breaks its barrier.
+    if (e.type === 'lift') for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${e.y - 1}`);
+    if (e.type === 'cart') {
+      for (let x = e.x; x < e.x + CART_TILES; x++) for (let y = e.y - 2; y < e.y; y++) blocked.add(`${x},${y}`);
+      if (e.barrier && !caps.canMerge) for (let y = e.barrier.y; y < e.barrier.y + e.barrier.h; y++) blocked.add(`${e.barrier.x},${y}`);
+    }
   }
   return blocked;
+}
+
+/** A rail cart is this many tiles wide. */
+export const CART_TILES = 3;
+
+/**
+ * Rides a merging form can take (Upgrade): from standing on (or beside) a lift
+ * pad or a cart to where the ride drops it off.
+ */
+function rides(level: LevelData, caps: Capabilities): Array<{ from: (p: Pos) => boolean; to: Pos }> {
+  if (!caps.canMerge) return [];
+  const out: Array<{ from: (p: Pos) => boolean; to: Pos }> = [];
+  for (const e of level.entities) {
+    if (e.type === 'lift') {
+      for (let x = e.x; x < e.x + e.w; x++) out.push({ from: (p) => p.x === x && p.y === e.y - 2, to: { x, y: e.toY - 1 } });
+    } else if (e.type === 'cart') {
+      out.push({ from: (p) => p.x >= e.x - 1 && p.x <= e.x + CART_TILES && p.y >= e.y - 3 && p.y <= e.y - 1, to: { x: e.exit.x, y: e.exit.y } });
+    }
+  }
+  return out;
 }
 
 function isWater(level: LevelData, x: number, y: number): boolean {
   return level.water.some((w) => x >= w.x && x < w.x + w.w && y >= w.surface);
 }
 
-/** The top row of a water span counts as a floor for forms that can run on water (tar is too sticky). */
+/** The top row of a water span counts as a floor for forms that can run on water (tar is too sticky, a live rail too deadly). */
 function isWaterSurface(level: LevelData, x: number, y: number): boolean {
-  return level.water.some((w) => x >= w.x && x < w.x + w.w && y === w.surface && w.kind !== 'tar');
+  return level.water.some((w) => x >= w.x && x < w.x + w.w && y === w.surface && w.kind !== 'tar' && w.kind !== 'rail');
 }
 
 function isOpen(grid: TileGrid, blocked: Set<string>, x: number, y: number): boolean {
@@ -86,6 +117,7 @@ function headroom(grid: TileGrid, blocked: Set<string>, x: number, y: number, ri
 /** Breadth-first search over standable cells. Returns every reachable position key. */
 export function reachableFrom(level: LevelData, grid: TileGrid, start: Pos, caps: Capabilities): Set<string> {
   const blocked = blockedCells(level, caps);
+  const machineRides = rides(level, caps);
   const seen = new Set<string>();
   const queue: Pos[] = [];
   if (isStandable(level, grid, blocked, start.x, start.y, caps)) {
@@ -103,6 +135,7 @@ export function reachableFrom(level: LevelData, grid: TileGrid, start: Pos, caps
 
   while (queue.length > 0) {
     const { x, y } = queue.shift()!;
+    for (const r of machineRides) if (r.from({ x, y })) visit(r.to);
     // Climbers go up any wall beside them, can jump off it at any height, and pull up onto the top.
     if (caps.canClimb) {
       for (const d of [-1, 1]) {

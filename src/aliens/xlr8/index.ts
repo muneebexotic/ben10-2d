@@ -36,6 +36,7 @@ export const XLR8_FORM: FormDefinition = {
         fourarms: ['WHERE ARE MY OTHER TWO ARMS?!', 'TINY ARMS! FAST LEGS! WRONG GUY!'],
         wildmutt: ['FOUR LEGS? NOPE. TWO WHEELS.', "CAN'T SMELL A THING IN THIS HELMET."],
         stinkfly: ['NO WINGS, BUT I CAN RUN REAL FAST!', 'WANTED TO FLY. GOT A RACECAR.'],
+        upgrade: ['TOO FAST TO MERGE WITH ANYTHING!', 'I WANTED A COMPUTER, NOT A RACE CAR!'],
       },
       any: ['WRONG GUY! ...AT LEAST I GOT HERE FAST.'],
     },

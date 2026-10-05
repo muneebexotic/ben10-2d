@@ -30,6 +30,14 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch3-card-whale', number: 15, name: 'BIG BLUE BUNZO', flavour: 'HAS THE BELLY OF A WHALE. AND THE APPETITE.', color: 0x2a5ab8, holo: true },
   { id: 'ch3-card-vent', number: 16, name: 'VENT VIPER', flavour: 'SLIPS THROUGH GAPS NOBODY ELSE FITS IN. NOBODY ASKS HOW.', color: 0x9a7ad8, holo: true },
   { id: 'ch3-card-vat', number: 17, name: 'TOXIC TORA', flavour: 'TRAINED IN A VAT OF MUTAGEN. NOW HE GLOWS. IN A GOOD WAY. MOSTLY.', color: 0x46ffb4, holo: true },
+  { id: 'ch4-card-sign', number: 18, name: 'SIGNPOST SHINJI', flavour: 'CLIMBED A NEON SIGN FOR A BETTER VIEW OF HIS OWN BILLBOARD.', color: 0xff5fa8 },
+  { id: 'ch4-card-claw', number: 19, name: 'CLAW KING KAZU', flavour: 'WON EVERY PRIZE IN THE MACHINE. FROM THE INSIDE.', color: 0x5fd8ff, holo: true },
+  { id: 'ch4-card-stage', number: 20, name: 'BACKSTAGE BANZO', flavour: 'HIDES UNDER STAGES. JUMPS OUT DURING THE DRUM SOLO.', color: 0x8a1a2e, holo: true },
+  { id: 'ch4-card-lair', number: 21, name: 'LASER LORD LEO', flavour: 'NEVER LOST A ROUND OF LASER TAG. NEVER PLAYED ONE, EITHER.', color: 0x8a5aff },
+  { id: 'ch4-card-sumo', number: 22, name: 'HIGH SCORE HIRO', flavour: 'HIS INITIALS ARE ON EVERY CABINET IN TOWN. ALL THREE LETTERS: H-I-R.', color: 0xffd23a, holo: true },
+  { id: 'ch4-card-laser', number: 23, name: 'MIRROR MATCH MIKI', flavour: 'BOUNCES EVERY ATTACK BACK AT YOU. NOBODY WANTS TO WRESTLE HER.', color: 0xa8e8ff, holo: true },
+  { id: 'ch4-card-depot', number: 24, name: 'GENERATOR GENJI', flavour: 'POWERS HIS OWN ARENA. THE LIGHTS DIM WHEN HE SITS DOWN.', color: 0xffc83a, holo: true },
+  { id: 'ch4-card-sealed', number: 25, name: 'PHANTOM FUMIO', flavour: 'ONLY WRESTLES AT MIDNIGHT. NOBODY HAS EVER SEEN HIM ARRIVE.', color: 0x9ab0c8, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {

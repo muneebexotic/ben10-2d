@@ -38,6 +38,7 @@ export const HEATBLAST_FORM: FormDefinition = {
         fourarms: ['I WANTED MUSCLES, NOT MATCHES!', "CAN I PUNCH WITH FIRE? ...I CAN'T, RIGHT?"],
         wildmutt: ['I WANTED A NOSE! I GOT A BONFIRE!', 'HOT DOG? NO. JUST HOT.'],
         stinkfly: ['WINGS! I SAID WINGS! NOT FLAMES!', "AT LEAST I DON'T SMELL. ...MUCH."],
+        upgrade: ['I WANTED TO MERGE WITH STUFF, NOT MELT IT!', "FIRE AND COMPUTERS DON'T MIX. GREAT."],
       },
       any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
     },

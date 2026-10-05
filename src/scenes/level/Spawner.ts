@@ -62,12 +62,14 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         if (behind(e.x)) break;
         out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, e.y * TILE + TILE / 2, createBrain(e.kind)));
         break;
+      case 'robot':
       case 'mutant': {
         if (behind(e.x)) break;
         // Ground mutants stand on row y; a ceiling roach clings under the solid row y.
-        const brain = createBrain(e.kind, { ceiling: e.ceiling });
+        const ceiling = e.type === 'mutant' && e.ceiling === true;
+        const brain = createBrain(e.kind, { ceiling });
         const half = brain.body.height / 2;
-        const y = e.ceiling ? (e.y + 1) * TILE + half : e.y * TILE - half;
+        const y = ceiling ? (e.y + 1) * TILE + half : e.y * TILE - half;
         out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, y, brain));
         break;
       }
@@ -80,8 +82,8 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         out.pickups.push(new Pickup(scene, 'smoothy', `smoothy-${e.x}`, e.x, e.y));
         break;
       case 'card':
-        // Cards behind an alien this chapter unlocks on the way are there from the start.
-        if (collectedCards.includes(e.id) || !cardAvailable(e, [...aliens, ...(level.story?.unlocks ?? []).map((u) => u.alien)])) break;
+        // Cards behind an alien this chapter unlocks on the way are there from the start; prizes wait to be won.
+        if (e.reward || collectedCards.includes(e.id) || !cardAvailable(e, [...aliens, ...(level.story?.unlocks ?? []).map((u) => u.alien)])) break;
         out.pickups.push(new Pickup(scene, 'card', e.id, e.x, e.y));
         break;
       case 'crackedWall':

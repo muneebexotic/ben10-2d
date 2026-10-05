@@ -26,6 +26,9 @@ export class PlayerVisual {
   private meter: { value: number; color: number } | null = null;
   private meterAlpha = 0;
   private meterFullMs = 0;
+  /** Cutscenes show and hide Ben; a form can hide itself too (`hidden`). He shows only when both allow it. */
+  private shown = true;
+  private hidden = false;
 
   constructor(private readonly scene: Phaser.Scene, x: number, y: number, form: FormDefinition, private prefix: string) {
     this.sprite = scene.add.sprite(x, y, form.texture, 0).setDepth(DEPTH.player);
@@ -72,7 +75,14 @@ export class PlayerVisual {
 
   /** Hidden while Ben is somewhere else in a cutscene (inside the RV). */
   setVisible(on: boolean): void {
-    this.sprite.setVisible(on);
+    this.shown = on;
+    this.sprite.setVisible(this.shown && !this.hidden);
+  }
+
+  /** Hidden by the form itself (Upgrade poured inside a machine), independent of cutscenes. */
+  setHidden(on: boolean): void {
+    this.hidden = on;
+    this.sprite.setVisible(this.shown && !this.hidden);
   }
 
   setPrefix(prefix: string): void {

@@ -75,6 +75,7 @@ export class Banner {
     else if (opts.style === 'quake') this.quakeSlam(text, color, scale, hold, y);
     else if (opts.style === 'howl') this.howlSlam(text, color, scale, hold, y);
     else if (opts.style === 'buzz') this.buzzSlam(text, color, scale, hold, y);
+    else if (opts.style === 'glitch') this.glitchSlam(text, color, scale, hold, y);
     else this.blazeSlam(text, color, scale, hold, y, opts.first);
   }
 
@@ -273,6 +274,69 @@ export class Banner {
       alpha: 0,
       delay: hold + 420,
       duration: 260,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /**
+   * The name boots up like an old monitor (Upgrade): a bright line snaps open
+   * into the letters, RGB ghosts and glitch blocks jitter over them, then it
+   * settles clean; it leaves the way a screen switches off, into a line.
+   */
+  private glitchSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const shadow = pixelText(scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const red = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color: 0xff3a6a }).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.8);
+    const cyan = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color: 0x3affff }).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.8);
+    const title = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.white });
+    title.setTint(PALETTE.white, PALETTE.white, color, color);
+    const w = title.width + 24;
+    const h = title.height + 10;
+    const scan = scene.add.graphics();
+    for (let yy = -h / 2; yy < h / 2; yy += 2) scan.fillStyle(PALETTE.ink, 0.28).fillRect(-w / 2, yy, w, 1);
+    const blocks = scene.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+    const line = scene.add.rectangle(0, 0, w, 2, PALETTE.white).setBlendMode(Phaser.BlendModes.ADD);
+    const c = scene.add.container(GAME_WIDTH / 2, y, [shadow, red, cyan, title, scan, blocks, line]).setDepth(450);
+    this.current = c;
+    const letters = [shadow, red, cyan, title, scan];
+    for (const t of letters) t.setScale(1, 0.02);
+    // Power on: the line flares, then opens into the letters.
+    line.setScale(0.1, 1);
+    scene.tweens.add({ targets: line, scaleX: 1, duration: 110, ease: 'Quad.easeOut' });
+    scene.tweens.add({ targets: line, alpha: 0, delay: 150, duration: 160 });
+    for (const t of letters) scene.tweens.add({ targets: t, scaleY: 1, delay: 100, duration: 140, ease: 'Back.easeOut' });
+    // Glitch: the colour ghosts and blocks jitter, fading out as the signal locks on.
+    const glitch = { k: 1 };
+    scene.tweens.add({
+      targets: glitch,
+      k: 0,
+      delay: 120,
+      duration: 520,
+      onUpdate: () => {
+        const k = glitch.k;
+        red.setPosition(-2 - Math.random() * 5 * k, (Math.random() - 0.5) * 3 * k);
+        cyan.setPosition(2 + Math.random() * 5 * k, (Math.random() - 0.5) * 3 * k);
+        blocks.clear();
+        if (Math.random() < k) {
+          for (let i = 0; i < 3; i++) {
+            blocks.fillStyle(i % 2 ? color : PALETTE.white, 0.35 * k).fillRect(-w / 2 + Math.random() * w, -h / 2 + Math.random() * h, 10 + Math.random() * 40, 2 + Math.random() * 3);
+          }
+        }
+      },
+      onComplete: () => {
+        blocks.clear();
+        red.setPosition(-1, 0).setAlpha(0.35);
+        cyan.setPosition(1, 0).setAlpha(0.35);
+      },
+    });
+    // Power off: squash to a line, then gone.
+    scene.tweens.add({
+      targets: c,
+      scaleY: 0.05,
+      scaleX: 1.15,
+      delay: hold + 200,
+      duration: 160,
       ease: 'Quad.easeIn',
       onComplete: () => this.finish(c),
     });

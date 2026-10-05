@@ -29,7 +29,10 @@ export type BurstKind =
   | 'stink'
   | 'goo'
   | 'mutagen'
-  | 'sense';
+  | 'sense'
+  | 'circuit'
+  | 'volt'
+  | 'pixel';
 
 type EmitterConfig = Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
 
@@ -115,6 +118,21 @@ const PRESETS: Record<BurstKind, { texture: string; config: EmitterConfig; depth
   sense: {
     texture: TEX.spark,
     config: { lifespan: { min: 400, max: 900 }, speed: { min: 8, max: 40 }, scale: { start: 1, end: 0 }, gravityY: -30, color: [P.white, 0xffd08a, 0xff9a3c], blendMode: 'ADD' },
+  },
+  // Upgrade's nanotech: square green bits that skitter off and blink out.
+  circuit: {
+    texture: TEX.px,
+    config: { lifespan: { min: 200, max: 520 }, speed: { min: 50, max: 190 }, scale: { start: 1.4, end: 0.4 }, gravityY: 120, color: [P.white, P.upgradeGlow, P.upgrade, P.upgradeDark], blendMode: 'ADD' },
+  },
+  // Kevin's stolen power: crackling purple sparks.
+  volt: {
+    texture: TEX.spark,
+    config: { lifespan: { min: 140, max: 360 }, speed: { min: 90, max: 260 }, scale: { start: 1.2, end: 0 }, color: [P.white, P.kevin, P.kevinDark], blendMode: 'ADD' },
+  },
+  // Arcade pixels: chunky squares in every screen colour (an arcade cabinet's GAME OVER).
+  pixel: {
+    texture: TEX.px,
+    config: { lifespan: { min: 300, max: 700 }, speed: { min: 60, max: 220 }, scale: { start: 2, end: 1 }, gravityY: 260, color: [P.neonPink, P.neonBlue, P.gold, P.omnitrix, P.white] },
   },
 };
 
@@ -260,6 +278,31 @@ export class Fx {
         this.release(img);
       },
     });
+  }
+
+  /** A straight beam that flares and fades: a white core inside a coloured glow (lasers, Kevin's absorb). */
+  beam(x0: number, y0: number, x1: number, y1: number, color: number, width: number, ms: number): void {
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    if (len < 1) return;
+    const angle = Math.atan2(y1 - y0, x1 - x0);
+    const mx = (x0 + x1) / 2;
+    const my = (y0 + y1) / 2;
+    // The whitePx texture is 4x4: scale it into a line `len` long.
+    for (const [tint, w, alpha] of [[color, width * 2.2, 0.55], [P.white, Math.max(1, width * 0.6), 1]] as const) {
+      const img = this.take(TEX.whitePx, mx, my, tint, DEPTH.fxTop);
+      img.setRotation(angle).setScale(len / 4, w / 4).setAlpha(alpha);
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        scaleY: (w * 0.3) / 4,
+        duration: ms,
+        ease: 'Quad.easeIn',
+        onComplete: () => {
+          img.setRotation(0);
+          this.release(img);
+        },
+      });
+    }
   }
 
   /** A crack decal on the ground that lingers, then fades. */

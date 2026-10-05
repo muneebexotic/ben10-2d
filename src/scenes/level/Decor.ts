@@ -45,6 +45,22 @@ const GLOWS: Partial<Record<DecorKind, Array<{ dx: number; dy: number; radius: n
   mutagenTank: [{ dx: 0, dy: -28, radius: 70, color: PALETTE.mutagen, intensity: 0.9 }],
   cage: [{ dx: 0, dy: -16, radius: 30, color: PALETTE.mutagen, intensity: 0.4, flicker: true }],
   labConsole: [{ dx: -6, dy: -26, radius: 60, color: PALETTE.mutagen, intensity: 0.7, flicker: true }],
+  storefront: [{ dx: 0, dy: -66, radius: 70, color: 0xffd890, intensity: 0.6 }, { dx: -15, dy: -20, radius: 50, color: 0x9fb8ff, intensity: 0.4 }],
+  arcadeFront: [{ dx: 0, dy: -86, radius: 110, color: PALETTE.neonPink, intensity: 1, flicker: true }, { dx: 0, dy: -30, radius: 70, color: 0x8a6aff, intensity: 0.7 }],
+  streetLamp: [{ dx: 4, dy: -56, radius: 100, color: 0xffd890, intensity: 0.95 }],
+  neonSign: [{ dx: 0, dy: -10, radius: 50, color: PALETTE.neonPink, intensity: 0.8, flicker: true }],
+  prizeCounter: [{ dx: 0, dy: -18, radius: 80, color: 0xffd890, intensity: 0.6 }],
+  ticketMachine: [{ dx: 0, dy: -28, radius: 28, color: PALETTE.neonBlue, intensity: 0.6 }],
+  clawMachine: [{ dx: 0, dy: -36, radius: 60, color: PALETTE.neonBlue, intensity: 0.7 }],
+  skeeBall: [{ dx: 18, dy: -26, radius: 36, color: PALETTE.neonPink, intensity: 0.6, flicker: true }],
+  bandStage: [{ dx: -40, dy: -70, radius: 90, color: 0xffd890, intensity: 0.7 }, { dx: 40, dy: -70, radius: 90, color: 0xff8ac8, intensity: 0.6 }],
+  breakerBox: [{ dx: 0, dy: -30, radius: 26, color: PALETTE.enemy, intensity: 0.6, flicker: true }],
+  uvLight: [{ dx: 0, dy: 6, radius: 110, color: PALETTE.laserUv, intensity: 0.8 }],
+  stationSign: [{ dx: 0, dy: -9, radius: 70, color: 0xffffff, intensity: 0.35 }],
+  tunnelLight: [{ dx: 0, dy: -4, radius: 90, color: PALETTE.workLight, intensity: 0.85, flicker: true }],
+  transformer: [{ dx: 0, dy: -46, radius: 50, color: PALETTE.railGlow, intensity: 0.6, flicker: true }],
+  generator: [{ dx: 7, dy: -26, radius: 30, color: PALETTE.omnitrix, intensity: 0.5 }],
+  securityLaser: [{ dx: 7, dy: -34, radius: 24, color: PALETTE.enemy, intensity: 0.9 }, { dx: 7, dy: -22, radius: 24, color: PALETTE.enemy, intensity: 0.9 }, { dx: 7, dy: -10, radius: 24, color: PALETTE.enemy, intensity: 0.9 }],
 };
 
 const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
@@ -101,12 +117,42 @@ const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   pipes: { key: TEX.pipes },
   staffDoor: { key: TEX.staffDoor },
   columns: { key: TEX.column },
+  storefront: { key: TEX.storefront },
+  arcadeFront: { key: TEX.arcadeFront },
+  streetLamp: { key: TEX.streetLamp },
+  powerPole: { key: TEX.powerPole },
+  newsstand: { key: TEX.newsstand },
+  hydrant: { key: TEX.hydrant },
+  trashCan: { key: TEX.trashCan },
+  neonSign: { key: TEX.neonSign },
+  prizeCounter: { key: TEX.prizeCounter },
+  ticketMachine: { key: TEX.ticketMachine },
+  clawMachine: { key: TEX.clawMachine },
+  skeeBall: { key: TEX.skeeBall },
+  bandStage: { key: TEX.bandStage },
+  breakerBox: { key: TEX.breakerBox },
+  poster: { key: TEX.poster },
+  laserBarrier: { key: TEX.laserBarrier },
+  uvLight: { key: TEX.uvLight },
+  stationSign: { key: TEX.stationSign },
+  subwayMap: { key: TEX.subwayMap },
+  pillar: { key: TEX.pillar },
+  turnstile: { key: TEX.turnstile },
+  tunnelLight: { key: TEX.tunnelLight },
+  cables: { key: TEX.cables },
+  transformer: { key: TEX.transformer },
+  generator: { key: TEX.generator },
+  warningSign: { key: TEX.warningSign },
+  securityLaser: { key: TEX.securityLaser },
+  sealedDoor: { key: TEX.sealedDoor },
+  catwalkRail: { key: TEX.catwalkRail },
 };
 
 /** Big set dressing that sits behind the action. */
 const BACK_DECOR: readonly DecorKind[] = [
   'rv', 'tent', 'wreck', 'diner', 'smoothyStand', 'billboard', 'poleSign', 'garage', 'haulerWreck', 'neon', 'girder', 'carWreck', 'bridgeEnd',
   'museumFacade', 'trex', 'mammoth', 'whale', 'pterosaur', 'columns', 'painting', 'banner', 'staffDoor', 'mutagenTank', 'cage', 'labConsole', 'pipes', 'exitSign', 'lampPost',
+  'storefront', 'arcadeFront', 'streetLamp', 'powerPole', 'neonSign', 'prizeCounter', 'bandStage', 'breakerBox', 'poster', 'uvLight', 'stationSign', 'subwayMap', 'pillar', 'tunnelLight', 'cables', 'transformer', 'generator', 'warningSign', 'sealedDoor', 'ticketMachine', 'skeeBall',
 ];
 
 function hash(x: number, salt: number): number {
@@ -173,8 +219,8 @@ export class Decor {
       this.sprinkleDesert(scene, level, world);
       return;
     }
-    // The museum is dressed by hand.
-    if (level.theme === 'museum') return;
+    // The museum and downtown are dressed by hand.
+    if (level.theme === 'museum' || level.theme === 'city') return;
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {

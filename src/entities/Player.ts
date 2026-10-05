@@ -160,6 +160,14 @@ export class Player implements PlayerHandle {
     this.visual.afterimage(color, alpha, lifeMs);
   }
 
+  ride(x: number, feetY: number): void {
+    this.body.reset(x, feetY - this.body.height / 2);
+  }
+
+  setHidden(hidden: boolean): void {
+    this.visual.setHidden(hidden);
+  }
+
   setVelocity(vx: number, vy: number): void {
     this.body.setVelocity(vx, vy);
   }
@@ -229,6 +237,7 @@ export class Player implements PlayerHandle {
   /** `shieldRatio` keeps the alien shield proportional when the Omnitrix swaps forms mid-transformation. */
   setForm(form: FormDefinition, shieldRatio = 1): void {
     this.abilities.onExit?.(this.ctx);
+    this.visual.setHidden(false);
     this.form = form;
     this.abilities = form.createAbilities();
     this.formHp = Math.max(form.maxFormHealth > 0 ? 0.5 : 0, Math.round(form.maxFormHealth * shieldRatio * 2) / 2);
@@ -460,6 +469,7 @@ export class Player implements PlayerHandle {
   private die(): void {
     this.dead = true;
     this.abilities.onExit?.(this.ctx);
+    this.visual.setHidden(false);
     this.body.setVelocity(0, 0);
     this.body.setAllowGravity(false);
     this.deathY = 0;

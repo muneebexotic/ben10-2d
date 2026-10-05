@@ -32,6 +32,8 @@ export interface DroneWorld {
   onKilled(drone: Drone): void;
   /** Slime stuck it in place. */
   onGummed?(drone: Drone): void;
+  /** Upgrade's takeover ran its course: the machine blows up here (the level deals the blast). */
+  onOverload?(drone: Drone): void;
   /** This drone's attack lands at game time `at` (perfect transform timing). */
   threat(drone: Drone, at: number): void;
   cancelThreat(drone: Drone): void;
@@ -65,6 +67,10 @@ export interface DroneBrain {
   readonly walker?: boolean;
   /** Thrown things stop on it instead of bowling through (a brute). */
   readonly stopsThrows?: boolean;
+  /** A machine Upgrade can take over (default: anything that isn't organic). Kevin's sparks are raw power: nothing to take. */
+  readonly hackable?: boolean;
+  /** Its own death effect instead of an explosion or a splat. */
+  deathFx?(d: Drone, w: DroneWorld): void;
 }
 
 type Carry = 'none' | 'held' | 'thrown';
@@ -104,6 +110,8 @@ export class Drone implements Damageable, Hazard, Liftable {
   stunLeft = 0;
   /** Knocked out of the sky by a heavy hit: lying on the ground, harmless, liftable. */
   downedLeft = 0;
+  /** Taken over by Upgrade: frozen, crawling with circuitry, about to blow (ms left). */
+  hackedLeft = 0;
   private fallVy = 0;
   private grounded = false;
   private carryState: Carry = 'none';
@@ -130,6 +138,15 @@ export class Drone implements Damageable, Hazard, Liftable {
     return this.brain.stopsThrows ?? false;
   }
 
+  /** Machines (anything that isn't one of Dr. Animo's animals) can be taken over by Upgrade. */
+  private get machine(): boolean {
+    return this.brain.hackable ?? !this.brain.organic;
+  }
+
+  get hackable(): boolean {
+    return this.alive && this.machine && this.carryState === 'none' && this.hackedLeft <= 0;
+  }
+
   /** Contact damage (a ramming Armored Drone hits harder). */
   get damage(): number {
     return this.brain.contactDamage?.(this) ?? DRONE_SHARED.contactDamage;
@@ -140,7 +157,7 @@ export class Drone implements Damageable, Hazard, Liftable {
   }
 
   get active(): boolean {
-    return this.alive && this.awake && this.carryState === 'none' && !this.downed && this.brain.harmful(this);
+    return this.alive && this.awake && this.carryState === 'none' && !this.downed && this.hackedLeft <= 0 && this.brain.harmful(this);
   }
 
   hitbox(out: Rect): boolean {
@@ -174,7 +191,13 @@ export class Drone implements Damageable, Hazard, Liftable {
   takeHit(hit: Hit): HitResult {
     if (!this.alive || this.carryState !== 'none') return 'none';
     this.awake = true;
-    const dmg = hit.damage * (this.brain.damageTakenMultiplier?.(this, hit) ?? 1) * (this.downed ? DRONE_SHARED.downedDamageMultiplier : 1);
+    const machine = this.machine;
+    if (hit.hack && machine) {
+      this.overload();
+      return 'hit';
+    }
+    const tech = hit.kind === 'tech' && machine ? COMBAT.techVsMachine : 1;
+    const dmg = hit.damage * tech * (this.brain.damageTakenMultiplier?.(this, hit) ?? 1) * (this.downed ? DRONE_SHARED.downedDamageMultiplier : 1);
     this.lastDamage = dmg;
     this.lastHitKind = hit.kind;
     this.hp -= dmg;
@@ -189,7 +212,8 @@ export class Drone implements Damageable, Hazard, Liftable {
       return 'killed';
     }
     this.brain.onHurt?.(this, this.world, hit);
-    if (hit.stunMs) this.knockDown(hit.stunMs);
+    // Upgrade's nanotech shorts out circuits; it does nothing to an animal's nerves.
+    if (hit.stunMs && (hit.kind !== 'tech' || machine)) this.knockDown(hit.stunMs);
     if (this.slime.apply(hit, this.world.now, this.brain.slimeGroundsAt) === 'stuck') {
       // Gummed wings: down it comes.
       this.knockDown(COMBAT.slime.stuckMs);
@@ -197,6 +221,16 @@ export class Drone implements Damageable, Hazard, Liftable {
       this.world.onGummed?.(this);
     }
     return 'hit';
+  }
+
+  /** Upgrade took it over: it freezes and fizzes green, then blows up (see `COMBAT.hack`). */
+  private overload(): void {
+    this.hackedLeft = COMBAT.hack.overloadMs;
+    this.downedLeft = 0;
+    this.setCharging(false);
+    this.world.cancelThreat(this);
+    this.world.fx.popText(this.x, this.y - 14, 'TAKEOVER!', PALETTE.upgrade);
+    playSfx('hackIn', 0.9);
   }
 
   /** A heavy blow knocks the drone out of the sky; it lies sparking on the ground until it reboots. */
@@ -230,6 +264,11 @@ export class Drone implements Damageable, Hazard, Liftable {
         this.render(w.now);
         return;
       }
+    }
+
+    if (this.hackedLeft > 0) {
+      this.updateHacked(dtMs);
+      return;
     }
 
     // Slime slows everything it does: moving, winding up, resting.
@@ -278,6 +317,22 @@ export class Drone implements Damageable, Hazard, Liftable {
     if (this.downedLeft <= 0) this.recover();
   }
 
+  private updateHacked(dtMs: number): void {
+    const w = this.world;
+    this.hackedLeft -= dtMs;
+    // Circuitry crawls over it and it shakes harder as the overload builds.
+    const k = 1 - Math.max(0, this.hackedLeft) / COMBAT.hack.overloadMs;
+    if (chance(0.5 + k * 0.4)) w.fx.burst('circuit', this.x + (Math.random() - 0.5) * this.brain.body.width, this.y + (Math.random() - 0.5) * this.brain.body.height, 1);
+    this.render(w.now);
+    this.sprite.setPosition(Math.round(this.x + (Math.random() - 0.5) * (2 + k * 4)), Math.round(this.y));
+    this.sprite.setTint(PALETTE.upgrade).setTintMode(Math.floor(w.now / 60) % 2 === 0 ? Phaser.TintModes.FILL : Phaser.TintModes.MULTIPLY);
+    w.lighting.add(this.x, this.y, 30 + k * 30, PALETTE.upgrade, 0.9);
+    if (this.hackedLeft > 0) return;
+    this.hackedLeft = 0;
+    w.onOverload?.(this);
+    this.kill();
+  }
+
   private recover(): void {
     this.downedLeft = 0;
     this.grounded = false;
@@ -314,7 +369,7 @@ export class Drone implements Damageable, Hazard, Liftable {
   // ------------------------------------------------------------ Liftable
 
   get liftable(): boolean {
-    return this.alive && this.carryState === 'none' && ((this.downed && this.grounded) || (this.brain.pinned?.(this) ?? false));
+    return this.alive && this.carryState === 'none' && this.hackedLeft <= 0 && ((this.downed && this.grounded) || (this.brain.pinned?.(this) ?? false));
   }
 
   get height(): number {
@@ -366,7 +421,8 @@ export class Drone implements Damageable, Hazard, Liftable {
     this.downedLeft = 0;
     this.sprite.setVisible(false);
     const size = this.brain.maxHp >= 5 || this.carryState === 'thrown' ? 'medium' : 'small';
-    if (this.brain.organic) w.fx.splat(this.x, this.y, size);
+    if (this.brain.deathFx) this.brain.deathFx(this, w);
+    else if (this.brain.organic) w.fx.splat(this.x, this.y, size);
     else w.fx.explosion(this.x, this.y, size);
     w.fx.hitStop(FX.hitStopKillMs);
     playSfx(this.brain.organic ? 'splat' : 'explode', 0.8, 0.9 + Math.random() * 0.25);

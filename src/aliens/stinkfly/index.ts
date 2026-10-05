@@ -36,6 +36,7 @@ export const STINKFLY_FORM: FormDefinition = {
         xlr8: ['I CAN FLY, BUT NOT FAST!', 'BUZZ... THAT\'S NOT THE SOUND OF SPEED.'],
         fourarms: ['FOUR ARMS? I GOT SIX LEGS. FAIR TRADE?', 'TINY ARMS! WHY ALWAYS TINY ARMS?!'],
         wildmutt: ['I WANTED A NOSE, NOT A... SMELL.', 'WRONG ANIMAL! THESE EYES ARE ON STICKS!'],
+        upgrade: ['A BUG. IN THE SYSTEM. GET IT?', 'I WANTED IN THE MACHINE, NOT TO GUM IT!'],
       },
       any: ['A BUG?! I WANTED A HERO, NOT A PEST!'],
     },

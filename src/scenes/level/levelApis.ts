@@ -28,6 +28,7 @@ export function createFxApi(fx: Fx, lighting: Lighting, hooks?: FxHooks): FxApi 
     slowMo: (scale, ms, recover) => fx.slowMo(scale, ms, recover),
     popText: (x, y, text, color) => fx.popText(x, y, text, color),
     speedLine: (x, y, dir, color) => fx.speedLine(x, y, dir, color),
+    beam: (x0, y0, x1, y1, color, width, ms) => fx.beam(x0, y0, x1, y1, color, width, ms),
     crack: (x, y, size) => fx.crack(x, y, size),
     comicFreeze: (count, x, y, dir, color, targets, ms) => hooks?.comicFreeze(count, x, y, dir, color, targets, ms),
   };
@@ -44,6 +45,7 @@ export interface DroneWorldDeps {
   world: LevelWorld;
   onKilled(d: Drone): void;
   onGummed?(d: Drone): void;
+  onOverload?(d: Drone): void;
   threat(d: Drone, at: number): void;
   cancelThreat(d: Drone): void;
 }
@@ -73,6 +75,7 @@ export function createDroneWorld(d: DroneWorldDeps): DroneWorld {
     isWater: (x, y) => d.world.inWater(x, y),
     onKilled: (drone) => d.onKilled(drone),
     onGummed: (drone) => d.onGummed?.(drone),
+    onOverload: (drone) => d.onOverload?.(drone),
     threat: (drone, at) => d.threat(drone, at),
     cancelThreat: (drone) => d.cancelThreat(drone),
   };

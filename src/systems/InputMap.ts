@@ -15,7 +15,7 @@ export interface Controls {
   specialReleased: boolean;
   dialPrev: boolean;
   dialNext: boolean;
-  /** A dial slot picked directly (number keys 1-5, the touch radial picker), 0-based, or null. */
+  /** A dial slot picked directly (number keys 1-9, the touch radial picker), 0-based, or null. */
   dialPick: number | null;
   transform: boolean;
   /** How long ago the transform was really pressed (touch fires on release). 0 for keys. */
@@ -75,6 +75,10 @@ const PICK_KEYS: ReadonlyArray<readonly number[]> = [
   [K.THREE, K.NUMPAD_THREE],
   [K.FOUR, K.NUMPAD_FOUR],
   [K.FIVE, K.NUMPAD_FIVE],
+  [K.SIX, K.NUMPAD_SIX],
+  [K.SEVEN, K.NUMPAD_SEVEN],
+  [K.EIGHT, K.NUMPAD_EIGHT],
+  [K.NINE, K.NUMPAD_NINE],
 ];
 
 /** Keyboard and on-screen touch controls sampled once per frame into a plain Controls object. */

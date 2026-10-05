@@ -35,6 +35,13 @@ export interface PlayerHandle {
   glow(color: number, amount: number): void;
   /** Leaves a fading, tinted copy of the current sprite frame behind (speed afterimages). */
   afterimage(color: number, alpha: number, lifeMs: number): void;
+  /**
+   * Holds the body at a spot with no momentum (a form inside a machine rides
+   * along with it). Unlike a respawn it doesn't move the last safe spot.
+   */
+  ride(x: number, feetY: number): void;
+  /** Hides the sprite (a form poured inside a machine). Cutscenes hide it separately. */
+  setHidden(hidden: boolean): void;
 }
 
 /** A projectile an ability fires. `kind` picks the look; `hitKind` decides what it can damage. */
@@ -102,6 +109,12 @@ export interface CombatApi {
    * (and keeps enemies too queasy to attack). Fire touching it sets it off.
    */
   gas(x: number, y: number, radius: number, lifeMs: number, hit: Hit): void;
+  /**
+   * Takes over the first machine enemy inside `area` (Upgrade): it gets `hit`
+   * with `hack` set, overloads and blows up. Returns its centre, or null when
+   * there was no machine to take.
+   */
+  hack(area: Rect, hit: Hit): { x: number; y: number } | null;
 }
 
 export interface FxApi {
@@ -121,6 +134,8 @@ export interface FxApi {
   popText(x: number, y: number, text: string, color: number): void;
   /** A thin streak that shoots away from (x, y) in direction `dir`: speed lines. */
   speedLine(x: number, y: number, dir: 1 | -1, color: number): void;
+  /** A straight beam from (x0, y0) to (x1, y1) that flares and fades (lasers). */
+  beam(x0: number, y0: number, x1: number, y1: number, color: number, width: number, ms: number): void;
   /** A crack decal on the ground that fades out. `size` 0..1. */
   crack(x: number, feetY: number, size: number): void;
   /**
@@ -130,11 +145,31 @@ export interface FxApi {
   comicFreeze(count: number, x: number, y: number, dir: 1 | -1, color: number, targets: ReadonlyArray<{ x: number; y: number }>, ms: number): void;
 }
 
+/**
+ * A machine a form has merged into (Upgrade): a turret, an arcade cabinet, a
+ * security shutter, a lift, a rail cart. The form rides at its anchor, hidden,
+ * and drives it while it holds on.
+ */
+export interface MachineHandle {
+  readonly kind: string;
+  /** Where the merged form's feet are (it follows a moving machine). */
+  readonly anchorX: number;
+  readonly anchorY: number;
+  /** Still holding the form. False once the machine is done with it (a door that opened, a broken turret): the form pops out. */
+  readonly holding: boolean;
+  /** Drives the machine with the player's controls, every frame while it holds. */
+  control(controls: Controls, dtMs: number): void;
+  /** The form leaves (it ejected, reverted or went down). */
+  release(): void;
+}
+
 /** Read-only level queries for abilities that react to terrain. */
 export interface WorldApi {
   isSolid(x: number, y: number): boolean;
   /** World y of the first surface at or below (x, y). */
   groundBelow(x: number, y: number): number;
+  /** Merges into a machine whose merge zone overlaps `area` (Upgrade), or returns null if there's none. */
+  merge(area: Rect, facing: 1 | -1): MachineHandle | null;
 }
 
 export interface AbilityContext {
@@ -217,7 +252,7 @@ export interface FormFeel {
 }
 
 /** How the alien's name slams onto the screen when it transforms. */
-export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'plain';
+export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'plain';
 
 export interface FormTheme {
   /** Main colour: name slam, transform ring, shield bar, dial while active. */

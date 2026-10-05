@@ -15,4 +15,5 @@ export const SCENES = {
   gallery: 'Gallery',
   settings: 'Settings',
   touch: 'Touch',
+  arcade: 'Arcade',
 } as const;

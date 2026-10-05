@@ -30,4 +30,6 @@ export const TRAINING_ENEMIES: ReadonlyArray<{ kind: EnemyKind; label: string; h
   { kind: 'lurker', label: 'LURKER', hint: 'INVISIBLE. SENSE IT OR SLIME IT.' },
   { kind: 'brute', label: 'BRUTE', hint: 'TUSKS BLOCK THE FRONT. LET IT HIT A WALL.' },
   { kind: 'bat', label: 'MUTANT BAT', hint: 'SCREECH = SWOOP. ONE GLOB GROUNDS IT.' },
+  { kind: 'mascot', label: 'TOKEN TOON', hint: 'CYMBALS UP = SMASH. HIT IT WHILE IT BENDS.' },
+  { kind: 'trackbot', label: 'TRACK-BOT', hint: 'SPARKS = CHARGE. JUMP IT, HIT ITS BACK.' },
 ];

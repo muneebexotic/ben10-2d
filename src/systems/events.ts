@@ -99,6 +99,8 @@ export interface GameEvents {
   'training:spawn': { kind: EnemyKind };
   'training:clear': undefined;
   'training:options': TrainingOptions;
+  /** The SUMO SLAMMERS mini-game ended (story reacts: Kevin's pride, or his gloating). */
+  'arcade:result': { won: boolean };
 }
 
 export type GameEventName = keyof GameEvents;

@@ -16,9 +16,10 @@ export type LifetimeCounter =
   | 'gummed'
   | 'pounceHits'
   | 'cards'
-  | 'jokes';
+  | 'jokes'
+  | 'takeovers';
 
-export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh';
+export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh';
 
 export interface AchievementDef {
   id: string;
@@ -52,6 +53,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'hard-as-nails', title: 'HARD AS NAILS', text: 'CLEAR A CHAPTER ON HARD', icon: 'skull' },
   { id: 'act-1', title: 'THE SUMMER BEGINS', text: 'FINISH ACT 1', icon: 'omnitrix', secret: true },
   { id: 'omnitrix-master', title: 'OMNITRIX MASTER', text: 'S RANK A CHAPTER ON EASY, NORMAL AND HARD', icon: 'star' },
+  { id: 'high-score', title: 'NEW HIGH SCORE', text: "BEAT KEV'S SUMO SLAMMERS RECORD", icon: 'card' },
+  { id: 'hostile-takeover', title: 'HOSTILE TAKEOVER', text: 'TAKE OVER 15 MACHINES AS UPGRADE', icon: 'upgrade', counter: 'takeovers', goal: 15 },
+  { id: 'nothing-to-copy', title: 'NOTHING TO COPY', text: 'BEAT KEVIN 11 BEFORE ANY COPY HITS LEVEL III', icon: 'boss' },
 ];
 
 /** Thrown enemies that bowl over this many in one throw: STEE-RIKE! */

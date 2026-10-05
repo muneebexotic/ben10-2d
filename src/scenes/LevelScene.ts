@@ -48,7 +48,9 @@ import { OmnitrixController } from './level/OmnitrixController';
 import { Parallax } from './level/Parallax';
 import { SimBackdrop } from './level/SimBackdrop';
 import { MuseumBackdrop } from './level/MuseumBackdrop';
+import { CityBackdrop } from './level/CityBackdrop';
 import { SpecialTerrain } from './level/SpecialTerrain';
+import { TechSystem } from './level/TechSystem';
 import { checkpointsFor, spawnEntities } from './level/Spawner';
 import { TransformSequence } from './level/TransformSequence';
 import { MisfireBeat } from './level/MisfireBeat';
@@ -85,6 +87,7 @@ import { jokeId } from '../aliens/jokes';
 import { GHOST_HIDDEN_FRAME, GhostRecorder, ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
 import { GhostRunner } from '../entities/GhostRunner';
 import { getSettings } from '../systems/Settings';
+import { inputMode } from '../systems/InputMode';
 import type { PauseData } from './PauseScene';
 
 export interface LevelStartData {
@@ -110,6 +113,12 @@ const AMBIENT: Record<AmbientKind, number> = {
   blackout: LIGHTING.ambientBlackout,
   atrium: LIGHTING.ambientAtrium,
   lab: LIGHTING.ambientLab,
+  downtown: LIGHTING.ambientDowntown,
+  arcade: LIGHTING.ambientArcade,
+  lair: LIGHTING.ambientLair,
+  subway: LIGHTING.ambientSubway,
+  tunnel: LIGHTING.ambientTunnel,
+  substation: LIGHTING.ambientSubstation,
 };
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
@@ -161,6 +170,8 @@ export class LevelScene extends Phaser.Scene {
   private boulders: Boulder[] = [];
   private dummies: Dummy[] = [];
   private terrain: SpecialTerrain | null = null;
+  /** Machines Upgrade merges into, and the subway's trains (Chapter 4 on). */
+  private tech: TechSystem | null = null;
   /** A stretch of the level with the lights out (Chapter 3's blackout). */
   private darkZone: { fromX: number; toX: number } | null = null;
   private stats!: RunStats;
@@ -254,7 +265,9 @@ export class LevelScene extends Phaser.Scene {
         ? new SimBackdrop(this)
         : this.level.theme === 'museum'
           ? new MuseumBackdrop(this, this.level)
-          : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
+          : this.level.theme === 'city'
+            ? new CityBackdrop(this, this.level)
+            : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
     this.decor = new Decor(this, this.level, this.world);
     this.lighting = new Lighting(this);
     this.time2 = new TimeController();
@@ -303,6 +316,7 @@ export class LevelScene extends Phaser.Scene {
         this.tutorial.onAction('gummed');
         this.achievements.count('gummed');
       },
+      onOverload: (d) => this.onOverload(d.x, d.y),
       threat: (d, at) => this.perfect.register(d, at, d.x, d.y),
       cancelThreat: (d) => this.perfect.cancel(d),
     });
@@ -507,7 +521,11 @@ export class LevelScene extends Phaser.Scene {
     this.player = new Player(this, start.x, start.y, {
       combat: this.combat,
       fx: createFxApi(this.fx, this.lighting, { comicFreeze: (...args) => this.comicFreeze(...args) }),
-      world: { isSolid: (x, y) => this.world.isSolid(x, y), groundBelow: (x, y) => this.world.groundBelow(x, y) },
+      world: {
+        isSolid: (x, y) => this.world.isSolid(x, y),
+        groundBelow: (x, y) => this.world.groundBelow(x, y),
+        merge: (area, facing) => this.tech?.merge(area, facing) ?? null,
+      },
       notify: (a) => this.onAbility(a),
       // Read live: changing difficulty in Settings applies to the very next hit.
       get damageMultiplier() {
@@ -596,12 +614,90 @@ export class LevelScene extends Phaser.Scene {
       tilesKey: this.world.tilesKey,
       onSecretFound: (id) => this.onHiddenPath(id),
     });
+    this.tech = this.createTech(resumeX);
     if (this.jammer) {
       const jammer = this.jammer;
       this.combat.addTarget(jammer);
       this.physics.add.collider(this.player.zone, jammer.gate);
       jammer.onDestroyed = () => this.onJammerDestroyed();
     }
+  }
+
+  private createTech(resumeX: number): TechSystem | null {
+    const kinds = ['techDoor', 'turret', 'lift', 'cart', 'cabinet', 'sumo', 'trains'];
+    const railed = this.level.water.some((w) => w.kind === 'rail');
+    if (!railed && !this.level.entities.some((e) => kinds.includes(e.type))) return null;
+    const combat = this.combat;
+    return new TechSystem({
+      scene: this,
+      level: this.level,
+      fx: this.fx,
+      lighting: this.lighting,
+      projectiles: this.projectiles,
+      telegraph: this.telegraph,
+      combat,
+      playerBody: this.player,
+      player: this.player,
+      resumeX,
+      now: () => this.gameNow,
+      isSolid: (x, y) => this.world.isSolid(x, y),
+      groundBelow: (x, y) => this.world.groundBelow(x, y),
+      addSolid: (r) => this.world.addSolid(r),
+      removeSolid: (r) => this.world.removeSolid(r),
+      blast: (x, y, radius, hit) => combat.blast(x, y, radius, hit, false),
+      ram: (area, hit, key) => combat.meleeOnce(area, hit, key),
+      threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),
+      cancelThreat: (key) => this.perfect.cancel(key),
+      onKill: () => this.creditKill(),
+      playSumo: (done) => this.playSumo(done),
+      onSumoWon: (reward, x, y) => this.onSumoWon(reward, x, y),
+    });
+  }
+
+  /**
+   * The SUMO SLAMMERS cabinet: the level freezes and the mini-game plays over
+   * it; `done` reports whether KEV's score fell.
+   */
+  private playSumo(done: (won: boolean) => void): void {
+    if (this.state !== 'play') {
+      done(false);
+      return;
+    }
+    audio.setLoopsMuted(true);
+    this.scene.pause();
+    this.scene.launch(SCENES.arcade, {
+      onDone: (won: boolean) => {
+        this.scene.resume();
+        this.inputMap.reset();
+        done(won);
+        if (won) this.achievements.unlock('high-score');
+        EventBus.emit('arcade:result', { won });
+      },
+    });
+  }
+
+  /** KEV's high score fell: the prize card pops out of the cabinet. */
+  private onSumoWon(reward: string, x: number, y: number): void {
+    const card = this.level.entities.find((e) => e.type === 'card' && e.reward === reward);
+    if (!card || card.type !== 'card' || this.stats.cardsFound.includes(card.id)) return;
+    const pickup = new Pickup(this, 'card', card.id, card.x, card.y);
+    pickup.sprite.setPosition(x, y);
+    this.pickups.push(pickup);
+    this.tweens.add({ targets: pickup.sprite, y: pickup.baseY, duration: 800, ease: 'Bounce.easeOut' });
+    this.fx.burst('pixel', x, y, 24);
+    playSfx('tickets');
+  }
+
+  /** Upgrade's takeover ran its course: the robot blows up and takes everything near it along. */
+  private onOverload(x: number, y: number): void {
+    const H = COMBAT.hack;
+    this.combat.blast(x, y, H.blastRadius, { damage: H.blastDamage, kind: 'tech', x, y: y + 6, knockback: H.blastKnockback, heavy: true, stunMs: H.blastStunMs }, true);
+    this.fx.explosion(x, y, 'medium');
+    this.fx.burst('circuit', x, y, 26);
+    this.fx.ring(x, y, PALETTE.upgrade, H.blastRadius, 360);
+    this.fx.hitStop(70);
+    playSfx('hackBlast');
+    this.achievements.count('takeovers');
   }
 
   private breakerFor(alienId: string): WallBreaker | null {
@@ -834,6 +930,7 @@ export class LevelScene extends Phaser.Scene {
   private updateProps(dt: number): void {
     for (const b of this.barricades) b.update(dt);
     this.terrain?.update(dt);
+    this.tech?.update(dt, this.player.form.reach.canMerge === true && !this.player.dead, inputMode.format('{K}'));
     for (const c of this.checkpoints) c.update(this.lighting, this.gameNow);
     for (const p of this.pickups) p.update(this.fx, this.lighting, this.gameNow);
     this.jammer?.update(dt, this.lighting, this.gameNow);
@@ -1356,6 +1453,7 @@ export class LevelScene extends Phaser.Scene {
     this.arena?.destroy();
     this.training?.destroy();
     this.story?.destroy();
+    this.tech?.destroy();
     this.dialogue?.stop(false);
     this.time2?.clearSlowMo();
     this.tweens.timeScale = 1;

@@ -10,8 +10,9 @@ export interface Rect {
 /**
  * 'smash' is a heavy blow (Four Arms): the only thing that breaks cracked walls and armour.
  * 'slime' is sticky goo (Stinkfly): weak, but it gums enemies up (see `Hit.slowMs`).
+ * 'tech' is Upgrade's nanotech (his eye laser, a takeover): machines take extra, and its stuns only short out machines.
  */
-export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform' | 'smash' | 'slime';
+export type HitKind = 'melee' | 'fire' | 'burst' | 'rocket' | 'reflect' | 'transform' | 'smash' | 'slime' | 'tech';
 
 export interface Hit {
   damage: number;
@@ -25,6 +26,8 @@ export interface Hit {
   stunMs?: number;
   /** Gums the target up: it moves and attacks slower for this long, and enough goo sticks it in place. */
   slowMs?: number;
+  /** Upgrade merged into it: a machine overloads and blows up (see `Damageable.hackable`). */
+  hack?: boolean;
 }
 
 export type HitResult = 'none' | 'hit' | 'killed' | 'blocked';
@@ -45,6 +48,8 @@ export interface Damageable {
   readonly evasive?: boolean;
   /** Thrown objects stop on it instead of bowling through (bosses, big machines). */
   readonly stopsThrows?: boolean;
+  /** A machine Upgrade can take over right now (robots, Vilgax's drones). */
+  readonly hackable?: boolean;
 }
 
 /** Something a strong alien can pick up and throw: a stunned drone, a boulder. */

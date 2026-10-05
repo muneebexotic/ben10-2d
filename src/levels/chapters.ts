@@ -29,7 +29,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 1, act: 1, title: 'CAMP CRASH', levelId: 'ch1', tease: 'A METEOR. A WATCH. A VERY WEIRD SUMMER.', cast: ['heatblast'] },
   { number: 2, act: 1, title: 'ROAD TRIP', levelId: 'ch2', tease: 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', cast: ['fourarms', 'xlr8'] },
   { number: 3, act: 1, title: 'DR. ANIMO', levelId: 'ch3', tease: 'SOMETHING AT THE MUSEUM IS... EVOLVING.', cast: ['wildmutt', 'stinkfly'] },
-  { number: 4, act: 2, title: 'KEVIN 11', levelId: null, tease: 'NEW FRIEND AT THE ARCADE. WHAT COULD GO WRONG?', cast: ['kevin', 'upgrade'] },
+  { number: 4, act: 2, title: 'KEVIN 11', levelId: 'ch4', tease: 'NEW FRIEND AT THE ARCADE. WHAT COULD GO WRONG?', cast: ['kevin', 'upgrade'] },
   { number: 5, act: 2, title: 'BOUNTY HUNTERS', levelId: null, tease: 'THREE HUNTERS. ONE BOUNTY. GUESS WHO.', cast: ['diamondhead', 'ghostfreak'] },
   { number: 6, act: 2, title: 'MAGIC', levelId: null, tease: "MAGIC ISN'T REAL. RIGHT, GWEN?", cast: ['greymatter'] },
   { number: 7, act: 3, title: 'THE PLUMBERS', levelId: null, tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },

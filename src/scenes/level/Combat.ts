@@ -295,6 +295,16 @@ export class Combat implements CombatApi {
     this.clouds.push({ x, y, radius, life: lifeMs, tick: 0, puff: 0, hit });
   }
 
+  hack(area: Rect, hit: Hit): { x: number; y: number } | null {
+    for (const t of this.targets) {
+      if (!t.alive || !t.hackable || !t.hurtbox(this.b) || !overlaps(area, this.b)) continue;
+      const centre = { x: rectCenterX(this.b), y: rectCenterY(this.b) };
+      this.apply(t, { ...hit, hack: true });
+      return centre;
+    }
+    return null;
+  }
+
   /** Stink clouds hanging in the air right now (for tests and tips). */
   get gasClouds(): number {
     return this.clouds.length;

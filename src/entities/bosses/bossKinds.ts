@@ -27,4 +27,5 @@ export const BOSS_KINDS: Record<BossKind, BossKindDef> = {
     create: (scene, world, x) => new Roadbreaker(scene, world, x),
   },
   frog: { music: 'animo', hologram: [], create: (scene, world, x) => new Frog(scene, world, x) },
+  kevin: { music: 'animo', hologram: [], create: (scene, world, x) => new Frog(scene, world, x) },
 };

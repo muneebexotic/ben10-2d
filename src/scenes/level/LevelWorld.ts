@@ -2,18 +2,19 @@ import Phaser from 'phaser';
 import { DEPTH, TILE } from '../../config/constants';
 import { autotile, buildCells, cellAt, type TileGrid } from '../../levels/buildLevel';
 import { CELL, ONE_WAY_FRAMES, SOLID_FRAMES } from '../../levels/tiles';
-import type { LevelData } from '../../levels/types';
+import type { LevelData, LiquidKind } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
 import type { Rect } from '../../entities/types';
 import { BakedGraphics } from '../../ui/BakedGraphics';
 
-const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum } as const;
+const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity } as const;
 
 /** How each liquid looks: its surface texture and the colour it fades to when deeper than one texture. */
 const LIQUIDS = {
   water: { texture: TEX.water, deep: 0x0c2440, drift: 0.012 },
   mutagen: { texture: TEX.mutagenPool, deep: 0x06261c, drift: 0.008 },
   tar: { texture: TEX.tarPool, deep: 0x08070c, drift: 0.002 },
+  rail: { texture: TEX.trackBed, deep: 0x0a0a10, drift: 0 },
 } as const;
 
 /** Tilemap, collision setup and spatial queries for a level. */
@@ -82,8 +83,8 @@ export class LevelWorld {
       body.checkCollision.down = false;
       body.checkCollision.left = false;
       body.checkCollision.right = false;
-      // Tar is too sticky to run across: no surface to stand on.
-      if (w.kind === 'tar') floor.disableBody(true, true);
+      // Tar is too sticky to run across, a live rail too deadly: no surface to stand on.
+      if (w.kind === 'tar' || w.kind === 'rail') floor.disableBody(true, true);
       else this.waterSurfaces.add(floor);
       // The texture is one surface deep (64 px); deeper liquid continues in its darkest colour.
       const look = LIQUIDS[w.kind ?? 'water'];
@@ -170,7 +171,7 @@ export class LevelWorld {
   }
 
   /** The liquid under (x, feetY), if any (mutagen glows, tar is black). */
-  liquidAt(x: number, feetY: number): 'water' | 'mutagen' | 'tar' | null {
+  liquidAt(x: number, feetY: number): LiquidKind | null {
     const w = this.data.water.find((s) => x >= s.x * TILE && x < (s.x + s.w) * TILE && feetY > s.surface * TILE - 2);
     return w ? (w.kind ?? 'water') : null;
   }

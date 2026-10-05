@@ -11,8 +11,9 @@ import { formatControls } from '../src/systems/controlLabels';
 const REQUIRED_ANIMS = ['idle', 'run', 'jump', 'fall', 'hurt'];
 
 describe('alien registry', () => {
-  it('has Heatblast for Chapter 1, Four Arms and XLR8 for Chapter 2, Wildmutt and Stinkfly for Chapter 3, in dial order', () => {
-    expect(allAliens().map((a) => a.id)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly']);
+  it('has Heatblast for Chapter 1, Four Arms and XLR8 for Chapter 2, Wildmutt and Stinkfly for Chapter 3, Upgrade for Chapter 4, in dial order', () => {
+    expect(allAliens().map((a) => a.id)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade']);
+    expect(getAlien('upgrade').unlockChapter).toBe(4);
     expect(getAlien('heatblast').unlockChapter).toBe(1);
     expect(getAlien('fourarms').unlockChapter).toBe(2);
     expect(getAlien('xlr8').unlockChapter).toBe(2);
@@ -25,6 +26,7 @@ describe('alien registry', () => {
     expect(aliensUnlockedBy(1)).toEqual(['heatblast']);
     expect(aliensUnlockedBy(2)).toEqual(['heatblast', 'fourarms', 'xlr8']);
     expect(aliensUnlockedBy(3)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly']);
+    expect(aliensUnlockedBy(4)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade']);
   });
 
   it('human Ben is a form but not an alien on the dial', () => {

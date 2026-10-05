@@ -70,8 +70,8 @@ describe('training arena', () => {
     expect(canReach(level, grid, start, farBank, HUMAN_CAPS)).toBe(false);
   });
 
-  it("can spawn every enemy type, Dr. Animo's mutants included", () => {
-    expect(TRAINING_ENEMIES.map((e) => e.kind)).toEqual(['scout', 'striker', 'gunner', 'armored', 'hornet', 'rat', 'roach', 'lurker', 'brute', 'bat']);
+  it("can spawn every enemy type, Dr. Animo's mutants and Chapter 4's robots included", () => {
+    expect(TRAINING_ENEMIES.map((e) => e.kind)).toEqual(['scout', 'striker', 'gunner', 'armored', 'hornet', 'rat', 'roach', 'lurker', 'brute', 'bat', 'mascot', 'trackbot']);
   });
 });
 

@@ -13,6 +13,9 @@ import { BruteBrain } from './mutants/brute';
 import { LurkerBrain } from './mutants/lurker';
 import { RatBrain } from './mutants/rat';
 import { RoachBrain } from './mutants/roach';
+import { MascotBrain } from './robots/mascot';
+import { SparkBrain } from './robots/spark';
+import { TrackbotBrain } from './robots/trackbot';
 import { pace } from '../../systems/Difficulty';
 import { chance, damp } from '../../systems/Pacing';
 
@@ -270,5 +273,13 @@ export function createBrain(kind: EnemyKind, opts: { ceiling?: boolean } = {}): 
       return new LurkerBrain();
     case 'brute':
       return new BruteBrain();
+    case 'mascot':
+      return new MascotBrain();
+    case 'trackbot':
+      return new TrackbotBrain(false);
+    case 'voltbot':
+      return new TrackbotBrain(true);
+    case 'spark':
+      return new SparkBrain();
   }
 }

@@ -80,6 +80,13 @@ export const LIGHTING = {
   ambientBlackout: 0x1a1828,
   ambientAtrium: 0x8a9cc4,
   ambientLab: 0x5e8076,
+  // Kevin 11: dusk downtown, the arcade's neon, the laser tag dark, the subway and its tunnels, the substation.
+  ambientDowntown: 0xb48aa8,
+  ambientArcade: 0x8a78b4,
+  ambientLair: 0x4a3c7a,
+  ambientSubway: 0x8a92a0,
+  ambientTunnel: 0x3e4658,
+  ambientSubstation: 0x5a6078,
   ambientBlendMs: 900,
 } as const;
 
