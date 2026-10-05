@@ -23,6 +23,8 @@ export class DialogBox {
   private full = '';
   private shown = 0;
   private voicePitch = 1;
+  private right = GAME_WIDTH;
+  private letterboxed = false;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.bg = scene.add.graphics();
@@ -31,12 +33,25 @@ export class DialogBox {
     this.portraitFrame = scene.add.graphics();
     this.portrait = scene.add.image(-W / 2 + 30, -4, '__DEFAULT').setVisible(false);
     this.root = scene.add.container(GAME_WIDTH / 2, Y, [this.bg, this.portraitFrame, this.portrait, this.name, this.body]).setDepth(950).setVisible(false);
-    this.skip = pixelText(scene, GAME_WIDTH - 12, GAME_HEIGHT - 17, '', { originX: 1, originY: 0.5, color: PALETTE.uiDim }).setDepth(950);
+    this.skip = pixelText(scene, 0, 0, '', { originX: 1, originY: 0.5, color: PALETTE.uiDim }).setDepth(950);
+    this.placeSkip();
   }
 
   /** Keeps the skip hint in the bottom-right corner of the screen (wide screens). */
   setRight(right: number): void {
-    this.skip.setX(right - 12);
+    this.right = right;
+    this.placeSkip();
+  }
+
+  /** The skip hint sits in the bottom letterbox bar in a cinematic; during play it tucks under the box, clear of the touch controls. */
+  setLetterbox(visible: boolean): void {
+    this.letterboxed = visible;
+    this.placeSkip();
+  }
+
+  private placeSkip(): void {
+    if (this.letterboxed) this.skip.setPosition(this.right - 12, GAME_HEIGHT - 17);
+    else this.skip.setPosition(GAME_WIDTH / 2 + W / 2 - 2, Y + H / 2 + 8);
   }
 
   /** `portrait`: a texture key; the speaker's bust pops out of the box's left edge. */
