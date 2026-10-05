@@ -37,7 +37,7 @@ Data-driven like every alien (`src/aliens/upgrade/`, `config/aliens/upgrade.ts`,
 
 | Enemy | Behaviour | Best answer |
 |---|---|---|
-| **TOKEN TOON** | Lumbering animatronic: raises its cymbals with flashing eyes (the tell), then smashes the floor (a shockwave each way) | Anyone; Upgrade takes it over |
+| **TOKEN TOON** | Lumbering animatronic: raises its cymbals with flashing eyes (the tell), then smashes the floor (a shockwave each way). Guards its stretch of the arcade: it won't follow Ben more than 8 tiles from where it woke | Anyone; Upgrade takes it over |
 | **Laser turret** | A laser sight sweeps onto Ben and locks (the tell), then a three-shot burst; rests follow difficulty | Upgrade merges in and uses it; anyone can wreck it |
 | **Track-bot** | Revs its grinder in a shower of sparks with a dashed charge line (the tell), then charges; a miss leaves it skidding, back open (x1.5) | Jump it and hit its back; Upgrade takes it over |
 | **Overcharged track-bot** | Kevin's: faster, tougher, crackling purple | The same, quicker |
@@ -55,6 +55,7 @@ He copies the aliens Ben uses; the more Ben relies on one, the stronger Kevin's 
 - **Phase 3, KEVIN 11 (25-0%).** He swallows every copy at once: the hulking hybrid wearing a piece of each alien he copied (a crown of flame, a second pair of red arms, XLR8's visor and tail, a mane, bug wings, Upgrade's eye on his chest). He uses each copied alien's moves at its level and resists each by how well he copied it (the ones he barely copied hurt most). Every three attacks he overloads (UNSTABLE!): open and taking x1.5.
 - **Defeat:** POWERED DOWN!, every stolen volt blows out of him, he shouts his line and leaps onto a freight train passing behind the hall's grating.
 - Any alien can still win; switching is just much faster. Tells are the same length on every difficulty; rests and punish windows follow the difficulty.
+- **Breathers:** each phase change knocks a smoothie loose on the far side of the hall, and while he's staggered (OUT OF SYNC, OVERLOAD!, UNSTABLE!) touching him doesn't hurt.
 
 ## SUMO SLAMMERS
 
