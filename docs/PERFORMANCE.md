@@ -263,3 +263,22 @@ Boot is unchanged by this pass (the differences are run-to-run noise; the very f
 **Boot art generation: measured, not changed.** At 4x, generating every texture takes about 1.3 s of the boot, in one long task with the loading bar full: about 0.4 s is creating and uploading 230 canvases, about 0.3 s the characters' frames, the rest props, backdrops and outlines. Chapters 2 and 3's art is about 0.15-0.25 s of it. Options if it grows: spread generation over several frames so the loading bar moves (same total time), generate a chapter's art when it is first played, or pack small textures into shared canvases.
 
 **Revisit when:** the compressed JavaScript passes 600 KB, or warm boot to the title at 4x passes 3.5 s. Each chapter so far added about 90 KB of code (about 23 KB compressed) and about 0.1 s of boot art at 4x.
+
+## Chapter 4 check (Milestone 4, part 3)
+
+Three scenarios were added (`ch4-arcade`, `ch4-station`, `ch4-kevin`) and the leak check now also visits Chapter 4's station and KEVIN 11. Full run on the emulated wide phone, CPU milliseconds per frame:
+
+| Scenario | Mean 4x | p95 4x | p99 4x | Mean 6x | Frames over 50 ms (4x) | Longest GC (4x) |
+|---|---|---|---|---|---|---|
+| ch4-arcade | 24.1 | 40.6 | 52.1 | 39.8 | 2 | 7.8 ms |
+| ch4-station | 21.3 | 38.3 | 51.6 | 33.6 | 2 | 9.0 ms |
+| ch4-kevin | 16.8 | 27.2 | 39.3 | 27.7 | 0 | 13.9 ms |
+| (ch1-forest, for scale) | 20.0 | 34.7 | 51.8 | 35.4 | 2 | 6.9 ms |
+
+Every scenario is within budget, and the leak check is flat (48 EventBus listeners, 309 textures every cycle, heap +0.8 MB over seven cycles, no held sounds after leaving a level). The GAME ZONE is the heaviest moment in the game now (neon and lit props, the TOKEN TOONS and Kevin's buddy AI on screen at once), about 2 ms under the mean limit at 4x: the next chapter that adds a moment like it should profile first.
+
+**A run on a loaded machine.** The first full run of this check read about 50% higher in every scenario, render time included, and failed the budget. Nothing in the changes touches rendering; on a freshly started machine the same build passed, and an A/B against the build before the last physics change (alternating, two runs each) showed no difference outside noise (ch1-forest 20.1 → 19.5 ms, ch3-frog 19.3 → 19.0, ch4-arcade 20.3 → 21.4). Compare builds on the same machine at the same time (`--dist`), as above.
+
+**Physics steps.** Frames where Ben moves more than 12 px are now split into two physics steps (see `DECISIONS.md`). Only XLR8's dash and Upgrade's flow on slow frames do that; the A/B above includes it.
+
+**Bundle.** 502 KB of JavaScript compressed (brotli): Phaser 276 KB, the game 226 KB. Chapter 4 with Upgrade and the machines added about 32 KB, more than the earlier chapters' 23 KB (Upgrade's machine framework and Kevin's copies are new systems, not just content). Still under the 600 KB revisit line.
