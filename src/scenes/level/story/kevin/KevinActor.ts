@@ -1,6 +1,7 @@
 import { DEPTH } from '../../../../config/constants';
 import { PALETTE } from '../../../../config/palette';
 import { KevinLook, type KevinPose } from '../../../../entities/bosses/kevin/KevinLook';
+import { chance } from '../../../../systems/Pacing';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import type { StoryKit } from '../StoryKit';
 
@@ -150,7 +151,7 @@ export class KevinActor {
     if (this.mode === 'hidden') return;
     if (this.beam) {
       this.beam.ms -= dtMs;
-      if (Math.random() < 0.8) this.kit.fx.beam(this.beam.x, this.beam.y, this.handX, this.handY, PALETTE.kevin, 2, 50);
+      if (chance(0.8)) this.kit.fx.beam(this.beam.x, this.beam.y, this.handX, this.handY, PALETTE.kevin, 2, 50);
       this.glow = Math.min(1, this.glow + dtMs / 500);
       if (this.beam.ms <= 0) {
         this.beam = null;

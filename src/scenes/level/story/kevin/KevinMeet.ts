@@ -4,6 +4,7 @@ import { PALETTE } from '../../../../config/palette';
 import type { EnemyKind } from '../../../../levels/types';
 import type { Cabinet } from '../../../../entities/tech/Cabinet';
 import type { Controls } from '../../../../systems/InputMap';
+import { chance } from '../../../../systems/Pacing';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import type { SetPiece, StoryKit } from '../StoryKit';
 import type { KevinActor } from './KevinActor';
@@ -139,7 +140,7 @@ export class KevinMeet implements SetPiece {
     const bx = this.spec.breakerX * TILE + 8;
     const by = 27 * TILE + 14;
     if (this.t < CH4_BEATS.breaker.surgeMs) {
-      if (Math.random() < 0.8) kit.fx.beam(this.actor.handX, this.actor.handY, bx, by, PALETTE.kevin, 2, 50);
+      if (chance(0.8)) kit.fx.beam(this.actor.handX, this.actor.handY, bx, by, PALETTE.kevin, 2, 50);
       return;
     }
     if (!this.steps.has('surge')) {

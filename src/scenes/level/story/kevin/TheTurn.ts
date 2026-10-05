@@ -9,6 +9,7 @@ import { Kevin } from '../../../../entities/bosses/kevin/Kevin';
 import type { TechDoor } from '../../../../entities/tech/TechDoor';
 import { EventBus } from '../../../../systems/EventBus';
 import type { Controls } from '../../../../systems/InputMap';
+import { chance } from '../../../../systems/Pacing';
 import { music } from '../../../../systems/audio/Music';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import { TEX } from '../../../preload/assetKeys';
@@ -141,7 +142,7 @@ export class TheTurn implements SetPiece {
     const p = kit.player;
     if (!this.steps.has('caught')) return;
     p.glow(PALETTE.kevin, Math.min(1, this.t / TURN.absorbMs));
-    if (Math.random() < 0.5) kit.fx.burst('volt', p.x, p.centerY, 2);
+    if (chance(0.5)) kit.fx.burst('volt', p.x, p.centerY, 2);
     if (this.t < TURN.absorbMs) return;
     p.glow(PALETTE.kevin, 0);
     this.steal();
