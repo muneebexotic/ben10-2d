@@ -57,6 +57,16 @@ Built within Milestone 4, part 2 (not proposed beforehand, recorded here for ref
 - **Gumming:** three quick slime globs stick a mutant in place; slime on KING CROAK's feet glues it down.
 - **Animo rides KING CROAK** and hits from above land on him.
 
+Built within Milestone 4, part 3 (Chapter 4, not proposed beforehand, recorded here for reference):
+
+- **Act 2 cold open** (proposed after Chapter 3): Chapter 4 opens on Main Street and goes straight into the Act 1 ending's arcade, the GAME ZONE.
+- **Kevin as an AI buddy** for the first half of the chapter: he follows Ben's trail, throws bolts, cheers each alien the first time he sees it and chats. The Gwen companion planned for Chapter 6 can grow out of the same follower.
+- **DNA STOLEN:** at the turn Kevin locks one alien's slot on the dial until his copy is beaten.
+- **Reliance and the copy meter:** KEVIN 11's copies scale with how much the player leans on each alien, shown live under the boss bar; the hybrid phase is built from how the player fought.
+- **SUMO SLAMMERS** as a playable three-round cabinet mini-game with a card and an achievement.
+- **Machines framework:** Upgrade possesses turrets, cabinets, shutters, lifts, carts and the boss's tesla coils; any machine enemy (and Vilgax's drones) can be taken over and blown up.
+- **Upgrade opens one secret in each Act 1 chapter** (a supply hatch, a shed shutter, a security room).
+
 ## Deferred (approved for later)
 
 | Idea | Target |
@@ -99,4 +109,14 @@ Built within Milestone 4, part 2 (not proposed beforehand, recorded here for ref
 - **Animo's bestiary:** each mutant type gets a page (with the exhibit it used to be) the first time it's defeated, next to the card album.
 - **Frog rematch in Training:** KING CROAK as a Training target, with a "no hits on the hide" challenge (only weak-point hits count).
 - **Stink combo callouts:** a named combo (STINK BOMB!) when a cloud is lit by a Heatblast swap within a second, with a slow-motion beat. A natural clip.
-- **Act 2 cold open:** the Act 1 ending's arcade becomes the first level of Act 2 (Kevin's arcade, the cabinets still dead), so the hook pays off immediately.
+- ~~**Act 2 cold open**~~: built in Chapter 4 (see Done).
+
+### From Chapter 4 (Milestone 4)
+
+- **SUMO SLAMMERS in EXTRAS:** once KEV's record falls, the cabinet is playable from the title screen with a three-letter high-score table per file (and a share line: "I BEAT KEV"). A 30-second loop players will replay.
+- **More arcade cabinets:** one more micro-game per Act (a SUMO SLAMMERS sequel, a lightgun cabinet for Upgrade), each with a card.
+- **Ride the train:** Upgrade merges into a Line 11 train for a short rail sequence (robots on the tracks, Kevin on the roof), as a replayable bonus stage.
+- **Copy-proof badge:** beat KEVIN 11 using each alien at most once per transformation cycle; a harder sibling of NOTHING TO COPY.
+- **Kevin's copy gallery:** an EXTRAS page with every alien Kevin has copied on this file and the highest copy level he reached with it ("YOUR HEATBLAST, LEVEL III. YOU REALLY LIKE FIRE, HUH?").
+- **Lights-out Line 11:** the station after the drain as a timed run where Upgrade's glow and Heatblast are the only light.
+- **Kevin co-op:** a local second player as Kevin during the buddy section (bolts and absorbing cabinets), a stepping stone to the Ben vs Kevin duels in the viral layer.

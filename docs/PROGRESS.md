@@ -4,11 +4,11 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 ## Status
 
-**Act 1 is complete (Milestones 1 to 4, part 2).** Three story chapters (Camp Crash, Road Trip, Dr. Animo), five aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly), three bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. Chapter 3 and the extras are described in [history/milestone-4-part-2-chapter-3.md](history/milestone-4-part-2-chapter-3.md).
+**Act 2 has begun: Milestone 4, part 3 built Chapter 4, Kevin 11.** Four story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11), six aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly, Upgrade), four bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK, KEVIN 11), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. The Act 2 plan (Chapters 4 to 6) is in [GAME_DESIGN.md](GAME_DESIGN.md); Chapter 4 is described in full in [history/milestone-4-part-3-chapter-4.md](history/milestone-4-part-3-chapter-4.md).
 
-**Latest session: a performance and code-quality pass** (no new features, no gameplay changes). Added `npm run bench` with a budget in CPU time per frame, made per-frame effects and jump arcs independent of the screen's refresh rate (90 and 120 Hz play like 60 Hz), stopped a render-target leak that created a framebuffer every frame on wide screens, baked the HUD and touch controls into textures, culled off-screen scenery, and stopped XLR8's wind and Heatblast's hum from playing on after leaving a level. Before and after numbers are in [PERFORMANCE.md](PERFORMANCE.md). `npm run typecheck`, `npm run build` and `npm test` all pass.
+**This session:** Upgrade and the machine framework (turrets, cabinets, shutters, lifts, carts, coils, takeovers), Kevin from buddy to rival (the meet, the buddy AI, the LASER LAIR, the drain, the turn with stolen DNA, the hunt), the KEVIN 11 boss (reliance-driven copies, coils, the hybrid), SUMO SLAMMERS, three music tracks, Chapter 4's city art and robots, one Upgrade secret in each Act 1 chapter, and Chapter Select for Act 2. `npm run typecheck`, `npm run build`, `npm test` and `npm run bench` all pass.
 
-Next, when asked: more Milestone 4 story chapters (Act 2 opens with Kevin 11), or Milestone 5 (characters). Still deferred: Training trials, more Chapter 1 revisits, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
+Next, when asked: Chapter 5 (Bounty Hunters) or Chapter 6 (Magic), both planned in GAME_DESIGN.md. Still deferred: Training trials, more Chapter 1 revisits, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
 
 ## How to run
 
@@ -28,6 +28,7 @@ URL switches for playtesting:
 | `?start=cp-cliff` | Start at a checkpoint (`cp-cliff`, `cp-nest`, `cp-arena`; `cp-ravine`). A practice run on the last-played file (cards and clears count, best times and splits don't); without a file nothing is saved |
 | `?level=ch2` | Play Chapter 2 directly (a practice run). Combine with `&start=`: `cp-canyon`, `cp-river`, `cp-island` (Easy only), `cp-farbank`, `cp-convoy` (straight onto the RV roof), `cp-truckstop`, `cp-arena` (ROADBREAKER) |
 | `?level=ch3` | Play Chapter 3 directly (a practice run). Combine with `&start=`: `cp-hall` (Easy and Normal), `cp-mammals`, `cp-dark` (the blackout), `cp-shaft` (Easy only), `cp-upper` (Easy and Normal), `cp-atrium`, `cp-lockdown`, `cp-lab` (Easy and Normal), `cp-frog` (KING CROAK) |
+| `?level=ch4` | Play Chapter 4 directly (a practice run). Combine with `&start=`: `cp-arcade` (Easy and Normal), `cp-lair`, `cp-highscore` (Easy and Normal), `cp-station` (Easy and Normal), `cp-line`, `cp-turn`, `cp-depot` (Easy and Normal), `cp-kevin` (KEVIN 11) |
 | `?training=1` | Straight into Omnitrix Training (with the last file's aliens and difficulty) |
 | `?aliens=fourarms,xlr8` | Adds aliens to the Chapter 1 dial (a practice run). With Four Arms the vault card spawns and counts |
 | `?mute=1` | Start muted |
@@ -46,7 +47,7 @@ URL switches for playtesting:
 | Attack | J (or X) | ATTACK |
 | Special | K (or C) | SPECIAL |
 | Aim up / upward variants | Hold Up while attacking or using the special | Stick up |
-| Omnitrix dial | Q / E, or 1-5 to pick an alien directly | Swipe sideways on the Omnitrix button; hold it for the radial dial, slide onto an alien and let go |
+| Omnitrix dial | Q / E, or 1-9 to pick an alien directly | Swipe sideways on the Omnitrix button; hold it for the radial dial, slide onto an alien and let go |
 | Transform, or **swap** while transformed (with a different alien selected) | T | Tap the Omnitrix button (it reads SWAP!) |
 | Pause (Training: training menu) | Esc / P | II button (top centre) |
 | Menus | Arrows / WASD, Enter, Esc (back); S opens Settings on Chapter Select | Tap a card to pick it, tap again to confirm; swipe or tap the arrows on Chapter Select; BACK in the top-left |
@@ -63,6 +64,7 @@ What ATTACK and SPECIAL do depends on the form (the touch buttons change icon wi
 | Four Arms | Punch, punch, haymaker. Up: overhead clap. Next to a downed drone, boulder or the dummy: lift, then J again to throw (Up: lob) | Ground slam with shockwaves. In the air: meteor drop | |
 | Wildmutt | Hold: claw rakes, every 3rd a double rake | Pounce (Up: high pounce); landing on an enemy from above is a POUNCE! | Push into a wall to climb, Jump to leap off. Senses reveal invisible enemies and hidden doors |
 | Stinkfly | Slime glob (slows; 3 quick ones gum an enemy in place) | Stink cloud (fire sets it off) | Jump in mid-air: fly (hold to climb, release to hover, Down to dive) until the wings tire |
+| Upgrade | Eye laser (hold; Up aims high, Down in the air aims low; every 4th is a triple) | Merge: a puddle that flows into a machine and possesses it (K again ejects) or takes over a robot | Possessed: a turret aims and fires with J, a cart drives with left/right (J: horn), lifts and shutters work on their own |
 
 On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO / ON / OFF). In AUTO, pressing a key hides them and touching the screen brings them back.
 
@@ -90,6 +92,10 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **KING CROAK on Hard is the first thing to check with real players.** Human Ben's 15 s between transformations against the frog, at 1.5x damage, is where scripted damage-on runs failed (Normal passes cleanly). Levers: `FROG.tongue.damage`, `FROG.idleMs`, and Hard's cooldown and damage in `config/difficulty.ts`.
 - **KING CROAK's health (150)** may be low for players who keep Heatblast's fire on it from range: the damage-on Normal run beat it in under a minute. `FROG.maxHp` and `FROG.hideMultiplier`.
 - **Stinkfly's flight and Wildmutt's climbing need a human feel pass** (headless runs at about a third of real speed).
+- **Chapter 4 is tuned by scripted playtests, not people.** KEVIN 11's health (170), the reliance thresholds (copy levels at 25, 60 and 110 points, 4 points a second of decay) and the copy resistances are the first things to check with real players: if NOTHING TO COPY is too easy or the hybrid too tanky, the levers are `RELIANCE` and `COPY_RULES` in `config/kevin.ts`. SUMO SLAMMERS' difficulty is `config/sumo.ts` (mashing alone loses round 2 by design).
+- **Upgrade's feel needs a human pass:** the puddle's speed and reach into machines, the laser's rate and the cart's handling (`config/aliens/upgrade.ts`, `config/tech.ts`).
+- **Kevin the buddy is a follower, not a fighter with physics:** he retraces Ben's steps and pops in behind Ben when left far behind; on a long flight or a lift ride he catches up rather than following the path.
+- **Flyers can skip the power depot's shutter** by going over the wall (deliberate); walkers need Upgrade.
 - **Lurkers are nearly invisible** to aliens without senses until they're slimed, hit or about to spit (their throat glows first). Fair by design, but worth watching in playtests.
 - **The Act 1 ending is procedural pixel art** like everything else; Kevin's look is a placeholder until real art.
 - **Saves live in one browser:** no cloud sync or export yet (see IDEAS.md).
@@ -97,38 +103,22 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 
 ## How to test the latest chapter
 
-**Performance pass (latest session):** play anything and it should look and feel exactly as before. On a real phone, follow [PERFORMANCE.md, Checking on a real phone](PERFORMANCE.md#checking-on-a-real-phone-debug1) (`?debug=1`). Leaving a level as XLR8 at full speed no longer leaves his wind playing on the menu.
+**Milestone 4, part 3: Chapter 4, desktop** (`npm run dev`). Chapter 3's steps are in [history/milestone-4-part-2-chapter-3.md](history/milestone-4-part-2-chapter-3.md).
 
-**Milestone 4, part 2: Chapter 3, desktop** (`npm run dev`)
+1. **Get there:** a file that has cleared Chapter 3, Chapter Select: the ACT 2 header and KEVIN 11 (the arcade at dusk) > PLAY. Sections on their own: `?level=ch4&start=<checkpoint>` (see the URL switches).
+2. **Cold open:** the Rustbucket smoking on Main Street, CHAPTER 4 banner, the family talking; any key skips, it doesn't replay on a retry. Rooftop sign card: Heatblast's rocket jump or Stinkfly.
+3. **Meet Kevin:** walk into the GAME ZONE. The ??? portrait turns into KEVIN, he drinks the cabinet next to him dry (its screen dies), throws the bolt, then juices the breaker: FREE GAMES FOR EVERYBODY, and the TOKEN TOONS climb off the band stage. Die and retry: no talking, the band still wakes.
+4. **Kevin as a buddy:** he follows you (hops where you jumped, catches up if you leave him behind), throws purple bolts at enemies, cheers the first time he sees each alien, chats when it's quiet. Mascots: cymbals up with flashing eyes, then a smash and shockwaves (jump them).
+5. **LASER LAIR:** LOCKDOWN!, the turrets wake, get behind cover; NEW DNA, Upgrade's glitch slam. K flows into a turret (green outline and a [K] badge show what's in reach): aim with up/down, J fires, K ejects. Kevin outside the glass: "YOU CAN BECOME... A MACHINE?". The dead lift to the catwalk card, the shutter out (K into its keypad).
+6. **Takeovers and cabinets:** K into a mascot or a track-bot: it shakes green, then blows up (TAKEOVER!). K into an arcade cabinet: GAME OVER! blasts what's in front (one per cabinet).
+7. **SUMO SLAMMERS:** Kevin's dare; K into the cabinet: mash J, and when KEV raises his arms (the "!") press K to sidestep. Three rounds. Win: NEW HIGH SCORE, the card pops out, Kevin sulks; lose: he gloats. Escape forfeits.
+8. **Rosewood station:** trains warn (lamps, horn, headlights) then roar through the track bed; stay on the decks. Off the end of the first deck, the maintenance step leads up to the second. Kevin's drain: the lights die bank by bank, the trains stop.
+9. **The cart:** K into the maintenance cart, drive right along the live rail (J honks and stuns), smash the barricade at speed.
+10. **The turn:** Kevin's speech, the grab: whatever alien you are (or the one on the dial) goes dark on the dial (DNA STOLEN!; picking it says so) and Kevin becomes a purple copy of it. Hit him with a different alien right away for OUT OF SYNC. Beat him: DNA RESTORED!, he shorts the shutter and runs.
+11. **The depot:** Kevin pops up ahead, taunts and flings sparks. Upgrade's lift to the grating (or fly over), the shutter, the cracked wall (Four Arms' card), the security laser and the sealed room (later aliens' silhouettes).
+12. **KEVIN 11:** his intro, then watch the copy meter on the boss bar fill as you lean on one alien. Tells: the hand charging (bolts), the crouch and dashed line (the absorb lunge: getting caught as an alien costs time and levels his copy), the scan beam locking on (he copies whatever you are when it ends). Phase 2: the coils' striped bands then arcs; as Upgrade, K into a coil for OVERLOAD!. Phase 3: the hybrid wears a piece of each alien he copied; UNSTABLE! every three attacks. Defeat: POWERED DOWN!, the train escape, the family's last word.
+13. **Achievements:** NEW HIGH SCORE (SUMO), HOSTILE TAKEOVER (15 takeovers), NOTHING TO COPY (beat him before any copy reaches III: keep switching).
+14. **Older secrets with Upgrade:** Chapter Select flags the Act 1 chapters SECRET WAITING!. Camp Crash: a Vilgax supply hatch in the ground just before the crash site (flow over it with K and drop in). Road Trip: the service shed left of where the RV drops you at the truck stop. Dr. Animo: the guard room's shutter in the security wing, right of the Four Arms wall.
+15. **Difficulty:** Hard keeps LASER LAIR, MAINTENANCE LINE, THE TURN and KEVIN 11 only; Upgrade's 12 s is enough to get out of the lair, and the watch recharges at the turn.
 
-1. **Get there:** a file that has cleared Chapter 2, Chapter Select > DR. ANIMO (the museum diorama) > PLAY. Sections on their own: `?level=ch3&start=<checkpoint>` (see the URL switches).
-2. **Opening:** the RV outside the museum, Max, Gwen and Ben talking, the guard running out of the glowing door with rats behind him. Any key skips; it doesn't replay on a retry.
-3. **Steps and Great Hall:** Heatblast's rocket jump to the roof card. Walk in: Animo rises over the T-rex, his speech (try arriving as an alien: he wants the watch), the zap, the bat carrying him off. Die and retry: no speech, the mutants still come. Rats crouch before they leap; the ceiling roach drops when you pass under (grit falls first).
-4. **Glass and the egg card:** from the gallery over the glass, Four Arms' meteor drop breaks it (a plain slam or fire doesn't).
-5. **Hall of Mammals:** the brute pounds its chest, then charges: dodge so it hits the wall, then hit its back or lift it as Four Arms. Hits on its tusks glance off unless they're Four Arms'.
-6. **Blackout:** the PA, the lights going out, NEW DNA, Wildmutt. The pulse shows the lurkers and the plinth door opens (HIDDEN PATH!): the card inside. Hold J for rakes, K to pounce, land on a rat for POUNCE!.
-7. **The climb:** push into the tall wall to climb (Jump leaps off). At the top, the wall that smells wrong opens.
-8. **Atrium:** walk onto the bridge: Animo's taunt, the floor goes, NEW DNA mid-fall, Stinkfly hanging over the tar. Press Jump to fly; hold to climb, let go to hover, watch the wing bar. Perch to perch, the card on the whale's ribs, the bats (two quick globs ground one). Fall into the tar: you're put back on the bridge stub.
-9. **LOCKDOWN:** vines (Heatblast), the moat under the low ceiling (XLR8 at full speed), the cracked wall (Four Arms), the dead end (Wildmutt climbs and sniffs the vent open), the vat pit (Stinkfly). Try swapping with T on the run. In the vent: Grey Matter's and Ripjaws' silhouettes.
-10. **Stink combo:** as Stinkfly, K drops a cloud next to some mutants; swap to Heatblast and shoot it: FOOMP! or KA-BOOM!.
-11. **KING CROAK:** Animo's intro, then the frog. Tells: the crouch and landing target (jump the shockwaves), the tongue's aim line (as Four Arms, punch the outstretched tongue: YANK!, and it lands face-first), the swelling throat (fireball it: POP!), the belly flop's target that follows you, then locks. Slime its feet four times quickly: GUMMED DOWN!. Pounce on its head: ANIMO HIT!. At 60% it grows and Animo zaps up mutants. Defeat: CROAKED!, it shrinks to a normal frog, RIBBIT?.
-12. **Results and Act 1 ending (first clear only):** MUTANTS DEFEATED, then CONTINUE: MEANWHILE..., the arcade, Kevin's lines, the cabinets dying, KEVIN 11 / ACT 2: RIVALS AND HUNTERS, then ACT 1 COMPLETE with the five aliens and every chapter's best. CONTINUE goes to Chapter Select.
-13. **Difficulty:** Hard keeps NIGHT GALLERY, ATRIUM, LOCKDOWN and KING CROAK (and HALL OF MAMMALS) checkpoints only; transformations are 12 s, so LOCKDOWN needs quick swaps or a wait at a safe spot.
-14. **Secrets elsewhere:** Chapter Select flags ROAD TRIP and CAMP CRASH with SECRET WAITING!. Road Trip: fly up to the pole sign card as Stinkfly. Camp Crash: near the cliff, Wildmutt sniffs out a hatch in the forest floor ("SOMETHING SMELLS FUNNY UNDER HERE...") with a fifth card.
-15. **Number keys:** 1-5 pick an alien directly (the dial jumps there); T transforms or swaps.
-
-**Approved extras (Milestone 4, part 2)**
-
-1. **Achievements:** transform for the first time on a new file: IT'S HERO TIME slides in under the dial. Bowl three drones over with one Four Arms throw: STEE-RIKE!. Beat a boss without a scratch: UNTOUCHABLE. Title > EXTRAS > ACHIEVEMENTS shows them all with progress bars (PYROMANIAC counts fire KOs across runs).
-2. **Card album:** EXTRAS > CARD ALBUM. Arrows (or taps) over the cards: found ones show the wrestler, name, number and flavour text; holo cards shimmer; missing ones say where they hide and which alien they need ("WILDMUTT CAN REACH IT NOW!" once he's on the dial).
-3. **JOKES FOUND:** Training, pause > MISFIRES: CHAOS, transform a few times; then EXTRAS > JOKES FOUND lists the lines you heard under the alien you got.
-4. **Splits review:** finish any chapter from the start (a timed run): [S] SPLITS (or the SPLITS button) lists every split with its delta and segment; on a second run, best-ever segments get gold stars and SUM OF BEST appears.
-5. **Ghost:** finish a chapter from the start, then PLAY AGAIN on the same file and difficulty: a see-through blue Ben marked BEST runs the old route on the same clock and fades where it finished. Settings > GHOST: OFF hides it.
-6. **Omnitrix Master:** S rank a chapter on Easy, Normal and Hard (or seed a save): its Chapter Select card turns gold, the results stamp OMNITRIX MASTER! (with a fanfare the first time) and the share text mentions it.
-
-**Milestone 4, part 2, phone**
-
-1. **Radial dial:** hold the Omnitrix button: the arc of alien faces fans out up and to the left. Slide onto one (it grows and its name shows) and let go: Ben transforms or swaps into it. Let go in the middle to cancel. A quick swipe still turns the dial one step.
-2. Wildmutt on touch: hold the stick into a wall to climb, JUMP to leap off, SPECIAL to pounce (stick up: high). Stinkfly: JUMP in the air to fly, hold to climb.
-3. The blackout and the atrium on a phone: the dialogue box stays at the top, the wing bar is readable, the boss bar and the frog's tells stay above the thumbs.
-4. The ACT 1 COMPLETE screen and the Kevin scene on a wide phone: nothing cut off, TAP TO CONTINUE works.
+**Phone (emulated wide phone or real):** the radial dial now has six faces; Upgrade's touch buttons (eye beam, merge); SUMO SLAMMERS with the right half to push and the left to sidestep; the copy meter readable on the boss bar above the thumbs; the dialogue box clear of the controls.
