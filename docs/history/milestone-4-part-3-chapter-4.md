@@ -67,3 +67,51 @@ NEW HIGH SCORE (beat KEV's record), HOSTILE TAKEOVER (take over 15 machines as U
 ## Cards
 
 Eight in Chapter 4, five reachable now: the rooftop sign (flight or a rocket jump), behind the band stage (Wildmutt), the LASER LAIR catwalk (Upgrade's lift, or flight), SUMO SLAMMERS (the prize), the depot's cracked wall (Four Arms). Three wait for later aliens with silhouettes and lines: inside the claw machine (Grey Matter), past the security laser (Diamondhead), the sealed room (Ghostfreak). Plus one Upgrade card in each Act 1 chapter (26-28 in the album).
+
+## Scripted playtests and what they caught
+
+Chapter 4 was played by a script in headless Chromium, title (or the level directly) to Chapter Complete, on desktop (1280x720) and an emulated wide phone (915x412, touch on). The script plays the intended route: Four Arms and Heatblast through the TOKEN TOONS, the LASER LAIR with Upgrade (a turret takeover, the shutter out), the station decks, the cart along the live rail, the turn (switching away from the stolen alien), the depot's lift and grating, and KEVIN 11 cycling all six aliens (Upgrade into the coils). Chapters 1-3 were re-run checkpoint by checkpoint (every checkpoint loads and plays a short brawl, then each boss is finished into its results), with Upgrade on the file.
+
+First round (before the fixes below):
+
+| Run | Result |
+|---|---|
+| Normal, wide phone, damage off | Main Street to Chapter Complete, no deaths, no errors (3:53 in practice mode) |
+| Normal, desktop, damage off | Stuck under the band stage as human Ben (the script's jumps were too short at headless speed), then, after a script fix, **died on the maintenance line**: the cart bug below |
+| Easy, desktop and wide phone; Hard, wide phone | The script skipped the turn fight (it looked the set piece up by a class name the release build minifies) and, wandering, **left the turn's sealed room through its laser wall**: the XLR8 bug below |
+| Chapters 1-3, every checkpoint and each boss, desktop | All load and play with no errors; every boss falls into its results |
+
+What the runs caught, all fixed:
+
+- **The station's track bed led into the live rail.** Walking along the tracks under deck B ended in the maintenance line's rail, and the bot died there over and over. A wall now closes the track bed under deck B (the trains run behind the terrain and pull into it like a tunnel mouth).
+- **The depot's grating ended against a wall,** so the only way down was a drop-through. It now stops short of the sealed room and walking off its end drops to the floor.
+- **Upgrade timing out mid-ride could kill Ben.** Riding the cart recorded Ben's last safe ground on top of it, over the live rail; when the watch ran out, the cart coasted on, Ben fell, and every pit respawn dropped him back over the rail until his hearts ran out (god mode doesn't cover falls, so the bot died). Nothing over the rail counts as safe ground now, the cart brakes the moment Upgrade leaves it, Upgrade pops straight up out of it, and an empty cart rolls back to the start of the line.
+- **XLR8 could dash through walls on slow frames,** in every chapter since 2. The bot left the turn's sealed room mid-fight; probing found XLR8's dash on a 30 fps frame also passed cracked walls, Upgrade-only shutters, boss-arena laser walls and the jammer gate. Arcade decides which side of a wall a body is on from where a step leaves it, and the dash moves 22 px per 34 ms step. Physics steps are now split so Ben never moves more than 12 px in one (only XLR8's dash and Upgrade's flow on slow frames are affected), and laser walls have thick bodies.
+- **The dialogue skip hint covered the JUMP button on phones** during a boss's defeat speech (every boss). It moves under the dialogue box whenever there's no letterbox.
+- **Chapter 4's results said DRONES DESTROYED.** Now ROBOTS WRECKED.
+- **Three Kevin effects rolled a per-frame chance** (absorb beams and grab sparks), so 120 Hz screens drew twice as many. They use `Pacing.chance`.
+- Earlier, during the build: the copies first used a tint that read pink (now palette-swapped sheets), the copy meter's pips were drawn off the bar, and the Chapter 2 and 3 Upgrade shutters sat inside rock (the reachability test caught it).
+
+Lessons for the scripts: release builds minify class names (find set pieces by their data, not `constructor.name`); headless runs the game at a quarter to a third of real speed, so human Ben needs a jump held about a second to climb the 3-tile band stage, and the Upgrade unlock beat takes up to 20 s of wall time.
+
+## How to test (at the time)
+
+**Milestone 4, part 3: Chapter 4, desktop** (`npm run dev`). Chapter 3's steps are in [milestone-4-part-2-chapter-3.md](milestone-4-part-2-chapter-3.md).
+
+1. **Get there:** a file that has cleared Chapter 3, Chapter Select: the ACT 2 header and KEVIN 11 (the arcade at dusk) > PLAY. Sections on their own: `?level=ch4&start=<checkpoint>` (see the URL switches).
+2. **Cold open:** the Rustbucket smoking on Main Street, CHAPTER 4 banner, the family talking; any key skips, it doesn't replay on a retry. Rooftop sign card: Heatblast's rocket jump or Stinkfly.
+3. **Meet Kevin:** walk into the GAME ZONE. The ??? portrait turns into KEVIN, he drinks the cabinet next to him dry (its screen dies), throws the bolt, then juices the breaker: FREE GAMES FOR EVERYBODY, and the TOKEN TOONS climb off the band stage. Die and retry: no talking, the band still wakes.
+4. **Kevin as a buddy:** he follows you (hops where you jumped, catches up if you leave him behind), throws purple bolts at enemies, cheers the first time he sees each alien, chats when it's quiet. Mascots: cymbals up with flashing eyes, then a smash and shockwaves (jump them).
+5. **LASER LAIR:** LOCKDOWN!, the turrets wake, get behind cover; NEW DNA, Upgrade's glitch slam. K flows into a turret (green outline and a [K] badge show what's in reach): aim with up/down, J fires, K ejects. Kevin outside the glass: "YOU CAN BECOME... A MACHINE?". The dead lift to the catwalk card, the shutter out (K into its keypad).
+6. **Takeovers and cabinets:** K into a mascot or a track-bot: it shakes green, then blows up (TAKEOVER!). K into an arcade cabinet: GAME OVER! blasts what's in front (one per cabinet).
+7. **SUMO SLAMMERS:** Kevin's dare; K into the cabinet: mash J, and when KEV raises his arms (the "!") press K to sidestep. Three rounds. Win: NEW HIGH SCORE, the card pops out, Kevin sulks; lose: he gloats. Escape forfeits.
+8. **Rosewood station:** trains warn (lamps, horn, headlights) then roar through the track bed; stay on the decks. Off the end of the first deck, the maintenance step leads up to the second. Kevin's drain: the lights die bank by bank, the trains stop.
+9. **The cart:** K into the maintenance cart, drive right along the live rail (J honks and stuns), smash the barricade at speed. Let the watch run out mid-line: the cart brakes and you stand on it; step off into the rail and you respawn on the deck (one heart) while the empty cart rolls back to the start (BACK TO THE START).
+10. **The turn:** Kevin's speech, the grab: whatever alien you are (or the one on the dial) goes dark on the dial (DNA STOLEN!; picking it says so) and Kevin becomes a purple copy of it. Hit him with a different alien right away for OUT OF SYNC. Beat him: DNA RESTORED!, he shorts the shutter and runs.
+11. **The depot:** Kevin pops up ahead, taunts and flings sparks. Upgrade's lift to the grating (drop through it with Down + Jump, or walk off its end) (or fly over), the shutter, the cracked wall (Four Arms' card), the security laser and the sealed room (later aliens' silhouettes).
+12. **KEVIN 11:** his intro, then watch the copy meter on the boss bar fill as you lean on one alien. Tells: the hand charging (bolts), the crouch and dashed line (the absorb lunge: getting caught as an alien costs time and levels his copy), the scan beam locking on (he copies whatever you are when it ends). Phase 2: the coils' striped bands then arcs; as Upgrade, K into a coil for OVERLOAD!. Phase 3: the hybrid wears a piece of each alien he copied; UNSTABLE! every three attacks. Defeat: POWERED DOWN!, the train escape, the family's last word.
+13. **Achievements:** NEW HIGH SCORE (SUMO), HOSTILE TAKEOVER (15 takeovers), NOTHING TO COPY (beat him before any copy reaches III: keep switching).
+14. **Older secrets with Upgrade:** Chapter Select flags the Act 1 chapters SECRET WAITING!. Camp Crash: a Vilgax supply hatch in the ground just before the crash site (flow over it with K and drop in). Road Trip: the service shed left of where the RV drops you at the truck stop. Dr. Animo: the guard room's shutter in the security wing, right of the Four Arms wall.
+15. **Difficulty:** Hard keeps LASER LAIR, MAINTENANCE LINE, THE TURN and KEVIN 11 only; Upgrade's 12 s is enough to get out of the lair, and the watch recharges at the turn.
+
+**Phone (emulated wide phone or real):** the radial dial now has six faces; Upgrade's touch buttons (eye beam, merge); SUMO SLAMMERS with the right half to push and the left to sidestep; the copy meter readable on the boss bar above the thumbs; the dialogue box clear of the controls.

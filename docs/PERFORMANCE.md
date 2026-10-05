@@ -52,6 +52,9 @@ Results go to `bench-results/` (ignored by git). Headless numbers move by about 
 | `ch2-boss` | ROADBREAKER |
 | `ch3-blackout` | Chapter 3 blackout: darkness, Wildmutt's senses, lurkers |
 | `ch3-frog` | KING CROAK |
+| `ch4-arcade` | Chapter 4's GAME ZONE: neon, cabinets, the TOKEN TOONS, Kevin as a buddy |
+| `ch4-station` | Rosewood station: trains, track-bots, turrets |
+| `ch4-kevin` | KEVIN 11: copies, the coils, the hybrid |
 | `misfire` | Training with misfires on CHAOS: the transform gag on every swap |
 | `stress` | A synthetic worst case: three explosions every 450 ms on top of the KING CROAK brawl |
 
@@ -64,7 +67,7 @@ What it records:
 - **Render targets:** WebGL framebuffers created per second, and the size of Phaser's render-target pool. Both stay flat in steady play.
 - **Draw calls, texture binds, shader switches** per frame (`--gl`, a separate pass because counting adds overhead).
 - **FPS and 1% low FPS:** reported, not budgeted.
-- **Leak check** (`--leak`): plays Chapter 1's boss, Chapter 2's convoy and boss, Chapter 3's frog and Training in turn, leaving each one mid-action (transformed, running, charging), then goes to Chapter Select; repeated. After every cycle it counts EventBus and game listeners, textures, display objects, tweens, timers, live Web Audio sources and held sounds (sources nobody scheduled a stop for), and the heap after a forced GC. Then it restarts Training eight times as XLR8 at full speed and counts held sounds each time.
+- **Leak check** (`--leak`): plays Chapter 1's boss, Chapter 2's convoy and boss, Chapter 3's frog, Chapter 4's station and KEVIN 11, and Training in turn, leaving each one mid-action (transformed, running, charging), then goes to Chapter Select; repeated. After every cycle it counts EventBus and game listeners, textures, display objects, tweens, timers, live Web Audio sources and held sounds (sources nobody scheduled a stop for), and the heap after a forced GC. Then it restarts Training eight times as XLR8 at full speed and counts held sounds each time.
 
 **Why not FPS.** Headless Chromium has no GPU. It draws WebGL in software (SwiftShader) and then reads every frame back for its software compositor, which takes 40-60 ms a frame on its own: headless runs at about 40-49 FPS unthrottled and 8-15 FPS throttled, whatever the game does. That measures the container. The game's own CPU time per frame doesn't depend on that and scales with the throttle, so it's what the budget limits. Under throttle the game also runs in slow motion (frames are clamped at 34 ms), which doesn't change the per-frame costs. How to read the numbers: unthrottled on the machine that set the budget, the game's own work takes 2.8-4.9 ms per frame across the scenarios; at 4x, 12-20 ms. A phone at 60 Hz has 16.7 ms per frame for everything (game, browser, GPU), at 120 Hz 8.3 ms. So if 4x on that machine were exactly a mid-range phone, the heaviest moments would fill most of a 60 Hz frame with the game's own work. How close that comparison is (a phone runs WebGL on a real GPU driver, so its render share differs) is what the real-phone check below settles.
 
