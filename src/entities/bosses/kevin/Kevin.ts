@@ -159,7 +159,8 @@ export class Kevin implements ArenaBoss, KevinBody {
   }
 
   hitbox(out: Rect): boolean {
-    if (!this.active) return false;
+    // Staggered (OUT OF SYNC, a coil's OVERLOAD!, UNSTABLE!) he's a punish window: touching him doesn't hurt.
+    if (!this.active || this.state === 'stagger') return false;
     out.x = this.x - this.bodyW / 2 + 3;
     out.y = this.floorY - this.lift - this.bodyH + 4;
     out.w = this.bodyW - 6;
@@ -289,6 +290,9 @@ export class Kevin implements ArenaBoss, KevinBody {
     playSfx('powerSurge', 1, this.phase === 1 ? 0.8 : 0.6);
     const line = this.phase === 1 ? KEVIN_BOSS_LINES.phase2 : KEVIN_BOSS_LINES.phase3;
     this.w.fx.popText(this.x, this.floorY - 70, line, PALETTE.kevin);
+    const a = this.w.arena;
+    const far = this.x < (a.left + a.right) / 2 ? a.right - KEVIN.phaseSmoothyFromWall : a.left + KEVIN.phaseSmoothyFromWall;
+    this.w.dropPickup(far, this.floorY - 60);
     if (this.phase === 1) this.w.onPhase2();
   }
 

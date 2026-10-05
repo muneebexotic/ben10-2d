@@ -34,7 +34,9 @@ export class MascotBrain implements DroneBrain {
       case 'walk': {
         const dx = p.x - d.x;
         setFace(d, dx);
-        if (f.grounded) d.vx = Math.sign(dx) * MASCOT.walkSpeed * (f.ledge ? 0 : 1);
+        // At the end of its leash it stands its ground, facing Ben.
+        const leashed = d.homeX >= 0 && Math.abs(d.x - d.homeX) >= MASCOT.leash && Math.sign(dx) === Math.sign(d.x - d.homeX);
+        if (f.grounded) d.vx = leashed ? 0 : Math.sign(dx) * MASCOT.walkSpeed * (f.ledge ? 0 : 1);
         if (Math.floor(d.stateT / 420) !== Math.floor((d.stateT - dtMs) / 420)) playSfx('servo', 0.35, 0.8 + Math.random() * 0.3);
         if (!notices(d, w, MASCOT.noticeX * 1.3, 100)) d.setState('idle');
         else if (Math.abs(dx) < MASCOT.smashRange && f.grounded && w.now >= d.nextActionAt && d.stunLeft <= 0) {

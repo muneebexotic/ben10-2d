@@ -37,6 +37,8 @@ export const KEVIN = {
   maxHp: 170,
   phase2At: 0.6,
   phase3At: 0.25,
+  /** Each phase change knocks a smoothie loose on the far side of the hall (px from the wall): a breather in the longest boss fight so far. */
+  phaseSmoothyFromWall: 56,
   body: { width: 16, height: 34 },
   copyBody: { width: 26, height: 40 },
   chimeraBody: { width: 34, height: 52 },

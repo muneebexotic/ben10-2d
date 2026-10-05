@@ -27,6 +27,8 @@ export const MASCOT = {
   wave: { speed: 170, lifeMs: 620, damage: 1, radius: 6 },
   smashDamage: 2,
   contactDamage: 1,
+  /** How far from where it woke it will follow Ben (px): the band guards its stretch of the arcade instead of trailing him into the subway. */
+  leash: 128,
 } as const;
 
 /**
