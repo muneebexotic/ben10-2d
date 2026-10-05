@@ -34,7 +34,7 @@ export const KEVIN = {
   name: 'KEVIN 11',
   subtitle: 'HE COPIES WHAT YOU USE',
   defeatTitle: 'POWERED DOWN!',
-  maxHp: 170,
+  maxHp: 150,
   phase2At: 0.6,
   phase3At: 0.25,
   /** Each phase change knocks a smoothie loose on the far side of the hall (px from the wall): a breather in the longest boss fight so far. */
