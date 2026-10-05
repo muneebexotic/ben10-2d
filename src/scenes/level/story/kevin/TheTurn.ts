@@ -3,6 +3,7 @@ import { getAlien, hasAlien } from '../../../../aliens/registry';
 import { DEPTH, TILE } from '../../../../config/constants';
 import { TURN } from '../../../../config/kevin';
 import { PALETTE } from '../../../../config/palette';
+import { barrierBody } from '../../../../entities/barrier';
 import { BossHazards } from '../../../../entities/bosses/BossHazards';
 import type { BossWorld } from '../../../../entities/bosses/HunterDrone';
 import { Kevin } from '../../../../entities/bosses/kevin/Kevin';
@@ -289,9 +290,8 @@ export class TheTurn implements SetPiece {
   private raiseWalls(): void {
     const kit = this.kit;
     const top = this.floorY - 14 * TILE;
-    for (const x of [this.spec.fromX * TILE + 4, this.spec.toX * TILE - 4]) {
-      const wall = kit.scene.physics.add.staticImage(x, (top + this.floorY) / 2, TEX.whitePx).setVisible(false);
-      wall.setDisplaySize(8, this.floorY - top).refreshBody();
+    for (const [x, side] of [[this.spec.fromX * TILE + 4, 1], [this.spec.toX * TILE - 4, -1]] as const) {
+      const wall = barrierBody(kit.scene, x + side * 4, side, top, this.floorY);
       kit.scene.physics.add.collider(kit.player.zone, wall);
       this.walls.push(wall);
       for (let y = top; y < this.floorY; y += TILE) {

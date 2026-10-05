@@ -27,6 +27,7 @@ import { Fx } from '../systems/Fx';
 import { InputMap } from '../systems/InputMap';
 import { DEV_TOOLS, launchParams } from '../systems/LaunchParams';
 import { setFrameLength } from '../systems/Pacing';
+import { physicsSteps } from '../systems/PhysicsSteps';
 import { frameStats } from '../systems/FrameStats';
 import { installReferenceIntegration } from '../systems/ReferenceIntegration';
 import { Lighting } from '../systems/Lighting';
@@ -872,7 +873,7 @@ export class LevelScene extends Phaser.Scene {
       this.omni.handleInput(controls, this.gameNow);
       this.player.update(dt, controls);
     }
-    if (dt > 0) this.physics.world.update(time, dt);
+    if (dt > 0) this.stepPhysics(time, dt);
     this.player.syncVisual(realDt * visual, this.gameNow);
 
     // The Vilgax hologram holds the world (and the alien timer) still while he talks.
@@ -1415,6 +1416,12 @@ export class LevelScene extends Phaser.Scene {
     };
     this.scene.launch(SCENES.pause, data);
     this.inputMap.reset();
+  }
+
+  /** Steps physics, in shorter steps when Ben moves fast on a long frame (see `physicsSteps`). */
+  private stepPhysics(time: number, dt: number): void {
+    const steps = physicsSteps(this.player.vx, this.player.vy, dt);
+    for (let i = 0; i < steps; i++) this.physics.world.update(time, dt / steps);
   }
 
   // ------------------------------------------------------------ HUD helpers

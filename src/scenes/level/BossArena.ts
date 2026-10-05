@@ -5,6 +5,7 @@ import { BossHazards } from '../../entities/bosses/BossHazards';
 import type { BossWorld } from '../../entities/bosses/HunterDrone';
 import type { ArenaBoss } from '../../entities/bosses/ArenaBoss';
 import { BOSS_KINDS } from '../../entities/bosses/bossKinds';
+import { barrierBody } from '../../entities/barrier';
 import type { Player } from '../../entities/Player';
 import type { Projectiles } from '../../entities/Projectiles';
 import type { Telegraphs } from '../../entities/enemies/Telegraphs';
@@ -124,10 +125,9 @@ export class BossArena {
     const { scene, combat, camera } = d;
     this.started = true;
 
-    for (const x of [this.left + 4, this.right - 4]) {
+    for (const [x, side] of [[this.left + 4, 1], [this.right - 4, -1]] as const) {
       const top = this.floorY - 14 * TILE;
-      const wall = scene.physics.add.staticImage(x, top + 7 * TILE, TEX.whitePx).setVisible(false);
-      wall.setDisplaySize(8, 14 * TILE).refreshBody();
+      const wall = barrierBody(scene, x + side * 4, side, top, this.floorY);
       scene.physics.add.collider(this.d.player.zone, wall);
       this.walls.push(wall);
       for (let y = top; y < this.floorY; y += TILE) {

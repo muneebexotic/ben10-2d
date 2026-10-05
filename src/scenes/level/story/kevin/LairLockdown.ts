@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { DEPTH, TILE } from '../../../../config/constants';
 import { CH4_BEATS } from '../../../../config/kevin';
 import { PALETTE } from '../../../../config/palette';
+import { barrierBody } from '../../../../entities/barrier';
 import type { Turret } from '../../../../entities/tech/Turret';
 import type { Controls } from '../../../../systems/InputMap';
 import { playSfx } from '../../../../systems/audio/Sfx';
@@ -113,8 +114,7 @@ export class LairLockdown implements SetPiece {
     const x = this.spec.fromX * TILE + 4;
     const floorY = this.spec.floor * TILE;
     const top = floorY - 18 * TILE;
-    const wall = kit.scene.physics.add.staticImage(x, (top + floorY) / 2, TEX.whitePx).setVisible(false);
-    wall.setDisplaySize(8, floorY - top).refreshBody();
+    const wall = barrierBody(kit.scene, x + 4, 1, top, floorY);
     kit.scene.physics.add.collider(kit.player.zone, wall);
     this.wall = wall;
     for (let y = top; y < floorY; y += TILE) {

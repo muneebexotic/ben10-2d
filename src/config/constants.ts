@@ -13,6 +13,17 @@ export const PHYSICS = {
   gravity: 1150,
   maxFrameMs: 34,
   worldBottomPadding: 240,
+  /**
+   * Arcade picks which side of a static body Ben is on from where a step leaves
+   * him, so a step that sinks him past its middle pops him out of the far side.
+   * Ben never moves more than this in one physics step (px); faster moves on a
+   * long frame are split. Keep it under half of (thinnest wall + Ben's width).
+   */
+  maxStepX: 12,
+  maxStepY: 15,
+  maxSubsteps: 4,
+  /** Invisible laser-wall bodies are this thick (px), grown away from the side Ben is kept on. */
+  barrierWidth: 32,
 } as const;
 
 /** Draw order. Anything above `lightmap` is emissive (ignores darkness). */

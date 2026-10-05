@@ -3,6 +3,7 @@ import { DEPTH, TILE } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
 import type { Fx } from '../../systems/Fx';
+import { barrierBody } from '../barrier';
 import type { Lighting } from '../../systems/Lighting';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { Damageable, Hit, HitResult, Rect } from '../types';
@@ -47,8 +48,8 @@ export class Jammer implements Damageable {
 
     const gateH = (ty - gateTop) * TILE;
     const gx = gateX * TILE + 4;
-    this.gate = scene.physics.add.staticImage(gx, gateTop * TILE + gateH / 2, TEX.whitePx).setVisible(false);
-    this.gate.setDisplaySize(8, gateH).refreshBody();
+    // Ben comes from the left and is held there until the jammer goes down.
+    this.gate = barrierBody(scene, gx - 4, -1, gateTop * TILE, gateTop * TILE + gateH);
     for (let y = gateTop * TILE; y < groundY; y += TILE) {
       const tile = scene.add.sprite(gx, y + 8, TEX.gate, 0).setDepth(DEPTH.emissive).setBlendMode(Phaser.BlendModes.ADD);
       tile.play('gate-hum');
