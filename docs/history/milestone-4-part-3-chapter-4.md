@@ -82,6 +82,19 @@ First round (before the fixes below):
 | Easy, desktop and wide phone; Hard, wide phone | The script skipped the turn fight (it looked the set piece up by a class name the release build minifies) and, wandering, **left the turn's sealed room through its laser wall**: the XLR8 bug below |
 | Chapters 1-3, every checkpoint and each boss, desktop | All load and play with no errors; every boss falls into its results |
 
+Final build (after every fix below):
+
+| Run | Result |
+|---|---|
+| Normal, desktop, title > Chapter Select > the chapter, damage off | Chapter Complete in 3:36, S rank, no deaths, no errors; the new ROBOTS WRECKED line on the results |
+| Easy, desktop; Hard, desktop | Chapter Complete, no deaths, no errors |
+| Easy, Normal and Hard, wide phone | Chapter Complete each, no deaths, no errors; the defeat speech's skip hint sits under the dialogue box, clear of JUMP |
+| Normal, desktop, **damage ON** | Through the station without dying (12 damage, after the toon leash); died once on the depot grating (an overcharged track-bot, the depot turret and Kevin's sparks); then KEVIN 11 (see below) |
+| KEVIN 11 alone, Normal, damage ON | At 170 HP (after the safe punish windows and phase smoothies): ten attempts with and without dodging, no wins; Kevin was left with 3 to 94 HP (the bot dealt a median of about 136). His health came down to 150 |
+| Chapters 1-3, every checkpoint and each boss, desktop and wide phone | All load and play with no errors; every boss falls into its results |
+
+The damage-ON bot is crude: it walks at Kevin and punches, swaps on a timer, and (in the dodging variant) only jumps or rolls when a shot is about to land. It never uses the coils on purpose and never reads a tell. Its traces showed what hurt most: Kevin's body contact while it hugged him, copy-Heatblast's fire at point-blank range and the coil arcs. KEVIN 11 is the first thing to check with real players (`KEVIN.maxHp`, `COPY_RULES`, `RELIANCE` in `config/kevin.ts`).
+
 What the runs caught, all fixed:
 
 - **The station's track bed led into the live rail.** Walking along the tracks under deck B ended in the maintenance line's rail, and the bot died there over and over. A wall now closes the track bed under deck B (the trains run behind the terrain and pull into it like a tunnel mouth).
