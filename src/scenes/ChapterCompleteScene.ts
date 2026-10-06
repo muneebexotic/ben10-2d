@@ -31,6 +31,8 @@ import { ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
 
 /** What the results call the enemies Ben beat, by the level's look. */
 const FOES_LABEL: Partial<Record<LevelTheme, string>> = { museum: 'MUTANTS DEFEATED', city: 'ROBOTS WRECKED' };
+/** Ben's punch knocks back any enemy shot: drone lasers in Act 1's first two chapters, spit and bolts after. */
+const PARRY_LABEL: Partial<Record<LevelTheme, string>> = { museum: 'SHOTS PARRIED', city: 'SHOTS PARRIED' };
 
 /** Best tag team names, by how many forms joined one combo. */
 const TAG_TEAM_NAMES = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!'];
@@ -38,7 +40,7 @@ const TAG_TEAM_NAMES = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!']
 const RANK_LINE: Record<Rank, string> = {
   S: 'HERO OF THE SUMMER!',
   A: 'GRANDPA MAX WOULD BE PROUD.',
-  B: 'NOT BAD FOR A 10 YEAR OLD.',
+  B: 'NOT BAD FOR A 10-YEAR-OLD.',
   C: 'GWEN SAYS YOU NEED PRACTICE.',
   D: 'AT LEAST THE CAMP IS STILL STANDING.',
 };
@@ -127,7 +129,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
       { label: FOES_LABEL[getLevel(this.levelId).theme ?? 'forest'] ?? 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` }, highlight: s.multiCuts > 0 ? `${s.multiCuts} MULTI-CUT${s.multiCuts === 1 ? '' : 'S'}!` : undefined, highlightColor: 0x9fd8ff },
-      { label: 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
+      { label: PARRY_LABEL[getLevel(this.levelId).theme ?? 'forest'] ?? 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
       ...(s.misfires > 0 || d.wrongTransformChance > 0
         ? [{ label: 'MISFIRES', value: () => String(s.misfires), highlight: s.improvised > 0 ? `${s.improvised} IMPROVISED!` : undefined, highlightColor: PALETTE.gold }]

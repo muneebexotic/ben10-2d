@@ -111,7 +111,7 @@ export class PauseScene extends Phaser.Scene {
       pixelText(this, 300, 124 + i * 13, action, { color: PALETTE.uiDim });
       pixelText(this, 510, 124 + i * 13, keys, { originX: 1, color: PALETTE.white });
     });
-    pixelText(this, GAME_WIDTH / 2, 272, 'TIP: TRANSFORMING KNOCKS NEARBY DRONES AWAY. USE IT TO ESCAPE!', { originX: 0.5, color: PALETTE.uiDim });
+    pixelText(this, GAME_WIDTH / 2, 272, 'TIP: TRANSFORMING KNOCKS NEARBY ENEMIES AWAY. USE IT TO ESCAPE!', { originX: 0.5, color: PALETTE.uiDim });
     if (slot !== null) pixelText(this, GAME_WIDTH / 2, 286, 'SAVE & QUIT KEEPS YOUR RUN AT THE LAST CHECKPOINT. CONTINUE PICKS IT UP.', { originX: 0.5, color: PALETTE.uiDim });
     // Settings can change the difficulty: keep the label honest when it comes back.
     this.events.on(Phaser.Scenes.Events.RESUME, () => {
@@ -159,13 +159,13 @@ export class PauseScene extends Phaser.Scene {
       },
       {
         label: () => `ENEMIES: ${trainingOptions.enemiesAttack ? 'ATTACK' : 'PASSIVE'}`,
-        hint: 'PASSIVE ENEMIES NEVER FIGHT BACK: PRACTISE YOUR COMBOS.',
+        hint: 'PASSIVE ENEMIES NEVER FIGHT BACK: PRACTICE YOUR COMBOS.',
         action: () => setOption({ enemiesAttack: !trainingOptions.enemiesAttack }),
         adjust: () => setOption({ enemiesAttack: !trainingOptions.enemiesAttack }),
       },
       {
         label: () => `MISFIRES: ${misfireLabel(trainingOptions.misfireStep)}`,
-        hint: 'MAKE THE OMNITRIX GLITCH: PRACTISE ROLLING WITH THE WRONG ALIEN.',
+        hint: 'MAKE THE OMNITRIX GLITCH: PRACTICE ROLLING WITH THE WRONG ALIEN.',
         action: () => setOption({ misfireStep: (trainingOptions.misfireStep + 1) % TRAINING.misfireSteps.length }),
         adjust: (dir) => setOption({ misfireStep: (trainingOptions.misfireStep + dir + TRAINING.misfireSteps.length) % TRAINING.misfireSteps.length }),
       },

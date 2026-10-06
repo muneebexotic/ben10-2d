@@ -220,7 +220,7 @@ export class IntroDirector {
     if (this.t > 1900 && this.once('drones')) {
       playSfx('alarm', 0.8);
       this.hooks.spawnIntroDrones();
-      this.speech.show('UH OH...', 1100);
+      this.speech.show('UH-OH...', 1100);
     }
     if (this.t > 2400) {
       this.phase = 'firstTransform';

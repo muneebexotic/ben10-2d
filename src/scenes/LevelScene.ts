@@ -1247,7 +1247,7 @@ export class LevelScene extends Phaser.Scene {
     }
     this.time.delayedCall(1500, () => {
       this.scene.pause();
-      this.scene.launch(SCENES.gameOver, { levelId: this.level.id, checkpoint: this.checkpointId, stats: cloneRunStats(this.stats) });
+      this.scene.launch(SCENES.gameOver, { levelId: this.level.id, checkpoint: this.checkpointId, stats: cloneRunStats(this.stats), aliens: [...this.dialAliens] });
     });
   }
 

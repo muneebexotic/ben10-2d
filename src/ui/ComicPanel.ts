@@ -8,7 +8,7 @@ import type { ViewFrame } from './view';
 const NARRATION = [
   'MEANWHILE, AT 500 MILES PER HOUR...',
   'IN LESS TIME THAN IT TAKES TO BLINK...',
-  'THE DRONES NEVER SAW HIM COMING.',
+  'THEY NEVER SAW HIM COMING.',
   'TOO FAST TO DRAW. WE TRIED.',
 ];
 

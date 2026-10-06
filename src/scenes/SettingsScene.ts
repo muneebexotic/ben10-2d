@@ -14,6 +14,7 @@ import { DIFFICULTY_IDS, getDifficulty } from '../config/difficulty';
 import { session } from '../systems/Session';
 import { difficultyRows } from '../ui/menu/difficultyInfo';
 import { playSfx } from '../systems/audio/Sfx';
+import { inputMode } from '../systems/InputMode';
 
 export interface SettingsData {
   /** Scene to resume when the player backs out (title or pause). */
@@ -78,7 +79,7 @@ export class SettingsScene extends Phaser.Scene {
         label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'),
         action: () => toggleMute(),
         adjust: () => toggleMute(),
-        hint: 'MUTE EVERYTHING. [M] ALSO WORKS ANYWHERE.',
+        hint: inputMode.current === 'touch' ? 'MUTE EVERYTHING.' : 'MUTE EVERYTHING. [M] ALSO WORKS ANYWHERE.',
       },
       {
         label: () => `TOUCH CONTROLS: ${getSettings().touchControls.toUpperCase()}`,
@@ -125,7 +126,7 @@ export class SettingsScene extends Phaser.Scene {
         color: PALETTE.gold,
       });
     }
-    const back = pixelText(this, GAME_WIDTH / 2, 342, '[ESC] BACK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    const back = pixelText(this, GAME_WIDTH / 2, 342, inputMode.current === 'touch' ? 'BACK' : '[ESC] BACK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     back.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.back());
 
     const kb = this.input.keyboard!;

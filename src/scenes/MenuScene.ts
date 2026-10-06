@@ -118,7 +118,7 @@ export class MenuScene extends Phaser.Scene {
     items.push(
       { label: 'OMNITRIX TRAINING', action: () => this.startTraining(), hint: 'TRY EVERY ALIEN. SPAWN ANY ENEMY.' },
       { label: 'SETTINGS', action: () => this.openSettings(), hint: summary ? 'DIFFICULTY, ACCESSIBILITY, SOUND AND TOUCH' : 'ACCESSIBILITY, SOUND AND TOUCH CONTROLS' },
-      { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute(), hint: '[M] ALSO WORKS ANYWHERE' },
+      { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute(), hint: inputMode.current === 'touch' ? 'SOUND ON OR OFF' : '[M] ALSO WORKS ANYWHERE' },
     );
     return items;
   }

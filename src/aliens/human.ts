@@ -137,7 +137,7 @@ export const HUMAN_FORM: FormDefinition = {
   touchIcons: { attack: TEX.touchPunch, special: TEX.touchRoll },
   quips: {
     transform: [],
-    revert: ['AW MAN!', 'NOT NOW!', 'COME ON, COME ON!', 'SERIOUSLY?!', 'UH OH...', 'STUPID WATCH!'],
+    revert: ['AW MAN!', 'NOT NOW!', 'COME ON, COME ON!', 'SERIOUSLY?!', 'UH-OH...', 'STUPID WATCH!'],
   },
   tips: {},
   moves: ['{J} PUNCH (KNOCKS LASERS BACK)', '{K} DODGE ROLL (UNTOUCHABLE FOR AN INSTANT)'],

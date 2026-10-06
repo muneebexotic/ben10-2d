@@ -14,26 +14,17 @@ import { GAMEOVER } from '../config/ui';
 import { easierThan, getDifficulty, type DifficultyId } from '../config/difficulty';
 import { difficultyRows } from '../ui/menu/difficultyInfo';
 import { playSfx } from '../systems/audio/Sfx';
+import { tipsFor } from '../ui/gameOverTips';
+import { getLevel, hasLevel } from '../levels/registry';
 
 interface GameOverData {
   levelId?: string;
   checkpoint: string | null;
   stats: RunStats;
+  /** The aliens on the dial when Ben went down (tips only name aliens the player has). */
+  aliens?: readonly string[];
 }
 
-const TIPS = [
-  'STRIKERS GET STUCK AFTER A DIVE. PUNCH THEM WHILE THEY ARE DOWN!',
-  'PUNCH {J} A LASER RIGHT BEFORE IT HITS TO KNOCK IT BACK.',
-  'FIRE BURST {K} WIPES OUT EVERY LASER AROUND YOU.',
-  'THE DODGE ROLL {K} MAKES HUMAN BEN INVINCIBLE FOR A MOMENT.',
-  'HOLD {UP} WHILE SHOOTING TO AIM FIREBALLS AT HIGH DRONES.',
-  'TRANSFORM {T} RIGHT AS A DRONE FIRES: PERFECT TRANSFORM, BIGGER BLAST, MORE ALIEN TIME.',
-  'THE BOSS IS STUNNED AFTER A SLAM. THAT IS YOUR WINDOW!',
-  'TRANSFORMING SENDS OUT A SHOCKWAVE. PANIC BUTTON!',
-  'HEATBLAST GLIDES IF YOU HOLD JUMP AFTER A ROCKET JUMP.',
-  'THE SHIELD BAR PROTECTS BEN WHILE HE IS AN ALIEN.',
-  'MR. SMOOTHY HEALS. NEVER SKIP A SMOOTHY.',
-];
 
 export class GameOverScene extends Phaser.Scene {
   private menu!: MenuList;
@@ -41,6 +32,13 @@ export class GameOverScene extends Phaser.Scene {
 
   constructor() {
     super(SCENES.gameOver);
+  }
+
+  /** A tip about this chapter's enemies and the aliens the player has. */
+  private pickTip(data: GameOverData): string {
+    const chapter = data.levelId && hasLevel(data.levelId) ? getLevel(data.levelId).chapter : 1;
+    const tips = tipsFor(chapter, data.aliens ?? session.file?.unlockedAliens ?? []);
+    return tips[Math.floor(Math.random() * tips.length)]?.text ?? '';
   }
 
   create(data: GameOverData): void {
@@ -58,7 +56,7 @@ export class GameOverScene extends Phaser.Scene {
     const easier = session.slot !== null && data.stats.deaths >= GAMEOVER.suggestEasierAfterDeaths ? easierThan(session.difficulty) : null;
     const tip = easier
       ? `ONE TAP AND YOU'RE BACK IN ON ${getDifficulty(easier).label}. YOUR FILE KEEPS EVERYTHING (THIS RUN JUST WON'T SET A BEST TIME).`
-      : inputMode.format(TIPS[Math.floor(Math.random() * TIPS.length)]);
+      : inputMode.format(this.pickTip(data));
     const tipText = pixelText(this, GAME_WIDTH / 2, 292, `TIP: ${tip}`, { originX: 0.5, originY: 0.5, color: PALETTE.gold, maxWidth: 560, align: 'center' });
     if (easier) tipText.setText(tip).setTint(PALETTE.cream);
 

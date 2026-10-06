@@ -76,7 +76,7 @@ export const DIFFICULTY: Record<DifficultyId, DifficultyPreset> = {
   hard: {
     label: 'HARD',
     tagline: 'VILGAX IS WATCHING',
-    blurb: 'SHORT ALIEN TIME, MISFIRE CHAOS, FEW CHECKPOINTS, RELENTLESS DRONES.',
+    blurb: 'SHORT ALIEN TIME, MISFIRE CHAOS, FEW CHECKPOINTS, RELENTLESS ENEMIES.',
     color: 0xff3048,
     transformDurationMs: 12_000,
     cooldownMs: 15_000,
