@@ -132,11 +132,16 @@
         }
       }
     }
-    // Screen text drawn over other screen text (in any scene: HUD over touch labels too).
+    // Screen text drawn over other screen text (in any scene: HUD over touch labels too). Text under a modal
+    // overlay (the pause menu dims everything beneath it) and a text's own drop shadow don't count.
+    const MODALS = ['Pause', 'Settings', 'GameOver'];
+    const modalAt = Math.max(-1, ...game.scene.getScenes(true).filter((sc) => MODALS.includes(sc.sys.settings.key)).map((sc) => game.scene.getIndex(sc)));
     for (let i = 0; i < hud.length; i++) {
       for (let j = i + 1; j < hud.length; j++) {
         const a = hud[i];
         const c = hud[j];
+        if (a.o.text === c.o.text) continue;
+        if (game.scene.getIndex(a.scene) < modalAt || game.scene.getIndex(c.scene) < modalAt) continue;
         if (overlaps(a.r, c.r)) add('overlap', a.scene, a.o, `overlaps "${String(c.o.text).replace(/\n/g, ' / ').slice(0, 40)}" (${c.scene.sys.settings.key})`);
       }
     }

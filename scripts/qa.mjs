@@ -8,7 +8,7 @@
 //   npm run qa                         sweep + HUD gauntlet at desktop, 20:9 phone, small 16:9 phone
 //   npm run qa -- --sizes=phone        one size
 //   npm run qa -- --fuzz               also fuzz every checkpoint (random inputs, aliens, pauses, timeouts)
-//   npm run qa -- --fuzz --only-fuzz --seconds=25
+//   npm run qa -- --fuzz --only-fuzz --seconds=25 --levels=ch4,training   (--levels limits the sweep too)
 //   npm run qa -- --no-build           reuse the last QA build
 //   npm run qa -- --parts=menus        only some of menus,levels,hud
 //   npm run qa -- --out=<dir>          results somewhere else (run sizes in parallel)
@@ -222,7 +222,8 @@ async function sweepMenus(s) {
 }
 
 async function sweepLevels(s) {
-  for (const level of [...CHAPTERS, 'training']) {
+  const only = args.levels ? String(args.levels).split(',') : null;
+  for (const level of [...CHAPTERS, 'training'].filter((l) => !only || only.includes(l))) {
     const cps = level === 'training' ? [null] : [null, ...(await checkpointsOf(s, level))];
     for (const cp of cps) {
       const name = `${level}-${cp ?? 'start'}`;
@@ -441,7 +442,8 @@ async function fuzzCheckpoint(s, level, cp, seconds, seed) {
 async function fuzz(s, seconds) {
   const results = [];
   let seed = 7;
-  for (const level of [...CHAPTERS, 'training']) {
+  const only = args.levels ? String(args.levels).split(',') : null;
+  for (const level of [...CHAPTERS, 'training'].filter((l) => !only || only.includes(l))) {
     const cps = level === 'training' ? [null] : [null, ...(await checkpointsOf(s, level))];
     for (const cp of cps) {
       const r = await fuzzCheckpoint(s, level, cp, seconds, seed++);
