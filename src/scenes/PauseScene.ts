@@ -12,6 +12,8 @@ import { inputMode } from '../systems/InputMode';
 import { EventBus } from '../systems/EventBus';
 import { trainingOptions, TRAINING_ENEMIES } from '../systems/TrainingState';
 import { getAlien, hasAlien } from '../aliens/registry';
+import type { FormDefinition } from '../aliens/types';
+import { playSfx } from '../systems/audio/Sfx';
 import type { LevelStartData } from './LevelScene';
 import { TRAINING } from '../config/training';
 import { session } from '../systems/Session';
@@ -184,28 +186,63 @@ export class PauseScene extends Phaser.Scene {
       onSelect: (i, item) => this.showHint(i === 1 ? enemy().hint : (item.hint ?? '')),
     });
 
-    this.drawMoves(318, 70);
+    this.drawMoves(318, 70, GAME_HEIGHT - 32);
     this.hint = pixelText(this, GAME_WIDTH / 2, GAME_HEIGHT - 22, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     this.showHint(items[this.menu.selectedIndex].hint ?? '');
   }
 
-  /** Every alien on the dial with its moves, plus how to swap. */
-  private drawMoves(x: number, y: number): void {
+  /**
+   * Every alien on the dial with its moves, plus how to swap, above `bottom`. When they don't all fit (six
+   * aliens didn't), they come a page at a time: the dial keys or a tap on the list turn the page.
+   */
+  private drawMoves(x: number, y: number, bottom: number): void {
+    const touch = inputMode.current === 'touch';
     pixelText(this, x, y, 'ALIEN MOVES', { color: PALETTE.gold });
-    let row = y + 14;
+    const top = y + 14;
+    const footerY = bottom - 20;
+    const heightOf = (a: FormDefinition) => 11 + a.moves.length * 10 + 4;
+    const pages: FormDefinition[][] = [];
+    let used = Infinity;
     for (const id of this.info.aliens ?? []) {
       if (!hasAlien(id)) continue;
       const alien = getAlien(id);
-      pixelText(this, x, row, alien.name, { color: alien.theme.color });
-      row += 11;
-      for (const move of alien.moves) {
-        pixelText(this, x + 6, row, inputMode.format(move), { color: PALETTE.white });
-        row += 10;
+      if (used + heightOf(alien) > footerY - top) {
+        pages.push([]);
+        used = 0;
       }
-      row += 4;
+      pages[pages.length - 1].push(alien);
+      used += heightOf(alien);
     }
-    pixelText(this, x, row, inputMode.format('{DIAL} PICK, {T} TRANSFORM.'), { color: PALETTE.omnitrix });
-    pixelText(this, x, row + 10, inputMode.format('{T} WHILE TRANSFORMED: SWAP (-3S)'), { color: PALETTE.omnitrix });
+    const list = this.add.container(0, 0);
+    const pageLabel = pixelText(this, GAME_WIDTH - 10, y, '', { originX: 1, color: PALETTE.uiDim });
+    let page = 0;
+    const show = (i: number) => {
+      page = (i + pages.length) % pages.length;
+      list.removeAll(true);
+      let row = top;
+      for (const alien of pages[page] ?? []) {
+        list.add(pixelText(this, x, row, alien.name, { color: alien.theme.color }));
+        row += 11;
+        for (const move of alien.moves) {
+          list.add(pixelText(this, x + 6, row, inputMode.format(move), { color: PALETTE.white }));
+          row += 10;
+        }
+        row += 4;
+      }
+      if (pages.length > 1) pageLabel.setText(`${page + 1}/${pages.length}  ${touch ? 'TAP FOR MORE' : inputMode.format('{DIAL} MORE')}`);
+    };
+    show(0);
+    if (pages.length > 1) {
+      const flip = (dir: number) => {
+        show(page + dir);
+        playSfx('uiMove', 0.6, 1.1);
+      };
+      this.input.keyboard?.on('keydown-Q', () => flip(-1));
+      this.input.keyboard?.on('keydown-E', () => flip(1));
+      this.add.zone(x - 6, top - 4, GAME_WIDTH - x, footerY - top + 4).setOrigin(0, 0).setInteractive().on('pointerup', () => flip(1));
+    }
+    pixelText(this, x, footerY, inputMode.format('{DIAL} PICK, {T} TRANSFORM.'), { color: PALETTE.omnitrix });
+    pixelText(this, x, footerY + 10, inputMode.format('{T} WHILE TRANSFORMED: SWAP (-3S)'), { color: PALETTE.omnitrix });
   }
 
   private showHint(text: string, color: number = PALETTE.uiDim): void {
