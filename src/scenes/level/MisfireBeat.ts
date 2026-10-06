@@ -145,8 +145,10 @@ export class MisfireBeat {
     const { scene, camera, player } = this.d;
     this.t = -1;
     camera.setFocus(0, 0, 0);
-    scene.cameras.main.setZoom(1).setRotation(0);
-    if (this.sepia) scene.cameras.main.filters?.internal.remove(this.sepia);
+    // On a level exit the cameras are already gone (Phaser shuts them down before the level's own handler).
+    const cam = scene.cameras?.main;
+    cam?.setZoom(1).setRotation(0);
+    if (this.sepia) cam?.filters?.internal.remove(this.sepia);
     this.sepia = null;
     if (!player.dead) player.controlsEnabled = true;
     this.mark?.destroy();
