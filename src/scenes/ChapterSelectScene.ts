@@ -460,11 +460,15 @@ export class ChapterSelectScene extends Phaser.Scene {
     const target = card.info.title;
     const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?!';
     let step = 0;
+    let done = false;
     playSfx('reveal');
     const timer = this.time.addEvent({
       delay: MENU.revealStepMs,
       repeat: target.length + 6,
       callback: () => {
+        // After a long frame Phaser replays missed repeats in one go, and remove() inside that catch-up
+        // doesn't stop the next call: without this the reveal finished twice (two notes, a double pop).
+        if (done) return;
         step++;
         const settled = Math.max(0, step - 6);
         const text = target
@@ -473,6 +477,7 @@ export class ChapterSelectScene extends Phaser.Scene {
           .join('');
         card.title.setText(text).setTint(step % 2 ? PALETTE.omnitrixGlow : PALETTE.white);
         if (settled >= target.length) {
+          done = true;
           timer.remove();
           card.title.setText(target).setTint(PALETTE.white);
           card.title.setScale(1.3);
