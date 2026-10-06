@@ -81,6 +81,7 @@ import { availableCards, countedCards, waitingSecrets } from '../levels/secrets'
 import { CHAPTERS } from '../levels/chapters';
 import { TRAINING } from '../config/training';
 import { quality } from '../systems/Quality';
+import { perf, switchLabel } from '../systems/PerfSwitches';
 import { knownAliens, storyAliens, trainingAliens } from '../systems/Unlocks';
 import { AchievementTracker, fileAchievements } from '../systems/Achievements';
 import { FULL_OMNITRIX_FORMS, STRIKE_ACHIEVEMENT_HITS } from '../config/achievements';
@@ -196,6 +197,7 @@ export class LevelScene extends Phaser.Scene {
   private debugRefreshIn = 0;
   private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
   private vignette: Phaser.Filters.Vignette | null = null;
+  private backdropOn = true;
   private desaturate: Phaser.Filters.ColorMatrix | null = null;
   private readonly onResume = () => audio.setLoopsMuted(false);
 
@@ -255,10 +257,12 @@ export class LevelScene extends Phaser.Scene {
     installReferenceIntegration(this.physics.world);
     this.cameras.main.setBounds(0, 0, this.world.widthPx, this.world.heightPx);
     this.cameras.main.setBackgroundColor(PALETTE.sky0);
-    this.vignette = this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f) ?? null;
+    this.vignette = perf.fx ? (this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f) ?? null) : null;
+    if (!perf.governor) quality.setLevel(0);
     if (quality.lowest) this.onQualityChanged(false);
 
     const bossSpawn = this.level.entities.find((e): e is BossSpawn => e.type === 'boss') ?? null;
+    const beforeBackdrop = this.children.length;
     this.highway = this.level.theme === 'highway' ? new HighwayBackdrop(this, this.level.sky ?? []) : null;
     this.backdrop =
       this.highway ??
@@ -269,8 +273,12 @@ export class LevelScene extends Phaser.Scene {
           : this.level.theme === 'city'
             ? new CityBackdrop(this, this.level)
             : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
+    // bg=0 (bisect switch): the sky, parallax and backdrop walls are hidden and never updated.
+    this.backdropOn = perf.bg;
+    if (!perf.bg) for (const o of this.children.list.slice(beforeBackdrop)) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible?.(false);
     this.decor = new Decor(this, this.level, this.world);
     this.lighting = new Lighting(this);
+    this.lighting.enabled = perf.fx;
     this.time2 = new TimeController();
     this.fx = new Fx(this, this.lighting, this.time2);
     this.telegraph = new Telegraphs(this);
@@ -370,8 +378,8 @@ export class LevelScene extends Phaser.Scene {
       EventBus.offContext(this);
       this.shutdown();
     });
+    if (perf.bodies ?? launchParams().debug) this.physics.world.createDebugGraphic();
     if (launchParams().debug) {
-      this.physics.world.createDebugGraphic();
       this.debugText = pixelText(this, 4, 40, '', { color: PALETTE.omnitrix, scrollFactor: 0, depth: 999 });
       frameStats(this.game);
       this.debugRefreshIn = 0;
@@ -554,7 +562,7 @@ export class LevelScene extends Phaser.Scene {
         return activeDifficulty().damageTakenMultiplier;
       },
     });
-    if (launchParams().god) this.player.setInvulnerable(1e9);
+    if (launchParams().god || launchParams().autobench) this.player.setInvulnerable(1e9);
     this.player.isSafeSpot = (x, y) =>
       !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12) && !this.world.overRail(x - 12) && !this.world.overRail(x + 12);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
@@ -844,7 +852,7 @@ export class LevelScene extends Phaser.Scene {
   // ------------------------------------------------------------ Frame
 
   override update(time: number, delta: number): void {
-    if (quality.sample(delta)) this.onQualityChanged();
+    if (perf.governor && quality.sample(delta)) this.onQualityChanged();
     const realDt = Math.min(delta, PHYSICS.maxFrameMs);
     setFrameLength(realDt);
     const controls = this.inputMap.read();
@@ -916,7 +924,7 @@ export class LevelScene extends Phaser.Scene {
 
     this.misfireBeat.update(realDt);
     this.camRig.update(this.player.x, this.player.y, this.player.facing, this.player.grounded, realDt * Math.max(0.3, visual));
-    this.backdrop.update(this.cameras.main, realDt);
+    if (this.backdropOn) this.backdrop.update(this.cameras.main, realDt);
     this.decor.update(this.cameras.main, this.lighting, this.gameNow);
     this.world.update(realDt);
     this.speech.update(this.player.x, this.player.y - this.player.headHeight, realDt);
@@ -1227,7 +1235,7 @@ export class LevelScene extends Phaser.Scene {
     this.misfireBeat.cancel();
     if (!this.training) this.saveResume();
     this.time2.slowMo(0.3, 900, 300);
-    this.desaturate = this.cameras.main.filters?.internal.addColorMatrix() ?? null;
+    this.desaturate = perf.fx ? (this.cameras.main.filters?.internal.addColorMatrix() ?? null) : null;
     this.desaturate?.colorMatrix.desaturate();
     playSfx('revert');
     music.setIntensity(0);
@@ -1475,8 +1483,14 @@ export class LevelScene extends Phaser.Scene {
     this.debugRefreshIn = 250;
     const p = this.player;
     this.debugText.setText(
-      `X ${Math.round(p.x / TILE)} Y ${Math.round(p.y / TILE)} VX ${Math.round(p.vx)} VY ${Math.round(p.vy)} G ${p.grounded} Q${quality.level}\n${frameStats(this.game).summary()}\nOMNI ${this.omni.omnitrix.state} ${Math.round(this.omni.omnitrix.timeRemainingMs / 100) / 10} DRONES ${this.drones.filter((d) => d.alive).length}`,
+      `X ${Math.round(p.x / TILE)} Y ${Math.round(p.y / TILE)} VX ${Math.round(p.vx)} VY ${Math.round(p.vy)} G ${p.grounded} Q${quality.level} ${switchLabel(perf).toUpperCase()}\n${frameStats(this.game).summary()}\nOMNI ${this.omni.omnitrix.state} ${Math.round(this.omni.omnitrix.timeRemainingMs / 100) / 10} DRONES ${this.drones.filter((d) => d.alive).length}`,
     );
+  }
+
+  /** The autobench drops Ben straight into an arena instead of walking there. */
+  benchTeleport(x: number, feetY: number): void {
+    this.player.teleport(x, feetY);
+    this.camRig.snap(x, feetY);
   }
 
   private shutdown(): void {

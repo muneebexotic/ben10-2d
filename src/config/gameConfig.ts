@@ -1,11 +1,44 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, PHYSICS } from './constants';
 import { snapGameWidth } from '../systems/PixelScale';
+import type { ContextVariant } from '../systems/PerfSwitches';
 
-export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[]): Phaser.Types.Core.GameConfig {
+/** The WebGL context attributes Phaser asks for (Phaser 4 always requests a depth buffer). */
+export const CONTEXT_ATTRIBUTES: WebGLContextAttributes = {
+  alpha: false,
+  depth: true,
+  stencil: true,
+  antialias: false,
+  premultipliedAlpha: true,
+  preserveDrawingBuffer: false,
+  powerPreference: 'high-performance',
+  desynchronized: false,
+  failIfMajorPerformanceCaveat: false,
+};
+
+/**
+ * A context made here instead of by Phaser, for the autobench's context variants
+ * (`?ctx=desync`, `?ctx=lean`). Null for the default, or if the browser refuses.
+ */
+function variantContext(variant: ContextVariant): { canvas: HTMLCanvasElement; context: WebGLRenderingContext } | null {
+  if (variant === 'default') return null;
+  const attrs: WebGLContextAttributes =
+    variant === 'desync' ? { ...CONTEXT_ATTRIBUTES, desynchronized: true } : { ...CONTEXT_ATTRIBUTES, depth: false, stencil: false };
+  try {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('webgl', attrs);
+    return context ? { canvas, context } : null;
+  } catch {
+    return null;
+  }
+}
+
+export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[], variant: ContextVariant = 'default'): Phaser.Types.Core.GameConfig {
+  const custom = variantContext(variant);
   return {
     type: Phaser.WEBGL,
     parent: 'game',
+    ...(custom ? { canvas: custom.canvas, context: custom.context as unknown as CanvasRenderingContext2D } : {}),
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     backgroundColor: '#04060f',

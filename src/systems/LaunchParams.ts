@@ -3,6 +3,8 @@
  * ?aliens=fourarms,xlr8 (adds aliens to the story dial; the run counts as practice),
  * ?training=1 (straight into Omnitrix Training), ?level=ch2 (which chapter ?start= and a direct start play).
  * Dev builds only: ?at=<tile x> spawns Ben anywhere, ?god=1 makes him invulnerable.
+ * ?autobench=1 plays the on-device benchmark (any build; it saves nothing), ?autobench=report shows its last report.
+ * Bisect switches (fx=0, bg=0, ...) are in PerfSwitches.ts.
  */
 
 /** Dev builds and the benchmark build (`vite build --mode bench`) expose playtest hooks; release builds strip them. */
@@ -20,6 +22,8 @@ export interface LaunchParams {
   training: boolean;
   /** Level for ?start= (and a direct start with ?level= alone). */
   level: string | null;
+  /** ?autobench=1 runs the on-device benchmark, ?autobench=report shows the last report. */
+  autobench: 'run' | 'report' | null;
 }
 
 export function launchParams(): LaunchParams {
@@ -45,5 +49,6 @@ export function launchParams(): LaunchParams {
       .filter((id) => id.length > 0),
     training: q.has('training'),
     level: q.get('level'),
+    autobench: q.has('autobench') ? (q.get('autobench') === 'report' ? 'report' : 'run') : null,
   };
 }

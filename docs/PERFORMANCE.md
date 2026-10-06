@@ -71,7 +71,63 @@ What it records:
 
 **Why not FPS.** Headless Chromium has no GPU. It draws WebGL in software (SwiftShader) and then reads every frame back for its software compositor, which takes 40-60 ms a frame on its own: headless runs at about 40-49 FPS unthrottled and 8-15 FPS throttled, whatever the game does. That measures the container. The game's own CPU time per frame doesn't depend on that and scales with the throttle, so it's what the budget limits. Under throttle the game also runs in slow motion (frames are clamped at 34 ms), which doesn't change the per-frame costs. How to read the numbers: unthrottled on the machine that set the budget, the game's own work takes 2.8-4.9 ms per frame across the scenarios; at 4x, 12-20 ms. A phone at 60 Hz has 16.7 ms per frame for everything (game, browser, GPU), at 120 Hz 8.3 ms. So if 4x on that machine were exactly a mid-range phone, the heaviest moments would fill most of a 60 Hz frame with the game's own work. How close that comparison is (a phone runs WebGL on a real GPU driver, so its render share differs) is what the real-phone check below settles.
 
-## Checking on a real phone (`?debug=1`)
+## Checking on a real phone
+
+### The autobench (`?autobench=1`): the phone tests itself
+
+Open `https://ben10-2d.vercel.app/?autobench=1` on the phone (in Chrome, not an app's built-in browser), plugged in, and tap START. The game then plays every heavy scene by itself with the scripted player and god mode (the same moves as `npm run bench`), on a throwaway save file held in memory (the real save is never touched), and ends on a report with a COPY button. About 24 minutes for 80 runs (QUICK: about 14); the screen stays on (Wake Lock) and it goes fullscreen like normal play.
+
+What it plays, each for 3 s of warm-up and 12 s of measurement (4 s more warm-up on a scene's first run and after a page reload, which compile shaders and upload textures the later runs reuse):
+
+1. **blank**: an empty canvas (the browser and compositor alone), then the same with `css=smooth`.
+2. **calm** (Chapter 1's forest at night, standing still) and the heavy scenes: the four bosses (`ch1-boss`, `ch2-boss`, `ch3-frog`, `ch4-kevin`), `ch2-convoy`, `ch3-blackout`, `ch4-arcade` and `misfire` (Training on CHAOS). Each runs normally (`base`), then once with each bisect switch: `fx=0`, `particles=0`, `bg=0`, `scale=0.5`, `bodies=1` and `governor=0`.
+3. **Extras** on `calm` and `ch4-arcade`: `orphan=1`, `css=smooth`, `audio=0`, and `all-off` (`fx`, `particles` and `bg` together).
+4. **Drift**: the first base run again, to see whether the phone slowed down over the session (heat, power saving).
+5. **Context variants**: the page reloads three times (default, `ctx=desync`, `ctx=lean`) and plays `calm` and `ch4-arcade` on each. Tap once on each reload to go back to fullscreen, or leave it: it carries on after 8 s.
+
+Each run starts at Q0 with a fresh governor. `?autobench=1&quick=1` halves the times, `&only=calm,ch3-frog` limits the scenes, `&contexts=0` skips the reloads, and `?autobench=report` shows the last report again (it is kept on the phone, partial ones too).
+
+The report has the device (user agent, devicePixelRatio, screen, measured refresh rate, cores, memory, battery), the GPU (WebGL renderer string, GPU timer support), the canvas (backing size against CSS size and physical pixels, `image-rendering`), the WebGL context attributes in use on every page, warnings, then one row per run:
+
+| Column | What it is |
+|---|---|
+| `FPS`, `1%LO` | Frames per second and the 1% low (the same definitions as the `?debug=1` meter) |
+| `CPU`, `P99`, `REN` | The game's own step per frame (mean, 99th percentile) and its render-submission part |
+| `IDLE` | Mean frame gap minus mean CPU: time each frame waited on something other than the game's JavaScript (the GPU, the browser's GPU process, the compositor, vsync) |
+| `GPU` | GPU time per frame from `EXT_disjoint_timer_query` when the browser has it; otherwise (`~`) how long a one-pixel `readPixels` waited after the frame was submitted, measured for 1.5 s at the end of each run (the GPU and driver time the game doesn't see) |
+| `DRAW`, `FB`, `UPKB`, `TEX` | Draw calls, render-target binds, kilobytes of vertex data uploaded, texture uploads, per frame |
+| `JNK%` | Frames over 1.5x the median gap (visible stutter) |
+| `Q0/1/2%` | Time at each quality level |
+
+Then the median effect of each switch against the same scene's base run, the context variants against a freshly loaded default page, and the drift check. Flags on a row: `ended` (the level finished during the run), `died`, `interrupted` (the tab was hidden or paused twice), `nosound`.
+
+It warns about a screen running at 30 Hz (battery saver), a limited refresh rate, low battery off the charger, an in-app browser, Data Saver, not being fullscreen and page zoom.
+
+**The bisect switches** also work by hand, alone or together, with or without `?debug=1` (the readout lists the active ones):
+
+| Switch | Turns off |
+|---|---|
+| `fx=0` | Camera filters (vignette, the transform's barrel pulse, the misfire sepia, the death desaturate), night lighting (the lightmap pass), additive glow flashes and rays, camera flashes |
+| `particles=0` | Every particle emitter (bursts, trails, campfires, fireflies, thrusters) |
+| `bg=0` | Skies, parallax layers and backdrop walls |
+| `scale=0.5` | Renders the canvas at half resolution (the browser scales it up; pixel text turns to mush, on purpose) |
+| `bodies=0` / `bodies=1` | Physics body outlines (`?debug=1` draws them unless `bodies=0`) |
+| `governor=0` | The quality governor: stays at Q0 |
+| `orphan=1` | Vertex uploads re-specify the buffer (`bufferData`) instead of overwriting the front of a buffer the frame's earlier draws still read (`bufferSubData`), which some mobile drivers answer by copying the whole buffer or stalling |
+| `css=smooth` | `image-rendering: pixelated` on the canvas (blurry, but lets the browser scale it like a video) |
+| `audio=0` | Sound |
+| `ctx=desync` / `ctx=lean` | Page-load only: a desynchronized (low-latency) WebGL context, or one without the depth and stencil buffers |
+
+### WebGL context and canvas review (Phase 1 of the real-phone pass)
+
+What the game asks for, and what could cost compositing on Android (the autobench measures each one):
+
+- **Context attributes** (Phaser 4 with `pixelArt`): `alpha: false` (good: an opaque canvas needs no blending with the page), `antialias: false` (good), `preserveDrawingBuffer: false` (good: the browser can swap instead of copy), `premultipliedAlpha: true` (no effect with an opaque canvas), `desynchronized: false`, `powerPreference: 'high-performance'` (a hint; it picks the discrete GPU on dual-GPU laptops, phones mostly ignore it). Two buffers the game never uses: Phaser 4 always asks for a **depth** buffer, and `stencil` defaults to on, but the game draws no masks and no depth-tested geometry. On a tiled mobile GPU unused attachments can cost memory bandwidth every frame unless the driver discards them. `ctx=lean` measures it.
+- **Canvas scaling.** The canvas's drawing buffer is the game's resolution (799x360 on a 20:9 phone); the browser scales it up to the screen (about 3x in physical pixels) with `image-rendering: pixelated`. A nearest-neighbour quad can't be handed to the phone's display hardware as an overlay (overlays filter smoothly), so Chrome's compositor draws the whole canvas again every frame at the screen's full resolution, a GPU pass the game can't see. `css=smooth` and the `blank` runs measure it.
+- **Layering.** One canvas inside two plain boxes (`#frame`, `#game`); nothing else is composited over it during play (the rotate-your-phone screen is `display: none`). Nothing to change.
+- **Vertex uploads.** Phaser 4 uploads each batch with `bufferSubData` into the same 1.8 MB buffer from offset 0, several times a frame (about 40 draw calls). Desktop drivers rename the buffer for free; some mobile drivers copy the whole buffer or wait for the GPU. `orphan=1` measures it.
+
+### `?debug=1` by hand
 
 Open the game on the phone with `?debug=1` added to the URL (for example `https://<your-deploy>/?debug=1`, or `?debug=1&level=ch3&start=cp-frog` to go straight to a fight). The top-left readout updates four times a second:
 

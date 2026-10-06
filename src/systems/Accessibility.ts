@@ -1,6 +1,7 @@
 import type Phaser from 'phaser';
 import { ACCESSIBILITY } from '../config/accessibility';
 import type { SettingsData } from './SaveSystem';
+import { perf } from './PerfSwitches';
 
 /** Settings after filling unchosen values from the device (prefers-reduced-motion). */
 export interface ResolvedA11y {
@@ -50,6 +51,7 @@ export function shakeCamera(cam: Phaser.Cameras.Scene2D.Camera, durationMs: numb
 
 /** Full-screen colour flash. With Reduce Flashing on it becomes a soft, slower tint. */
 export function flashCamera(cam: Phaser.Cameras.Scene2D.Camera, durationMs: number, r: number, g: number, b: number): void {
+  if (!perf.fx) return;
   const reduced = a11y.reduceFlashing;
   // Phaser keeps the peak alpha on the effect; set it every time so a forced restart never leaves it dimmed.
   cam.flashEffect.alpha = reduced ? ACCESSIBILITY.reducedFlashAlpha : 1;

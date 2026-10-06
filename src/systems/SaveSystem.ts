@@ -1,6 +1,8 @@
 import { RANK_ORDER, type Rank } from '../config/scoring';
 import { DEFAULT_DIFFICULTY, isDifficultyId, type DifficultyId } from '../config/difficulty';
 import { sanitizeRunStats, type RunStats } from './RunStats';
+import { launchParams } from './LaunchParams';
+import { autobenchSave, memoryStorage } from './autobench/fixture';
 
 /**
  * Version history:
@@ -516,4 +518,10 @@ export class SaveSystem {
   }
 }
 
-export const saveSystem = new SaveSystem();
+/** The autobench (?autobench) plays on a file in memory so the real save is never touched. */
+function saveStorage(): StorageLike | null {
+  if (launchParams().autobench) return memoryStorage({ [SAVE_KEY]: JSON.stringify(autobenchSave()) });
+  return getBrowserStorage();
+}
+
+export const saveSystem = new SaveSystem(saveStorage());

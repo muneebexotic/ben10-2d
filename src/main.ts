@@ -17,11 +17,14 @@ import { FileSelectScene } from './scenes/FileSelectScene';
 import { DifficultyScene } from './scenes/DifficultyScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ArcadeScene } from './scenes/ArcadeScene';
+import { AutobenchScene } from './scenes/AutobenchScene';
 import { applySavedSettings } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
 import { DEV_TOOLS } from './systems/LaunchParams';
 import { trainingOptions } from './systems/TrainingState';
 import { EventBus } from './systems/EventBus';
+import { contextVariant } from './systems/PerfSwitches';
+import { installRenderSwitches } from './systems/RenderSwitches';
 
 applySavedSettings();
 
@@ -44,8 +47,12 @@ const game = new Phaser.Game(
     GalleryScene,
     SettingsScene,
     ArcadeScene,
-  ]),
+    AutobenchScene,
+  ], contextVariant),
 );
+
+// Bisect switches that act on the renderer (see PerfSwitches.ts); installed once the renderer exists.
+game.events.once(Phaser.Core.Events.READY, () => installRenderSwitches(game));
 
 installDeviceGuards(game);
 

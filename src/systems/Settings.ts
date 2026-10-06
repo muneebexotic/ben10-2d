@@ -2,12 +2,13 @@ import Phaser from 'phaser';
 import { audio } from './audio/AudioEngine';
 import { saveSystem, type SettingsData } from './SaveSystem';
 import { launchParams } from './LaunchParams';
+import { perf } from './PerfSwitches';
 import { EventBus } from './EventBus';
 import { a11y, prefersReducedMotion, resolveA11y, setA11y } from './Accessibility';
 
 /** Applies the saved settings (or ?mute=1) once at boot, and follows OS reduced-motion changes. */
 export function applySavedSettings(): void {
-  audio.setMuted(launchParams().mute || saveSystem.load().muted);
+  audio.setMuted(launchParams().mute || !perf.audio || saveSystem.load().muted);
   refreshA11y();
   try {
     window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener('change', () => refreshA11y());

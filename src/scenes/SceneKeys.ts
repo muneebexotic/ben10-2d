@@ -16,4 +16,5 @@ export const SCENES = {
   settings: 'Settings',
   touch: 'Touch',
   arcade: 'Arcade',
+  autobench: 'Autobench',
 } as const;

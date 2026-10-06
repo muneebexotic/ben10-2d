@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { pad } from './VirtualPad';
+import { autopilot } from './Autopilot';
 
 export interface Controls {
   left: boolean;
@@ -146,6 +147,7 @@ export class InputMap {
     s.confirm = this.pressed('confirm');
     const tapped = pad.consumeTap();
     s.anyPressed = s.jumpPressed || s.attackPressed || s.specialPressed || s.transform || s.confirm || tapped;
+    autopilot.merge(s);
     return s;
   }
 

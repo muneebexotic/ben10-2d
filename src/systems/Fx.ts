@@ -6,6 +6,7 @@ import type { Lighting } from './Lighting';
 import type { TimeController } from './TimeController';
 import { shakeCamera } from './Accessibility';
 import { quality } from './Quality';
+import { perf } from './PerfSwitches';
 import { frameScale } from './Pacing';
 import { pixelText } from '../ui/text';
 import { FONT_SIZE } from '../ui/PixelFont';
@@ -160,12 +161,14 @@ export class Fx {
 
   /** Particle counts shrink automatically on devices that can't hold the frame rate. */
   burst(kind: BurstKind, x: number, y: number, count: number): void {
+    if (!perf.particles) return;
     const n = quality.scaleCount(count);
     if (n > 0) this.emitters.get(kind)?.explode(n, x, y);
   }
 
   /** A few particles every call; use for trails. */
   trail(kind: BurstKind, x: number, y: number, count = 1): void {
+    if (!perf.particles) return;
     const n = quality.scaleCount(count);
     if (n > 0) this.emitters.get(kind)?.emitParticleAt(x, y, n);
   }
@@ -175,6 +178,7 @@ export class Fx {
    * number per second at any refresh rate (and exactly `trail` at 60 Hz).
    */
   stream(kind: BurstKind, x: number, y: number, count = 1): void {
+    if (!perf.particles) return;
     const n = quality.scaleCount(count * frameScale());
     if (n > 0) this.emitters.get(kind)?.emitParticleAt(x, y, n);
   }
@@ -211,6 +215,7 @@ export class Fx {
 
   /** Soft additive bloom that pops and fades. */
   flash(x: number, y: number, color: number, radius: number, durationMs: number, alpha = 1): void {
+    if (!perf.fx) return;
     const img = this.take(TEX.light, x, y, color, DEPTH.fxTop);
     img.setScale((radius * 2) / 64 * 0.4).setAlpha(alpha);
     this.scene.tweens.add({
@@ -224,6 +229,7 @@ export class Fx {
   }
 
   rays(x: number, y: number, color: number, radius: number, durationMs: number): void {
+    if (!perf.fx) return;
     const img = this.take(TEX.rays, x, y, color, DEPTH.fx);
     img.setScale(0.2).setAlpha(1).setAngle(Math.random() * 360);
     this.scene.tweens.add({

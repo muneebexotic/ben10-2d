@@ -30,8 +30,9 @@ export class PreloadScene extends Phaser.Scene {
     const params = launchParams();
     // URL playtest switches skip the menus: they play on the last file (if there is one).
     const level = params.level && hasLevel(params.level) ? params.level : undefined;
-    if (params.training || params.start || level) session.useSlot(saveSystem.lastSlot);
-    if (params.gallery) this.scene.start(SCENES.gallery);
+    if (params.training || params.start || level || params.autobench) session.useSlot(saveSystem.lastSlot);
+    if (params.autobench) this.scene.start(SCENES.autobench);
+    else if (params.gallery) this.scene.start(SCENES.gallery);
     else if (params.training) this.scene.start(SCENES.level, { levelId: 'training' });
     else if (params.start || level) this.scene.start(SCENES.level, { levelId: level, checkpoint: params.start });
     else this.scene.start(SCENES.menu);

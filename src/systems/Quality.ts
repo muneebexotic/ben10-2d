@@ -38,6 +38,13 @@ export class QualityGovernor {
     return this.levelIndex === this.config.particleLevels.length - 1;
   }
 
+  /** Jumps to a level (0 is best) and starts over: the autobench starts every run at Q0, and governor=0 pins it there. */
+  setLevel(level: number): void {
+    this.levelIndex = Math.max(0, Math.min(this.config.particleLevels.length - 1, Math.round(level)));
+    this.goodMs = 0;
+    this.reset();
+  }
+
   /** Call after a scene change: the next frames are warm-up and don't count. */
   reset(): void {
     this.warmupLeft = this.config.warmupMs;

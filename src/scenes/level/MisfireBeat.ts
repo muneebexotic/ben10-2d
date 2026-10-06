@@ -11,6 +11,7 @@ import { playSfx } from '../../systems/audio/Sfx';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { pixelText } from '../../ui/text';
 import type { CameraRig } from './CameraRig';
+import { perf } from '../../systems/PerfSwitches';
 
 export interface MisfireBeatDeps {
   scene: Phaser.Scene;
@@ -71,7 +72,7 @@ export class MisfireBeat {
     speech.show(line, MISFIRE.lineMs);
 
     // The freeze-frame goes sepia, like every "yep, that's me" record-scratch moment.
-    this.sepia = scene.cameras.main.filters?.internal.addColorMatrix() ?? null;
+    this.sepia = perf.fx ? (scene.cameras.main.filters?.internal.addColorMatrix() ?? null) : null;
     if (this.sepia) {
       this.sepia.colorMatrix.sepia();
       this.sepia.colorMatrix.alpha = 0;

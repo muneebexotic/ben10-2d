@@ -15,6 +15,7 @@ import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { a11y, flashCamera } from '../../systems/Accessibility';
 import { MISFIRE, PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
 import type { MisfireBeat } from './MisfireBeat';
+import { perf } from '../../systems/PerfSwitches';
 
 export interface SequenceDeps {
   scene: Phaser.Scene;
@@ -254,7 +255,7 @@ export class TransformSequence {
   private shockwaveDistortion(amount: number): void {
     // A whole-screen warp is motion, so it follows the screen shake setting.
     const strength = (amount - 1) * a11y.shake;
-    if (strength <= 0.01) return;
+    if (strength <= 0.01 || !perf.fx) return;
     const cam = this.d.scene.cameras.main;
     const barrel = cam.filters?.internal.addBarrel(1);
     if (!barrel) return;
