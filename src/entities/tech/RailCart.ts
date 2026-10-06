@@ -181,6 +181,11 @@ export class RailCart implements Machine {
     }
     nx = Phaser.Math.Clamp(nx, this.startX, this.endX);
     if (nx === this.endX || nx === this.startX) this.vx = 0;
+    if (this.state !== 'driving') {
+      nx = this.clearOfPlayer(nx);
+      // Waiting for Ben to get out of the way.
+      if (nx === r.x) return;
+    }
     r.x = nx;
     this.sprite.setX(r.x + W / 2);
     this.body.setPosition(r.x + W / 2, r.y + H / 2 + 2).refreshBody();
@@ -192,6 +197,22 @@ export class RailCart implements Machine {
       playSfx('railClack', 0.5, 0.8 + speed / C.maxSpeed);
     }
     if (speed > 60) this.ram();
+  }
+
+  /**
+   * Rolling with nobody at the controls (home along the line, or coasting), the cart stops short of Ben
+   * standing in its way: a solid moved onto him would leave him inside it (after a pit respawn on the deck
+   * by its parking spot, the fuzz runs caught it). It carries on once he moves.
+   */
+  private clearOfPlayer(nx: number): number {
+    const p = this.d.player;
+    const r = this.rect;
+    // Feet between the cart's roof and its floor: in its path, not riding on it.
+    if (p.dead || p.y <= r.y + 2 || p.y > this.railY + 2) return nx;
+    const gap = C.playerClearance;
+    if (nx < r.x && p.x < r.x + W / 2) return Math.min(r.x, Math.max(nx, p.x + gap));
+    if (nx > r.x && p.x > r.x + W / 2) return Math.max(r.x, Math.min(nx, p.x - gap - W));
+    return nx;
   }
 
   /** Whatever's in front of a moving cart gets flattened. */
