@@ -8,3 +8,7 @@ test-results
 # npm run bench: its build, and A/B builds of other commits (.bench-<name>)
 .bench-*
 bench-results
+
+# npm run qa: its build and screenshots
+.qa-dist
+qa-results

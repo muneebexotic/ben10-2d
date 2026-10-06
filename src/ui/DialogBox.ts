@@ -4,7 +4,7 @@ import { PALETTE } from '../config/palette';
 import { STORY } from '../config/story';
 import { playSfx } from '../systems/audio/Sfx';
 import { inputMode } from '../systems/InputMode';
-import { pixelText } from './text';
+import { boxed, pixelText } from './text';
 
 const W = 520;
 const H = 46;
@@ -62,6 +62,7 @@ export class DialogBox {
     const inset = portrait ? 58 : 0;
     this.name.setText(speaker).setTint(color).setX(-W / 2 + 10 + inset);
     this.body.setText('').setX(-W / 2 + 12 + inset).setMaxWidth(W - 24 - inset);
+    boxed(this.body, -W / 2 + 10 + inset, -H / 2 + 1, W - 20 - inset, H - 2);
     const pf = this.portraitFrame;
     pf.clear();
     if (portrait) {

@@ -3,7 +3,7 @@ import { GAME_WIDTH } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { playSfx } from '../../systems/audio/Sfx';
 import { inputMode } from '../../systems/InputMode';
-import { pixelText } from '../text';
+import { boxed, pixelText } from '../text';
 import { frameView } from '../view';
 
 export interface PanelStyle {
@@ -61,7 +61,7 @@ export class MenuButton {
     private readonly h = 22,
   ) {
     this.frame = scene.add.graphics();
-    this.label = pixelText(scene, 0, 0, text, { originX: 0.5, originY: 0.5, color });
+    this.label = boxed(pixelText(scene, 0, 0, text, { originX: 0.5, originY: 0.5, color }), -w / 2 + 2, -h / 2, w - 4, h);
     // A thumb-sized target, larger than the frame.
     this.zone = scene.add.zone(0, 0, w + 8, Math.max(h + 10, 30)).setInteractive({ useHandCursor: true });
     this.zone.on('pointerdown', () => {

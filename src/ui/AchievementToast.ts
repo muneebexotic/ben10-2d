@@ -4,7 +4,7 @@ import { PALETTE } from '../config/palette';
 import { playSfx } from '../systems/audio/Sfx';
 import { achievementBadge } from './achievementBadge';
 import { drawPanel } from './menu/widgets';
-import { pixelText } from './text';
+import { boxed, pixelText } from './text';
 
 const W = 190;
 const H = 34;
@@ -45,8 +45,8 @@ export class AchievementToast {
     const g = scene.add.graphics();
     drawPanel(g, W / 2, 0, W, H, { fill: PALETTE.uiPanel, fillAlpha: 0.94, stroke: PALETTE.gold, radius: 5, bevel: true });
     const badge = achievementBadge(scene, 19, 0, def.icon, true, 12);
-    const head = pixelText(scene, 38, -8, 'ACHIEVEMENT UNLOCKED', { originY: 0.5, color: PALETTE.gold });
-    const title = pixelText(scene, 38, 6, def.title, { originY: 0.5, color: PALETTE.white });
+    const head = boxed(pixelText(scene, 38, -8, 'ACHIEVEMENT UNLOCKED', { originY: 0.5, color: PALETTE.gold }), 36, -H / 2, W - 38, H);
+    const title = boxed(pixelText(scene, 38, 6, def.title, { originY: 0.5, color: PALETTE.white }), 36, -H / 2, W - 38, H);
     const shine = scene.add.rectangle(0, 0, 10, H - 4, PALETTE.white, 0.35).setAngle(18);
     const root = scene.add.container(this.left - W - 8, this.y, [g, badge, head, title, shine]).setDepth(this.depth);
     playSfx('secret', 0.6, 1.25);

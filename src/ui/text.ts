@@ -31,3 +31,13 @@ export function pixelText(
   if (opts.maxWidth !== undefined) t.setMaxWidth(opts.maxWidth);
   return t;
 }
+
+/**
+ * Declares the box a text has to stay inside (a button, a card, a panel), in
+ * its parent container's coordinates, or the scene's when it has no parent.
+ * `npm run qa` checks every declared box on every screen size.
+ */
+export function boxed<T extends Phaser.GameObjects.BitmapText>(t: T, x: number, y: number, w: number, h: number): T {
+  t.setData('box', { x, y, w, h });
+  return t;
+}
