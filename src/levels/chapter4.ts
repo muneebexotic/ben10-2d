@@ -248,7 +248,8 @@ export const CHAPTER_4: LevelData = {
     { type: 'trains', id: 'line11', fromX: 198, toX: 268, y: 38, everyMs: 9000, firstMs: 3500 },
 
     // ---- The maintenance line
-    { type: 'checkpoint', id: 'cp-line', x: 263, y: 33, density: 'sparse', label: 'MAINTENANCE LINE' },
+    // Two tiles short of the cart: a respawn here (18 px right of the flag) used to land inside it.
+    { type: 'checkpoint', id: 'cp-line', x: 261, y: 33, density: 'sparse', label: 'MAINTENANCE LINE' },
     { type: 'cart', id: 'line-cart', x: 264, y: 33, toX: 293, barrier: { x: 296, y: 29, h: 4 }, exit: { x: 297, y: 32 } },
     { type: 'decor', kind: 'tunnelLight', x: 272, y: 29.6 },
     { type: 'decor', kind: 'tunnelLight', x: 282, y: 29.6 },

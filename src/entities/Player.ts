@@ -329,6 +329,9 @@ export class Player implements PlayerHandle {
   /** Set by the Level: false where respawning would be unsafe (e.g. under water). */
   isSafeSpot: ((x: number, feetY: number) => boolean) | null = null;
 
+  /** Set by the Level: where feet at (x, feetY) can stand now that moving solids may have moved in (a pit respawn). */
+  respawnFeetY: ((x: number, feetY: number, height: number) => number) | null = null;
+
   /** Set by the Level: true when feet at (x, feetY) rest on a water surface. */
   isWaterSurface: ((x: number, feetY: number) => boolean) | null = null;
 
@@ -455,7 +458,9 @@ export class Player implements PlayerHandle {
       this.die();
       return outcome;
     }
-    this.body.reset(this.lastSafe.x, this.lastSafe.y - this.body.height / 2);
+    // The safe spot may have been filled since (a cart parked back on it): stand on top of what's there now.
+    const feetY = this.respawnFeetY?.(this.lastSafe.x, this.lastSafe.y, this.body.height) ?? this.lastSafe.y;
+    this.body.reset(this.lastSafe.x, feetY - this.body.height / 2);
     this.invulnUntil = Math.max(this.invulnUntil, this.now + PLAYER.pitRespawnInvulnMs);
     this.visual.flash(PALETTE.white, 120);
     return outcome;

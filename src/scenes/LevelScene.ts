@@ -53,6 +53,7 @@ import { CityBackdrop } from './level/CityBackdrop';
 import { SpecialTerrain } from './level/SpecialTerrain';
 import { TechSystem } from './level/TechSystem';
 import { checkpointsFor, spawnEntities } from './level/Spawner';
+import { checkpointSpawn } from '../levels/checkpoints';
 import { TransformSequence } from './level/TransformSequence';
 import { MisfireBeat } from './level/MisfireBeat';
 import { misfireAllowed } from '../systems/MisfireRules';
@@ -541,7 +542,7 @@ export class LevelScene extends Phaser.Scene {
     }
     if (this.checkpointId) {
       const cp = checkpointsFor(this.level).find((c) => c.id === this.checkpointId) ?? this.level.entities.find((e) => e.type === 'checkpoint' && e.id === this.checkpointId);
-      if (cp && cp.type === 'checkpoint') return { x: cp.x * TILE + TILE / 2 + 18, y: cp.y * TILE };
+      if (cp && cp.type === 'checkpoint') return checkpointSpawn(cp);
       this.checkpointId = null;
     }
     return { x: this.level.playerStart.x * TILE + TILE / 2, y: this.level.playerStart.y * TILE };
@@ -565,6 +566,7 @@ export class LevelScene extends Phaser.Scene {
     if (launchParams().god || launchParams().autobench) this.player.setInvulnerable(1e9);
     this.player.isSafeSpot = (x, y) =>
       !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12) && !this.world.overRail(x - 12) && !this.world.overRail(x + 12);
+    this.player.respawnFeetY = (x, y, h) => this.world.standingFeetY(x, y, h);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
     this.player.isWaterSurface = (x, y) => this.world.onWaterSurface(x, y);
     this.combat.setPlayer(this.player);

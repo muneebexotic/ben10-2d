@@ -141,6 +141,12 @@ export class LevelWorld {
     if (i >= 0) this.extraSolids.splice(i, 1);
   }
 
+  /** Feet height for a body of `height` standing at (x, feetY): on top of a moving solid that now fills the spot (a parked cart, a lift), or feetY. */
+  standingFeetY(x: number, feetY: number, height: number): number {
+    for (const r of this.extraSolids) if (x >= r.x && x < r.x + r.w && feetY > r.y && feetY - height < r.y + r.h) return r.y;
+    return feetY;
+  }
+
   isOneWay(x: number, y: number): boolean {
     return cellAt(this.grid, Math.floor(x / TILE), Math.floor(y / TILE)) === CELL.PLATFORM;
   }
