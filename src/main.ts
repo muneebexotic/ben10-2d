@@ -18,15 +18,18 @@ import { DifficultyScene } from './scenes/DifficultyScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ArcadeScene } from './scenes/ArcadeScene';
 import { AutobenchScene } from './scenes/AutobenchScene';
-import { applySavedSettings } from './systems/Settings';
+import { applySavedSettings, installPageAudio } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
 import { DEV_TOOLS } from './systems/LaunchParams';
 import { trainingOptions } from './systems/TrainingState';
 import { EventBus } from './systems/EventBus';
+import { inputMode } from './systems/InputMode';
+import { audio } from './systems/audio/AudioEngine';
 import { contextVariant } from './systems/PerfSwitches';
 import { installRenderSwitches } from './systems/RenderSwitches';
 
 applySavedSettings();
+installPageAudio();
 
 const game = new Phaser.Game(
   createGameConfig([
@@ -57,5 +60,5 @@ game.events.once(Phaser.Core.Events.READY, () => installRenderSwitches(game));
 installDeviceGuards(game);
 
 if (DEV_TOOLS) {
-  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus });
+  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus, __inputMode: inputMode, __audio: audio });
 }

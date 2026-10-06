@@ -45,6 +45,27 @@ export function bindMuteKey(scene: Phaser.Scene): void {
   scene.input.keyboard?.on('keydown-M', () => toggleMute());
 }
 
+/**
+ * Browsers only let audio start inside a gesture, and for touch that's the
+ * *end* of a tap (touchend / pointerup), not its start: a pointerdown handler
+ * alone left the first tap silent (and iOS can need it again after a call).
+ * These page-level listeners catch every gesture end until the sound runs.
+ * Sound also pauses while the page is hidden.
+ */
+export function installPageAudio(): void {
+  const events = ['touchend', 'pointerup', 'click', 'keydown'] as const;
+  const unlock = () => {
+    if (!audio.ready) audio.unlock();
+  };
+  try {
+    for (const type of events) window.addEventListener(type, unlock, { capture: true, passive: true });
+    // Silent in the background, back on return.
+    document.addEventListener('visibilitychange', () => audio.setPageHidden(document.hidden));
+  } catch {
+    // No window (tests).
+  }
+}
+
 /** Browsers only allow audio after a gesture; any key or click unlocks it. */
 export function bindAudioUnlock(scene: Phaser.Scene, onUnlock?: () => void): void {
   const unlock = () => {

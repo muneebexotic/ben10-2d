@@ -18,6 +18,8 @@ import { autobenchSave, memoryStorage } from './autobench/fixture';
 export const SAVE_VERSION = 4;
 export const SAVE_KEY = 'ben10-omnitrix-summer';
 export const SLOT_COUNT = 3;
+/** An unreadable save is copied here before anything overwrites it. */
+export const CORRUPT_SUFFIX = ':unreadable';
 
 /** Best results on one difficulty. */
 export interface DifficultyRecord {
@@ -304,14 +306,26 @@ export class SaveSystem {
   load(): SaveData {
     if (this.cache) return this.cache;
     let data = createDefaultSave();
+    let raw: string | null | undefined = null;
     try {
-      const raw = this.storage?.getItem(this.key);
+      raw = this.storage?.getItem(this.key);
       if (raw) data = migrateSave(JSON.parse(raw), this.clock());
     } catch {
       data = createDefaultSave();
+      // Unreadable (a write cut short, a hand edit): keep a copy before the next save replaces it.
+      try {
+        if (raw) this.storage?.setItem(`${this.key}${CORRUPT_SUFFIX}`, raw);
+      } catch {
+        // Nowhere to keep it.
+      }
     }
     this.cache = data;
     return data;
+  }
+
+  /** Forgets the cached copy: the next read comes from storage (another tab saved). */
+  invalidate(): void {
+    this.cache = null;
   }
 
   save(data: SaveData = this.load()): boolean {
@@ -525,3 +539,14 @@ function saveStorage(): StorageLike | null {
 }
 
 export const saveSystem = new SaveSystem(saveStorage());
+
+// The game open in two tabs: when the other tab saves, read its save instead of writing over it from a stale copy.
+try {
+  if (typeof window !== 'undefined' && !launchParams().autobench) {
+    window.addEventListener('storage', (e) => {
+      if (e.key === SAVE_KEY || e.key === null) saveSystem.invalidate();
+    });
+  }
+} catch {
+  // No window events: nothing to follow.
+}

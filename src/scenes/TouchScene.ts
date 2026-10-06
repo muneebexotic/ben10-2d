@@ -92,8 +92,14 @@ export class TouchScene extends Phaser.Scene {
       this.setFormIcons(HUMAN_FORM.id);
       this.releaseAll();
     }, this);
+    // A finger still down when the page loses focus may never send its touchend: drop every hold,
+    // or a stale stick track would keep the next thumb from grabbing the stick.
+    this.game.events.on(Phaser.Core.Events.BLUR, this.releaseAll, this);
+    this.game.events.on(Phaser.Core.Events.HIDDEN, this.releaseAll, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       EventBus.offContext(this);
+      this.game.events.off(Phaser.Core.Events.BLUR, this.releaseAll, this);
+      this.game.events.off(Phaser.Core.Events.HIDDEN, this.releaseAll, this);
       this.releaseAll();
     });
     this.scene.bringToTop();

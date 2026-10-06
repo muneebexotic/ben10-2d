@@ -68,6 +68,9 @@ export function createGameConfig(scenes: Phaser.Types.Scenes.SceneType[], varian
       },
     },
     fps: { target: 60 },
+    // Sound is the game's own Web Audio engine (systems/audio). Phaser's sound manager went unused but still
+    // opened a second AudioContext, an extra audio thread running silently all session on a phone.
+    audio: { noAudio: true },
     // Stick, jump and attack at the same time, plus a spare finger.
     input: { activePointers: 4 },
     disableContextMenu: true,

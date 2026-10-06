@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SaveSystem, SAVE_VERSION, SLOT_COUNT, bestOn, migrateSave, type StorageLike } from '../src/systems/SaveSystem';
+import { SaveSystem, SAVE_VERSION, SLOT_COUNT, bestOn, migrateSave, type StorageLike, CORRUPT_SUFFIX } from '../src/systems/SaveSystem';
 import { createRunStats } from '../src/systems/RunStats';
 
 class MemoryStorage implements StorageLike {
@@ -318,5 +318,47 @@ describe('migration', () => {
     expect(save.slots[2]?.difficulty).toBe('normal');
     expect(Object.keys(save.slots[2]!.chapters.ch1.bests)).toEqual(['hard']);
     expect(save.lastSlot).toBe(0);
+  });
+});
+
+describe('save safety', () => {
+  it('keeps a copy of an unreadable save before anything writes over it', () => {
+    const storage = new MemoryStorage();
+    storage.setItem('k', '{"version":4,"slots":[{"chap');
+    const system = new SaveSystem(storage, 'k', clock);
+    expect(system.getSlot(0)).toBeNull();
+    system.setMuted(true);
+    expect(storage.getItem(`k${CORRUPT_SUFFIX}`)).toBe('{"version":4,"slots":[{"chap');
+    expect(JSON.parse(storage.getItem('k')!).muted).toBe(true);
+  });
+
+  it('reads the save again after another tab wrote it, instead of writing over it', () => {
+    const storage = new MemoryStorage();
+    const tabA = new SaveSystem(storage, 'k', clock);
+    const tabB = new SaveSystem(storage, 'k', clock);
+    tabA.createSlot(0, 'normal');
+    tabB.load();
+    tabA.recordChapter(0, 'ch1', result({ cards: ['ch1-card-ridge'] }));
+    // The browser's storage event tells tab B the save changed.
+    tabB.invalidate();
+    tabB.setMuted(true);
+    const written = JSON.parse(storage.getItem('k')!);
+    expect(written.muted).toBe(true);
+    expect(written.slots[0].chapters.ch1.cards).toEqual(['ch1-card-ridge']);
+  });
+
+  it('keeps the three files apart', () => {
+    const system = new SaveSystem(new MemoryStorage(), 'k', clock);
+    system.createSlot(0, 'easy');
+    system.createSlot(2, 'hard');
+    system.recordChapter(0, 'ch1', result({ difficulty: 'easy', cards: ['a'] }));
+    system.unlockAliens(2, ['xlr8']);
+    system.setResume(2, null);
+    expect(system.getSlot(1)).toBeNull();
+    expect(system.getSlot(2)?.chapters.ch1).toBeUndefined();
+    expect(system.getSlot(0)?.unlockedAliens).toEqual([]);
+    expect(system.getSlot(2)?.unlockedAliens).toEqual(['xlr8']);
+    expect(system.getSlot(0)?.difficulty).toBe('easy');
+    expect(system.getSlot(2)?.difficulty).toBe('hard');
   });
 });

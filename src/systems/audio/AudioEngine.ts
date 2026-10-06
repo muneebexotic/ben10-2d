@@ -39,6 +39,7 @@ export class AudioEngine {
   private noiseBuffer: AudioBuffer | null = null;
   private _muted = false;
   private loopsMuted = false;
+  private pageHidden = false;
 
   get ready(): boolean {
     return this.ctx !== null && this.ctx.state === 'running';
@@ -76,9 +77,25 @@ export class AudioEngine {
         this.loopBus.connect(this.sfxBus);
         this.noiseBuffer = this.makeNoise();
       }
-      if (this.ctx.state === 'suspended') void this.ctx.resume();
+      if (this.ctx.state === 'suspended' && !this.pageHidden) void this.ctx.resume();
     } catch {
       this.ctx = null;
+    }
+  }
+
+  /**
+   * The page went to the background (another app, another tab): stop the audio clock, and start it again on
+   * return. Background tabs throttle timers to about once a second, and the music scheduler running on them
+   * would blurt out bursts of notes behind the player's back.
+   */
+  setPageHidden(hidden: boolean): void {
+    this.pageHidden = hidden;
+    const ctx = this.ctx;
+    if (!ctx) return;
+    try {
+      void (hidden ? ctx.suspend() : ctx.resume()).catch(() => undefined);
+    } catch {
+      // A closed context: nothing to pause.
     }
   }
 

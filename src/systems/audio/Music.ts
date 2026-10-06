@@ -582,6 +582,13 @@ class MusicPlayer {
     }
     const stepDur = 60 / track.bpm / 4;
     const total = track.bars * 16;
+    const behind = ctx.currentTime - this.nextTime;
+    if (behind > AUDIO.musicMaxLagS) {
+      // The timer stalled: jump to the step the track has reached instead of playing every missed one now.
+      const missed = Math.ceil(behind / stepDur);
+      this.step = track.loop ? (this.step + missed) % total : Math.min(total, this.step + missed);
+      this.nextTime += missed * stepDur;
+    }
     while (this.nextTime < ctx.currentTime + 0.12) {
       if (this.step >= total) {
         if (!track.loop) {
