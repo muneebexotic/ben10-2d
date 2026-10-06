@@ -116,6 +116,22 @@
       };
       walk(scene.children.list);
     }
+    // HUD text under a thumb: over a touch button, the Omnitrix button or the stick's resting place.
+    const pad = game.scene.getScene('Touch');
+    if (pad?.sys.isActive() && pad.sys.settings.visible && pad.buttons) {
+      const zones = [...Object.entries(pad.buttons), ['omnitrix', pad.dial]]
+        .filter(([, b]) => b?.root?.visible && b.root.alpha > 0.02)
+        .map(([name, b]) => ({ name, x: b.root.x, y: b.root.y, r: b.r }));
+      if (pad.stick?.root?.visible) zones.push({ name: 'stick', x: pad.stick.cx, y: pad.stick.cy, r: 34 });
+      for (const h of hud) {
+        if (h.scene === pad) continue;
+        for (const z of zones) {
+          const nx = Math.max(h.r.x, Math.min(z.x, h.r.x + h.r.w));
+          const ny = Math.max(h.r.y, Math.min(z.y, h.r.y + h.r.h));
+          if ((nx - z.x) ** 2 + (ny - z.y) ** 2 < z.r * z.r) add('thumb', h.scene, h.o, `under the touch ${z.name} button`);
+        }
+      }
+    }
     // Screen text drawn over other screen text (in any scene: HUD over touch labels too).
     for (let i = 0; i < hud.length; i++) {
       for (let j = i + 1; j < hud.length; j++) {

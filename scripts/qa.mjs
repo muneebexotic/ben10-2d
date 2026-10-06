@@ -12,6 +12,7 @@
 //   npm run qa -- --no-build           reuse the last QA build
 //   npm run qa -- --parts=menus        only some of menus,levels,hud
 //   npm run qa -- --out=<dir>          results somewhere else (run sizes in parallel)
+//   npm run qa -- --dist=<dir>         build into (or serve) another directory than .qa-dist
 //
 // Results: qa-results/<size>/*.png, qa-results/report.json, and a summary on stdout.
 // Exits with 1 when a check fails (text issues, page errors, fuzz failures).
@@ -24,8 +25,8 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = path.join(ROOT, '.qa-dist');
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, '').split('=')).map(([k, v]) => [k, v ?? true]));
+const OUT_DIR = args.dist ? path.resolve(String(args.dist)) : path.join(ROOT, '.qa-dist');
 const RESULTS = args.out ? path.resolve(String(args.out)) : path.join(ROOT, 'qa-results');
 const SIZES = {
   // A 16:9 desktop window, a 20:9 phone (Pixel 7 class) and a small 16:9 phone (iPhone SE class), both landscape.
@@ -329,6 +330,11 @@ async function hudGauntlet(s) {
     await s.check(`hud-prompt-${text.slice(0, 20)}`);
   }
   await bus('hud:promptClear', { id: 'qa' });
+  // Chapter 1's first transformation: the big, pulsing prompt.
+  await bus('hud:prompt', { id: 'transform', text: 'PRESS {T} TO TRANSFORM!', priority: 99 });
+  await sleep(500);
+  await s.check('hud-prompt-transform');
+  await bus('hud:promptClear', { id: 'transform' });
   const lines = [
     { who: 'gwen', text: "THE NEWS SAID ITS MACHINES KEEP DYING FOR NO REASON. BEN. DON'T GO LOOKING FOR TROUBLE.", ms: 900 },
     { who: 'animo', text: 'THIS MUSEUM CALLED MY LIFE\'S WORK "AN ABOMINATION". TONIGHT ITS EXHIBITS AGREE WITH ME.', ms: 900 },

@@ -10,5 +10,5 @@ test-results
 bench-results
 
 # npm run qa: its build and screenshots
-.qa-dist
+.qa-dist*
 qa-results
