@@ -49,7 +49,7 @@ export const BISECT: readonly BenchVariant[] = [
 ];
 /** Extra diagnostics on a calm and a heavy scene: driver behaviour, the compositor, audio, and everything off. */
 export const EXTRAS: readonly BenchVariant[] = [
-  { id: 'orphan=1', switches: { orphan: true } },
+  { id: 'orphan=0', switches: { orphan: false } },
   { id: 'css=smooth', switches: { smoothCss: true } },
   { id: 'audio=0', switches: { audio: false } },
   { id: 'all-off', switches: { fx: false, particles: false, bg: false } },

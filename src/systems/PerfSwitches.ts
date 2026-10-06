@@ -10,10 +10,12 @@
  *   scale=0.5     the canvas renders at half resolution (the browser scales it up)
  *   bodies=0/1    draw physics bodies (?debug=1 draws them unless bodies=0)
  *   governor=0    quality governor off: stays at Q0
+ *   orphan=0      Phaser's own vertex uploads (overwriting one buffer in place) instead of the
+ *                 game's, which re-specify it each time (RenderSwitches.ts): the phone fix, kept
+ *                 switchable so the autobench can show what it is worth
  *
  * Diagnostics beyond those, for the autobench:
  *
- *   orphan=1      vertex uploads re-specify the buffer instead of overwriting it in place
  *   css=smooth    the canvas is scaled up with smoothing instead of `pixelated`
  *   audio=0       sound off
  *   ctx=desync    WebGL context variants, read once at page load: `desync` asks for a
@@ -30,17 +32,17 @@ export interface PerfSwitches {
   /** Draw physics bodies: null follows ?debug=1. */
   bodies: boolean | null;
   governor: boolean;
+  /** Vertex uploads re-specify the buffer (bufferData) rather than overwrite it (bufferSubData). */
   orphan: boolean;
   smoothCss: boolean;
   audio: boolean;
 }
 
 export function defaultSwitches(): PerfSwitches {
-  return { fx: true, particles: true, bg: true, scale: 1, bodies: null, governor: true, orphan: false, smoothCss: false, audio: true };
+  return { fx: true, particles: true, bg: true, scale: 1, bodies: null, governor: true, orphan: true, smoothCss: false, audio: true };
 }
 
 const off = (v: string | null) => v === '0' || v === 'off' || v === 'false';
-const on = (v: string | null) => v === '1' || v === 'on' || v === 'true';
 
 /** Reads the switches from a query string (pure, for tests). */
 export function parseSwitches(search: string): PerfSwitches {
@@ -53,7 +55,7 @@ export function parseSwitches(search: string): PerfSwitches {
   if (Number.isFinite(scale) && scale >= 0.25 && scale <= 1) s.scale = scale;
   if (q.has('bodies')) s.bodies = !off(q.get('bodies'));
   s.governor = !off(q.get('governor'));
-  s.orphan = on(q.get('orphan'));
+  s.orphan = !off(q.get('orphan'));
   s.smoothCss = q.get('css') === 'smooth';
   s.audio = !off(q.get('audio'));
   return s;
@@ -73,7 +75,7 @@ export function switchLabel(s: PerfSwitches): string {
   if (s.scale !== 1) parts.push(`scale=${s.scale}`);
   if (s.bodies !== null) parts.push(`bodies=${s.bodies ? 1 : 0}`);
   if (!s.governor) parts.push('governor=0');
-  if (s.orphan) parts.push('orphan=1');
+  if (!s.orphan) parts.push('orphan=0');
   if (s.smoothCss) parts.push('css=smooth');
   if (!s.audio) parts.push('audio=0');
   return parts.join(' ');

@@ -81,7 +81,7 @@ What it plays, each for 3 s of warm-up and 12 s of measurement (4 s more warm-up
 
 1. **blank**: an empty canvas (the browser and compositor alone), then the same with `css=smooth`.
 2. **calm** (Chapter 1's forest at night, standing still) and the heavy scenes: the four bosses (`ch1-boss`, `ch2-boss`, `ch3-frog`, `ch4-kevin`), `ch2-convoy`, `ch3-blackout`, `ch4-arcade` and `misfire` (Training on CHAOS). Each runs normally (`base`), then once with each bisect switch: `fx=0`, `particles=0`, `bg=0`, `scale=0.5`, `bodies=1` and `governor=0`.
-3. **Extras** on `calm` and `ch4-arcade`: `orphan=1`, `css=smooth`, `audio=0`, and `all-off` (`fx`, `particles` and `bg` together).
+3. **Extras** on `calm` and `ch4-arcade`: `orphan=0`, `css=smooth`, `audio=0`, and `all-off` (`fx`, `particles` and `bg` together).
 4. **Drift**: the first base run again, to see whether the phone slowed down over the session (heat, power saving).
 5. **Context variants**: the page reloads three times (default, `ctx=desync`, `ctx=lean`) and plays `calm` and `ch4-arcade` on each. Tap once on each reload to go back to fullscreen, or leave it: it carries on after 8 s.
 
@@ -113,7 +113,7 @@ It warns about a screen running at 30 Hz (battery saver), a limited refresh rate
 | `scale=0.5` | Renders the canvas at half resolution (the browser scales it up; pixel text turns to mush, on purpose) |
 | `bodies=0` / `bodies=1` | Physics body outlines (`?debug=1` draws them unless `bodies=0`) |
 | `governor=0` | The quality governor: stays at Q0 |
-| `orphan=1` | Vertex uploads re-specify the buffer (`bufferData`) instead of overwriting the front of a buffer the frame's earlier draws still read (`bufferSubData`), which some mobile drivers answer by copying the whole buffer or stalling |
+| `orphan=0` | Phaser's own vertex uploads: overwrite the front of one buffer the frame's earlier draws still read (`bufferSubData`). The game re-specifies the buffer instead (`bufferData`), the fix from the first phone report below; `orphan=0` brings the old path back for comparison |
 | `css=smooth` | `image-rendering: pixelated` on the canvas (blurry, but lets the browser scale it like a video) |
 | `audio=0` | Sound |
 | `ctx=desync` / `ctx=lean` | Page-load only: a desynchronized (low-latency) WebGL context, or one without the depth and stencil buffers |
@@ -125,7 +125,34 @@ What the game asks for, and what could cost compositing on Android (the autobenc
 - **Context attributes** (Phaser 4 with `pixelArt`): `alpha: false` (good: an opaque canvas needs no blending with the page), `antialias: false` (good), `preserveDrawingBuffer: false` (good: the browser can swap instead of copy), `premultipliedAlpha: true` (no effect with an opaque canvas), `desynchronized: false`, `powerPreference: 'high-performance'` (a hint; it picks the discrete GPU on dual-GPU laptops, phones mostly ignore it). Two buffers the game never uses: Phaser 4 always asks for a **depth** buffer, and `stencil` defaults to on, but the game draws no masks and no depth-tested geometry. On a tiled mobile GPU unused attachments can cost memory bandwidth every frame unless the driver discards them. `ctx=lean` measures it.
 - **Canvas scaling.** The canvas's drawing buffer is the game's resolution (799x360 on a 20:9 phone); the browser scales it up to the screen (about 3x in physical pixels) with `image-rendering: pixelated`. A nearest-neighbour quad can't be handed to the phone's display hardware as an overlay (overlays filter smoothly), so Chrome's compositor draws the whole canvas again every frame at the screen's full resolution, a GPU pass the game can't see. `css=smooth` and the `blank` runs measure it.
 - **Layering.** One canvas inside two plain boxes (`#frame`, `#game`); nothing else is composited over it during play (the rotate-your-phone screen is `display: none`). Nothing to change.
-- **Vertex uploads.** Phaser 4 uploads each batch with `bufferSubData` into the same 1.8 MB buffer from offset 0, several times a frame (about 40 draw calls). Desktop drivers rename the buffer for free; some mobile drivers copy the whole buffer or wait for the GPU. `orphan=1` measures it.
+- **Vertex uploads.** Phaser 4 uploads each batch with `bufferSubData` into the same 1.8 MB buffer from offset 0, many times a frame (about 100 draw calls on the phone). Desktop drivers rename the buffer for free; Mali copies the whole buffer or waits for the GPU. This was the phone's bottleneck: see the next section.
+
+### The first phone report (Mali-G78, Chrome 154, Android 10)
+
+The owner's phone: 60 Hz, 8 cores, 4 GB, canvas 755x360 scaled to 2265x1080 physical pixels, no GPU timer queries (the GPU column is the `readPixels` wait, good for comparisons only), charging during the 25-minute run. Before the run, by hand with `?debug=1`: CPU 3.5 to 4.9 ms a frame, yet 35 to 49 FPS with 1% lows of 15 to 27 and the governor at Q2 the whole time.
+
+| Scene (base) | FPS | 1% low | CPU ms | GPU~ ms | Draws | Quality Q0/1/2 % |
+|---|---|---|---|---|---|---|
+| calm (first run) | 60.1 | 55 | 3.5 | 34.1 | 116 | 100/0/0 |
+| ch1-boss | 40.6 | 28 | 3.5 | 43.2 | 102 | 0/0/100 |
+| ch2-convoy | 35.6 | 27 | 4.8 | 57.3 | 97 | 0/0/100 |
+| ch2-boss | 41.9 | 27 | 4.4 | 45.2 | 92 | 0/0/100 |
+| ch3-blackout | 39.4 | 28 | 4.5 | 55.3 | 87 | 0/0/100 |
+| ch3-frog | 38.5 | 28 | 5.0 | 54.0 | 98 | 0/0/100 |
+| ch4-arcade | 27.1 | 14 | 11.3 | 64.5 | 105 | 0/0/100 |
+| ch4-kevin | 35.5 | 27 | 5.9 | 58.3 | 113 | 0/0/100 |
+| misfire | 55.7 | 29 | 3.4 | 41.8 | 65 | 44/56/0 |
+| calm (repeated at the end) | 38.1 | 27 | 4.3 | 53.3 | 115 | 0/0/100 |
+
+What it showed:
+
+- **Not the CPU, not fill rate.** The game's CPU time stayed at 3 to 11 ms while frames took 25 to 37 ms; `scale=0.5` (a quarter of the pixels) changed nothing (-1% median).
+- **The vertex uploads.** `orphan=1` (re-specifying the buffer for each upload instead of overwriting it in place) took the GAME ZONE from 27 to 53 FPS and the GPU wait from 64 to 20 ms, and held calm at 60 FPS with the GPU wait at 5 ms instead of 34, in the runs between ones that dropped to 36-50. Removing whole layers helped in proportion to the batches they remove, not the pixels: `bg=0` +27%, `particles=0` +11%, `fx=0` +8%, all three together 60 FPS on the arcade. Each batch made the driver copy (or wait on) the shared vertex buffer, about 100 times a frame.
+- **The governor can't help:** it sat at Q2 everywhere and `governor=0` changed nothing, because its levers (particles, lights, filters) don't touch the uploads.
+- **Heat.** The calm scene ran at 60 FPS first and 38 FPS when repeated at the end (DRIFT -36%): the phone throttled while charging under that load, so later rows are pessimistic. Comparisons above are against neighbouring runs.
+- **Not it:** `css=smooth` (0%), the context variants (desync +11 FPS on calm but -5 on the arcade, lean +6 and -1: noise and heat).
+
+**The fix:** vertex uploads re-specify the buffer by default (`systems/RenderSwitches.ts`; `orphan=0` brings Phaser's path back). Headless it costs nothing (A/B at 4x: ch1-forest 28.3 vs 27.2 ms, ch4-arcade 30.1 vs 32.5, ch4-station 28.8 vs 32.8, within noise). The second phone report, with `orphan=0` as the comparison, goes here.
 
 ### `?debug=1` by hand
 
@@ -338,3 +365,15 @@ Every scenario is within budget, and the leak check is flat (48 EventBus listene
 **Physics steps.** Frames where Ben moves more than 12 px are now split into two physics steps (see `DECISIONS.md`). Only XLR8's dash and Upgrade's flow on slow frames do that; the A/B above includes it.
 
 **Bundle.** 502 KB of JavaScript compressed (brotli): Phaser 276 KB, the game 226 KB. Chapter 4 with Upgrade and the machines added about 32 KB, more than the earlier chapters' 23 KB (Upgrade's machine framework and Kevin's copies are new systems, not just content). Still under the 600 KB revisit line.
+
+## Quality pass check (after Chapter 4)
+
+The full `npm run bench` failed the mean CPU limit in most scenarios on this pass's machine (ch1-forest 29.0, ch4-arcade 31.3, ch4-station 32.6 ms at 4x against 26), but so does the build from before the pass on the same machine, so the machine is slower than the one the budget was set on (the "loaded machine" case above):
+
+| 4x, mean CPU ms | Before the pass (758d542) | After | After, `orphan=0` |
+|---|---|---|---|
+| ch1-forest | 27.1 | 28.3 | 27.2 |
+| ch4-arcade | 32.5 | 30.1 | 32.5 |
+| ch4-station | 29.5 | 28.8 | 32.8 |
+
+No regression outside noise. What changed on hot paths: vertex uploads re-specify the buffer (`orphan`), floating words rest at 1x or 2x, the combo count's pop moves in whole steps, the music skips steps after a stall, and the speech bubble's depth. None of them adds per-frame allocations or listeners.

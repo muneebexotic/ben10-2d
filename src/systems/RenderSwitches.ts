@@ -35,9 +35,10 @@ export function installRenderSwitches(game: Phaser.Game): void {
     if (perf.particles) drawEmitter.apply(this, args);
   };
 
-  // orphan=1: re-specify a vertex buffer for every upload (bufferData) instead of overwriting the
-  // front of a buffer earlier draws in the same frame still read (bufferSubData), which some mobile
-  // drivers answer by copying the whole buffer or stalling.
+  // Vertex uploads (on unless orphan=0): re-specify the buffer for every upload (bufferData) instead of
+  // overwriting the front of a buffer the frame's earlier draws still read (bufferSubData), which Mali
+  // drivers answer by copying the whole buffer or stalling. On a Mali-G78 this doubled the frame rate of
+  // the busiest scenes (the autobench, docs/PERFORMANCE.md).
   const wrappers = (Phaser.Renderer.WebGL as unknown as { Wrappers: { WebGLBufferWrapper: { prototype: BufferWrapper } } }).Wrappers;
   const proto = wrappers.WebGLBufferWrapper.prototype;
   const update = proto.update;

@@ -18,9 +18,9 @@ describe('perf switches', () => {
   });
 
   it('reads every bisect switch, alone or combined', () => {
-    const s = parseSwitches('?fx=0&particles=0&bg=0&scale=0.5&bodies=0&governor=0&orphan=1&css=smooth&audio=0');
-    expect(s).toEqual({ fx: false, particles: false, bg: false, scale: 0.5, bodies: false, governor: false, orphan: true, smoothCss: true, audio: false });
-    expect(switchLabel(s)).toBe('fx=0 particles=0 bg=0 scale=0.5 bodies=0 governor=0 orphan=1 css=smooth audio=0');
+    const s = parseSwitches('?fx=0&particles=0&bg=0&scale=0.5&bodies=0&governor=0&orphan=0&css=smooth&audio=0');
+    expect(s).toEqual({ fx: false, particles: false, bg: false, scale: 0.5, bodies: false, governor: false, orphan: false, smoothCss: true, audio: false });
+    expect(switchLabel(s)).toBe('fx=0 particles=0 bg=0 scale=0.5 bodies=0 governor=0 orphan=0 css=smooth audio=0');
     expect(parseSwitches('?bodies=1').bodies).toBe(true);
   });
 
