@@ -6,9 +6,17 @@ import { GLYPHS } from './glyphs';
  * dark outline. White fill so BitmapText tint recolours it while the outline stays dark.
  */
 export const FONT_KEY = 'pixel';
+/**
+ * The same font with smooth filtering, for text that has to be drawn at a fractional
+ * scale and hold still there (Chapter Select's side cards): it reads soft instead of
+ * dropping pixel rows. At whole scales it is identical to the crisp one.
+ */
+export const SOFT_FONT_KEY = 'pixel-soft';
 export const FONT_SIZE = 9;
 const GLYPH_H = 7;
 const OUTLINE = 0x0b0d17;
+/** Phaser.Textures.FilterMode.LINEAR, spelled out: a value import of Phaser here would load the engine in the unit tests. */
+const LINEAR_FILTER: Phaser.Textures.FilterMode = 0;
 
 
 
@@ -65,6 +73,12 @@ export function registerPixelFont(scene: Phaser.Scene): void {
     for (let gy = 0; gy < GLYPH_H; gy++) for (let gx = 0; gx < g.w; gx++) if (on(gx, gy)) fill(g.x + gx + 1, g.y + gy + 1, '#ffffff');
   }
   canvasTex.refresh();
+  const softTex = scene.textures.createCanvas(SOFT_FONT_KEY, texW, texH);
+  if (softTex) {
+    softTex.getContext().drawImage(canvasTex.getSourceImage() as HTMLCanvasElement, 0, 0);
+    softTex.refresh();
+    softTex.setFilter(LINEAR_FILTER);
+  }
 
   const glyphData: Record<number, unknown> = {};
   for (const g of layout) {
@@ -93,4 +107,5 @@ export function registerPixelFont(scene: Phaser.Scene): void {
 
   const data = { font: FONT_KEY, size: FONT_SIZE, lineHeight: cellH + 2, chars: glyphData };
   scene.cache.bitmapFont.add(FONT_KEY, { data, texture: FONT_KEY, frame: null });
+  if (softTex) scene.cache.bitmapFont.add(SOFT_FONT_KEY, { data: { ...data, font: SOFT_FONT_KEY }, texture: SOFT_FONT_KEY, frame: null });
 }

@@ -12,6 +12,7 @@ export function achievementIcon(icon: AchievementIcon): { key: string; frame: nu
   if (icon === 'smoothy') return { key: TEX.smoothy, frame: 0 };
   if (icon === 'card') return { key: TEX.cardIcon, frame: 1 };
   if (icon === 'boss') return { key: TEX.bossIcon, frame: 0 };
+  if (icon === 'heart') return { key: TEX.heart, frame: 0 };
   if (hasAlien(icon)) return { key: getAlien(icon).hudIcon, frame: 0 };
   return { key: TEX.achIcons, frame: 0 };
 }

@@ -15,7 +15,7 @@ export class SpeechBubble {
     // Room for the longest quip (the bubble is centred on Ben's head).
     this.bg = new BakedGraphics(scene, -320, -9, 640, 24);
     this.text = pixelText(scene, 0, 0, '', { originX: 0.5, originY: 0.5, color: PALETTE.ink });
-    this.container = scene.add.container(0, 0, [this.bg.image, this.text]).setDepth(DEPTH.worldUi).setVisible(false);
+    this.container = scene.add.container(0, 0, [this.bg.image, this.text]).setDepth(DEPTH.speech).setVisible(false);
   }
 
   show(message: string, durationMs = 1800, color: number = PALETTE.white): void {

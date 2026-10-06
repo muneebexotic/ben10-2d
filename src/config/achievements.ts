@@ -19,7 +19,7 @@ export type LifetimeCounter =
   | 'jokes'
   | 'takeovers';
 
-export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh';
+export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
 
 export interface AchievementDef {
   id: string;
@@ -47,9 +47,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'comedian', title: 'WRONG ALIEN, RIGHT TIME', text: 'FIND 10 MISFIRE JOKES', icon: 'laugh', counter: 'jokes', goal: 10 },
   { id: 'strike', title: 'STEE-RIKE!', text: 'BOWL OVER 3 ENEMIES WITH ONE THROW', icon: 'fourarms' },
   { id: 'full-omnitrix', title: 'FULL OMNITRIX', text: 'GET 5 FORMS INTO ONE COMBO', icon: 'omnitrix' },
-  { id: 'speed-demon', title: 'SPEED DEMON', text: "BEAT A CHAPTER'S PAR TIME", icon: 'xlr8' },
+  { id: 'speed-demon', title: 'SPEED DEMON', text: "BEAT A CHAPTER'S PAR TIME", icon: 'clock' },
   { id: 'untouchable', title: 'UNTOUCHABLE', text: 'BEAT A BOSS WITHOUT TAKING A HIT', icon: 'boss' },
-  { id: 'no-sweat', title: 'NO SWEAT', text: 'CLEAR A CHAPTER WITHOUT DYING', icon: 'clock' },
+  { id: 'no-sweat', title: 'NO SWEAT', text: 'CLEAR A CHAPTER WITHOUT DYING', icon: 'heart' },
   { id: 'hard-as-nails', title: 'HARD AS NAILS', text: 'CLEAR A CHAPTER ON HARD', icon: 'skull' },
   { id: 'act-1', title: 'THE SUMMER BEGINS', text: 'FINISH ACT 1', icon: 'omnitrix', secret: true },
   { id: 'omnitrix-master', title: 'OMNITRIX MASTER', text: 'S RANK A CHAPTER ON EASY, NORMAL AND HARD', icon: 'star' },

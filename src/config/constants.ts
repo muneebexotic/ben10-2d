@@ -51,6 +51,8 @@ export const DEPTH = {
   fx: 64,
   fxTop: 70,
   worldUi: 80,
+  /** Ben's quips: in front of other world labels (the dummy's DPS, damage pops) so a joke never reads through them. */
+  speech: 81,
 } as const;
 
 export const CAMERA = {

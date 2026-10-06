@@ -27,6 +27,8 @@ export const MENU = {
   irisMs: 320,
   /** Card focus tween. */
   focusMs: 160,
+  /** A focused menu card rises this many pixels (cards don't scale: a fractional scale blurs the pixel font). */
+  focusLift: 4,
   /** Chapter Select: card spacing and the size of neighbours. */
   chapterSpacing: 238,
   chapterSideScale: 0.8,

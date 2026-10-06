@@ -14,7 +14,7 @@ import { bindMuteKey } from '../systems/Settings';
 import { MenuBackdrop } from '../ui/menu/MenuBackdrop';
 import { enterMenu, isLeaving, leaveTo } from '../ui/menu/transition';
 import { backButton, drawPanel, menuHeader, MenuButton } from '../ui/menu/widgets';
-import { pixelText } from '../ui/text';
+import { boxed, pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 
@@ -104,6 +104,7 @@ export class DifficultyScene extends Phaser.Scene {
       else this.setFocus(i);
     });
     items.push(zone);
+    for (const it of items) if (it instanceof Phaser.GameObjects.BitmapText) boxed(it, -CARD_W / 2 + 3, -CARD_H / 2 + 2, CARD_W - 6, CARD_H - 4);
     const root = this.add.container(GAME_WIDTH / 2 + (i - 1) * GAP, CARD_Y, items);
     return { root, frame, id };
   }
@@ -124,9 +125,9 @@ export class DifficultyScene extends Phaser.Scene {
       g.clear();
       drawPanel(g, 0, 0, CARD_W, CARD_H, { fill: focused ? PALETTE.uiPanel : PALETTE.ink, fillAlpha: 0.92, stroke: focused ? d.color : PALETTE.uiPanelLight, radius: 7, bevel: true });
       if (focused) g.lineStyle(1, d.color, 0.35).strokeRoundedRect(-CARD_W / 2 - 3.5, -CARD_H / 2 - 3.5, CARD_W + 7, CARD_H + 7, 9);
-      const props = { scale: focused ? 1.05 : 0.95, alpha: focused ? 1 : 0.65 };
+      const props = { y: CARD_Y - (focused ? MENU.focusLift : 0), alpha: focused ? 1 : 0.65 };
       this.tweens.killTweensOf(card.root);
-      if (instant) card.root.setScale(props.scale).setAlpha(props.alpha);
+      if (instant) card.root.setY(props.y).setAlpha(props.alpha);
       else this.tweens.add({ targets: card.root, ...props, duration: MENU.focusMs, ease: 'Back.easeOut' });
     });
     const d = DIFFICULTY[this.cards[this.focus].id];

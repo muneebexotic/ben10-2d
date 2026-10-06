@@ -255,7 +255,9 @@ export class Fx {
       this.texts.push(t);
     }
     const label = t;
-    label.setText(text).setPosition(Math.round(x), Math.round(y)).setTint(color).setFontSize(FONT_SIZE * scale).setAlpha(1).setScale(1.6).setVisible(true);
+    // The pixel font only reads at whole-number sizes (1.4x turned WRECKED! into noise): words rest at 1x or 2x.
+    const size = scale > 1 ? 2 : 1;
+    label.setText(text).setPosition(Math.round(x), Math.round(y)).setTint(color).setFontSize(FONT_SIZE * size).setAlpha(1).setScale(1.6).setVisible(true);
     this.scene.tweens.add({ targets: label, scale: 1, duration: 140, ease: 'Back.easeOut' });
     this.scene.tweens.add({
       targets: label,

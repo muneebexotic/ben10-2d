@@ -14,6 +14,9 @@ const ROW_Y = 106;
 const ROW_H = 38;
 const JOKE_X = 200;
 const JOKE_W = 420;
+const JOKES_Y = 196;
+const JOKES_H = 206;
+const JOKES_BOTTOM = JOKES_Y + JOKES_H / 2;
 
 /**
  * JOKES FOUND: the misfire log. Every reaction line Ben can blurt out when the
@@ -47,7 +50,8 @@ export class JokesPage implements ExtrasPage {
       zone.on('pointerdown', () => this.select(i));
       items.push(bg, icon, name, count, zone);
     });
-    items.push(pixelText(scene, LIST_X, ROW_Y + 5 * ROW_H - 10, 'HEAR THEM ALL: TURN MISFIRES TO CHAOS IN TRAINING', { color: PALETTE.uiDim, maxWidth: LIST_W + 10 }));
+    // Under the jokes panel: the alien list grows with every chapter's new alien.
+    items.push(pixelText(scene, JOKE_X + JOKE_W / 2, JOKES_BOTTOM + 13, 'HEAR THEM ALL: TURN MISFIRES TO CHAOS IN TRAINING', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim }));
     this.root = scene.add.container(0, 0, items);
     this.select(0, true);
   }
@@ -73,7 +77,7 @@ export class JokesPage implements ExtrasPage {
     const scene = this.scene;
     this.list?.destroy();
     const g = scene.add.graphics();
-    drawPanel(g, JOKE_X + JOKE_W / 2, 196, JOKE_W, 206, { fill: PALETTE.ink, fillAlpha: 0.8, stroke: getAlien(gotId).theme.color, strokeAlpha: 0.6, radius: 6 });
+    drawPanel(g, JOKE_X + JOKE_W / 2, JOKES_Y, JOKE_W, JOKES_H, { fill: PALETTE.ink, fillAlpha: 0.8, stroke: getAlien(gotId).theme.color, strokeAlpha: 0.6, radius: 6 });
     const items: Phaser.GameObjects.GameObject[] = [g];
     const jokes = this.catalog.filter((j) => j.gotId === gotId);
     const step = Math.min(24, 196 / Math.max(1, jokes.length));

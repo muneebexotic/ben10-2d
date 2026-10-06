@@ -10,6 +10,8 @@ export interface ComboForm {
 }
 
 const ICON_GAP = 14;
+/** Counter height on screen (under the HUD's top-right timer and card count). */
+const TOP = 116;
 const TAG_LABELS = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!'];
 
 /**
@@ -30,7 +32,7 @@ export class ComboDisplay {
   constructor(private readonly scene: Phaser.Scene) {
     this.count = pixelText(scene, 0, 0, '0', { scale: 3, originX: 1, originY: 0.5, color: PALETTE.gold });
     this.label = pixelText(scene, 0, 14, 'HIT COMBO', { originX: 1, originY: 0.5, color: PALETTE.cream });
-    this.root = scene.add.container(GAME_WIDTH - 10, 116, [this.count, this.label]).setVisible(false);
+    this.root = scene.add.container(GAME_WIDTH - 10, TOP, [this.count, this.label]).setVisible(false);
   }
 
   set(count: number, now: number, forms: readonly ComboForm[]): void {
@@ -43,7 +45,7 @@ export class ComboDisplay {
     this.showIcons(forms);
     // A new combo can start while the last one is still fading out.
     this.scene.tweens.killTweensOf(this.root);
-    this.root.setVisible(true).setAlpha(1).setX(this.right - 10);
+    this.root.setVisible(true).setAlpha(1).setPosition(this.right - 10, TOP);
     this.pop = 1.6;
     this.hideAt = now + 2400;
   }
@@ -65,17 +67,18 @@ export class ComboDisplay {
   }
 
   hide(): void {
-    this.root.setVisible(false).setAlpha(1).setX(this.right - 10);
+    this.root.setVisible(false).setAlpha(1).setPosition(this.right - 10, TOP);
     this.showIcons([]);
   }
 
   drop(count: number): void {
     if (!this.root.visible) return;
     this.label.setText(`x${count} DONE`).setTint(PALETTE.cream);
+    // It sinks as it fades: the counter is right-aligned at the screen edge, so sliding right cut it off.
     this.scene.tweens.add({
       targets: this.root,
       alpha: 0,
-      x: this.root.x + 20,
+      y: TOP + 14,
       duration: 500,
       onComplete: () => this.hide(),
     });
@@ -84,7 +87,8 @@ export class ComboDisplay {
   update(dtMs: number, now: number): void {
     if (!this.root.visible) return;
     this.pop += (1 - this.pop) * Math.min(1, dtMs / 80);
-    this.count.setScale(this.pop * 1);
+    // The count is drawn at 3x: keep the pop on whole multiples of the pixel font (fractions garble it).
+    this.count.setScale(Math.round(this.pop * 3) / 3);
     if (now > this.hideAt && this.root.alpha === 1) this.root.setAlpha(0.5);
   }
 

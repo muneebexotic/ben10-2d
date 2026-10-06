@@ -24,7 +24,8 @@ import { ACT_COLORS, chapterArt } from '../ui/menu/chapterArt';
 import { MenuBackdrop } from '../ui/menu/MenuBackdrop';
 import { enterMenu, isLeaving, leaveTo } from '../ui/menu/transition';
 import { backButton, cornerButton, drawPanel, MenuButton } from '../ui/menu/widgets';
-import { pixelText } from '../ui/text';
+import { FONT_KEY, SOFT_FONT_KEY } from '../ui/PixelFont';
+import { boxed, pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import type { LevelStartData } from './LevelScene';
 import { SCENES } from './SceneKeys';
@@ -51,6 +52,8 @@ interface Card {
   root: Phaser.GameObjects.Container;
   frame: Phaser.GameObjects.Graphics;
   title: Phaser.GameObjects.BitmapText;
+  /** Every text on the card: side cards draw them in the soft font (they sit at a fractional scale). */
+  texts: Phaser.GameObjects.BitmapText[];
   /** Darkens side cards (alpha would let the silhouettes' rim light show through). */
   shade: Phaser.GameObjects.Graphics;
   /** S rank on every difficulty: a gold card. */
@@ -200,12 +203,21 @@ export class ChapterSelectScene extends Phaser.Scene {
       else this.setFocus(i);
     });
     items.push(zone);
+    for (const it of items) if (it instanceof Phaser.GameObjects.BitmapText) boxed(it, -CARD_W / 2 + 3, -CARD_H / 2 + 2, CARD_W - 6, CARD_H - 4);
     const root = this.add.container(GAME_WIDTH / 2, CARD_Y, items);
     if (master) {
       // A slow gold glint across the card.
       root.add(clippedSheen(this, -CARD_W / 2 + 3, -CARD_H / 2 + 3, CARD_W - 6, CARD_H - 6, { color: PALETTE.gold, alpha: 0.1, durationMs: 1600, repeatDelayMs: 2400, band: 0.12 }));
     }
-    return { info, state, root, frame, title, shade, master };
+    const texts: Phaser.GameObjects.BitmapText[] = [];
+    const collect = (list: Phaser.GameObjects.GameObject[]) => {
+      for (const it of list) {
+        if (it instanceof Phaser.GameObjects.BitmapText) texts.push(it);
+        else if (it instanceof Phaser.GameObjects.Container) collect(it.list);
+      }
+    };
+    collect(items);
+    return { info, state, root, frame, title, texts, shade, master };
   }
 
   /** Bests on the file's difficulty, a medal per difficulty, and the cards found. */
@@ -301,6 +313,7 @@ export class ChapterSelectScene extends Phaser.Scene {
         scale: focused ? 1 : MENU.chapterSideScale,
         alpha: Math.abs(offset) > 1 ? 0 : 1,
       };
+      for (const t of card.texts) if (t.font !== (focused ? FONT_KEY : SOFT_FONT_KEY)) t.setFont(focused ? FONT_KEY : SOFT_FONT_KEY);
       this.tweens.killTweensOf(card.shade);
       this.tweens.add({ targets: card.shade, alpha: focused ? 0 : MENU.chapterSideShade, duration: instant ? 0 : MENU.focusMs });
       card.root.setVisible(Math.abs(offset) <= 2);

@@ -14,7 +14,7 @@ import { bindMuteKey } from '../systems/Settings';
 import { MenuBackdrop } from '../ui/menu/MenuBackdrop';
 import { enterMenu, isLeaving, leaveTo } from '../ui/menu/transition';
 import { backButton, drawPanel, formatPlayTime, menuHeader, MenuButton } from '../ui/menu/widgets';
-import { pixelText } from '../ui/text';
+import { boxed, pixelText } from '../ui/text';
 import { COVER_W, COVER_X } from '../ui/view';
 import { MENU } from '../config/ui';
 import { TEX } from './preload/assetKeys';
@@ -141,6 +141,7 @@ export class FileSelectScene extends Phaser.Scene {
       else this.setFocus(slot);
     });
     items.push(zone);
+    for (const it of items) if (it instanceof Phaser.GameObjects.BitmapText) boxed(it, -CARD_W / 2 + 3, -CARD_H / 2 + 2, CARD_W - 6, CARD_H - 4);
     const root = this.add.container(cx, CARD_Y, items);
     return { root, frame, summary };
   }
@@ -161,9 +162,9 @@ export class FileSelectScene extends Phaser.Scene {
       const color = card.summary ? getDifficulty(card.summary.file.difficulty).color : PALETTE.omnitrix;
       drawPanel(g, 0, 0, CARD_W, CARD_H, { fill: focused ? PALETTE.uiPanel : PALETTE.ink, fillAlpha: 0.9, stroke: focused ? color : PALETTE.uiPanelLight, strokeAlpha: 1, radius: 7, bevel: true });
       if (focused) g.lineStyle(1, color, 0.35).strokeRoundedRect(-CARD_W / 2 - 3.5, -CARD_H / 2 - 3.5, CARD_W + 7, CARD_H + 7, 9);
-      const props = { scale: focused ? 1.04 : 0.96, alpha: focused ? 1 : 0.7 };
+      const props = { y: CARD_Y - (focused ? MENU.focusLift : 0), alpha: focused ? 1 : 0.7 };
       this.tweens.killTweensOf(card.root);
-      if (instant) card.root.setScale(props.scale).setAlpha(props.alpha);
+      if (instant) card.root.setY(props.y).setAlpha(props.alpha);
       else this.tweens.add({ targets: card.root, ...props, duration: MENU.focusMs, ease: 'Quad.easeOut' });
     });
     const has = this.cards[this.focus]?.summary !== null;
