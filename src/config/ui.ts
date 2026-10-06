@@ -42,3 +42,13 @@ export const GAMEOVER = {
   /** From this many deaths in one run, the tip suggests lowering the difficulty. */
   suggestEasierAfterDeaths: 4,
 } as const;
+
+/** The control hint bar at the bottom of the HUD. */
+export const PROMPT = {
+  /** Its row's bottom edge, up from the bottom of the screen. */
+  bottom: 43,
+  /** Clear space kept between the bar and the touch stick or buttons beside it. */
+  thumbGap: 6,
+  /** The first PRESS {T} TO TRANSFORM! draws at 2x and its box breathes by this much. */
+  bigPulse: 0.08,
+} as const;

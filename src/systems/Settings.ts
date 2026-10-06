@@ -4,6 +4,7 @@ import { saveSystem, type SettingsData } from './SaveSystem';
 import { launchParams } from './LaunchParams';
 import { perf } from './PerfSwitches';
 import { EventBus } from './EventBus';
+import { inputMode } from './InputMode';
 import { a11y, prefersReducedMotion, resolveA11y, setA11y } from './Accessibility';
 
 /** Applies the saved settings (or ?mute=1) once at boot, and follows OS reduced-motion changes. */
@@ -24,6 +25,12 @@ function refreshA11y(): void {
 
 export function getSettings(): SettingsData {
   return saveSystem.load().settings;
+}
+
+/** Whether the on-screen controls are showing: ON, or AUTO while the player is using touch. */
+export function touchControlsOn(): boolean {
+  const mode = getSettings().touchControls;
+  return mode === 'on' || (mode === 'auto' && inputMode.current === 'touch');
 }
 
 /** Saves a settings change and pushes it to every live system. */

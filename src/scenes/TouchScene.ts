@@ -3,7 +3,7 @@ import { TOUCH } from '../config/touch';
 import { PALETTE } from '../config/palette';
 import { EventBus } from '../systems/EventBus';
 import { inputMode } from '../systems/InputMode';
-import { getSettings } from '../systems/Settings';
+import { touchControlsOn } from '../systems/Settings';
 import { pad, stickDirections, type PadButton } from '../systems/VirtualPad';
 import { TouchButton, TouchDial, TouchStick } from '../ui/TouchControls';
 import { TEX } from './preload/assetKeys';
@@ -122,8 +122,7 @@ export class TouchScene extends Phaser.Scene {
   }
 
   private get enabled(): boolean {
-    const mode = getSettings().touchControls;
-    return mode === 'on' || (mode === 'auto' && inputMode.current === 'touch');
+    return touchControlsOn();
   }
 
   /** ATTACK and SPECIAL show what they do in the current form (fist and roll, fireball and burst...). */
