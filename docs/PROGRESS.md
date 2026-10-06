@@ -6,7 +6,9 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 **Act 2 has begun: Milestone 4, part 3 built Chapter 4, Kevin 11.** Four story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11), six aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly, Upgrade), four bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK, KEVIN 11), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. The Act 2 plan (Chapters 4 to 6) is in [GAME_DESIGN.md](GAME_DESIGN.md); Chapter 4 is described in full in [history/milestone-4-part-3-chapter-4.md](history/milestone-4-part-3-chapter-4.md).
 
-**This session:** Upgrade and the machine framework (turrets, cabinets, shutters, lifts, carts, coils, takeovers), Kevin from buddy to rival (the meet, the buddy AI, the LASER LAIR, the drain, the turn with stolen DNA, the hunt), the KEVIN 11 boss (reliance-driven copies, coils, the hybrid), SUMO SLAMMERS, three music tracks, Chapter 4's city art and robots, one Upgrade secret in each Act 1 chapter, and Chapter Select for Act 2. The scripted playtests also caught two bugs older than Chapter 4, both fixed: on slow frames (about 30 fps) XLR8's dash could pass through cracked walls, shutters and laser walls in every chapter, and the dialogue skip hint covered the touch JUMP button during boss defeat speeches. `npm run typecheck`, `npm run build`, `npm test` and `npm run bench` all pass.
+**This session: a quality pass, no new content.** An on-device benchmark (`?autobench=1`) that plays every heavy scene on the phone with bisect switches and ends on a report to copy, and a bug hunt across Chapters 1 to 4 with permanent tooling (`npm run qa`: screenshots and text checks at three screen sizes plus fuzz runs at every checkpoint; a string lint and fit tests in `npm test`). 26 bugs found and fixed (one critical: quitting during the misfire gag froze the game), two design questions open: all in [BUGS.md](BUGS.md), the record in [history/quality-pass-after-chapter-4.md](history/quality-pass-after-chapter-4.md). The phone's FPS fix waits on the autobench report from a real phone. `npm run typecheck`, `npm run build`, `npm test` and `npm run bench` all pass.
+
+**Before that (Chapter 4):** Upgrade and the machine framework, Kevin from buddy to rival, the KEVIN 11 boss, SUMO SLAMMERS, three music tracks, Chapter 4's city art and robots, and one Upgrade secret in each Act 1 chapter.
 
 Next, when asked: Chapter 5 (Bounty Hunters) or Chapter 6 (Magic), both planned in GAME_DESIGN.md. Still deferred: Training trials, more Chapter 1 revisits, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
 
@@ -19,6 +21,7 @@ npm run build      # typecheck + production build into dist/
 npm run typecheck
 npm test
 npm run bench      # performance benchmark against the budget (docs/PERFORMANCE.md)
+npm run qa         # screenshot sweep and text checks at 3 screen sizes (add -- --fuzz for random play at every checkpoint)
 ```
 
 URL switches for playtesting:
@@ -33,6 +36,7 @@ URL switches for playtesting:
 | `?aliens=fourarms,xlr8` | Adds aliens to the Chapter 1 dial (a practice run). With Four Arms the vault card spawns and counts |
 | `?mute=1` | Start muted |
 | `?debug=1` | Physics bodies plus a readout: position, quality level (`Q0` best to `Q2`), and the frame meter (CPU per frame, FPS, 1% low, heap, render targets). What to look for on a phone is in `docs/PERFORMANCE.md` |
+| `?autobench=1` | The on-device benchmark: plays every heavy scene by itself and ends on a report to copy (`docs/PERFORMANCE.md`). `?autobench=report` shows the last report |
 | `?gallery=1&per=12&page=0` | Every generated texture, for reviewing or replacing art. `?gallery=1&key=fourarms&scale=6&from=0` shows one sheet's frames large |
 | `?at=<tile x>` | Dev builds only: spawn Ben anywhere with the watch |
 | `?god=1` | Dev and bench builds only: Ben can't take damage from hits |
@@ -72,11 +76,11 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 
 - **Not tuned by hand.** Difficulty was tuned by reasoning, scripted playtests and a reachability test, not by human players. Boss HP (120), drone counts and the jammer ravine may need tuning after real playtests. All numbers are in `src/config/`.
 - **Touch controls are untested on real hardware.** They were tested with emulated phones and multi-touch in headless Chromium. Button sizes and positions live in `config/touch.ts`.
-- **Performance is measured in headless Chromium, not on a real phone yet.** Headless Chromium draws WebGL in software, so its FPS means nothing (the frame-rate governor drops to its lowest level there); the budget is CPU time per frame instead (`docs/PERFORMANCE.md`). The game hasn't been checked on a real mid-range Android GPU or a 120 Hz screen: the steps are in `docs/PERFORMANCE.md`.
+- **Phones run below their refresh rate with CPU to spare.** On the owner's Android phone CPU per frame is 3.5 to 4.9 ms, yet FPS is 35 to 49 with the governor at Q2: the time goes to the GPU, compositor or browser, which headless Chromium can't measure. `?autobench=1` measures it on the phone; the fix follows its report.
 - **Boot generates all art in code:** about 3 s from a cold start to the title screen at 4x CPU throttle, about 1.3 s of it a single frozen frame on the loading bar. It grows a little with every chapter's art; options are in `docs/PERFORMANCE.md`.
 - **iOS Safari can't go fullscreen** or lock orientation from a web page; the game still fits the screen with the browser bars visible. Adding it to the home screen (web manifest) gives a fullscreen landscape launch.
 - **Phones wider than 21.6:9 still get thin side bars** (the view stops growing at 864 px wide so level design stays readable).
-- **Practice runs still show a rank** on Chapter Complete (it isn't saved).
+- **Practice runs still show a rank** on Chapter Complete (it isn't saved). Waiting on the owner's call (BUGS.md D2).
 - **Settings' difficulty details line** is long; on the smallest phones it reads small.
 - **Zoom shimmer.** The camera zoom punch on transform briefly shows pixel shimmer, because `pixelArt` rendering doesn't zoom by integer steps.
 - **No gamepad support yet** (deferred).
