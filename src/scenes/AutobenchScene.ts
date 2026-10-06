@@ -34,6 +34,8 @@ interface SavedState {
   warnings: string[];
   pages: PageInfo[];
   quick: boolean;
+  /** The build that started the run: a deploy between page reloads would mix two builds in one report. */
+  build?: string;
 }
 
 type Phase = 'menu' | 'between' | 'loading' | 'warmup' | 'record' | 'gpuprobe' | 'done';
@@ -245,6 +247,10 @@ export class AutobenchScene extends Phaser.Scene {
     this.results = saved.results;
     this.device = saved.device;
     this.warnings = saved.warnings;
+    if (saved.build !== __BUILD__) {
+      const note = `GAME UPDATED MID-RUN (BUILD ${saved.build ?? 'OLDER'} TO ${__BUILD__}): RUN AGAIN FOR CLEAN NUMBERS`;
+      if (!this.warnings.includes(note)) this.warnings.push(note);
+    }
     this.pages = saved.pages;
     this.quick = saved.quick;
     this.t = timing(saved.quick);
@@ -425,6 +431,7 @@ export class AutobenchScene extends Phaser.Scene {
       warnings: this.warnings,
       pages: this.pages,
       quick: this.quick,
+      build: __BUILD__,
     };
     try {
       sessionStorage.setItem(STATE_KEY, JSON.stringify(state));
