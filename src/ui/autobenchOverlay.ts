@@ -49,14 +49,36 @@ function button(text: string, cls: string, onTap: () => void): HTMLButtonElement
   return b;
 }
 
+/** Open overlays. In fullscreen only the fullscreen element (and what's inside it) is drawn. */
+const open = new Set<HTMLDivElement>();
+let following = false;
+
+/**
+ * Keeps every open overlay inside whatever is drawn. Phaser's fullscreen
+ * element is a wrapper it creates and deletes on exit: an overlay left in it
+ * vanished with it (the end report, shown just as the run leaves fullscreen).
+ */
+function place(): void {
+  for (const o of open) (document.fullscreenElement ?? document.body).appendChild(o);
+}
+
 function overlay(): HTMLDivElement {
   ensureStyle();
   const o = el('div', 'ab-overlay');
   // Keep taps here from reaching the game's own listeners.
   for (const type of ['pointerdown', 'touchstart', 'keydown']) o.addEventListener(type, (e) => e.stopPropagation());
-  // In fullscreen only the fullscreen element (and what's inside it) is drawn.
-  (document.fullscreenElement ?? document.body).appendChild(o);
+  if (!following) {
+    following = true;
+    document.addEventListener('fullscreenchange', place);
+  }
+  open.add(o);
+  place();
   return o;
+}
+
+function closeOverlay(o: HTMLDivElement): void {
+  open.delete(o);
+  o.remove();
 }
 
 export interface StartOverlay {
@@ -89,7 +111,7 @@ export function showStartOverlay(opts: {
       info.textContent = lines.join('  |  ');
       warn.textContent = warnings.length ? `WARNING: ${warnings.join('  ')}` : '';
     },
-    close: () => o.remove(),
+    close: () => closeOverlay(o),
   };
 }
 
@@ -106,7 +128,7 @@ export function showContinueOverlay(title: string, seconds: number, onGo: (tappe
     if (done) return;
     done = true;
     window.clearInterval(timer);
-    o.remove();
+    closeOverlay(o);
     onGo(tapped);
   };
   const tick = () => {
