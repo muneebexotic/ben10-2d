@@ -22,6 +22,8 @@ export class Cabinet implements Machine {
   private readonly glow: Phaser.GameObjects.Image;
   private state: 'ready' | 'booting' | 'spent' = 'ready';
   private t = 0;
+  /** GAME OVER went off. It has to latch: its hit-stop freezes `t`, so a check on `t` alone fires again every frozen frame. */
+  private fired = false;
   private dir: 1 | -1 = 1;
   private readonly variant: number;
   holding = false;
@@ -57,6 +59,7 @@ export class Cabinet implements Machine {
     this.state = 'booting';
     this.holding = true;
     this.t = 0;
+    this.fired = false;
     this.dir = facing;
     this.sprite.stop();
     playSfx('arcadeBoot', 0.9);
@@ -79,10 +82,10 @@ export class Cabinet implements Machine {
     }
     if (this.state !== 'booting') return;
     this.t += dtMs;
-    // Booting: the screen flickers through colours.
-    this.sprite.setFrame((Math.floor(this.t / 50) % 4) * 2);
+    // Booting: the screen flickers through colours until GAME OVER kills it.
+    if (!this.fired) this.sprite.setFrame((Math.floor(this.t / 50) % 4) * 2);
     this.d.lighting.add(this.anchorX, this.anchorY - 26, 30 + this.t * 0.1, PALETTE.upgrade, 0.9);
-    if (this.t >= K.bootMs && this.sprite.frame.name !== String(CABINET_SPENT_FRAME)) this.gameOver();
+    if (this.t >= K.bootMs && !this.fired) this.gameOver();
     if (this.t >= K.releaseMs) {
       this.state = 'spent';
       this.holding = false;
@@ -100,6 +103,7 @@ export class Cabinet implements Machine {
   }
 
   private gameOver(): void {
+    this.fired = true;
     const x = this.anchorX + this.dir * K.blastReach;
     const y = this.anchorY - 24;
     this.d.blast(x, y, K.blastRadius, { damage: K.damage, kind: 'tech', x: this.anchorX, y, knockback: K.knockback, stunMs: K.stunMs });
