@@ -174,7 +174,7 @@ export class ActEndScene extends Phaser.Scene {
     for (const [i, cab] of this.cabinets.entries()) {
       const deadAt = 0.15 + i * 0.17;
       if (k >= deadAt) {
-        if (cab.frame.name !== '1') {
+        if (String(cab.frame.name) !== '1') {
           cab.setFrame(1);
           playSfx('lightClunk', 0.6, 1.2 - i * 0.05);
         }

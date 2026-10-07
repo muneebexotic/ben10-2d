@@ -52,7 +52,7 @@ export class HealthDisplay {
       const v = hp - i;
       const frame = v >= 1 ? HEART_FRAMES.full : v >= 0.5 ? HEART_FRAMES.half : HEART_FRAMES.empty;
       const heart = this.hearts[i];
-      if (heart.frame.name !== String(frame) && delta > 0 && frame !== HEART_FRAMES.empty) {
+      if (String(heart.frame.name) !== String(frame) && delta > 0 && frame !== HEART_FRAMES.empty) {
         heart.setScale(1.8);
         this.scene.tweens.add({ targets: heart, scale: 1, duration: 300, ease: 'Back.easeOut' });
       }
