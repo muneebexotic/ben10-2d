@@ -137,7 +137,8 @@ export class Hauler implements Damageable {
   }
 
   takeHit(hit: Hit): HitResult {
-    if (this.state !== 'cruise') return 'none';
+    // Melee doesn't ask `accepts` first (blocked hits give feedback), so only a smash counts as a bullseye.
+    if (this.state !== 'cruise' || !this.accepts(hit.kind)) return 'none';
     this.bullseyes++;
     this.flashLeft = 120;
     this.swerve = 10;

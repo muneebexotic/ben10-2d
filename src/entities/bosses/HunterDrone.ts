@@ -101,6 +101,8 @@ export class HunterDrone implements ArenaBoss {
   private joltX = 0;
   private joltY = 0;
   private explodeTimer = 0;
+  /** The phase-2 armour blew off (latched: the plates stay visible until their 900 ms tween ends). */
+  private armourOff = false;
 
   private readonly hull: Phaser.GameObjects.Image;
   private readonly plates: Phaser.GameObjects.Image[];
@@ -307,7 +309,8 @@ export class HunterDrone implements ArenaBoss {
     this.setTarget(cx, this.hoverY - 10, 2);
     this.eye = blinkOn(this.stateT, 90) ? 'vulnerable' : 'charge';
     this.shake = 3;
-    if (this.stateT > 700 && this.plates[0].visible) {
+    if (this.stateT > 700 && !this.armourOff) {
+      this.armourOff = true;
       // Armour blows off: phase 2 is faster and angrier.
       for (const [i, plate] of this.plates.entries()) {
         const dir = i === 0 ? -1 : i === 1 ? 1 : 0;

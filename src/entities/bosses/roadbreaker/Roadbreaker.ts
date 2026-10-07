@@ -96,6 +96,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
 
   private state: RbState = 'intro';
   private stateT = 0;
+  /** A state's one-off cue (the roar after the intro landing, the roar as the robot finishes) has played. */
+  private cued = false;
   private attack: RbAttackState | null = null;
   private bag: RbAttackKind[] = [];
   private sinceKey = 0;
@@ -207,6 +209,7 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
   private enter(state: RbState): void {
     this.state = state;
     this.stateT = 0;
+    this.cued = false;
   }
 
   // ------------------------------------------------------------ Damageable / Hazard
@@ -472,7 +475,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
     }
     this.revving = this.stateT > LAND + 500;
     this.facing = this.w.player.x < this.x ? -1 : 1;
-    if (this.stateT > LAND + 500 && this.stateT < LAND + 560) {
+    if (this.stateT > LAND + 500 && !this.cued) {
+      this.cued = true;
       playSfx('roar', 0.9);
       playSfx(horn, 1, 0.6);
     }
@@ -673,7 +677,8 @@ export class Roadbreaker implements ArenaBoss, Liftable, PartOwner {
           playSfx('clamp', 0.8, 1 + i * 0.15);
         }
       });
-      if (t > 1950 && t < 2010) {
+      if (t > 1950 && !this.cued) {
+        this.cued = true;
         playSfx('roar', 1, 0.8);
         fx.ring(this.x, this.torsoTop + 6, PALETTE.enemy, 90, 500);
       }
