@@ -238,7 +238,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
         }
       },
     });
-    pixelText(this, x, y + 52, RANK_LINE[this.rank], { originX: 0.5, originY: 0, color: PALETTE.cream, maxWidth: 70, align: 'center' });
+    pixelText(this, x, y + 52, RANK_LINE[this.rank], { originX: 0.5, originY: 0, color: PALETTE.cream, maxWidth: 76, align: 'center' });
     if (this.outcome.newBestRank && this.outcome.best.clears > 1) {
       pixelText(this, x, y - 50, 'NEW BEST!', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
     }

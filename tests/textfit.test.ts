@@ -67,6 +67,22 @@ describe('text fits its box', () => {
     }
   });
 
+  it('Chapter Complete rank lines wrap without a stranded word', () => {
+    const src = SOURCES['../src/scenes/ChapterCompleteScene.ts'];
+    const start = src.indexOf('const RANK_LINE');
+    const lines = [...src.slice(start, src.indexOf('};', start)).matchAll(/'([^']+)'/g)].map((m) => m[1]);
+    const maxWidth = Number(/RANK_LINE\[this\.rank\][^\n]*maxWidth: (\d+)/.exec(src)?.[1]);
+    expect(lines.length).toBe(5);
+    expect(maxWidth).toBeGreaterThan(0);
+    for (const text of lines) {
+      const wrapped = wrap(text, maxWidth);
+      expect(wrapped.length, text).toBeLessThanOrEqual(3);
+      // "NOT BAD FOR / A / 10-YEAR-OLD." read badly.
+      const stranded = wrapped.filter((l) => wrapped.length > 1 && !l.includes(' ') && l.length <= 4);
+      expect(stranded, text).toEqual([]);
+    }
+  });
+
   it('control labels are short enough for one-line prompts on the narrowest screen', () => {
     const worst = 'WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +2S';
     for (const kind of ['keyboard', 'touch'] as const) expect(width(formatControls(worst, kind))).toBeLessThan(GAME_WIDTH - 40);
