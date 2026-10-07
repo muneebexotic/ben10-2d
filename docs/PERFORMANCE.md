@@ -99,7 +99,7 @@ The report has the device (user agent, devicePixelRatio, screen, measured refres
 | `JNK%` | Frames over 1.5x the median gap (visible stutter) |
 | `Q0/1/2%` | Time at each quality level |
 
-Then the median effect of each switch against the same scene's base run, the context variants against a freshly loaded default page, and the drift check. Flags on a row: `ended` (the level finished during the run), `died`, `interrupted` (the tab was hidden or paused twice), `nosound`.
+Then the median effect of each switch against the same scene's base run, the context variants against a freshly loaded default page, and the drift check. Flags on a row: `ended` (the level finished during the run), `died`, `interrupted` (the tab was hidden or paused twice), `nosound`, `frozen` (gameplay sat in one hit-stop for over 1.5 s: the row measured a still scene, like the GAME ZONE's before BUGS.md L3).
 
 It warns about a screen running at 30 Hz (battery saver), a limited refresh rate, low battery off the charger, an in-app browser, Data Saver, not being fullscreen and page zoom.
 
@@ -152,7 +152,30 @@ What it showed:
 - **Heat.** The calm scene ran at 60 FPS first and 38 FPS when repeated at the end (DRIFT -36%): the phone throttled while charging under that load, so later rows are pessimistic. Comparisons above are against neighbouring runs.
 - **Not it:** `css=smooth` (0%), the context variants (desync +11 FPS on calm but -5 on the arcade, lean +6 and -1: noise and heat).
 
-**The fix:** vertex uploads re-specify the buffer by default (`systems/RenderSwitches.ts`; `orphan=0` brings Phaser's path back). Headless it costs nothing (A/B at 4x: ch1-forest 28.3 vs 27.2 ms, ch4-arcade 30.1 vs 32.5, ch4-station 28.8 vs 32.8, within noise). The second phone report, with `orphan=0` as the comparison, goes here.
+**The fix:** vertex uploads re-specify the buffer by default (`systems/RenderSwitches.ts`; `orphan=0` brings Phaser's path back). Headless it costs nothing (A/B at 4x: ch1-forest 28.3 vs 27.2 ms, ch4-arcade 30.1 vs 32.5, ch4-station 28.8 vs 32.8, within noise). The second phone report is next.
+
+### The second phone report (build 564135d)
+
+The same phone, 46% battery and charging, with the fix on by default. Base runs, before (the first report, Phaser's uploads) and after:
+
+| Scene (base) | FPS | 1% low | CPU ms | GPU~ ms | Quality Q0 % |
+|---|---|---|---|---|---|
+| calm (first run) | 60.1 → **60.1** | 55 → **56** | 3.5 → 5.6 | 34.1 → **5.5** | 100 → **100** |
+| ch1-boss | 40.6 → **60.1** | 28 → **55** | 3.5 → 5.1 | 43.2 → **4.6** | 0 → **100** |
+| ch2-convoy | 35.6 → **60.1** | 27 → **56** | 4.8 → 5.3 | 57.3 → **6.1** | 0 → **100** |
+| ch2-boss | 41.9 → **60.1** | 27 → **55** | 4.4 → 8.1 | 45.2 → **9.6** | 0 → **100** |
+| ch3-blackout | 39.4 → **60.0** | 28 → **56** | 4.5 → 5.9 | 55.3 → **5.3** | 0 → **100** |
+| ch3-frog | 38.5 → **60.1** | 28 → **52** | 5.0 → 7.9 | 54.0 → **8.3** | 0 → **100** |
+| ch4-kevin | 35.5 → **60.0** | 27 → **56** | 5.9 → 7.4 | 58.3 → **5.2** | 0 → **100** |
+| misfire | 55.7 → **60.1** | 29 → **56** | 3.4 → 4.2 | 41.8 → **4.7** | 44 → **100** |
+| calm (repeated at the end) | 38.1 → **60.0** | 27 → **56** | 4.3 → 5.6 | 53.3 → **5.8** | 0 → **100** |
+| ch4-arcade | 27.1 → 60.0 | 14 → 58 | 11.3 → 12.0 | 64.5 → 14.9 | 0 → 100 (frozen: see below) |
+
+- **The goal is met in every scene it measured:** FPS at the refresh rate in every base run (60.0 to 60.1), 1% lows of 52 to 58 against the 51 asked for, and Q0 the whole time. `orphan=0` in the same report puts Phaser's path back: the calm scene's GPU wait goes from 5.5 to 34.3 ms, and the GAME ZONE drops to 57 FPS with a 1% low of 30 and the governor stepping down.
+- **No heat drift this time:** the calm scene ran 60.1 FPS first and 60.0 when repeated at the end of the run (it fell from 60 to 38 in the first report).
+- **CPU reads higher than before** (5 to 8 ms against 3.5 to 5) because the phone now runs at Q0 instead of Q2 (full particles, lights and filters). It is well under the 16.7 ms a 60 Hz frame allows.
+- **The bisect switches no longer move FPS** (every run at the refresh rate), and their GPU-wait medians are within 1 ms of base: there is nothing left on this phone for them to find.
+- **The GAME ZONE was frozen** in every one of its runs, in both reports: the first arcade cabinet the scripted player merged into fired GAME OVER on every frame and held the world in hit-stop for good (BUGS.md L3, fixed after this report). Its pixels piled up instead of fading, which is the 1.2 to 2.0 MB of vertex data a frame (every other scene: 0.1 to 0.2 MB) and why `particles=0` halved its CPU. Its rows measure a frozen room full of particles, not the arcade. With the fix, headless, the real GAME ZONE costs 32 to 35 ms at 4x (34.8, 32.0, 34.2; the frozen one measured 30 to 32), in line with Chapter 4's station; a profile shows no hot spot of the game's own. Its real numbers on the phone need one more run: `?autobench=1&only=ch4-arcade` (about 6 minutes).
 
 ### `?debug=1` by hand
 
@@ -376,4 +399,4 @@ The full `npm run bench` failed the mean CPU limit in most scenarios on this pas
 | ch4-arcade | 32.5 | 30.1 | 32.5 |
 | ch4-station | 29.5 | 28.8 | 32.8 |
 
-No regression outside noise. What changed on hot paths: vertex uploads re-specify the buffer (`orphan`), floating words rest at 1x or 2x, the combo count's pop moves in whole steps, the music skips steps after a stall, and the speech bubble's depth. None of them adds per-frame allocations or listeners.
+The ch4-arcade rows above were measured on a frozen GAME ZONE (BUGS.md L3), before and after alike; with L3 fixed it measures 32 to 35 ms, because the room now actually runs. No regression outside noise. What changed on hot paths: vertex uploads re-specify the buffer (`orphan`), floating words rest at 1x or 2x, the combo count's pop moves in whole steps, the music skips steps after a stall, and the speech bubble's depth. None of them adds per-frame allocations or listeners.

@@ -6,7 +6,7 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 **Act 2 has begun: Milestone 4, part 3 built Chapter 4, Kevin 11.** Four story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11), six aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly, Upgrade), four bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK, KEVIN 11), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. The Act 2 plan (Chapters 4 to 6) is in [GAME_DESIGN.md](GAME_DESIGN.md); Chapter 4 is described in full in [history/milestone-4-part-3-chapter-4.md](history/milestone-4-part-3-chapter-4.md).
 
-**This session: a quality pass, no new content.** An on-device benchmark (`?autobench=1`) that plays every heavy scene on the phone with bisect switches and ends on a report to copy, and a bug hunt across Chapters 1 to 4 with permanent tooling (`npm run qa`: screenshots and text checks at three screen sizes plus fuzz runs at every checkpoint; a string lint and fit tests in `npm test`). 26 bugs found and fixed (one critical: quitting during the misfire gag froze the game), two design questions open: all in [BUGS.md](BUGS.md), the record in [history/quality-pass-after-chapter-4.md](history/quality-pass-after-chapter-4.md). The phone's FPS fix waits on the autobench report from a real phone. `npm run typecheck`, `npm run build`, `npm test` and `npm run bench` all pass.
+**This session: a quality pass, no new content.** An on-device benchmark (`?autobench=1`) that plays every heavy scene on the phone with bisect switches and ends on a report to copy, and a bug hunt across Chapters 1 to 4 with permanent tooling (`npm run qa`: screenshots and text checks at three screen sizes plus fuzz runs at every checkpoint; a string lint and fit tests in `npm test`). 34 bugs found, 33 fixed and one minor deferred (two critical: quitting during the misfire gag froze the game, and the first arcade cabinet Upgrade used froze the GAME ZONE for good), two design questions open: all in [BUGS.md](BUGS.md), the record in [history/quality-pass-after-chapter-4.md](history/quality-pass-after-chapter-4.md). The phone fix (vertex uploads re-specify their buffer) took every measured scene on the owner's phone to 60 FPS with 1% lows of 52 to 58 at Q0; the GAME ZONE was frozen by the cabinet bug in both phone runs and needs one more (`?autobench=1&only=ch4-arcade`). `npm run typecheck`, `npm run build` and `npm test` pass; `npm run bench` shows no regression but misses its CPU limits on this session's slower machine, as the build before the pass does too (`docs/PERFORMANCE.md`).
 
 **Before that (Chapter 4):** Upgrade and the machine framework, Kevin from buddy to rival, the KEVIN 11 boss, SUMO SLAMMERS, three music tracks, Chapter 4's city art and robots, and one Upgrade secret in each Act 1 chapter.
 
@@ -21,7 +21,7 @@ npm run build      # typecheck + production build into dist/
 npm run typecheck
 npm test
 npm run bench      # performance benchmark against the budget (docs/PERFORMANCE.md)
-npm run qa         # screenshot sweep and text checks at 3 screen sizes (add -- --fuzz for random play at every checkpoint)
+npm run qa         # screenshot sweep and text checks at 3 screen sizes (add -- --fuzz for random play at every checkpoint and every boss fight)
 ```
 
 URL switches for playtesting:
@@ -76,7 +76,8 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 
 - **Not tuned by hand.** Difficulty was tuned by reasoning, scripted playtests and a reachability test, not by human players. Boss HP (120), drone counts and the jammer ravine may need tuning after real playtests. All numbers are in `src/config/`.
 - **Touch controls are untested on real hardware.** They were tested with emulated phones and multi-touch in headless Chromium. Button sizes and positions live in `config/touch.ts`.
-- **Phones run below their refresh rate with CPU to spare.** On the owner's Android phone CPU per frame is 3.5 to 4.9 ms, yet FPS is 35 to 49 with the governor at Q2: the time goes to the GPU, compositor or browser, which headless Chromium can't measure. `?autobench=1` measures it on the phone; the fix follows its report.
+- **The GAME ZONE's phone numbers are still to come.** Every other heavy scene runs at 60 FPS and Q0 on the owner's phone (Mali-G78); the arcade was frozen by the cabinet bug in both autobench runs, so `?autobench=1&only=ch4-arcade` is the one left to read. Other phones (Adreno, PowerVR, iOS) haven't been measured.
+- **A blocked punch thunks a few times** (BUGS.md T12, deferred).
 - **Boot generates all art in code:** about 3 s from a cold start to the title screen at 4x CPU throttle, about 1.3 s of it a single frozen frame on the loading bar. It grows a little with every chapter's art; options are in `docs/PERFORMANCE.md`.
 - **iOS Safari can't go fullscreen** or lock orientation from a web page; the game still fits the screen with the browser bars visible. Adding it to the home screen (web manifest) gives a fullscreen landscape launch.
 - **Phones wider than 21.6:9 still get thin side bars** (the view stops growing at 864 px wide so level design stays readable).
