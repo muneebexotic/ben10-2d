@@ -8,9 +8,10 @@
 //   npm run qa                         sweep + HUD gauntlet at desktop, 20:9 phone, small 16:9 phone
 //   npm run qa -- --sizes=phone        one size
 //   npm run qa -- --fuzz               also fuzz every checkpoint (random inputs, aliens, pauses, timeouts)
+//                                      and knock every boss through its phases (frozen world, stacked drops)
 //   npm run qa -- --fuzz --only-fuzz --seconds=25 --levels=ch4,training   (--levels limits the sweep too)
 //   npm run qa -- --no-build           reuse the last QA build
-//   npm run qa -- --parts=menus        only some of menus,levels,hud
+//   npm run qa -- --parts=menus        only some of menus,levels,hud (bosses: only the boss pass)
 //   npm run qa -- --out=<dir>          results somewhere else (run sizes in parallel)
 //   npm run qa -- --dist=<dir>         build into (or serve) another directory than .qa-dist
 //
@@ -355,12 +356,29 @@ async function hudGauntlet(s) {
 
 // ------------------------------------------------------------------ fuzz
 
+/** Tracks the longest unbroken hit-stop (gameplay frozen while the Level runs). Real ones last a few frames. */
+async function installFreezeWatch(page) {
+  await page.evaluate(() => {
+    const w = (window.__freezeWatch = { run: 0, max: 0, last: performance.now() });
+    const tick = (now) => {
+      const lvl = window.__level;
+      if (lvl?.sys?.isActive() && lvl.time2?.frozen) w.run += now - w.last;
+      else w.run = 0;
+      w.max = Math.max(w.max, w.run);
+      w.last = now;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
 /** Random play at a checkpoint: inputs, dial picks, swaps, pauses, tab hides, quits and restarts, alien timeouts. */
 async function fuzzCheckpoint(s, level, cp, seconds, seed) {
   const name = `fuzz-${level}-${cp ?? 'start'}`;
   await s.goto(`level=${level}${cp ? `&start=${cp}` : ''}&mute=1${level === 'training' ? '&training=1' : ''}`, name);
   await s.waitScene('Level');
   await s.skip(5);
+  await installFreezeWatch(s.page);
   let rnd = seed;
   const rand = () => ((rnd = (rnd * 1103515245 + 12345) % 2147483648) / 2147483648);
   const keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'j', 'k', 'q', 'e', 't', '1', '2', '3', '4', '5', '6'];
@@ -410,6 +428,7 @@ async function fuzzCheckpoint(s, level, cp, seconds, seed) {
           ctl: p?.controlsEnabled,
           w: lvl?.world?.widthPx,
           h: lvl?.world?.heightPx,
+          frozenMs: window.__freezeWatch?.max ?? 0,
           inSolid: p && !p.dead && lvl.world.isSolid(p.x, p.y - 4) && lvl.world.isSolid(p.x, p.y - 14),
           lostEnemies: (lvl?.drones ?? []).filter((d) => d.alive && (!Number.isFinite(d.x) || !Number.isFinite(d.y) || d.x < -200 || d.x > lvl.world.widthPx + 200 || d.y > lvl.world.heightPx + 200)).map((d) => `${d.kind ?? d.brain?.kind ?? 'enemy'}@${Math.round(d.x / 16)},${Math.round(d.y / 16)}`),
         };
@@ -425,6 +444,7 @@ async function fuzzCheckpoint(s, level, cp, seconds, seed) {
       else if (state.x < -40 || state.x > state.w + 40 || state.y > state.h + 200) failures.push(`player out of the world at ${Math.round(state.x)},${Math.round(state.y)}`);
       if (state.inSolid) failures.push(`player inside solid ground at ${Math.round(state.x / 16)},${Math.round(state.y / 16)}`);
       if (state.lostEnemies.length) failures.push(`enemies out of the world: ${state.lostEnemies.join(' ')}`);
+      if (state.frozenMs > 1500) failures.push(`world frozen for ${(state.frozenMs / 1000).toFixed(1)} s (a hit-stop that never ends)`);
       if (lastX !== null && Math.abs(state.x - lastX) > 2) stuckSince = Date.now();
       lastX = state.x;
     }
@@ -454,6 +474,85 @@ async function fuzz(s, seconds) {
   return results;
 }
 
+// ------------------------------------------------------------------ boss fights
+
+/** Every boss, knocked through its phases to the end: the scripted moments where one-off effects fire. */
+const BOSS_FIGHTS = [
+  { level: 'ch1', cp: 'cp-arena' },
+  { level: 'ch2', cp: 'cp-arena' },
+  { level: 'ch3', cp: 'cp-frog' },
+  { level: 'ch4', cp: 'cp-kevin', teleport: [396 * 16 + 8, 33 * 16] },
+];
+const HIT_KINDS = ['melee', 'fire', 'burst', 'rocket', 'smash', 'slime', 'tech'];
+
+async function bossFight(s, fight) {
+  const name = `boss-${fight.level}`;
+  await s.goto(`level=${fight.level}&start=${fight.cp}&mute=1&god=1`, name);
+  await s.waitScene('Level');
+  await s.skip(3);
+  await installFreezeWatch(s.page);
+  if (fight.teleport) await s.page.evaluate(([x, y]) => window.__level.benchTeleport(x, y), fight.teleport);
+  const failures = [];
+  const phases = new Set();
+  let stacked = '';
+  await s.page.keyboard.down('ArrowRight');
+  const start = Date.now();
+  let defeatedAt = null;
+  while (Date.now() - start < 70000 && (defeatedAt === null || Date.now() - defeatedAt < 5000)) {
+    await sleep(150);
+    const st = await s.page
+      .evaluate((kinds) => {
+        const lvl = window.__level;
+        const boss = lvl?.arena?.boss;
+        if (boss && lvl.arena.fighting && !boss.introducing && !boss.defeated) {
+          for (const kind of kinds) boss.takeHit({ damage: Math.max(1, boss.maxHp * 0.02), kind, x: lvl.player.x, y: lvl.player.centerY, knockback: 0 });
+        }
+        // Pickups piling up on one tile: a one-off drop that fired every frame.
+        const tiles = {};
+        for (const p of lvl?.pickups ?? []) {
+          if (!p.sprite?.active) continue;
+          const k = `${p.kind}@${Math.round(p.sprite.x / 16)}`;
+          tiles[k] = (tiles[k] ?? 0) + 1;
+        }
+        return {
+          waiting: !boss || !lvl.arena.fighting,
+          phase: boss?.phase ?? null,
+          defeated: !!boss?.defeated,
+          stacked: Object.entries(tiles).filter(([, n]) => n >= 3).map(([k, n]) => `${n}x ${k}`),
+          frozenMs: window.__freezeWatch?.max ?? 0,
+        };
+      }, HIT_KINDS)
+      .catch((e) => ({ error: e.message }));
+    if (st.error) {
+      failures.push(`evaluate failed: ${st.error}`);
+      break;
+    }
+    // Cinematics (Vilgax's hologram, story beats) wait for Enter.
+    if (st.waiting) await s.page.keyboard.press('Enter');
+    if (st.phase !== null) phases.add(st.phase);
+    if (st.defeated && defeatedAt === null) defeatedAt = Date.now();
+    if (st.stacked.length) stacked = st.stacked.join(' ');
+    if (st.frozenMs > 1500) {
+      failures.push(`world frozen for ${(st.frozenMs / 1000).toFixed(1)} s (a hit-stop that never ends)`);
+      break;
+    }
+  }
+  await s.page.keyboard.up('ArrowRight');
+  if (stacked) failures.push(`pickups stacked on one tile: ${stacked}`);
+  return { name, failures: [...new Set(failures)], note: `phases ${[...phases].join(',') || 'none'}${defeatedAt ? ', defeated' : ', not defeated'}` };
+}
+
+async function bossFights(s) {
+  const only = args.levels ? String(args.levels).split(',') : null;
+  const results = [];
+  for (const fight of BOSS_FIGHTS.filter((f) => !only || only.includes(f.level))) {
+    const r = await bossFight(s, fight);
+    results.push(r);
+    console.log(`  ${r.name} (${r.note}): ${r.failures.length ? r.failures.join(' | ') : 'ok'}`);
+  }
+  return results;
+}
+
 // ------------------------------------------------------------------ main
 
 async function main() {
@@ -475,6 +574,7 @@ async function main() {
         if (parts.has('hud')) await hudGauntlet(s);
       }
       if (args.fuzz && (size === sizes[0] || args['fuzz-all'])) report.fuzz.push(...(await fuzz(s, Number(args.seconds ?? 15))));
+      if ((args.fuzz || parts.has('bosses')) && (size === sizes[0] || args['fuzz-all'])) report.fuzz.push(...(await bossFights(s)));
       report.issues.push(...s.issues);
       report.errors.push(...s.errors.map((e) => ({ size, ...e })));
       await s.close();
@@ -500,7 +600,7 @@ async function main() {
   console.log(`Page errors: ${report.errors.length}`);
   for (const e of report.errors.slice(0, 30)) console.log(`  [${e.size} ${e.where}] ${e.error}`);
   const fuzzFails = report.fuzz.filter((f) => f.failures.length);
-  if (report.fuzz.length) console.log(`Fuzz: ${report.fuzz.length} checkpoints, ${fuzzFails.length} with failures`);
+  if (report.fuzz.length) console.log(`Fuzz: ${report.fuzz.length} checkpoints and boss fights, ${fuzzFails.length} with failures`);
   console.log(`Screenshots and report.json in ${path.relative(ROOT, RESULTS)}/`);
   if (report.issues.length || report.errors.length || fuzzFails.length) process.exitCode = 1;
 }
