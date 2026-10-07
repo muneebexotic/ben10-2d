@@ -1489,6 +1489,11 @@ export class LevelScene extends Phaser.Scene {
     );
   }
 
+  /** Gameplay is held in hit-stop (the autobench flags a run that stays frozen). */
+  get hitStopped(): boolean {
+    return this.time2?.frozen ?? false;
+  }
+
   /** The autobench drops Ben straight into an arena instead of walking there. */
   benchTeleport(x: number, feetY: number): void {
     this.player.teleport(x, feetY);

@@ -24,6 +24,8 @@ const VERSION = `v1 build ${__BUILD__}`;
 /** Without a GPU timer, this long at the end of a run measures the GPU with readPixels waits (every 3rd frame). */
 const SYNC_PROBE_MS = 1500;
 const MAX_RETRIES = 2;
+/** A hit-stop longer than this is stuck: real ones last a few frames. */
+const FROZEN_FLAG_MS = 1500;
 
 interface SavedState {
   v: 1;
@@ -72,6 +74,10 @@ export class AutobenchScene extends Phaser.Scene {
   private longTasks = 0;
   private observer: PerformanceObserver | null = null;
   private interrupted = false;
+  /** The longest unbroken hit-stop this run (ms): a run that stays frozen measures a still scene. */
+  private frozenMs = 0;
+  private frozenMax = 0;
+  private frozenAt = 0;
   private retries = 0;
   /** Warm-up for the current run (longer on a scene's or a page's first visit). */
   private warmupMs = 0;
@@ -298,6 +304,7 @@ export class AutobenchScene extends Phaser.Scene {
     trainingOptions.alienTimer = !chaos;
     this.interrupted = false;
     this.probe.reset();
+    this.frozenMs = this.frozenMax = 0;
     this.warmupMs = this.t.warmupMs + (this.pageStart || firstVisit(this.plan, this.index) ? this.t.firstVisitMs : 0);
     this.pageStart = false;
     this.setPhase('between');
@@ -328,6 +335,7 @@ export class AutobenchScene extends Phaser.Scene {
         else if (elapsed > 20000) this.finishRun(['no-load']);
         break;
       case 'warmup':
+        this.trackFrozen(now);
         if (this.scene.isActive(SCENES.pause)) this.interrupted = true;
         if (elapsed >= this.warmupMs) {
           this.samples = [];
@@ -339,6 +347,7 @@ export class AutobenchScene extends Phaser.Scene {
         }
         break;
       case 'record':
+        this.trackFrozen(now);
         if (this.scene.isActive(SCENES.pause)) this.interrupted = true;
         if (elapsed >= this.t.recordMs) this.setPhase(this.probe.timer ? 'done' : 'gpuprobe');
         break;
@@ -351,6 +360,14 @@ export class AutobenchScene extends Phaser.Scene {
       default:
         break;
     }
+  }
+
+  private trackFrozen(now: number): void {
+    const level = this.scene.get(SCENES.level) as LevelScene;
+    if (this.scene.isActive(SCENES.level) && level.hitStopped) this.frozenMs += Math.min(100, now - this.frozenAt);
+    else this.frozenMs = 0;
+    this.frozenAt = now;
+    this.frozenMax = Math.max(this.frozenMax, this.frozenMs);
   }
 
   private onLevelReady(): void {
@@ -378,6 +395,7 @@ export class AutobenchScene extends Phaser.Scene {
     this.retries = 0;
     const scenario = scenarioById(run.scenario);
     if (scenario?.levelId && !this.scene.isActive(SCENES.level)) flags.push(this.scene.isActive(SCENES.gameOver) || this.scene.isPaused(SCENES.level) ? 'died' : 'ended');
+    if (this.frozenMax > FROZEN_FLAG_MS) flags.push('frozen');
     if (!perf.audio || audio.muted) {
       // Expected for audio=0.
     } else if (!audio.ready) flags.push('nosound');
