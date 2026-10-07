@@ -169,13 +169,29 @@ The same phone, 46% battery and charging, with the fix on by default. Base runs,
 | ch4-kevin | 35.5 → **60.0** | 27 → **56** | 5.9 → 7.4 | 58.3 → **5.2** | 0 → **100** |
 | misfire | 55.7 → **60.1** | 29 → **56** | 3.4 → 4.2 | 41.8 → **4.7** | 44 → **100** |
 | calm (repeated at the end) | 38.1 → **60.0** | 27 → **56** | 4.3 → 5.6 | 53.3 → **5.8** | 0 → **100** |
-| ch4-arcade | 27.1 → 60.0 | 14 → 58 | 11.3 → 12.0 | 64.5 → 14.9 | 0 → 100 (frozen: see below) |
+| ch4-arcade (frozen in both: see below) | 27.1 → 60.0 | 14 → 58 | 11.3 → 12.0 | 64.5 → 14.9 | 0 → 100 |
 
 - **The goal is met in every scene it measured:** FPS at the refresh rate in every base run (60.0 to 60.1), 1% lows of 52 to 58 against the 51 asked for, and Q0 the whole time. `orphan=0` in the same report puts Phaser's path back: the calm scene's GPU wait goes from 5.5 to 34.3 ms, and the GAME ZONE drops to 57 FPS with a 1% low of 30 and the governor stepping down.
 - **No heat drift this time:** the calm scene ran 60.1 FPS first and 60.0 when repeated at the end of the run (it fell from 60 to 38 in the first report).
 - **CPU reads higher than before** (5 to 8 ms against 3.5 to 5) because the phone now runs at Q0 instead of Q2 (full particles, lights and filters). It is well under the 16.7 ms a 60 Hz frame allows.
 - **The bisect switches no longer move FPS** (every run at the refresh rate), and their GPU-wait medians are within 1 ms of base: there is nothing left on this phone for them to find.
-- **The GAME ZONE was frozen** in every one of its runs, in both reports: the first arcade cabinet the scripted player merged into fired GAME OVER on every frame and held the world in hit-stop for good (BUGS.md L3, fixed after this report). Its pixels piled up instead of fading, which is the 1.2 to 2.0 MB of vertex data a frame (every other scene: 0.1 to 0.2 MB) and why `particles=0` halved its CPU. Its rows measure a frozen room full of particles, not the arcade. With the fix, headless, the real GAME ZONE costs 32 to 35 ms at 4x (34.8, 32.0, 34.2; the frozen one measured 30 to 32), in line with Chapter 4's station; a profile shows no hot spot of the game's own. Its real numbers on the phone need one more run: `?autobench=1&only=ch4-arcade` (about 6 minutes).
+- **The GAME ZONE was frozen** in every one of its runs, in both reports: the first arcade cabinet the scripted player merged into fired GAME OVER on every frame and held the world in hit-stop for good (BUGS.md L3, fixed after this report). Its pixels piled up instead of fading, which is the 1.2 to 2.0 MB of vertex data a frame (every other scene: 0.1 to 0.2 MB) and why `particles=0` halved its CPU. Its rows measure a frozen room full of particles, not the arcade. With the fix, headless, the real GAME ZONE costs 32 to 35 ms at 4x (34.8, 32.0, 34.2; the frozen one measured 30 to 32), in line with Chapter 4's station; a profile shows no hot spot of the game's own. Its real numbers on the phone are next.
+
+### The GAME ZONE, measured for real (build 6264625)
+
+`?autobench=1&only=ch4-arcade` on the same phone, this time on battery (52%), with the cabinet bug fixed:
+
+| Run | FPS | 1% low | CPU ms | GPU~ ms | Vertex KB | Quality Q0 % |
+|---|---|---|---|---|---|---|
+| base | **60.1** | **56** | 5.5 | 4.8 | 138 | **100** |
+| base, repeated at the end | 60.1 | 56 | 5.7 | 6.5 | 144 | 100 |
+| fresh pages: default, desync, lean | 60.0, 60.1, 60.0 | 56, 57, 56 | 4.5 to 6.1 | 4.5 to 5.7 | 149 to 150 | 100 |
+| `orphan=0` (Phaser's uploads) | 59.7 | 47 | 3.4 | 28.1 | 143 | 100 |
+
+- **The goal is met here too,** and with it in every scene the autobench plays: FPS at the refresh rate, 1% lows of 52 to 58, Q0 the whole time, no drift, no `frozen` rows.
+- **The real arcade is an ordinary scene:** 105 draws and 138 KB of vertex data a frame like the others (the frozen one uploaded 1.2 to 2.0 MB), and CPU 5.5 ms instead of the frozen room's 12.
+- **The fix still carries it:** with Phaser's uploads (`orphan=0`) the GPU wait goes from 4.8 to 28.1 ms and the 1% low drops below the goal (47).
+- One switch run read high (`bg=0`: GPU wait 14.8 ms, CPU 8.2) although it removes work; a one-off in a single run (FPS and 1% low held at 60.1 and 54).
 
 ### `?debug=1` by hand
 
