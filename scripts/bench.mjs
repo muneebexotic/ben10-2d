@@ -2,18 +2,28 @@
 // Performance benchmark: builds the game in bench mode (playtest hooks on,
 // otherwise a production build), plays the heaviest moment of every chapter in
 // headless Chromium with CPU throttling, and reports main-thread CPU time per
-// frame, long tasks, GC pauses and heap growth against docs/PERFORMANCE.md.
+// frame, long tasks, GC pauses and heap growth (docs/PERFORMANCE.md).
 //
-//   npm run bench                         all scenarios at 4x and 6x, phone viewport
-//   npm run bench -- --only=ch3-frog      one scenario
-//   npm run bench -- --throttle=4 --seconds=20
+// The gate is "no regression against current main, on this machine": every
+// scenario is played by this build and by a build of main, alternating, and
+// this build must not be slower than main beyond run-to-run noise
+// (scripts/bench/budget.mjs). Leaks and machine-independent counts are absolute.
+//
+//   npm run bench                         the gate: every scenario at 4x, this build vs main, 2 alternating rounds, plus the leak check
+//   npm run bench -- --only=ch3-frog      some scenarios (comma-separated)
+//   npm run bench -- --rounds=3           more alternating rounds (less noise)
+//   npm run bench -- --throttle=4,6       also measure at 6x (the gate compares 4x)
+//   npm run bench -- --base=<ref>         compare against another commit than origin/main
+//   npm run bench -- --base-dist=<dir>    compare against an existing bench build
+//   npm run bench -- --no-ab              this build only, no comparison (numbers for reference; `--absolute` checks the old absolute CPU limits)
+//   npm run bench -- --no-leak            skip the leak check; --leak-only runs only it
 //   npm run bench -- --device=desktop     1280x720 instead of a wide phone
-//   npm run bench -- --profile            also save CPU profiles and list the hottest functions
+//   npm run bench -- --profile            also save CPU profiles and list the hottest functions (this build only)
 //   npm run bench -- --gl                 also count WebGL draw calls, texture binds and shader switches
-//   npm run bench -- --leak               switch chapters repeatedly and check heap and listener counts
-//   npm run bench -- --load               boot time to the title screen (slow 4G + throttle)
-//   npm run bench -- --no-build           reuse the last bench build
-//   npm run bench -- --dist=<dir>         benchmark another bench build (A/B against an older commit)
+//   npm run bench -- --boot               cold boot to the title screen, this build vs main (5 fresh pages each at 4x, no network throttle)
+//   npm run bench -- --load               boot time to the title screen on Slow 4G, cold and warm cache
+//   npm run bench -- --no-build           reuse the last bench build of this tree
+//   npm run bench -- --dist=<dir>         benchmark another bench build as "this build"
 //   npm run bench -- --query=debug=1      add URL switches to every scenario
 //   npm run bench -- --load --vercel=<file>   serve with another vercel.json's headers
 //
@@ -29,7 +39,8 @@ import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { SCENARIOS, skipCinematics, sleep } from './bench/scenarios.mjs';
-import { BUDGET, checkBudget } from './bench/budget.mjs';
+import { averageRuns, checkAbsoluteCpu, checkLeaks, checkRegression, REGRESSION } from './bench/budget.mjs';
+import { buildBase, resolveBase } from './bench/base.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args0 = process.argv.find((a) => a.startsWith('--dist='));
@@ -45,7 +56,8 @@ const args = Object.fromEntries(
     return [k, v ?? true];
   }),
 );
-const throttles = String(args.throttle ?? '4,6').split(',').map(Number);
+const throttles = String(args.throttle ?? '4').split(',').map(Number);
+const rounds = Math.max(1, Number(args.rounds ?? 2));
 const seconds = Number(args.seconds ?? 12);
 const warmupMs = Number(args.warmup ?? 4) * 1000;
 const device = args.device === 'desktop' ? 'desktop' : 'phone';
@@ -75,7 +87,7 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
  * 304s for revalidation, and the Cache-Control default for static files (public, max-age=0,
  * must-revalidate) unless a `headers` rule in vercel.json says otherwise.
  */
-function serve() {
+function serve(root = OUT_DIR) {
   // --vercel=<file>: serve with another vercel.json's headers (e.g. to compare caching rules).
   const vercelFile = args.vercel ? path.resolve(String(args.vercel)) : path.join(ROOT, 'vercel.json');
   const vercel = JSON.parse(fs.readFileSync(vercelFile, 'utf8'));
@@ -83,8 +95,8 @@ function serve() {
   const compressed = new Map();
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://x');
-    let file = path.join(OUT_DIR, decodeURIComponent(url.pathname));
-    if (!file.startsWith(OUT_DIR)) {
+    let file = path.join(root, decodeURIComponent(url.pathname));
+    if (!file.startsWith(root)) {
       res.writeHead(403).end();
       return;
     }
@@ -499,67 +511,192 @@ async function runLoad(browser, base, throttle) {
   return results;
 }
 
+/**
+ * Cold boot on the bench machine: a fresh page (empty cache) to the title screen at the
+ * throttle, `runs` times, with the longest main-thread task of each boot (Preload generates
+ * every texture in one go, so that task is mostly art generation).
+ */
+async function runBoot(browser, base, throttle, runs = 5) {
+  const results = [];
+  for (let i = 0; i < runs; i++) {
+    const context = await browser.newContext({ ...DEVICES[device] });
+    try {
+      await context.addInitScript(() => {
+        window.__bootTasks = [];
+        try {
+          new PerformanceObserver((list) => {
+            for (const e of list.getEntries()) window.__bootTasks.push(e.duration);
+          }).observe({ type: 'longtask', buffered: true });
+        } catch {
+          // No long task API.
+        }
+      });
+      const page = await context.newPage();
+      const cdp = await context.newCDPSession(page);
+      await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
+      const t0 = Date.now();
+      await page.goto(`${base}/?mute=1`, { waitUntil: 'commit' });
+      await page.waitForFunction(() => window.__game?.scene?.isActive('Menu'), undefined, { timeout: 180_000, polling: 50 });
+      const toTitleMs = Date.now() - t0;
+      const longest = await page.evaluate(() => Math.round(Math.max(0, ...window.__bootTasks)));
+      results.push({ toTitleMs, longestTaskMs: longest });
+    } finally {
+      await context.close();
+    }
+  }
+  const med = (k) => {
+    const v = results.map((r) => r[k]).sort((a, b) => a - b);
+    return v[Math.floor(v.length / 2)];
+  };
+  return { throttle, runs: results, medianToTitleMs: med('toTitleMs'), medianLongestTaskMs: med('longestTaskMs') };
+}
+
+/** Whether a build can play a scenario's level (main can't play a chapter added after it). */
+async function supportsLevel(browser, base, levelId) {
+  if (!levelId) return true;
+  const context = await browser.newContext({ ...DEVICES[device] });
+  try {
+    await context.addInitScript(`try { localStorage.setItem('ben10-omnitrix-summer', ${JSON.stringify(JSON.stringify(saveFixture()))}); } catch {}`);
+    const page = await context.newPage();
+    await page.goto(`${base}/?level=${levelId}&god=1&mute=1`);
+    await page.waitForFunction(() => window.__game?.scene?.isActive('Level') || window.__game?.scene?.isActive('Menu'), undefined, { timeout: 120_000, polling: 200 });
+    return await page.evaluate((id) => window.__game.scene.isActive('Level') && window.__level?.level?.id === id, levelId);
+  } finally {
+    await context.close();
+  }
+}
+
+const levelOf = (sc) => /(?:^|&)level=([^&]+)/.exec(sc.query)?.[1] ?? (sc.query.includes('training=1') ? null : 'ch1');
+
 // ------------------------------------------------------------------ main
 
 function printTable(rows) {
-  const cols = ['scenario', 'x', 'cpuMean', 'cpuP95', 'cpuP99', 'cpuMax', 'updateMean', 'renderMean', 'over8', 'over16', 'longSteps', 'longTasks', 'gcPerSec', 'gcMaxMs', 'gcTotalMs', 'retainedGrowthMb', 'fbAllocsPerSec', 'renderPool', 'rasterMs', 'fps', 'fpsLow1', 'drawsMean'];
+  const cols = ['build', 'scenario', 'x', 'runs', 'cpuMean', 'cpuP95', 'cpuP99', 'cpuMax', 'updateMean', 'renderMean', 'over16', 'longSteps', 'longTasks', 'gcPerSec', 'gcMaxMs', 'gcTotalMs', 'retainedGrowthMb', 'fbAllocsPerSec', 'renderPool', 'rasterMs', 'fps', 'fpsLow1', 'drawsMean'];
   const lines = [cols, ...rows.map((r) => cols.map((c) => String(r[c] ?? '')))];
+  const widths = cols.map((_, i) => Math.max(...lines.map((l) => l[i].length)));
+  for (const l of lines) console.log(l.map((v, i) => v.padStart(widths[i])).join('  '));
+}
+
+/** Main against this build, scenario by scenario: mean CPU, p95 and the change. */
+function printComparison(baseRows, currentRows) {
+  const cols = ['scenario', 'x', 'main', 'this', 'change', 'p95 main', 'p95 this', 'gc/s main', 'gc/s this'];
+  const lines = [cols];
+  for (const c of currentRows) {
+    const b = baseRows.find((r) => r.scenario === c.scenario && r.x === c.x);
+    const pctChange = b ? `${c.cpuMean >= b.cpuMean ? '+' : ''}${Math.round(((c.cpuMean - b.cpuMean) / b.cpuMean) * 1000) / 10}%` : 'new';
+    lines.push([c.scenario, String(c.x), String(b?.cpuMean ?? '-'), String(c.cpuMean), pctChange, String(b?.cpuP95 ?? '-'), String(c.cpuP95), String(b?.gcPerSec ?? '-'), String(c.gcPerSec ?? '-')]);
+  }
   const widths = cols.map((_, i) => Math.max(...lines.map((l) => l[i].length)));
   for (const l of lines) console.log(l.map((v, i) => v.padStart(widths[i])).join('  '));
 }
 
 async function main() {
   if (!args['no-build'] && !args.dist) build();
-  const server = await serve();
-  const base = `http://127.0.0.1:${server.address().port}`;
+  const ab = !args['no-ab'] && !args.profile && !args.alloc;
+  let baseDir = null;
+  let baseInfo = null;
+  if (ab && !args['leak-only'] && !args.load) {
+    if (args['base-dist']) {
+      baseDir = path.resolve(String(args['base-dist']));
+      baseInfo = { ref: 'base-dist', sha: path.basename(baseDir) };
+    } else {
+      baseInfo = resolveBase(ROOT, args.base);
+      console.log(`Comparing against ${baseInfo.ref} (${baseInfo.sha})`);
+      baseDir = buildBase(ROOT, baseInfo.sha, { unminified: !!args.unminified });
+    }
+  }
+  const server = await serve(OUT_DIR);
+  const baseServer = baseDir ? await serve(baseDir) : null;
+  const urls = { this: `http://127.0.0.1:${server.address().port}` };
+  if (baseServer) urls.main = `http://127.0.0.1:${baseServer.address().port}`;
   const browser = await chromium.launch({
     executablePath: chromePath(),
     args: ['--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required', '--disable-renderer-backgrounding', '--disable-background-timer-throttling'],
   });
-  const report = { date: new Date().toISOString(), label, device, seconds, scenarios: [], leak: null, load: null };
+  const report = { date: new Date().toISOString(), label, device, seconds, rounds, base: baseInfo, scenarios: [], averaged: [], leak: null, load: null, boot: null };
+  const failures = [];
   try {
     if (args.load) {
-      for (const t of throttles) report.load = [...(report.load ?? []), ...(await runLoad(browser, base, t))];
+      for (const t of throttles) report.load = [...(report.load ?? []), ...(await runLoad(browser, urls.this, t))];
       console.table(report.load);
     }
-    if (args.leak) {
-      console.log('Leak check: switching chapters...');
-      report.leak = await runLeak(browser, base);
-      report.heldSounds = report.leak.heldSounds;
-    }
-    if (!args.load && !args['leak-only']) {
-      const list = SCENARIOS.filter((s) => !only || only.includes(s.id));
-      for (const sc of list) {
+    if (args.boot) {
+      report.boot = {};
+      for (const [build, url] of Object.entries(urls)) {
         for (const t of throttles) {
-          process.stdout.write(`${sc.id} @ ${t}x ... `);
-          const { stats, hot } = await runScenario(browser, base, sc, t);
-          console.log(`cpu ${stats.cpuMean} ms mean, p99 ${stats.cpuP99}, gc ${stats.gcPerSec ?? '-'}/s max ${stats.gcMaxMs ?? '-'} ms, fps ${stats.fps}`);
-          report.scenarios.push({ scenario: sc.id, x: t, ...stats });
-          if (hot) {
-            console.log(args.alloc ? '  top allocators:' : '  hottest functions (self time):');
-            for (const h of hot) console.log(`    ${String(h.pct).padStart(5)}%  ${h.fn}`);
+          const b = await runBoot(browser, url, t, Number(args.runs ?? 5));
+          report.boot[`${build}@${t}x`] = b;
+          console.log(`boot ${build} @ ${t}x: to title ${b.medianToTitleMs} ms (median of ${b.runs.length}: ${b.runs.map((r) => r.toTitleMs).join(', ')}), longest task ${b.medianLongestTaskMs} ms`);
+        }
+      }
+    }
+    const scenariosWanted = !args.load && !args.boot && !args['leak-only'];
+    if (scenariosWanted) {
+      const list = SCENARIOS.filter((s) => !only || only.includes(s.id));
+      const builds = Object.keys(urls);
+      // Which scenarios main can play (a new chapter's can't): those are held to main's heaviest.
+      const playable = new Map();
+      if (urls.main) {
+        for (const lvl of new Set(list.map(levelOf))) playable.set(lvl, await supportsLevel(browser, urls.main, lvl));
+        const missing = [...playable].filter(([, ok]) => !ok).map(([l]) => l);
+        if (missing.length) console.log(`main can't play ${missing.join(', ')}: those scenarios are held to main's heaviest scenario`);
+      }
+      for (let round = 0; round < rounds; round++) {
+        if (rounds > 1) console.log(`-- round ${round + 1} of ${rounds}`);
+        for (const sc of list) {
+          for (const t of throttles) {
+            // Alternate which build goes first each round so drift (heat, background load) cancels out.
+            const order = round % 2 === 0 ? builds : [...builds].reverse();
+            for (const build of order) {
+              if (build === 'main' && playable.get(levelOf(sc)) === false) continue;
+              process.stdout.write(`${sc.id} @ ${t}x [${build}] ... `);
+              const { stats, hot } = await runScenario(browser, urls[build], sc, t);
+              console.log(`cpu ${stats.cpuMean} ms mean, p99 ${stats.cpuP99}, gc ${stats.gcPerSec ?? '-'}/s max ${stats.gcMaxMs ?? '-'} ms, fps ${stats.fps}`);
+              report.scenarios.push({ build, round, scenario: sc.id, x: t, ...stats });
+              if (hot) {
+                console.log(args.alloc ? '  top allocators:' : '  hottest functions (self time):');
+                for (const h of hot) console.log(`    ${String(h.pct).padStart(5)}%  ${h.fn}`);
+              }
+            }
           }
         }
       }
+      report.averaged = averageRuns(report.scenarios.map(({ round: _r, ...row }) => row));
       console.log();
-      printTable(report.scenarios);
+      printTable(report.averaged);
+      const current = report.averaged.filter((r) => r.build === 'this');
+      if (urls.main) {
+        const base = report.averaged.filter((r) => r.build === 'main');
+        console.log(`\nThis build against main (${baseInfo.sha}), mean of ${rounds} alternating round(s):`);
+        printComparison(base, current);
+        failures.push(...checkRegression(base, current));
+      } else {
+        failures.push(...checkRegression([], current).filter((f) => !f.includes('main')));
+        if (args.absolute) failures.push(...checkAbsoluteCpu(current));
+      }
+    }
+    if ((args.leak || (scenariosWanted && !args['no-leak'] && !only) || args['leak-only']) && !args.load && !args.boot) {
+      console.log('Leak check: switching chapters...');
+      report.leak = await runLeak(browser, urls.this);
+      report.heldSounds = report.leak.heldSounds;
+      failures.push(...checkLeaks(report));
     }
   } finally {
     await browser.close();
     server.close();
+    baseServer?.close();
   }
   fs.mkdirSync(RESULTS_DIR, { recursive: true });
   const file = path.join(RESULTS_DIR, `bench-${device}${label ? `-${label}` : ''}.json`);
   fs.writeFileSync(file, JSON.stringify(report, null, 2));
   console.log(`\nSaved ${path.relative(ROOT, file)}`);
 
-  const failures = checkBudget(report, BUDGET);
   if (failures.length) {
-    console.log(`\nOVER BUDGET (docs/PERFORMANCE.md):`);
+    console.log(`\nFAILED (docs/PERFORMANCE.md):`);
     for (const f of failures) console.log(`  - ${f}`);
     process.exitCode = 1;
   } else if (report.scenarios.length || report.leak) {
-    console.log('\nWithin budget.');
+    console.log(urls.main ? `\nNo regression against main at ${REGRESSION.throttle}x, and no leaks.` : '\nWithin the absolute limits (no comparison run).');
   }
 }
 

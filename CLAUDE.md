@@ -36,7 +36,9 @@ Pin dependency versions. Upgrade Phaser or other major dependencies only in a de
 - `npm run build`: production build (must pass before finishing any task)
 - `npm run typecheck`: `tsc --noEmit`
 - `npm test`: Vitest
-- `npm run bench`: performance benchmark (headless Chromium, CPU throttled; see `docs/PERFORMANCE.md`)
+- `npm run bench`: performance gate (headless Chromium, CPU throttled): this build against a build of current main on the same machine, alternating runs, plus the leak check; fails on a regression or a leak (see `docs/PERFORMANCE.md`)
+- `npm run qa`: QA sweep in headless Chromium at three screen sizes: screenshots of every menu, checkpoint and HUD state, with a check on every visible text (clipped, out of its box, overlapping, fractional size, raw tokens, missing glyphs, key names on touch)
+- `npm run qa -- --fuzz`: the sweep plus random play at every checkpoint and every boss knocked through its phases (fails on page errors, softlocks, a frozen world, stacked pickups, a misfire during a story moment)
 
 ## Folder Structure
 
@@ -69,7 +71,7 @@ scripts/         bench.mjs and bench/ (the performance benchmark)
 
 ## Performance Rules
 
-Every new chapter (and any change to a hot path) must pass `npm run bench` within the budget in `docs/PERFORMANCE.md`. Add the chapter's heaviest moment to `scripts/bench/scenarios.mjs` first. The budget is CPU time per frame, GC and leaks, not headless FPS.
+Every new chapter (and any change to a hot path) must pass `npm run bench`: no regression against current main (CPU time per frame, long frames, GC, measured on the same machine in alternating runs), and absolute limits on leaks and render targets (`docs/PERFORMANCE.md`). Add the chapter's heaviest moments to `scripts/bench/scenarios.mjs` and to the on-device autobench (`systems/autobench/plan.ts`) first. A new chapter's scenarios are held to main's heaviest scenario. The phone's `?autobench=1` report is the final word on performance.
 
 - **Frame-rate independence:** anything that happens "per frame" (a random chance, a damping factor, an easing step, a trail or ember stream) goes through `systems/Pacing.ts` (`chance`, `damp`, `approach`, `perFrame`) or `fx.stream`, so 90 and 120 Hz screens play the same as 60 Hz. Timers use milliseconds.
 - **No per-frame Graphics redraws.** A HUD or UI shape that changes only sometimes is a `BakedGraphics` (`ui/BakedGraphics.ts`) redrawn when its value changes. Keep `Graphics.clear()` + redraw every frame for things that really move every frame.
@@ -86,7 +88,7 @@ Every new chapter (and any change to a hot path) must pass `npm run bench` withi
 ## Workflow
 
 - Work on ONE milestone per session, as listed in `docs/GAME_DESIGN.md`. Do not start the next one unless asked.
-- Before finishing: run `typecheck`, `build` and `test`, and fix all errors.
+- Before finishing: run `npm run typecheck`, `npm run build`, `npm test`, `npm run bench` and `npm run qa -- --fuzz`, and fix every failure. (`bench` and `qa` take a while: start them in the background and keep working.)
 - Update `docs/PROGRESS.md` at the end of each session and keep it short: status, how to run, controls, known issues, and how to test the latest chapter. Write the milestone's full record (what was built, playtest notes, how to test it) to a new file in `docs/history/`, and new decisions to `docs/DECISIONS.md`.
 - Commit with clear messages per feature.
 - If a design decision isn't covered in `GAME_DESIGN.md`, choose the simplest option, note it in `DECISIONS.md`, and keep going.

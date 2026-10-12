@@ -4,18 +4,25 @@ The goal: the game never lags, stutters or jitters, on a mid-range Android phone
 
 ## The budget
 
-`npm run bench` checks it and exits with an error when a number is over. **Every new chapter must pass it** (add the chapter's heaviest moment to `scripts/bench/scenarios.mjs` first), and so must any change to a hot path (effects, rendering, HUD, physics).
+`npm run bench` checks it and exits with an error when it fails. **Every new chapter must pass it** (add the chapter's heaviest moments to `scripts/bench/scenarios.mjs` and to the on-device autobench first), and so must any change to a hot path (effects, rendering, HUD, physics).
 
-Measured on the emulated wide phone at 4x CPU throttle, per scenario:
+**The gate is "no regression against current main, on the same machine".** Headless CPU time depends on the machine (the quality pass's machine read about 15% higher than the one that set the old absolute limits, on the same build), so absolute CPU limits failed on any slower machine. Instead, `npm run bench` builds this tree and current main (`origin/main`, cached per commit in `.bench-base/`), plays every scenario with both builds on the emulated wide phone at 4x CPU throttle, alternating which goes first each round (two rounds by default), and compares each build's best round for timing (background load only ever slows a run down, so the fastest round is the least noisy estimate; the render-target pool takes the worst round and the rest is averaged). A scenario fails when this build is slower than main by more than run-to-run noise:
+
+| Metric (per scenario, 4x) | Fails when this build exceeds |
+|---|---|
+| Mean CPU per frame | main x 1.10 + 0.6 ms |
+| 95th percentile CPU per frame | main x 1.15 + 1.5 ms |
+| 99th percentile CPU per frame | main x 1.30 + 4 ms |
+| Frames whose game step took over 50 ms | main + 3 per 12 s scenario |
+| GCs per second | main x 1.30 + 0.4 |
+| Longest GC pause (a major GC lands in a random round; the A/A run read 5.7 against 15.2 ms) | main x 2 + 10 ms |
+
+A scenario main can't play (a new chapter's) is held to **main's heaviest scenario**, stat by stat, with the same margins: a new chapter may not add a moment heavier than the heaviest one the game already has.
+
+What doesn't depend on the machine stays absolute, on every build:
 
 | Metric | Limit |
 |---|---|
-| Mean CPU per frame | 26 ms |
-| 95th percentile CPU per frame | 45 ms |
-| 99th percentile CPU per frame | 95 ms |
-| Frames whose game step took over 50 ms | 8 per 12 s scenario |
-| Longest GC pause | 30 ms |
-| GCs per second | 4 |
 | WebGL framebuffers created per second | 0.5 |
 | Render-target pool size | 4 |
 | Heap kept after a scenario (after a forced GC) | 4.5 MB |
@@ -23,22 +30,30 @@ Measured on the emulated wide phone at 4x CPU throttle, per scenario:
 | Leak check: heap after GC, first cycle to the lowest of the last three | 2 MB |
 | Leak check: held sounds after leaving a level | 0 |
 
-The limits sit about 20-30% above the worst run measured after this pass (noise included). When a chapter goes over, profile it (`--profile --unminified`, `--alloc`) before raising a limit, and write down why in `DECISIONS.md` if you do.
+The margins are in `scripts/bench/budget.mjs` (`REGRESSION`, `ABSOLUTE`, `LEAK`). An A/A run (main against itself) measured the noise: single runs of the same build differed by up to 14% on the mean CPU (ch2-convoy 17.4 against 19.8 ms), and the best of two rounds by under 10%, so 10% plus 0.6 ms of slack catches a real regression without failing on noise. A real regression is slow in every round; a slow round on its own is the machine. When a scenario fails, profile it (`--profile --unminified`, `--alloc`) before widening a margin, and write down why in `DECISIONS.md` if you do. The old absolute CPU limits (mean 26 ms, p95 45, p99 95, 8 frames over 50 ms, longest GC 30 ms, 4 GCs a second) are kept for reference in `LEGACY_CPU` and `--no-ab --absolute` still checks them.
+
+**The phone is the final word.** Headless numbers only compare builds; the owner's phone running `?autobench=1` (below) says whether the game actually holds 60 FPS.
 
 ```
-npm run bench                               # build, all scenarios at 4x and 6x on the phone, check the budget (about 12 min)
-npm run bench -- --only=ch3-frog --throttle=4
-npm run bench -- --leak --leak-only         # chapter switching only: listeners, textures, heap, held sounds
+npm run bench                               # the gate: this build vs main at 4x, 2 alternating rounds, plus the leak check (about 25 min)
+npm run bench -- --only=ch3-frog,ch5-dive   # some scenarios (no leak check)
+npm run bench -- --rounds=3                 # more rounds, less noise
+npm run bench -- --throttle=4,6             # also measure at 6x (a low-end phone; the gate compares 4x)
+npm run bench -- --base=<ref>               # compare against another commit than origin/main
+npm run bench -- --base-dist=<dir>          # compare against an existing bench build
+npm run bench -- --no-ab                    # this build only, numbers for reference (`--absolute` also checks the old absolute CPU limits)
+npm run bench -- --leak-only                # chapter switching only: listeners, textures, heap, held sounds
+npm run bench -- --boot                     # cold boot to the title, this build vs main (5 fresh pages each, 4x, no network throttle)
 npm run bench -- --device=desktop           # 1280x720, no touch controls
 npm run bench -- --gl                       # also count draw calls, texture binds, shader switches
-npm run bench -- --profile --unminified     # CPU profiles in bench-results/, hottest functions listed
+npm run bench -- --profile --unminified     # CPU profiles in bench-results/, hottest functions listed (this build only)
 npm run bench -- --alloc                    # allocation sampling: which functions make garbage
 npm run bench -- --load                     # boot to title on Slow 4G, cold and warm cache
-npm run bench -- --dist=<dir> --label=old   # benchmark another build (A/B: build an older commit with `vite build --mode bench --outDir <dir>`)
+npm run bench -- --dist=<dir> --label=old   # benchmark another build as "this build"
 npm run bench -- --query=debug=1            # add URL switches to every scenario
 ```
 
-Results go to `bench-results/` (ignored by git). Headless numbers move by about 10% between runs and more between machines, so compare a change against the old build on the same machine (`--dist`), not against the numbers below.
+Results go to `bench-results/` (ignored by git), with each build's rows and the averaged comparison.
 
 ## How it is measured
 
