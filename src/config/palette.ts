@@ -151,6 +151,24 @@ export const PALETTE = {
   workLight: 0xffd890,
   railGlow: 0x8ad8ff,
 
+  // Diamondhead (living crystal) and Ghostfreak (pale, striped, one violet eye).
+  diamondhead: 0x6ae4ff,
+  diamondheadGlow: 0xd8fbff,
+  diamondheadDark: 0x1e7a9a,
+  diamondheadDeep: 0x0e3a52,
+  ghostfreak: 0xb8c8ff,
+  ghostfreakGlow: 0xeef0ff,
+  ghostfreakDark: 0x4a4a6e,
+  ghostfreakEye: 0xa040ff,
+
+  // Bounty Hunters: Silver Spur at night, the Diamond Deep mine, the hunters' signature colours.
+  sixsix: 0xffb03a,
+  sixsixDark: 0x8a4a12,
+  kraab: 0xff6ac8,
+  kraabDark: 0x8a1e62,
+  tetrax: 0x4a7aff,
+  tetraxDark: 0x1a2a8a,
+
   uiPanel: 0x121626,
   uiPanelLight: 0x232a45,
   uiText: 0xf4f4f0,

@@ -1,12 +1,20 @@
 import Phaser from 'phaser';
 import { DEPTH } from '../../config/constants';
+import type { Tell } from '../../config/tells';
 import { TEX } from '../../scenes/preload/assetKeys';
+
+/** A plain colour, or a villain's tell: danger red with the villain's colour as an edge beside it. */
+export type TellColor = number | Tell;
 
 /**
  * Immediate-mode warning visuals (aim lines, target reticles, danger zones).
  * Cleared every frame; enemies redraw what they are about to do. Always emissive
  * so a telegraph is never hidden by the night. Danger zones always carry a
  * shape cue (stripes, chevrons or a cross) so they read without colour.
+ *
+ * A villain's tell (`TELL` in config/tells.ts) draws its red core as usual and
+ * the villain's colour as a thin edge beside it, never on top (the layer is
+ * additive, so overlapping the two would wash the red out).
  */
 export class Telegraphs {
   private readonly g: Phaser.GameObjects.Graphics;
@@ -23,20 +31,39 @@ export class Telegraphs {
     this.used = 0;
   }
 
-  line(x1: number, y1: number, x2: number, y2: number, color: number, alpha: number, width = 1): void {
-    this.g.lineStyle(width, color, alpha);
+  line(x1: number, y1: number, x2: number, y2: number, color: TellColor, alpha: number, width = 1): void {
+    const core = coreOf(color);
+    const edge = edgeOf(color);
+    if (edge !== null) {
+      const [ox, oy] = sideOffset(x1, y1, x2, y2, width);
+      this.g.lineStyle(1, edge, alpha * EDGE_ALPHA);
+      this.g.lineBetween(x1 + ox, y1 + oy, x2 + ox, y2 + oy);
+      this.g.lineBetween(x1 - ox, y1 - oy, x2 - ox, y2 - oy);
+    }
+    this.g.lineStyle(width, core, alpha);
     this.g.lineBetween(x1, y1, x2, y2);
   }
 
   /** Dashed aim line; `phase` animates the dashes toward the target. */
-  dashed(x1: number, y1: number, x2: number, y2: number, color: number, alpha: number, phase: number, width = 1): void {
+  dashed(x1: number, y1: number, x2: number, y2: number, color: TellColor, alpha: number, phase: number, width = 1): void {
     const len = Math.hypot(x2 - x1, y2 - y1);
     if (len < 1) return;
+    const edge = edgeOf(color);
+    if (edge !== null) {
+      const [ox, oy] = sideOffset(x1, y1, x2, y2, width);
+      this.g.lineStyle(1, edge, alpha * EDGE_ALPHA);
+      this.dashes(x1 + ox, y1 + oy, x2 + ox, y2 + oy, len, phase);
+      this.dashes(x1 - ox, y1 - oy, x2 - ox, y2 - oy, len, phase);
+    }
+    this.g.lineStyle(width, coreOf(color), alpha);
+    this.dashes(x1, y1, x2, y2, len, phase);
+  }
+
+  private dashes(x1: number, y1: number, x2: number, y2: number, len: number, phase: number): void {
     const dx = (x2 - x1) / len;
     const dy = (y2 - y1) / len;
     const dash = 6;
     const period = dash + 4;
-    this.g.lineStyle(width, color, alpha);
     for (let d = -(phase % period); d < len; d += period) {
       const a = Math.max(0, d);
       const b = Math.min(len, d + dash);
@@ -45,8 +72,14 @@ export class Telegraphs {
     }
   }
 
-  rect(x: number, y: number, w: number, h: number, color: number, alpha: number): void {
-    this.g.fillStyle(color, alpha);
+  rect(x: number, y: number, w: number, h: number, color: TellColor, alpha: number): void {
+    const edge = edgeOf(color);
+    if (edge !== null) {
+      this.g.fillStyle(edge, alpha * EDGE_ALPHA);
+      this.g.fillRect(x, y - 1, w, 1);
+      this.g.fillRect(x, y + h, w, 1);
+    }
+    this.g.fillStyle(coreOf(color), alpha);
     this.g.fillRect(x, y, w, h);
   }
 
@@ -56,19 +89,32 @@ export class Telegraphs {
    * the way the attack will travel when `dir` is given. `strength` (0..1)
    * scales how loudly it reads as the attack gets close.
    */
-  zone(x: number, y: number, w: number, h: number, color: number, strength: number, phase = 0, dir: 1 | -1 | 0 = 0): void {
+  zone(x: number, y: number, w: number, h: number, tell: TellColor, strength: number, phase = 0, dir: 1 | -1 | 0 = 0): void {
     if (w <= 0 || h <= 0) return;
     const a = Math.max(0, Math.min(1, strength));
+    const color = coreOf(tell);
+    const edge = edgeOf(tell);
     this.g.fillStyle(color, 0.06 + a * 0.12);
     this.g.fillRect(x, y, w, h);
     this.g.lineStyle(1, color, 0.35 + a * 0.5);
     this.g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    if (edge !== null) {
+      // The villain's colour frames the zone from outside.
+      this.g.lineStyle(1, edge, (0.35 + a * 0.5) * EDGE_ALPHA);
+      this.g.strokeRect(x - 1.5, y - 1.5, w + 3, h + 3);
+    }
     if (dir !== 0) this.chevrons(x, y, w, h, color, 0.3 + a * 0.6, phase, dir);
     else this.stripes(x, y, w, h, color, 0.18 + a * 0.4, phase);
   }
 
   /** A circular impact marker with a cross through it (bombs, landings). */
-  target(x: number, y: number, r: number, color: number, alpha: number): void {
+  target(x: number, y: number, r: number, tell: TellColor, alpha: number): void {
+    const color = coreOf(tell);
+    const edge = edgeOf(tell);
+    if (edge !== null) {
+      this.g.lineStyle(1, edge, alpha * EDGE_ALPHA);
+      this.g.strokeCircle(x, y, r + 2);
+    }
     this.g.lineStyle(1, color, alpha);
     this.g.strokeCircle(x, y, r);
     const k = r * 0.62;
@@ -109,7 +155,13 @@ export class Telegraphs {
     }
   }
 
-  circle(x: number, y: number, r: number, color: number, alpha: number, filled = false): void {
+  circle(x: number, y: number, r: number, tell: TellColor, alpha: number, filled = false): void {
+    const color = coreOf(tell);
+    const edge = edgeOf(tell);
+    if (edge !== null) {
+      this.g.lineStyle(1, edge, alpha * EDGE_ALPHA);
+      this.g.strokeCircle(x, y, r + 2);
+    }
     if (filled) {
       this.g.fillStyle(color, alpha);
       this.g.fillCircle(x, y, r);
@@ -119,7 +171,14 @@ export class Telegraphs {
     }
   }
 
-  reticle(x: number, y: number, color: number, scale: number, angle: number, alpha = 1): void {
+  reticle(x: number, y: number, tell: TellColor, scale: number, angle: number, alpha = 1): void {
+    const edge = edgeOf(tell);
+    // The edge: a second, larger reticle in the villain's colour turning the other way.
+    if (edge !== null) this.reticleImage(x, y, edge, scale * 1.35, -angle, alpha * EDGE_ALPHA);
+    this.reticleImage(x, y, coreOf(tell), scale, angle, alpha);
+  }
+
+  private reticleImage(x: number, y: number, color: number, scale: number, angle: number, alpha: number): void {
     let img = this.reticles[this.used];
     if (!img) {
       img = this.scene.add.image(0, 0, TEX.reticle).setDepth(DEPTH.emissive + 2).setBlendMode(Phaser.BlendModes.ADD);
@@ -128,4 +187,22 @@ export class Telegraphs {
     this.used++;
     img.setPosition(x, y).setTint(color).setScale(scale).setAngle(angle).setAlpha(alpha).setVisible(true);
   }
+}
+
+/** The edge is quieter than the core: it names the attacker, the red says danger. */
+const EDGE_ALPHA = 0.8;
+
+function coreOf(c: TellColor): number {
+  return typeof c === 'number' ? c : c.core;
+}
+
+function edgeOf(c: TellColor): number | null {
+  return typeof c === 'number' ? null : c.edge;
+}
+
+/** Perpendicular offset that puts an edge line just outside a line `width` px thick. */
+function sideOffset(x1: number, y1: number, x2: number, y2: number, width: number): [number, number] {
+  const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+  const d = width / 2 + 1;
+  return [(-(y2 - y1) / len) * d, ((x2 - x1) / len) * d];
 }

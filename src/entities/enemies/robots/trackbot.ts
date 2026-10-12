@@ -1,5 +1,6 @@
 import { ROBOT_SHARED, TRACKBOT } from '../../../config/robots';
 import { PALETTE } from '../../../config/palette';
+import { TELL } from '../../../config/tells';
 import { TEX } from '../../../scenes/preload/assetKeys';
 import { blinkOn } from '../../../systems/Accessibility';
 import { pace } from '../../../systems/Difficulty';
@@ -49,7 +50,7 @@ export class TrackbotBrain implements DroneBrain {
         d.vx = damp(d.vx, 0.6);
         const dir = faceOf(d);
         const floor = d.y + TRACKBOT.body.height / 2 - 3;
-        w.telegraph.dashed(d.x + dir * 12, floor, d.x + dir * 150, floor, this.overcharged ? PALETTE.kevin : PALETTE.enemy, blinkOn(d.stateT, 70) ? 0.9 : 0.4, d.stateT * 0.08, 2);
+        w.telegraph.dashed(d.x + dir * 12, floor, d.x + dir * 150, floor, this.overcharged ? TELL.kevin : PALETTE.enemy, blinkOn(d.stateT, 70) ? 0.9 : 0.4, d.stateT * 0.08, 2);
         if (chance(0.7)) w.fx.burst(this.overcharged ? 'volt' : 'spark', d.x + dir * 12, d.y, 2);
         if (d.stateT >= TRACKBOT.revMs) {
           d.setState('charge');

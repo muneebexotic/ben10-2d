@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { DEPTH } from '../../../config/constants';
 import { FROG } from '../../../config/frog';
 import { PALETTE } from '../../../config/palette';
+import { TELL } from '../../../config/tells';
 import { TEX } from '../../../scenes/preload/assetKeys';
 import { blinkOn } from '../../../systems/Accessibility';
 import { pace } from '../../../systems/Difficulty';
@@ -435,13 +436,13 @@ export class Frog implements ArenaBoss, TongueOwner {
     if (this.stateT < crouch) {
       // The tell: it crouches, and a target marks where it will land.
       const k = this.stateT / crouch;
-      this.w.telegraph.target(this.leapTo, this.floorY - 4, 30 + 10 * k, PALETTE.enemy, blinkOn(this.stateT, 90) ? 0.9 : 0.5);
+      this.w.telegraph.target(this.leapTo, this.floorY - 4, 30 + 10 * k, TELL.animo, blinkOn(this.stateT, 90) ? 0.9 : 0.5);
       return;
     }
     const t = Math.min(1, (this.stateT - crouch) / air);
     this.x = this.leapFrom + (this.leapTo - this.leapFrom) * t;
     this.lift = Math.sin(t * Math.PI) * L.height;
-    this.w.telegraph.target(this.leapTo, this.floorY - 4, 40, PALETTE.enemy, 0.9);
+    this.w.telegraph.target(this.leapTo, this.floorY - 4, 40, TELL.animo, 0.9);
     if (t < 1) return;
     this.lift = 0;
     this.land(false);
@@ -484,7 +485,7 @@ export class Frog implements ArenaBoss, TongueOwner {
     }
     const locked = this.stateT >= T.tellMs - T.aimLockMs;
     const len = T.reach;
-    this.w.telegraph.dashed(this.mouthX, this.mouthY, this.mouthX + Math.cos(this.aim) * len, this.mouthY + Math.sin(this.aim) * len, 0xe85a7a, locked ? 0.95 : blinkOn(this.stateT, 70) ? 0.55 : 0.25, this.stateT * 0.06, locked ? 2 : 1);
+    this.w.telegraph.dashed(this.mouthX, this.mouthY, this.mouthX + Math.cos(this.aim) * len, this.mouthY + Math.sin(this.aim) * len, TELL.animo, locked ? 0.95 : blinkOn(this.stateT, 70) ? 0.55 : 0.25, this.stateT * 0.06, locked ? 2 : 1);
     if (this.stateT >= T.tellMs) {
       this.tongue.lash(this.aim);
       this.w.threat(this.w.now + 120);
@@ -531,12 +532,12 @@ export class Frog implements ArenaBoss, TongueOwner {
     if (t < trackEnd) {
       this.lift = 420;
       this.x = this.clampX(this.x + (p.x - this.x) * 0.08);
-      this.w.telegraph.target(this.x, this.floorY - 4, 46, PALETTE.enemy, 0.5);
+      this.w.telegraph.target(this.x, this.floorY - 4, 46, TELL.animo, 0.5);
       if (t - (F.crouchMs + F.riseMs) < 30) this.w.threat(this.w.now + F.trackMs + F.lockMs + F.fallMs);
       return;
     }
     if (t < lockEnd) {
-      this.w.telegraph.target(this.x, this.floorY - 4, 46, PALETTE.enemyGlow, blinkOn(t, 70) ? 1 : 0.6);
+      this.w.telegraph.target(this.x, this.floorY - 4, 46, TELL.animo, blinkOn(t, 70) ? 1 : 0.6);
       return;
     }
     const k = Math.min(1, (t - lockEnd) / F.fallMs);
@@ -555,7 +556,7 @@ export class Frog implements ArenaBoss, TongueOwner {
     const Z = FROG.zap;
     const rx = this.rider.x;
     const ry = this.rider.y - 30;
-    this.w.telegraph.dashed(rx, ry, this.zapX, this.floorY - 10, PALETTE.animo, blinkOn(this.stateT, 80) ? 0.9 : 0.4, this.stateT * 0.08, 2);
+    this.w.telegraph.dashed(rx, ry, this.zapX, this.floorY - 10, TELL.animo, blinkOn(this.stateT, 80) ? 0.9 : 0.4, this.stateT * 0.08, 2);
     if (this.stateT < Z.tellMs) return;
     this.w.fx.flash(this.zapX, this.floorY - 12, PALETTE.animo, 30, 300);
     this.w.fx.burst('mutagen', this.zapX, this.floorY - 10, 16);

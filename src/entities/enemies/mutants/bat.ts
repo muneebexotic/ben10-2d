@@ -1,5 +1,6 @@
 import { BAT } from '../../../config/mutants';
 import { PALETTE } from '../../../config/palette';
+import { TELL } from '../../../config/tells';
 import { TEX } from '../../../scenes/preload/assetKeys';
 import { playSfx } from '../../../systems/audio/Sfx';
 import { blinkOn } from '../../../systems/Accessibility';
@@ -52,7 +53,7 @@ export class BatBrain implements DroneBrain {
         d.vy = damp(d.vy, 0.85);
         if (d.stateT < BAT.screechMs - 120) d.aim = aimAt(d, w);
         const locked = d.stateT >= BAT.screechMs - 120;
-        w.telegraph.dashed(d.x, d.y, d.x + Math.cos(d.aim) * 140, d.y + Math.sin(d.aim) * 140, PALETTE.animo, locked ? 0.9 : blinkOn(d.stateT, 60) ? 0.5 : 0.25, d.stateT * 0.06, locked ? 2 : 1);
+        w.telegraph.dashed(d.x, d.y, d.x + Math.cos(d.aim) * 140, d.y + Math.sin(d.aim) * 140, TELL.animo, locked ? 0.9 : blinkOn(d.stateT, 60) ? 0.5 : 0.25, d.stateT * 0.06, locked ? 2 : 1);
         if (d.stateT >= BAT.screechMs) {
           d.setCharging(false);
           d.setState('swoop');

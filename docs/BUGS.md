@@ -83,8 +83,8 @@ How they were found: the on-device autobench run headless (it stops levels mid-a
 
 | # | Where | Question |
 |---|---|---|
-| D1 | Kevin's and Dr. Animo's attacks | Their tells use their own purple (the lunge line, the scan reticle, copy targets, the coils' striped bands, the frog's zap, the bat's swoop) instead of danger red. It keeps who is attacking readable and still carries the shape cues; switch them to red if you want "red = danger" to cover every tell too. |
-| D2 | Chapter Complete in practice runs | A run started with `?start=` (or from a checkpoint link) still shows a rank on Chapter Complete although it's never saved (already a known issue). Hide it, or label it PRACTICE RANK? |
+| D1 | Kevin's and Dr. Animo's attacks | Decided: danger red with the villain's colour as an edge, for every villain (`config/tells.ts`, DECISIONS.md). Done in the Chapter 5 session. |
+| D2 | Chapter Complete in practice runs | Decided: PRACTICE RANK. Done in the Chapter 5 session. |
 
 ## Permanent checks added
 

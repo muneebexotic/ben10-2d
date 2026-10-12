@@ -1,5 +1,6 @@
 import { COILS, KEVIN } from '../../../config/kevin';
 import { PALETTE } from '../../../config/palette';
+import { TELL } from '../../../config/tells';
 import { blinkOn } from '../../../systems/Accessibility';
 import { pace } from '../../../systems/Difficulty';
 import { chance } from '../../../systems/Pacing';
@@ -91,7 +92,7 @@ export const lunge: MoveFn = (kb, m, _level, dtMs) => {
     const y = k.floorY - 18;
     const reach = L.speed * (L.durationMs / 1000);
     const end = Math.max(a.left, Math.min(a.right, k.x + m.dir * reach));
-    k.w.telegraph.dashed(k.x, y, end, y, PALETTE.kevin, blinkOn(m.t, 80) ? 0.95 : 0.45, m.t * 0.1, 2);
+    k.w.telegraph.dashed(k.x, y, end, y, TELL.kevin, blinkOn(m.t, 80) ? 0.95 : 0.45, m.t * 0.1, 2);
     k.w.lighting.add(k.x + m.dir * 10, y - 4, 20 + (m.t / L.tellMs) * 26, PALETTE.kevin, 1);
     if (m.t < L.tellMs) return false;
     k.pose('lunge');
@@ -148,8 +149,8 @@ export const scan: MoveFn = (kb, m) => {
   const ex = k.x + k.facing * 3;
   const ey = k.floorY - k.lift - 29;
   const on = blinkOn(m.t, 60);
-  k.w.telegraph.line(ex, ey, p.x, p.centerY, PALETTE.kevin, on ? 0.9 : 0.5, 2);
-  k.w.telegraph.reticle(p.x, p.centerY, PALETTE.kevin, 1.2 - (m.t / S.lockMs) * 0.4, m.t * 0.4);
+  k.w.telegraph.line(ex, ey, p.x, p.centerY, TELL.kevin, on ? 0.9 : 0.5, 2);
+  k.w.telegraph.reticle(p.x, p.centerY, TELL.kevin, 1.2 - (m.t / S.lockMs) * 0.4, m.t * 0.4);
   k.w.lighting.add(p.x, p.centerY, 26, PALETTE.kevin, 0.7);
   if (m.t < S.lockMs) return false;
   k.scanned(k.playerForm());

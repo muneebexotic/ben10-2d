@@ -1,6 +1,7 @@
 import type { CopyStyle } from '../../../aliens/types';
 import { COPY_MOVES } from '../../../config/kevin';
 import { PALETTE } from '../../../config/palette';
+import { TELL } from '../../../config/tells';
 import { blinkOn } from '../../../systems/Accessibility';
 import { pace } from '../../../systems/Difficulty';
 import { chance } from '../../../systems/Pacing';
@@ -110,7 +111,7 @@ const slam: MoveFn = (k, m, level, dtMs) => {
   }
   if (m.step === 0) {
     // Crouched, a target on the landing spot.
-    k.w.telegraph.target(m.tx, k.floorY - 4, 34, PALETTE.kevin, blinkOn(m.t, 90) ? 0.9 : 0.5);
+    k.w.telegraph.target(m.tx, k.floorY - 4, 34, TELL.kevin, blinkOn(m.t, 90) ? 0.9 : 0.5);
     if (m.t < C.crouchMs) return false;
     k.pose('air');
     playSfx('jump', 0.8, 0.6);
@@ -121,7 +122,7 @@ const slam: MoveFn = (k, m, level, dtMs) => {
     const t = Math.min(1, m.t / C.airMs);
     k.x = m.from + (m.tx - m.from) * t;
     k.lift = Math.sin(t * Math.PI) * C.height;
-    k.w.telegraph.target(m.tx, k.floorY - 4, 40, PALETTE.kevin, 0.9);
+    k.w.telegraph.target(m.tx, k.floorY - 4, 40, TELL.kevin, 0.9);
     k.strike = t > 0.7 ? C.landDamage : 0;
     if (t < 1) return false;
     k.lift = 0;
@@ -168,7 +169,7 @@ const dash: MoveFn = (k, m, level, dtMs) => {
   if (m.step === 0) {
     const y = k.floorY - 14;
     const end = m.dir > 0 ? a.right - 20 : a.left + 20;
-    k.w.telegraph.dashed(k.x, y, end, y, PALETTE.kevin, blinkOn(m.t, 80) ? 0.95 : 0.45, m.t * 0.1, 2);
+    k.w.telegraph.dashed(k.x, y, end, y, TELL.kevin, blinkOn(m.t, 80) ? 0.95 : 0.45, m.t * 0.1, 2);
     if (m.t < C.tellMs) return false;
     k.pose('attack');
     playSfx('whoosh', 1, 1.4);
@@ -225,7 +226,7 @@ const pounce: MoveFn = (k, m, level) => {
     aimPounce(k, m);
   }
   if (m.step === 0) {
-    k.w.telegraph.target(m.tx, k.floorY - 4, 26, PALETTE.kevin, blinkOn(m.t, 90) ? 0.95 : 0.5);
+    k.w.telegraph.target(m.tx, k.floorY - 4, 26, TELL.kevin, blinkOn(m.t, 90) ? 0.95 : 0.5);
     if (m.t < C.tellMs) return false;
     k.pose('attack');
     playSfx('growl', 0.9, 1.1);
@@ -335,7 +336,7 @@ const beam: MoveFn = (k, m, level) => {
   const y = k.floorY - C.lowY;
   const end = k.facing > 0 ? a.right : a.left;
   if (m.step === 0) {
-    k.w.telegraph.dashed(k.x + k.facing * 10, y, end, y, PALETTE.kevin, blinkOn(m.t, 70) ? 0.95 : 0.4, m.t * 0.08, 2);
+    k.w.telegraph.dashed(k.x + k.facing * 10, y, end, y, TELL.kevin, blinkOn(m.t, 70) ? 0.95 : 0.4, m.t * 0.08, 2);
     if (m.t < C.tellMs) return false;
     k.pose('attack');
     k.w.hazards.fireBeam(k.x + k.facing * 10, end, y, PALETTE.kevin);

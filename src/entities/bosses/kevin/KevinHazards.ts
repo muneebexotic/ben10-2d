@@ -1,4 +1,5 @@
 import { PALETTE } from '../../../config/palette';
+import { tellFor } from '../../../config/tells';
 import type { Fx } from '../../../systems/Fx';
 import type { Lighting } from '../../../systems/Lighting';
 import { blinkOn } from '../../../systems/Accessibility';
@@ -65,8 +66,10 @@ export class Eruption implements Hazard {
     if (this.warnLeft > 0) {
       this.warnLeft -= dtMs;
       const on = blinkOn(now, 100);
-      this.telegraph.zone(this.x - this.w / 2, this.floorY - this.h, this.w, this.h, this.color, on ? 0.75 : 0.4, now * 0.05);
-      this.telegraph.rect(this.x - this.w / 2, this.floorY - 2, this.w, 2, this.color, on ? 0.9 : 0.5);
+      // The warning is a tell (danger red, the villain's colour at the edge); the eruption itself is in its colour.
+      const tell = tellFor(this.color);
+      this.telegraph.zone(this.x - this.w / 2, this.floorY - this.h, this.w, this.h, tell, on ? 0.75 : 0.4, now * 0.05);
+      this.telegraph.rect(this.x - this.w / 2, this.floorY - 2, this.w, 2, tell, on ? 0.9 : 0.5);
       if (this.warnLeft <= 0) {
         this.liveLeft = this.pendingLive;
         this.erupt();

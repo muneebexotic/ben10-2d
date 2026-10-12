@@ -13,7 +13,7 @@ import { bestOn, saveSystem, SaveSystem, type RecordOutcome } from '../systems/S
 import { session } from '../systems/Session';
 import { enterMenu, leaveTo } from '../ui/menu/transition';
 import { bindMuteKey } from '../systems/Settings';
-import { pixelText } from '../ui/text';
+import { boxed, pixelText } from '../ui/text';
 import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
@@ -209,7 +209,9 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const color = RANK_COLOR[this.rank];
     const x = 492;
     const y = 160;
-    pixelText(this, x, 96, 'RANK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    // A practice run (started mid-chapter, or with playtest aliens) is ranked but never saved: it says so.
+    if (this.stats.fullRun) pixelText(this, x, 96, 'RANK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+    else boxed(pixelText(this, x, 92, 'PRACTICE\nRANK', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim, align: 'center' }), x - 38, 80, 76, 24);
     const glow = this.add.image(x, y, TEX.light).setScale(2.2).setTint(color).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD);
     const letter = pixelText(this, x, y, this.rank, { scale: 8, originX: 0.5, originY: 0.5, color });
     letter.setScale(3).setAlpha(0).setAngle(-20);

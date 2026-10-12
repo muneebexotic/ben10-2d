@@ -1,5 +1,6 @@
 import { SPARK } from '../../../config/robots';
 import { PALETTE } from '../../../config/palette';
+import { TELL } from '../../../config/tells';
 import { TEX } from '../../../scenes/preload/assetKeys';
 import { blinkOn } from '../../../systems/Accessibility';
 import { playSfx } from '../../../systems/audio/Sfx';
@@ -36,7 +37,7 @@ export class SparkBrain implements DroneBrain {
       case 'charge':
         d.vx = damp(d.vx, 0.8);
         d.vy = damp(d.vy, 0.8);
-        w.telegraph.circle(d.x, d.y, SPARK.zapRadius, PALETTE.kevin, blinkOn(d.stateT, 80) ? 0.9 : 0.4);
+        w.telegraph.circle(d.x, d.y, SPARK.zapRadius, TELL.kevin, blinkOn(d.stateT, 80) ? 0.9 : 0.4);
         if (d.stateT >= SPARK.chargeMs) this.zap(d, w);
         break;
     }
