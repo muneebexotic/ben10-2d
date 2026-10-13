@@ -63,8 +63,8 @@ export const DIAMONDHEAD_FORM: FormDefinition = {
   ],
   audio: { transform: diamondheadTransform, music: DIAMONDHEAD_MUSIC },
   art: { assets: DIAMONDHEAD_ASSETS, anims: DIAMONDHEAD_ANIMS },
-  // His platforms: two footholds stacked up a shaft, or a bridge over a gap.
-  reach: { jumpUp: 7, jumpAcross: 8, canBurn: false, canSmash: false, canRunWater: false, canReflect: true },
+  // His two crystal platforms: one under his feet at the top of each jump (three ~4-tile jumps up), or two bridges over a gap.
+  reach: { jumpUp: 9, jumpAcross: 11, canBurn: false, canSmash: false, canRunWater: false, canReflect: true },
   copy: { style: 'fire', tell: 'shoot', attack: 'shoot', cheer: "YOU'RE MADE OF DIAMONDS?! DO YOU KNOW WHAT THOSE SELL FOR?!" },
   damageScale: DIAMONDHEAD.damageScale,
   ride: { attack: 'shot', special: 'shield', back: DIAMONDHEAD_TEX.back, color: PALETTE.diamondhead },

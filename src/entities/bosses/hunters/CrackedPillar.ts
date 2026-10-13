@@ -6,12 +6,8 @@ import { CH5_TEX } from '../../../scenes/preload/bounty';
 import type { Fx } from '../../../systems/Fx';
 import { playSfx } from '../../../systems/audio/Sfx';
 import { crystalBreak } from '../../../systems/audio/bountySfx';
+import { cracksPillar } from '../../hunters/huntRules';
 import type { Damageable, Hit, HitResult, Rect } from '../../types';
-
-/** Only hits with weight crack the pillar: a smash, a thrown enemy, or Kraab's own blast sent back. */
-export function cracksPillar(hit: Pick<Hit, 'kind' | 'heavy' | 'shot'>): boolean {
-  return hit.kind === 'smash' || hit.heavy === true || (hit.kind === 'reflect' && hit.shot === 'claw');
-}
 
 /**
  * The cracked crystal pillar holding up the chamber's roof in THE HUNTERS.

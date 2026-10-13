@@ -62,8 +62,42 @@ export function blockedCells(level: LevelData, caps: Capabilities): Set<string> 
       for (let x = e.x; x < e.x + CART_TILES; x++) for (let y = e.y - 2; y < e.y; y++) blocked.add(`${x},${y}`);
       if (e.barrier && !caps.canMerge) for (let y = e.barrier.y; y < e.barrier.y + e.barrier.h; y++) blocked.add(`${e.barrier.x},${y}`);
     }
+    // Walls only Ghostfreak walks through, and crystal gates a bounced laser opens (Diamondhead's shield).
+    if (e.type === 'phaseWall' && !caps.canPhase) {
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    }
+    if (e.type === 'crystalGate' && !caps.canReflect) {
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
+    }
   }
   return blocked;
+}
+
+/**
+ * Solid tiles that open up during play: cracked rock a dynamite crate clears
+ * (fire lights it), and the shaft wall the lift crashes through (for anyone:
+ * it's the story).
+ */
+export function openedCells(level: LevelData, caps: Capabilities): Set<string> {
+  const opened = new Set<string>();
+  const open = (r: { x: number; y: number; w: number; h: number }) => {
+    for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) opened.add(`${x},${y}`);
+  };
+  for (const e of level.entities) if (e.type === 'dynamite' && e.breaks && caps.canBurn) open(e.breaks);
+  const wall = level.story?.bounty?.hunters.wall;
+  if (wall) open(wall);
+  return opened;
+}
+
+/** The grid with `opened` cells cleared (a copy; the original is untouched). */
+function withOpened(grid: TileGrid, opened: Set<string>): TileGrid {
+  if (opened.size === 0) return grid;
+  const cells = grid.cells.map((row) => row.slice());
+  for (const key of opened) {
+    const [x, y] = key.split(',').map(Number);
+    if (cells[y] && x >= 0 && x < grid.width) cells[y][x] = CELL.EMPTY;
+  }
+  return { ...grid, cells };
 }
 
 /** A rail cart is this many tiles wide. */
@@ -74,8 +108,11 @@ export const CART_TILES = 3;
  * pad or a cart to where the ride drops it off.
  */
 function rides(level: LevelData, caps: Capabilities): Array<{ from: (p: Pos) => boolean; to: Pos }> {
-  if (!caps.canMerge) return [];
   const out: Array<{ from: (p: Pos) => boolean; to: Pos }> = [];
+  // THE DEEP DIVE: the runaway cart from the station at the end of the tunnels down to the crystal cavern (anyone).
+  const dive = level.story?.bounty?.dive;
+  if (dive) out.push({ from: (p) => p.x >= dive.triggerX && p.x <= dive.cartX + 2 && p.y === dive.floor - 1, to: { x: dive.landX, y: dive.landY - 1 } });
+  if (!caps.canMerge) return out;
   for (const e of level.entities) {
     if (e.type === 'lift') {
       for (let x = e.x; x < e.x + e.w; x++) out.push({ from: (p) => p.x === x && p.y === e.y - 2, to: { x, y: e.toY - 1 } });
@@ -119,7 +156,8 @@ function headroom(grid: TileGrid, blocked: Set<string>, x: number, y: number, ri
 }
 
 /** Breadth-first search over standable cells. Returns every reachable position key. */
-export function reachableFrom(level: LevelData, grid: TileGrid, start: Pos, caps: Capabilities): Set<string> {
+export function reachableFrom(level: LevelData, baseGrid: TileGrid, start: Pos, caps: Capabilities): Set<string> {
+  const grid = withOpened(baseGrid, openedCells(level, caps));
   const blocked = blockedCells(level, caps);
   const machineRides = rides(level, caps);
   const seen = new Set<string>();

@@ -11,22 +11,13 @@ import { burrow, clawCharge, clawFire, erupt, pinch } from '../../systems/audio/
 import type { Projectile } from '../Projectiles';
 import type { Damageable, Hazard, Hit, HitResult, Rect } from '../types';
 import { HunterLook } from './HunterLook';
+import { kraabShelled } from './huntRules';
 import type { HunterWorld } from './HunterWorld';
 
 type Mode = 'off' | 'hunt' | 'boss' | 'buried';
 type State = 'hidden' | 'sink' | 'tunnel' | 'hold' | 'erupt' | 'dizzy' | 'idle' | 'walk' | 'pinchWind' | 'pinch' | 'charge' | 'fire' | 'rest' | 'leave';
 
 const rand = (r: readonly [number, number]) => r[0] + Math.random() * (r[1] - r[0]);
-
-/**
- * Does Kraab's front shell stop this hit? Smashes always get through, and
- * so does anything while his claw is open (charging the cannon) or he's
- * reeling. Pure: unit tested.
- */
-export function kraabShelled(face: 1 | -1, kraabX: number, open: boolean, hit: Pick<Hit, 'x' | 'kind' | 'heavy'>): boolean {
-  if (open || hit.kind === 'smash' || hit.heavy) return false;
-  return Math.sign(hit.x - kraabX) === face || hit.x === kraabX;
-}
 
 /**
  * Kraab: crab armour, a claw cannon, a big mouth. He burrows: a crack line

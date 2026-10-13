@@ -8,20 +8,12 @@ import { playSfx } from '../../../systems/audio/Sfx';
 import { burrow, crabClick, erupt, pinch, shellFlip } from '../../../systems/audio/bountySfx';
 import { chance, damp } from '../../../systems/Pacing';
 import type { Hit } from '../../types';
+import { crabShelled } from '../../hunters/huntRules';
 import { rand } from '../brainKit';
 import type { Drone, DroneBrain, DroneWorld } from '../Drone';
 import { faceOf, notices, patrol, setFace, walkPhysics } from '../mutants/kit';
 
 const UNDERGROUND = new Set(['burrow', 'tunnel', 'crack']);
-
-/**
- * Is this hit stopped by the crab-bot's front shell? Heavy hits never are
- * (they flip it), and nothing is while it's on its back. Pure: unit tested.
- */
-export function crabShelled(face: 1 | -1, crabX: number, flipped: boolean, hit: Pick<Hit, 'x' | 'kind' | 'heavy'>): boolean {
-  if (flipped || hit.heavy || hit.kind === 'smash') return false;
-  return Math.sign(hit.x - crabX) === face || hit.x === crabX;
-}
 
 /**
  * Kraab's crab-bot. Up close it raises its claws (the tell) and pinches. At

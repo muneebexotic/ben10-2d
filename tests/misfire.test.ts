@@ -5,6 +5,7 @@ import { MISFIRE, SWAP } from '../src/config/omnitrix';
 import { seededRng } from '../src/systems/Rng';
 import { allAliens } from '../src/aliens/registry';
 import { GENERIC_MISFIRE_LINES, MisfireQuips, misfireLines } from '../src/aliens/misfire';
+import { FORCED_MISFIRES, isForcedMisfire } from '../src/systems/MisfireRules';
 
 const ROSTER = ['heatblast', 'fourarms', 'xlr8'];
 
@@ -267,5 +268,51 @@ describe('misfire lines', () => {
       expect(line).not.toBe(last);
       last = line;
     }
+  });
+});
+
+describe('forced misfires (the one named exception)', () => {
+  const SOURCES = import.meta.glob('../src/**/*.ts', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+
+  it('there is exactly one: the lift in Chapter 5', () => {
+    expect([...FORCED_MISFIRES]).toEqual(['ch5-lift']);
+    expect(isForcedMisfire('ch5-lift')).toBe(true);
+    for (const name of ['ch5-lift ', 'ch4-turn', 'lift', '']) expect(isForcedMisfire(name), name).toBe(false);
+  });
+
+  it('only the lift forces one, and only by that name', () => {
+    const callers: string[] = [];
+    for (const [file, text] of Object.entries(SOURCES)) {
+      // The controller's own call into the Omnitrix passes its checked name through.
+      if (file.endsWith('/scenes/level/OmnitrixController.ts')) continue;
+      for (const m of text.matchAll(/\.forceMisfire\(\s*([^,)]*)/g)) callers.push(`${file.replace(/^.*\/src\//, '')}: ${m[1].trim()}`);
+    }
+    expect(callers).toEqual(["scenes/level/story/bounty/LiftAmbush.ts: 'ch5-lift'"]);
+  });
+
+  it('gives the wrong alien from the ready state, and the fix swap is owed after', () => {
+    const omni = new Omnitrix(configFor('easy'), ROSTER, seededRng(30));
+    const events = omni.forceMisfire('heatblast', 'xlr8', 'ch5-lift');
+    expect(events.find((e) => e.type === 'transformed')).toMatchObject({ alienId: 'xlr8', requestedId: 'heatblast', wrong: true });
+    expect(events.find((e) => e.type === 'forcedMisfire')).toMatchObject({ alienId: 'xlr8', exception: 'ch5-lift' });
+    expect(omni.activeAlienId).toBe('xlr8');
+    expect(omni.fixSwapOwed).toBe(true);
+    expect(omni.misfireState).toMatchObject({ wantedId: 'heatblast', gotId: 'xlr8' });
+  });
+
+  it('mid-transformation it swaps to the wrong alien and tops the timer up', () => {
+    const omni = new Omnitrix(configFor('normal'), ROSTER, seededRng(31));
+    omni.transform({ allowMisfire: false });
+    omni.update(5000);
+    const events = omni.forceMisfire('fourarms', 'xlr8', 'ch5-lift');
+    expect(events.find((e) => e.type === 'swapped')).toMatchObject({ fromId: 'heatblast', alienId: 'xlr8', wrong: true });
+    expect(omni.timeRemainingMs).toBe(DIFFICULTY.normal.transformDurationMs);
+  });
+
+  it("refuses an alien that isn't on the dial, or the one Ben asked for", () => {
+    const omni = new Omnitrix(configFor('hard'), ROSTER, seededRng(32));
+    expect(omni.forceMisfire('heatblast', 'ghostfreak', 'ch5-lift')).toEqual([]);
+    expect(omni.forceMisfire('heatblast', 'heatblast', 'ch5-lift')).toEqual([]);
+    expect(omni.activeAlienId).toBeNull();
   });
 });
