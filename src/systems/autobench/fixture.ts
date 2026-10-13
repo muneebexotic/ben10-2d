@@ -1,7 +1,7 @@
 import type { SaveData, StorageLike } from '../SaveSystem';
 
 /**
- * The autobench plays on a throwaway file held in memory: Act 1 and Chapter 4
+ * The autobench plays on a throwaway file held in memory: Chapters 1-5
  * cleared, every alien, sound on, touch controls on AUTO. The player's real
  * save in localStorage is never read or written while it runs.
  */
@@ -18,8 +18,8 @@ export function autobenchSave(now: number = Date.now()): SaveData {
         lastPlayedAt: now,
         playTimeMs: 0,
         difficulty: 'normal',
-        chapters: { ch1: { ...chapter }, ch2: { ...chapter }, ch3: { ...chapter }, ch4: { ...chapter } },
-        unlockedAliens: ['heatblast', 'xlr8', 'fourarms', 'wildmutt', 'stinkfly', 'upgrade'],
+        chapters: { ch1: { ...chapter }, ch2: { ...chapter }, ch3: { ...chapter }, ch4: { ...chapter }, ch5: { ...chapter } },
+        unlockedAliens: ['heatblast', 'xlr8', 'fourarms', 'wildmutt', 'stinkfly', 'upgrade', 'ghostfreak', 'diamondhead'],
         resume: null,
         achievements: {},
         lifetime: {},

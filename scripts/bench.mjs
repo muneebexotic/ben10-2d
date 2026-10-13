@@ -396,6 +396,9 @@ async function runLeak(browser, base) {
       ['ch3', 'cp-frog'],
       ['ch4', 'cp-station'],
       ['ch4', 'cp-kevin'],
+      // Running right from the station boards the ore cart: the level ends mid-ride, the 3D scene and its texture must go with it.
+      ['ch5', 'cp-dive'],
+      ['ch5', 'cp-hunters'],
       ['training', null],
     ];
     const rows = [];

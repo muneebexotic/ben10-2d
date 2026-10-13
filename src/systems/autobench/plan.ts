@@ -15,7 +15,7 @@ export interface BenchScenario {
   levelId: string | null;
   checkpoint: string | null;
   driver: Driver;
-  setup?: 'kevinArena' | 'misfireChaos';
+  setup?: 'kevinArena' | 'misfireChaos' | 'diveRide';
 }
 
 export const BENCH_SCENARIOS: readonly BenchScenario[] = [
@@ -28,6 +28,8 @@ export const BENCH_SCENARIOS: readonly BenchScenario[] = [
   { id: 'ch3-frog', title: 'Ch3 KING CROAK', levelId: 'ch3', checkpoint: 'cp-frog', driver: 'brawl' },
   { id: 'ch4-arcade', title: 'Ch4 GAME ZONE', levelId: 'ch4', checkpoint: 'cp-arcade', driver: 'brawl' },
   { id: 'ch4-kevin', title: 'Ch4 KEVIN 11', levelId: 'ch4', checkpoint: 'cp-kevin', driver: 'brawl', setup: 'kevinArena' },
+  // Chapter 5's heaviest moment: the 3D ride, a ray-traced tunnel under the sprites (the phone's GPU does the work).
+  { id: 'ch5-dive', title: 'Ch5 THE DEEP DIVE', levelId: 'ch5', checkpoint: 'cp-dive', driver: 'brawlNoSwap', setup: 'diveRide' },
   { id: 'misfire', title: 'Training, misfires on CHAOS', levelId: 'training', checkpoint: null, driver: 'brawl', setup: 'misfireChaos' },
 ];
 

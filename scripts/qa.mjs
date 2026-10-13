@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// QA sweep: plays every screen and checkpoint of Chapters 1-4 in headless
+// QA sweep: plays every screen and checkpoint of Chapters 1-5 in headless
 // Chromium at three screen sizes, screenshots each one, and checks every
 // visible text (scripts/qa/textcheck.js), the HUD under stress (long banners,
 // combos, toasts, prompts, dialogue), and page errors. --fuzz adds random play
-// at every checkpoint looking for errors, softlocks and stuck states.
+// at every checkpoint looking for errors, softlocks, stuck states and a
+// misfire during a story moment (only the named exception, ch5-lift, may).
 //
 //   npm run qa                         sweep + HUD gauntlet at desktop, 20:9 phone, small 16:9 phone
 //   npm run qa -- --sizes=phone        one size
@@ -171,7 +172,9 @@ class Session {
 
 // ------------------------------------------------------------------ the sweep
 
-const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4'];
+const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'];
+/** The story's one named forced misfire (FORCED_MISFIRES in src/systems/MisfireRules.ts). */
+const FORCED_MISFIRES = ['ch5-lift'];
 
 async function checkpointsOf(s, level) {
   await s.goto(`level=${level}&god=1&mute=1`, `${level}-probe`);
@@ -200,6 +203,7 @@ async function sweepMenus(s) {
     ['ChapterSelect', { focus: 2 }],
     ['ChapterSelect', { focus: 3 }],
     ['ChapterSelect', { focus: 4 }],
+    ['ChapterSelect', { focus: 5 }],
     ['ChapterSelect', { focus: 6 }],
     ['ChapterSelect', { newFile: true, focus: 1 }],
     ['ChapterSelect', { cleared: 'ch4', firstClear: true }],
@@ -306,12 +310,12 @@ async function hudGauntlet(s) {
     await sleep(700);
     await s.check(`hud-banner-${b.title}`);
   }
-  for (const id of ['full-omnitrix', 'omnitrix-master', 'nothing-to-copy', 'high-score']) {
+  for (const id of ['full-omnitrix', 'omnitrix-master', 'nothing-to-copy', 'high-score', 'clutch-misfire', 'bounty-void']) {
     await bus('achievement:unlocked', { id });
     await sleep(900);
     await s.check(`hud-achievement-${id}`);
   }
-  for (const [name, subtitle] of [['HUNTER-KILLER DRONE', "VILGAX'S RETRIEVAL UNIT"], ['ROADBREAKER', "VILGAX'S WAR RIG"], ['KING CROAK', "DR. ANIMO'S MASTERPIECE"], ['KEVIN 11', 'HE COPIES WHAT YOU USE']]) {
+  for (const [name, subtitle] of [['HUNTER-KILLER DRONE', "VILGAX'S RETRIEVAL UNIT"], ['ROADBREAKER', "VILGAX'S WAR RIG"], ['KING CROAK', "DR. ANIMO'S MASTERPIECE"], ['KEVIN 11', 'HE COPIES WHAT YOU USE'], ['TETRAX', 'THE HUNTERS']]) {
     await bus('boss:show', { name, subtitle });
     await bus('boss:health', { ratio: 0.5, phase: 2 });
     await bus('boss:copies', { list: [{ id: 'heatblast', level: 3 }, { id: 'xlr8', level: 2 }, { id: 'fourarms', level: 1 }, { id: 'wildmutt', level: 3 }, { id: 'stinkfly', level: 1 }, { id: 'upgrade', level: 2 }], current: 'heatblast' });
@@ -325,6 +329,8 @@ async function hudGauntlet(s) {
     'LOCKDOWN! FIVE LOCKS, ONE ALIEN EACH. {T} SWAPS ON THE FLY',
     'TIP: {DIAL} PICK ANOTHER ALIEN, THEN {T} TO SWAP MID-FIGHT',
     'NO EYES, ALL NOSE: HIDDEN FOES AND SECRET DOORS SHOW UP NEAR HIM',
+    "STUCK WITH IT! THE WATCH WON'T SWAP YET... KO SOMETHING: +2S",
+    'HIS SHELL ONLY GIVES TO A SMASH. HIT HIS BACK, OR SEND HIS BLAST BACK!',
   ];
   for (const text of prompts) {
     await bus('hud:prompt', { id: 'qa', text, priority: 99 });
@@ -346,6 +352,12 @@ async function hudGauntlet(s) {
   for (let i = 0; i < 3; i++) {
     await sleep(i === 0 ? 2600 : 900);
     await s.check(`hud-dialog-${i}`);
+  }
+  // Ghostfreak's whispers in the corner.
+  for (const text of ['LET ME OUT... LET ME STAY...', 'SOON...']) {
+    await bus('hud:whisper', { text, color: 0xa040ff });
+    await sleep(400);
+    await s.check(`hud-whisper-${text.slice(0, 12)}`);
   }
   for (const text of ['*SNIFF SNIFF* (I CAN\'T SEE A THING... BUT I CAN SMELL EVERYTHING!)', 'WAIT... THERE WAS ONE OF THESE BACK IN DR. ANIMO!']) {
     await s.page.evaluate((t) => window.__level.speech.show(t, 3000), text);
@@ -413,7 +425,7 @@ async function fuzzCheckpoint(s, level, cp, seconds, seed) {
     }
     await sleep(60 + rand() * 200);
     const state = await s.page
-      .evaluate(() => {
+      .evaluate((forced) => {
         const g = window.__game;
         const lvl = window.__level;
         const p = lvl?.player;
@@ -429,16 +441,19 @@ async function fuzzCheckpoint(s, level, cp, seconds, seed) {
           w: lvl?.world?.widthPx,
           h: lvl?.world?.heightPx,
           frozenMs: window.__freezeWatch?.max ?? 0,
+          // A misfire during a story moment, or a forced one, that isn't the named exception.
+          badMisfires: (lvl?.misfireLog ?? []).filter((m) => (m.storyLock || m.forced !== null) && !forced.includes(m.forced)).map((m) => `${m.gotId}@${m.x}${m.forced ? ` (${m.forced})` : ''}`),
           inSolid: p && !p.dead && lvl.world.isSolid(p.x, p.y - 4) && lvl.world.isSolid(p.x, p.y - 14),
           lostEnemies: (lvl?.drones ?? []).filter((d) => d.alive && (!Number.isFinite(d.x) || !Number.isFinite(d.y) || d.x < -200 || d.x > lvl.world.widthPx + 200 || d.y > lvl.world.heightPx + 200)).map((d) => `${d.kind ?? d.brain?.kind ?? 'enemy'}@${Math.round(d.x / 16)},${Math.round(d.y / 16)}`),
         };
-      })
+      }, FORCED_MISFIRES)
       .catch((e) => ({ error: e.message }));
     if (state.error) {
       failures.push(`evaluate failed: ${state.error}`);
       break;
     }
     if (!state.active.length) failures.push('no scene running');
+    if (state.badMisfires?.length) failures.push(`misfire during a story moment: ${state.badMisfires.join(' ')}`);
     if (state.levelActive) {
       if (!Number.isFinite(state.x) || !Number.isFinite(state.y)) failures.push(`player position ${state.x},${state.y}`);
       else if (state.x < -40 || state.x > state.w + 40 || state.y > state.h + 200) failures.push(`player out of the world at ${Math.round(state.x)},${Math.round(state.y)}`);
@@ -482,6 +497,7 @@ const BOSS_FIGHTS = [
   { level: 'ch2', cp: 'cp-arena' },
   { level: 'ch3', cp: 'cp-frog' },
   { level: 'ch4', cp: 'cp-kevin', teleport: [396 * 16 + 8, 33 * 16] },
+  { level: 'ch5', cp: 'cp-hunters' },
 ];
 const HIT_KINDS = ['melee', 'fire', 'burst', 'rocket', 'smash', 'slime', 'tech'];
 
@@ -505,8 +521,18 @@ async function bossFight(s, fight) {
         const lvl = window.__level;
         const boss = lvl?.arena?.boss;
         if (boss && lvl.arena.fighting && !boss.introducing && !boss.defeated) {
-          for (const kind of kinds) boss.takeHit({ damage: Math.max(1, boss.maxHp * 0.02), kind, x: lvl.player.x, y: lvl.player.centerY, knockback: 0 });
+          const hit = (t, kind) => t.takeHit({ damage: Math.max(1, boss.maxHp * 0.02), kind, x: lvl.player.x, y: lvl.player.centerY, knockback: 0 });
+          // THE HUNTERS take their hits on the fighters themselves (whoever is in the fight right now).
+          const box = { x: 0, y: 0, w: 0, h: 0 };
+          const fighters = (boss.extraTargets ?? []).filter((t) => t.hurtbox?.(box));
+          for (const kind of kinds) {
+            hit(boss, kind);
+            for (const t of fighters) hit(t, kind);
+          }
         }
+        // Sixsix's stage ends with the climb out of the shaft: skip the climb.
+        const shaft = lvl?.level.story?.bounty?.hunters.shaft;
+        if (shaft && boss?.stage === 'climbOut') lvl.benchTeleport((shaft.x + shaft.w / 2) * 16, shaft.top * 16);
         // Pickups piling up on one tile: a one-off drop that fired every frame.
         const tiles = {};
         for (const p of lvl?.pickups ?? []) {

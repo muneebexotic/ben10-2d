@@ -376,6 +376,8 @@ export class AutobenchScene extends Phaser.Scene {
       // Straight into the substation hall (the same spot as `npm run bench`).
       (this.scene.get(SCENES.level) as LevelScene).benchTeleport(396 * 16 + 8, 33 * 16);
     }
+    // Into the ore cart: THE DEEP DIVE starts on its own (the warm-up covers the swing into 3D).
+    if (scenario.setup === 'diveRide') (this.scene.get(SCENES.level) as LevelScene).benchTeleport(328 * 16, 40 * 16);
     autopilot.start(scenario.driver, scenario.setup === 'kevinArena' ? 3200 : 2400);
     this.scene.bringToTop();
     this.setPhase('warmup');

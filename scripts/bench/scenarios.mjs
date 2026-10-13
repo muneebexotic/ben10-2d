@@ -150,6 +150,35 @@ export const SCENARIOS = [
     play: (page, ms) => brawl(page, ms),
   },
   {
+    id: 'ch5-street',
+    title: "Ch5 Main Street (tracker drones, missile salvos, Sixsix's duel, the moonlit town)",
+    query: 'level=ch5&start=cp-street',
+    play: (page, ms) => advance(page, ms),
+  },
+  {
+    id: 'ch5-dive',
+    title: 'Ch5 THE DEEP DIVE (the ray-traced tunnel, sprites projected on it)',
+    query: 'level=ch5&start=cp-dive',
+    setup: async (page) => {
+      // Into the cart: the ride starts on its own.
+      await page.evaluate(() => window.__level.benchTeleport(328 * 16, 40 * 16));
+      await page.waitForFunction(() => window.__level.story?.pieces?.some((p) => p.phase === 'ride'), undefined, { timeout: 20000 }).catch(() => undefined);
+    },
+    play: (page, ms) => brawl(page, ms, { swap: false }),
+  },
+  {
+    id: 'ch5-hunters',
+    title: 'Ch5 THE HUNTERS (Kraab in the chamber, Sixsix strafing, salvos, rockfalls)',
+    query: 'level=ch5&start=cp-hunters',
+    setup: async (page) => {
+      // Into the chamber, then skip Kraab's line.
+      await page.evaluate(() => window.__level.benchTeleport(458 * 16, 58 * 16));
+      await sleep(600);
+      await skipCinematics(page, 3);
+    },
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
     id: 'misfire',
     title: 'Training, misfires on CHAOS (transform gag every swap)',
     query: 'training=1',
