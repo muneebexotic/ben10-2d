@@ -10,9 +10,9 @@ import { chance } from '../../systems/Pacing';
 import type { Player } from '../Player';
 import type { Rect } from '../types';
 
-export type PhaseWallLook = 'bars' | 'stone' | 'boards';
+export type PhaseWallLook = 'bars' | 'stone' | 'boards' | 'hidden';
 
-const FRAME: Record<PhaseWallLook, number> = { bars: 0, stone: 1, boards: 2 };
+const FRAME: Record<PhaseWallLook, number> = { bars: 0, stone: 1, boards: 2, hidden: 1 };
 
 export interface PhaseWallSpec {
   id: string;
@@ -52,6 +52,9 @@ export class PhaseWalls {
     for (const spec of specs) {
       const rect = { x: spec.x * TILE, y: spec.y * TILE, w: spec.w * TILE, h: spec.h * TILE };
       const image = scene.add.tileSprite(rect.x, rect.y, rect.w, rect.h, CH5_TEX.phaseWall, FRAME[spec.look]).setOrigin(0, 0).setDepth(DEPTH.terrain + 2);
+      // A hidden wall is the level's own art (a sealed door, a wall); it only shows as a ripple while he's in it.
+      const restAlpha = spec.look === 'hidden' ? 0 : 1;
+      image.setAlpha(restAlpha);
       const body = scene.physics.add.staticImage(rect.x + rect.w / 2, rect.y + rect.h / 2, TEX.whitePx).setVisible(false);
       body.setDisplaySize(rect.w, rect.h).refreshBody();
       const wall: Wall = { spec, rect, image, body, inside: false };
@@ -79,11 +82,11 @@ export class PhaseWalls {
       const inside = !p.dead && box.x < r.x + r.w && box.x + box.w > r.x && box.y < r.y + r.h && box.y + box.h > r.y;
       if (inside && p.phased) {
         // Passing through: the wall ripples and goes see-through around him.
-        w.image.setAlpha(0.55 + Math.sin(now * 0.02) * 0.1);
+        w.image.setAlpha((w.spec.look === 'hidden' ? 0.3 : 0.55) + Math.sin(now * 0.02) * 0.1);
         if (chance(0.25)) this.fx.trail('ghost', p.x + (Math.random() - 0.5) * 14, p.centerY + (Math.random() - 0.5) * 20);
         this.lighting.add(p.x, p.centerY, 40, PALETTE.ghostfreak, 0.5);
       } else {
-        w.image.setAlpha(1);
+        w.image.setAlpha(w.spec.look === 'hidden' ? 0 : 1);
       }
       if (inside && !p.phased) this.eject(w, box);
       w.inside = inside;

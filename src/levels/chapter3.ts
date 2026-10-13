@@ -40,7 +40,7 @@ export const CHAPTER_3: LevelData = {
     { material: 'rock', x: 136, top: 27, w: 2, h: 3 },
     // A plinth in the Night Gallery with a sealed alcove.
     { material: 'rock', x: 158, top: 27, w: 6, h: 3 },
-    // The wall only a climber gets up, and the upper gallery on top of it.
+    // The wall only a climber gets up (a sealed exhibit vault in its foot), and the upper gallery on top of it.
     { material: 'rock', x: 188, top: 14, w: 4 },
     { material: 'ground', x: 192, top: 14, w: 32 },
     { material: 'rock', x: 192, top: 0, w: 32, h: 10 },
@@ -80,6 +80,8 @@ export const CHAPTER_3: LevelData = {
     { x: 88, y: 30, w: 4, h: 4 },
     // The plinth's alcove behind a hidden door.
     { x: 158, y: 28, w: 5, h: 2 },
+    // The sealed exhibit vault in the foot of the climbing wall (its door is a phase wall: Ghostfreak, Chapter 5).
+    { x: 188, y: 27, w: 5, h: 3 },
     // The shaft up out of the locked room, and the vent behind the hidden door.
     { x: 321, y: 6, w: 4, h: 6 },
     // The guards' security room off the wing, behind a shutter whose keypad died with the power (Upgrade, Chapter 4).
@@ -206,6 +208,11 @@ export const CHAPTER_3: LevelData = {
     { type: 'decor', kind: 'columns', x: 154, y: 30 },
     { type: 'hiddenDoor', id: 'ch3-plinth', x: 158, y: 28, w: 5, h: 2 },
     { type: 'card', id: 'ch3-card-dark', x: 161, y: 30, requires: 'wildmutt' },
+    // Ghostfreak's secret (Chapter 5): a sealed exhibit vault at the foot of the wall. No handle, no hinges.
+    { type: 'decor', kind: 'sealedDoor', x: 188.5, y: 30 },
+    { type: 'phaseWall', id: 'ch3-vault-door', x: 188, y: 27, w: 1, h: 3, look: 'hidden' },
+    { type: 'card', id: 'ch3-card-vault', x: 191, y: 30, requires: 'ghostfreak' },
+    { type: 'alienHint', id: 'ch3-vault-hint', alien: 'ghostfreak', x: 182, y: 26, w: 6, h: 4, line: 'A SEALED EXHIBIT VAULT. NO HANDLE. NO HINGES. ...NOTHING ALIVE GETS IN THERE.' },
     { type: 'decor', kind: 'displayCase', x: 167, y: 30 },
     { type: 'decor', kind: 'painting', x: 171, y: 24 },
     { type: 'decor', kind: 'exitSign', x: 182, y: 12 },

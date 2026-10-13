@@ -23,6 +23,8 @@ export interface ReceiverSpec {
   id: string;
   x: number;
   y: number;
+  /** Tiles wide (a crystal seam along a floor or a ledge); one by default. */
+  w?: number;
   /** The gate it opens once a reflected beam lights it. */
   gate: string;
   /** An emitter it switches off once lit (a laser bounced back into its own emitter overloads it). */
@@ -61,6 +63,14 @@ export interface LaserWorld {
 }
 
 const DIRS: Record<LaserDir, [number, number]> = { right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1] };
+/** A beam's strokes: a soft glow, the beam, and its hot core. */
+const BEAM_STROKES = [[L.thickness + 3, PALETTE.enemy, 0.25], [L.thickness, PALETTE.enemy, 0.85], [1, 0xffe0e0, 1]] as const;
+
+function samePath(a: readonly number[], b: readonly number[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
 const STEP = 3;
 
 interface Emitter {
@@ -68,14 +78,16 @@ interface Emitter {
   x: number;
   y: number;
   on: boolean;
-  /** The traced beam this frame (x, y pairs) and how many bounces it took. */
+  /** The traced beam this frame (x, y pairs). */
   readonly path: number[];
+  /** The beam as last drawn: the Graphics is only redrawn when a path changes. */
+  readonly drawn: number[];
 }
 
 interface Receiver {
   spec: ReceiverSpec;
   rect: Rect;
-  sprite: Phaser.GameObjects.Image;
+  sprites: Phaser.GameObjects.Image[];
   charge: number;
   lit: boolean;
   /** A beam is on it this frame. */
@@ -119,13 +131,15 @@ export class LaserGrid {
       const cy = spec.y * TILE + TILE / 2;
       const angle = Math.atan2(dy, dx);
       scene.add.image(cx, cy, CH5_TEX.laserEmitter).setRotation(angle).setDepth(DEPTH.props);
-      this.emitters.push({ spec, x: cx + dx * 7, y: cy + dy * 7, on: true, path: [] });
+      this.emitters.push({ spec, x: cx + dx * 7, y: cy + dy * 7, on: true, path: [], drawn: [] });
     }
     for (const spec of receivers) {
       const cx = spec.x * TILE + TILE / 2;
       const cy = spec.y * TILE + TILE / 2;
-      const sprite = scene.add.image(cx, cy, CH5_TEX.receiver, 0).setDepth(DEPTH.props);
-      this.receivers.push({ spec, rect: { x: cx - 7, y: cy - 7, w: 14, h: 14 }, sprite, charge: 0, lit: false, hot: false });
+      const tiles = spec.w ?? 1;
+      const sprites: Phaser.GameObjects.Image[] = [];
+      for (let i = 0; i < tiles; i++) sprites.push(scene.add.image(cx + i * TILE, cy, CH5_TEX.receiver, 0).setDepth(DEPTH.props));
+      this.receivers.push({ spec, rect: { x: cx - 7, y: cy - 7, w: 14 + (tiles - 1) * TILE, h: 14 }, sprites, charge: 0, lit: false, hot: false });
     }
     for (const spec of gates) {
       const rect = { x: spec.x * TILE, y: spec.y * TILE, w: spec.w * TILE, h: spec.h * TILE };
@@ -156,19 +170,28 @@ export class LaserGrid {
   update(dtMs: number, view: Phaser.Geom.Rectangle): void {
     this.hurtCooldown = Math.max(0, this.hurtCooldown - dtMs);
     for (const r of this.receivers) r.hot = false;
-    const g = this.g;
-    g.clear();
     const mirror = this.w.mirror();
+    let changed = false;
     for (const e of this.emitters) {
-      if (!e.on || e.x < view.x - 300 || e.x > view.right + 300 || e.y < view.y - 300 || e.y > view.bottom + 300) continue;
-      this.trace(e, mirror);
-      this.draw(e);
+      const live = e.on && e.x > view.x - 300 && e.x < view.right + 300 && e.y > view.y - 300 && e.y < view.bottom + 300;
+      if (live) this.trace(e, mirror);
+      else e.path.length = 0;
+      if (!samePath(e.path, e.drawn)) {
+        changed = true;
+        e.drawn.length = 0;
+        for (const v of e.path) e.drawn.push(v);
+      }
+      if (live) this.glow(e);
+    }
+    if (changed) {
+      this.g.clear();
+      for (const e of this.emitters) this.draw(e);
     }
     for (const r of this.receivers) {
       if (r.lit) continue;
       r.charge = r.hot ? r.charge + dtMs : Math.max(0, r.charge - dtMs * 2);
-      r.sprite.setTint(r.hot ? 0xffffff : 0xb0b0c0);
-      if (r.hot) this.w.lighting.add(r.rect.x + 7, r.rect.y + 7, 20 + (r.charge / L.chargeMs) * 30, 0x9af0ff, 0.9);
+      for (const s of r.sprites) s.setTint(r.hot ? 0xffffff : 0xb0b0c0);
+      if (r.hot) this.w.lighting.add(r.rect.x + r.rect.w / 2, r.rect.y + 7, 20 + (r.charge / L.chargeMs) * 30, 0x9af0ff, 0.9);
       if (r.charge >= L.chargeMs) this.light(r, false);
     }
   }
@@ -224,27 +247,31 @@ export class LaserGrid {
 
   private draw(e: Emitter): void {
     const g = this.g;
-    const p = e.path;
+    const p = e.drawn;
     if (p.length < 4) return;
-    for (const [width, color, alpha] of [[L.thickness + 3, PALETTE.enemy, 0.25], [L.thickness, PALETTE.enemy, 0.85], [1, 0xffe0e0, 1]] as const) {
+    for (const [width, color, alpha] of BEAM_STROKES) {
       g.lineStyle(width, color, alpha);
       g.beginPath();
       g.moveTo(p[0], p[1]);
       for (let i = 2; i < p.length; i += 2) g.lineTo(p[i], p[i + 1]);
       g.strokePath();
     }
-    // Light where the beam starts, bounces and ends.
+  }
+
+  /** Light where the beam starts, bounces and ends (every frame: lights don't persist). */
+  private glow(e: Emitter): void {
+    const p = e.path;
     for (let i = 0; i < p.length; i += 2) this.w.lighting.add(p[i], p[i + 1], i === 0 ? 20 : 26, PALETTE.enemy, 0.8);
   }
 
   private light(r: Receiver, silent: boolean): void {
     r.lit = true;
-    r.sprite.setFrame(1).clearTint();
+    for (const s of r.sprites) s.setFrame(1).clearTint();
     if (r.spec.kills) for (const e of this.emitters) if (e.spec.id === r.spec.kills) e.on = false;
     const gate = this.gates.find((gt) => gt.spec.id === r.spec.gate);
     if (!silent) {
-      this.w.fx.burst('crystal', r.rect.x + 7, r.rect.y + 7, 16);
-      this.w.fx.ring(r.rect.x + 7, r.rect.y + 7, 0x9af0ff, 40, 400);
+      this.w.fx.burst('crystal', r.rect.x + r.rect.w / 2, r.rect.y + 7, 16);
+      this.w.fx.ring(r.rect.x + r.rect.w / 2, r.rect.y + 7, 0x9af0ff, 40, 400);
       playSfx(receiverOn, 0.9);
     }
     if (gate && !gate.open) this.openGate(gate, silent);

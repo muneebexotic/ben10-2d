@@ -53,6 +53,8 @@ export const CHAPTER_1: LevelData = {
     { x: 112, y: 17, w: 4, h: 3 },
     // A Vilgax supply cache sunk into the ground by the crash site; its hatch is dead (Upgrade, Chapter 4).
     { x: 214, y: 24, w: 4, h: 2 },
+    // A pocket in the cliff past the jammer, behind a crystal seam (Diamondhead, Chapter 5).
+    { x: 192, y: 21, w: 5, h: 3 },
   ],
 
   platforms: [
@@ -108,6 +110,14 @@ export const CHAPTER_1: LevelData = {
     { type: 'drone', kind: 'scout', x: 123, y: 12 },
 
     { type: 'jammer', x: 176, y: 24, fieldFrom: 131, gateX: 179, gateTop: 12 },
+    // Diamondhead's secret (Chapter 5): the jammer beams straight up at Vilgax's ship, even wrecked. From crystal
+    // platforms above it, his shield tilted down sends the beam onto the crystal seam in the ground, and the seam
+    // in the cliff shatters open.
+    { type: 'laser', id: 'ch1-jammer-beam', x: 176, y: 19, dir: 'up' },
+    { type: 'receiver', id: 'ch1-seam', x: 183, y: 23, w: 5, gate: 'ch1-cliff-seam' },
+    { type: 'crystalGate', id: 'ch1-cliff-seam', x: 192, y: 21, w: 1, h: 3 },
+    { type: 'card', id: 'ch1-card-beam', x: 194, y: 24, requires: 'diamondhead' },
+    { type: 'alienHint', id: 'ch1-beam-hint', alien: 'diamondhead', x: 180, y: 20, w: 11, h: 4, line: "THE JAMMER'S STILL BEAMING SOMETHING UP... AND THERE'S CRYSTAL IN THE ROCK HERE." },
     { type: 'drone', kind: 'scout', x: 140, y: 17 },
     { type: 'drone', kind: 'striker', x: 149, y: 16 },
     { type: 'checkpoint', id: 'cp-ravine', x: 152, y: 24, density: 'frequent', label: 'RAVINE' },

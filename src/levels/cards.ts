@@ -49,6 +49,8 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch5-card-mouse', number: 34, name: 'MOUSEHOLE MOMO', flavour: 'THE SMALLEST WRESTLER ON RECORD. THE RECORD IS ALSO VERY SMALL.', color: 0xa89a8a, holo: true },
   { id: 'ch5-card-flooded', number: 35, name: 'DEEP WATER DAICHI', flavour: 'HOLDS HIS BREATH FOR TWENTY MINUTES. HOLDS GRUDGES FOR LONGER.', color: 0x2a7ab8, holo: true },
   { id: 'ch5-card-loop', number: 36, name: 'LOOP-DE-LOOP ROKU', flavour: 'ROLLS INTO THE RING. ROLLS OUT OF IT. NEVER STOPS ROLLING.', color: 0xd8c83a, holo: true },
+  { id: 'ch3-card-vault', number: 37, name: 'EXHIBIT A AKIRA', flavour: 'SEALED IN A MUSEUM VAULT IN 1952. STILL UNDEFEATED. STILL IN THE VAULT.', color: 0xb8c8ff, holo: true },
+  { id: 'ch1-card-beam', number: 38, name: 'BEAM BREAKER BEN-JI', flavour: 'BOUNCED A SPACESHIP SIGNAL OFF HIS OWN FOREHEAD. ON PURPOSE.', color: 0xff4a5a, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {

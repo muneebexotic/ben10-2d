@@ -63,10 +63,12 @@ export const CHAPTER_4: LevelData = {
     // The turn room's exit wall (the door Kevin rips open is a shutter in rows 29-32).
     { material: 'ground', x: 334, top: 0, w: 2, h: 29 },
     { material: 'ground', x: 336, top: 0, w: 52, h: 15 },
-    // The depot: the wall under the mezzanine (a shutter below it), the laser vault and the cracked-wall
-    // closet (low blocks anyone hops over), and the sealed room hanging off the mezzanine's end.
+    // The depot: the wall under the mezzanine (a shutter below it), the laser vault (its crystal seal is a
+    // gate Diamondhead's bounced beam opens), the cracked-wall closet (a low block anyone hops over), and
+    // the sealed room hanging off the mezzanine's end (its left wall a phase wall).
     { material: 'rock', x: 356, top: 26, w: 2, h: 3 },
-    { material: 'rock', x: 345, top: 30, w: 5, h: 3 },
+    { material: 'rock', x: 343, top: 27, w: 6, h: 1 },
+    { material: 'rock', x: 343, top: 28, w: 1, h: 5 },
     { material: 'rock', x: 376, top: 30, w: 5, h: 3 },
     { material: 'rock', x: 373, top: 17, w: 5, h: 8 },
     // KEVIN 11's arena.
@@ -79,10 +81,9 @@ export const CHAPTER_4: LevelData = {
     { x: 89, y: 28, w: 2, h: 1 },
     // The crawlspace under the band stage, behind a hidden door.
     { x: 96, y: 28, w: 8, h: 2 },
-    // The laser vault's slot, the cracked-wall closet and the sealed room.
-    { x: 346, y: 31, w: 3, h: 1 },
+    // The cracked-wall closet and the sealed room (its left wall is the phase wall).
     { x: 376, y: 31, w: 4, h: 2 },
-    { x: 374, y: 21, w: 3, h: 3 },
+    { x: 373, y: 21, w: 4, h: 3 },
   ],
 
   platforms: [
@@ -271,9 +272,13 @@ export const CHAPTER_4: LevelData = {
     // ---- The power depot
     { type: 'checkpoint', id: 'cp-depot', x: 336, y: 33, density: 'normal', label: 'POWER DEPOT' },
     { type: 'lift', id: 'depot-lift', x: 338, y: 33, w: 3, toY: 25 },
-    { type: 'decor', kind: 'securityLaser', x: 344, y: 33 },
-    { type: 'card', id: 'ch4-card-laser', x: 347, y: 32, requires: 'diamondhead' },
-    { type: 'alienHint', id: 'ch4-laser-hint', alien: 'diamondhead', x: 341, y: 29, w: 4, h: 4, line: 'A VAULT BEHIND A SECURITY LASER... IF ONLY I COULD BOUNCE IT BACK.' },
+    // Diamondhead's secret (Chapter 5): the security laser runs above head height; his shield tilted up
+    // bounces it into the receiver over the shutter, which overloads it and drops the vault's crystal seal.
+    { type: 'laser', id: 'ch4-vault-laser', x: 355, y: 30, dir: 'left' },
+    { type: 'receiver', id: 'ch4-vault-receiver', x: 355, y: 27, gate: 'ch4-vault-gate', kills: 'ch4-vault-laser' },
+    { type: 'crystalGate', id: 'ch4-vault-gate', x: 348, y: 28, w: 1, h: 5 },
+    { type: 'card', id: 'ch4-card-laser', x: 346, y: 33, requires: 'diamondhead' },
+    { type: 'alienHint', id: 'ch4-laser-hint', alien: 'diamondhead', x: 349, y: 29, w: 6, h: 4, line: 'A VAULT BEHIND A SECURITY LASER... IF ONLY I COULD BOUNCE IT BACK.' },
     { type: 'techDoor', id: 'depot-door', x: 356, y: 29, w: 2, h: 4 },
     { type: 'decor', kind: 'generator', x: 352, y: 33 },
     { type: 'decor', kind: 'tunnelLight', x: 348, y: 15.6 },
@@ -285,6 +290,8 @@ export const CHAPTER_4: LevelData = {
     { type: 'crackedWall', id: 'ch4-depot-wall', x: 376, y: 31, h: 2, requires: 'fourarms' },
     { type: 'card', id: 'ch4-card-depot', x: 378, y: 33, requires: 'fourarms' },
     { type: 'decor', kind: 'sealedDoor', x: 373, y: 24 },
+    // Ghostfreak's secret (Chapter 5): the welded door is a wall he walks through.
+    { type: 'phaseWall', id: 'ch4-sealed-wall', x: 373, y: 21, w: 1, h: 3, look: 'hidden' },
     { type: 'card', id: 'ch4-card-sealed', x: 375, y: 24, requires: 'ghostfreak' },
     { type: 'alienHint', id: 'ch4-sealed-hint', alien: 'ghostfreak', x: 368, y: 21, w: 5, h: 4, line: 'NO DOOR. NO WAY IN... UNLESS I COULD WALK THROUGH WALLS.' },
     { type: 'robot', kind: 'voltbot', x: 350, y: 33 },
