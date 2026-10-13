@@ -28,6 +28,10 @@ export interface Hit {
   slowMs?: number;
   /** Upgrade merged into it: a machine overloads and blows up (see `Damageable.hackable`). */
   hack?: boolean;
+  /** Ghostfreak's scream: the target panics and flees for this long (ms). */
+  fear?: number;
+  /** The projectile that landed it (a crystal shard, a reflected claw blast), when it was a shot. */
+  shot?: string;
 }
 
 export type HitResult = 'none' | 'hit' | 'killed' | 'blocked';
@@ -50,6 +54,8 @@ export interface Damageable {
   readonly stopsThrows?: boolean;
   /** A machine Upgrade can take over right now (robots, Vilgax's drones). */
   readonly hackable?: boolean;
+  /** Panicking from Ghostfreak's scream right now. */
+  readonly frightened?: boolean;
 }
 
 /** Something a strong alien can pick up and throw: a stunned drone, a boulder. */

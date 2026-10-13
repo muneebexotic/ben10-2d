@@ -3,13 +3,14 @@ import { DEPTH } from '../config/constants';
 import { COMBAT } from '../config/combat';
 import { PALETTE as P } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
+import { CH5_TEX } from '../scenes/preload/bounty';
 import type { Fx, BurstKind } from '../systems/Fx';
 import type { Lighting } from '../systems/Lighting';
 import { playSfx } from '../systems/audio/Sfx';
 import type { Damageable, HitKind } from './types';
 import { chance } from '../systems/Pacing';
 
-export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit';
+export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw';
 export type Team = 'player' | 'enemy';
 
 interface KindStyle {
@@ -33,6 +34,9 @@ const STYLE: Record<ProjectileKind, KindStyle> = {
   shell: { texture: TEX.shell, trail: 'smoke', trailChance: 0.35, light: 40, lightColor: P.enemy, impact: 'red', rotate: false, additive: false },
   slime: { texture: TEX.slimeGlob, anim: 'slime-wobble', trail: 'slime', trailChance: 0.45, light: 30, lightColor: 0xd4e83a, impact: 'slime', rotate: true, additive: false },
   spit: { texture: TEX.spitGlob, anim: 'spit-wobble', trail: 'goo', trailChance: 0.5, light: 40, lightColor: P.mutagen, impact: 'goo', rotate: false, additive: false },
+  shard: { texture: TEX.crystalShard, trail: 'crystal', trailChance: 0.35, light: 22, lightColor: P.diamondhead, impact: 'crystal', rotate: true, additive: false },
+  missile: { texture: TEX.missile, anim: 'missile-burn', trail: 'smoke', trailChance: 0.7, light: 34, lightColor: P.sixsix, impact: 'fire', rotate: true, additive: false },
+  claw: { texture: CH5_TEX.clawBlast, anim: 'claw-blast', trail: 'red', trailChance: 0.6, light: 48, lightColor: P.kraab, impact: 'debris', rotate: true, additive: true },
 };
 
 /** Extra behaviour for a shot. Defaults match the original fireballs and lasers. */

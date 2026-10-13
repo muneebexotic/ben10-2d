@@ -2,8 +2,9 @@ import { OMNITRIX_WARNING_MS } from '../../config/difficulty';
 import { activeDifficulty } from '../../systems/Difficulty';
 import { MISFIRE, PERFECT_TRANSFORM, SWAP } from '../../config/omnitrix';
 import { MisfireQuips } from '../../aliens/misfire';
+import { isForcedMisfire, type ForcedMisfire } from '../../systems/MisfireRules';
 import { PALETTE } from '../../config/palette';
-import { allAliens, getAlien } from '../../aliens/registry';
+import { allAliens, getAlien, hasAlien } from '../../aliens/registry';
 import type { Player } from '../../entities/Player';
 import { Omnitrix, type OmnitrixConfig, type OmnitrixEvent, type RevertReason } from '../../systems/Omnitrix';
 import { EventBus } from '../../systems/EventBus';
@@ -40,6 +41,18 @@ export class OmnitrixController {
   onSwapped: ((alienId: string) => void) | null = null;
   onReverted: ((reason: RevertReason) => void) | null = null;
   onDenied: ((reason: DenyReason) => void) | null = null;
+  /** Every misfire as it happens: the alien, and the named exception when the story forced it (the misfire log, QA). */
+  onMisfire: ((gotId: string, forced: ForcedMisfire | null) => void) | null = null;
+  /**
+   * A story moment takes over the next transform press (Chapter 5's lift):
+   * it gets the alien Ben asked for and returns true when it handled the press.
+   */
+  interceptTransform: ((wantedId: string) => boolean) | null = null;
+  /** The watch answers even while Ben's own controls are off (THE DEEP DIVE: he rides, the watch still works). */
+  worksWhileLocked = false;
+  /** The swap that fixes a misfire is held back until this game time (the forced misfire's survival window). */
+  private fixHeldUntil = 0;
+  private nowMs = 0;
 
   constructor(
     unlocked: string[],
@@ -67,6 +80,8 @@ export class OmnitrixController {
       swapMisfireScale: MISFIRE.swapChanceScale,
       misfireFixCostScale: MISFIRE.fixCostScale,
       improviseBonusMs: MISFIRE.improviseBonusMs,
+      // Aliens that don't always let go at timeout (Ghostfreak) say so in their definition.
+      hesitation: (id) => (hasAlien(id) ? (getAlien(id).hesitate ?? null) : null),
     };
   }
 
@@ -76,7 +91,8 @@ export class OmnitrixController {
   }
 
   handleInput(c: Controls, now: number): void {
-    if (!this.acquired || this.player.dead || !this.player.controlsEnabled) return;
+    this.nowMs = now;
+    if (!this.acquired || this.player.dead || (!this.player.controlsEnabled && !this.worksWhileLocked)) return;
     if (c.dialPick !== null) {
       // Straight to a slot: number keys or the radial picker.
       const from = this.omnitrix.unlockedAliens.indexOf(this.omnitrix.selectedAlien ?? '');
@@ -99,6 +115,8 @@ export class OmnitrixController {
     }
     if (!c.transform) return;
     if (this.sequence.busy) return;
+    const wanted = this.omnitrix.selectedAlien;
+    if (this.interceptTransform && wanted && this.interceptTransform(wanted)) return;
     if (this.jammed) {
       this.deny('jammed', now);
       return;
@@ -113,6 +131,11 @@ export class OmnitrixController {
       this.handle(this.omnitrix.transform({ allowMisfire: this.misfireAllowed() }));
       this.pendingPerfect = false;
     } else if (state === 'active') {
+      // The forced misfire's survival window: the watch won't swap until it's over.
+      if (now < this.fixHeldUntil) {
+        this.deny('jammed', now);
+        return;
+      }
       const denial = this.omnitrix.swapDenial();
       if (denial === null) {
         this.pendingPerfect = this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
@@ -163,6 +186,28 @@ export class OmnitrixController {
     this.forcing = false;
   }
 
+  /**
+   * The story's one scripted misfire (Chapter 5's lift): Ben asked for
+   * `wantedId` and the watch gives him `gotId`, with the full misfire gag.
+   * `exception` must name an entry in FORCED_MISFIRES; anything else is
+   * refused. The fix swap is held back for `holdFixMs`.
+   */
+  forceMisfire(exception: ForcedMisfire, wantedId: string, gotId: string, holdFixMs: number): boolean {
+    if (!isForcedMisfire(exception)) return false;
+    const events = this.omnitrix.forceMisfire(wantedId, gotId, exception);
+    if (!events.some((e) => e.type === 'forcedMisfire')) return false;
+    this.fixHeldUntil = this.nowMs + holdFixMs;
+    this.forcing = true;
+    this.handle(events, exception);
+    this.forcing = false;
+    return true;
+  }
+
+  /** Time left (ms) before the forced misfire's fix swap comes back, 0 when it's free. */
+  fixHeldFor(now: number): number {
+    return Math.max(0, this.fixHeldUntil - now);
+  }
+
   /** Kevin stole an alien's DNA (it can't be used until he gives it back), or gave it back. */
   steal(alienId: string, stolen: boolean): void {
     for (const e of this.omnitrix.setBlocked(alienId, stolen)) {
@@ -201,14 +246,14 @@ export class OmnitrixController {
     this.omnitrix.reset();
   }
 
-  private handle(events: OmnitrixEvent[]): void {
+  private handle(events: OmnitrixEvent[], forced: ForcedMisfire | null = null): void {
     for (const e of events) {
       switch (e.type) {
         case 'transformed': {
           this.transformations++;
           const alien = getAlien(e.alienId);
           const perfect = this.pendingPerfect;
-          const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId) : undefined;
+          const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId, forced) : undefined;
           this.sequence.transform(alien, { first: this.transformations === 1, perfect, misfire });
           if (perfect) this.rewardPerfect();
           this.onTransformed?.(e.alienId, this.transformations === 1);
@@ -217,7 +262,7 @@ export class OmnitrixController {
         case 'swapped': {
           if (!this.forcing) this.swaps++;
           const perfect = this.pendingPerfect;
-          const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId) : undefined;
+          const misfire = e.wrong ? this.misfire(e.requestedId, e.alienId, forced) : undefined;
           this.sequence.swap(getAlien(e.alienId), { perfect, fix: e.fix, misfire });
           if (perfect) this.rewardPerfect();
           this.onSwapped?.(e.alienId);
@@ -227,6 +272,15 @@ export class OmnitrixController {
           playSfx(e.secondsLeft <= 2 ? 'beepFinal' : 'beep', 1, e.secondsLeft <= 2 ? 1.1 : 1);
           EventBus.emit('omnitrix:warning', { secondsLeft: e.secondsLeft });
           break;
+        case 'hesitating': {
+          // Something in the watch doesn't want to let go.
+          const lines = hasAlien(e.alienId) ? (getAlien(e.alienId).hesitate?.lines ?? []) : [];
+          const line = lines[Math.floor(Math.random() * lines.length)] ?? '...';
+          playSfx('omnitrixGlitch', 0.6, 0.7);
+          EventBus.emit('omnitrix:hesitating', { alienId: e.alienId, ms: e.ms });
+          EventBus.emit('hud:whisper', { text: line, color: hasAlien(e.alienId) ? getAlien(e.alienId).theme.color : PALETTE.white });
+          break;
+        }
         case 'reverted':
           this.sequence.revert(e.reason);
           EventBus.emit('alien:reverted', { alienId: e.alienId, reason: e.reason });
@@ -244,8 +298,9 @@ export class OmnitrixController {
     }
   }
 
-  private misfire(wantedId: string, gotId: string): { wantedId: string; line: string } {
+  private misfire(wantedId: string, gotId: string, forced: ForcedMisfire | null): { wantedId: string; line: string } {
     this.misfires++;
+    this.onMisfire?.(gotId, forced);
     return { wantedId, line: this.quips.line(wantedId, gotId) };
   }
 

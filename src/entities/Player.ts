@@ -217,6 +217,27 @@ export class Player implements PlayerHandle {
     return this.dead ? 0 : (this.abilities.senseRadius?.() ?? 0);
   }
 
+  /** Intangible right now (Ghostfreak phasing): phase walls let him through. */
+  get phased(): boolean {
+    return !this.dead && (this.abilities.phased?.() ?? false);
+  }
+
+  /** Enemies can't see him right now (Ghostfreak, phased and still). */
+  get cloaked(): boolean {
+    return !this.dead && (this.abilities.cloaked?.() ?? false);
+  }
+
+  /** A reflecting face (Diamondhead's shield) laser beams bounce off, or null. */
+  get mirror(): { x: number; y: number; angle: number; halfLength: number } | null {
+    return this.dead ? null : (this.abilities.mirror?.() ?? null);
+  }
+
+  /** An enemy shot touched the form: true if the form swallowed it (no damage). */
+  absorbShot(kind: string): boolean {
+    if (this.dead || !this.controlsEnabled || this.invulnerable) return false;
+    return this.abilities.absorbShot?.(this.ctx, kind) ?? false;
+  }
+
   /** The form can run on water right now (asked by the level's water-surface collider). */
   canRunOnWater(): boolean {
     return !this.dead && this.body.velocity.y >= 0 && (this.abilities.canRunOnWater?.(this.ctx) ?? false);
@@ -343,6 +364,7 @@ export class Player implements PlayerHandle {
       this.deathY += this.deathVy * (dtMs / 1000);
     }
     this.visual.setBlink(this.now < this.invulnUntil && !this.dead);
+    this.visual.setFade(this.dead ? 1 : (this.abilities.fade?.() ?? 1));
     this.visual.setMeter(this.dead ? null : (this.abilities.meter?.() ?? null));
     this.visual.update(this.x, this.y + this.deathY, this.facing, dtMs, visualNow);
   }
@@ -415,7 +437,9 @@ export class Player implements PlayerHandle {
       if (this.abilities.isInvulnerable?.()) this.abilities.onDodge?.(this.ctx, source);
       return NO_DAMAGE;
     }
-    const dmg = Math.max(0.5, Math.round(amount * this.services.damageMultiplier * 2) / 2);
+    // Some forms shrug off shots and crack under blows (Diamondhead), or the reverse.
+    const scale = this.form.damageScale ? this.form.damageScale[source] : 1;
+    const dmg = Math.max(0.5, Math.round(amount * scale * this.services.damageMultiplier * 2) / 2);
     const dir = this.x >= sourceX ? 1 : -1;
     const feel = this.form.feel;
 

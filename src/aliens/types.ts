@@ -87,6 +87,8 @@ export interface CombatApi {
   forget(key: object): void;
   /** Knocks enemy projectiles inside `area` back the way they came. Returns how many. */
   parry(area: Rect, facing: 1 | -1, speedMultiplier: number, damage: number): number;
+  /** Turns enemy projectiles inside `area` around and sends them off along `angleRad` (a tilted crystal shield). Returns how many. */
+  deflect(area: Rect, angleRad: number, speedMultiplier: number, damage: number): number;
   shoot(spec: ShotSpec, x: number, y: number, angleRad: number): void;
   /** Nudges an aim angle toward the best enemy inside a cone, so fire feels powerful without pixel-perfect aim. */
   aimAssist(x: number, y: number, angleRad: number, coneRad: number, range: number): number;
@@ -138,6 +140,13 @@ export interface FxApi {
   beam(x0: number, y0: number, x1: number, y1: number, color: number, width: number, ms: number): void;
   /** A crack decal on the ground that fades out. `size` 0..1. */
   crack(x: number, feetY: number, size: number): void;
+  /** Crystal spikes burst out of the ground across `radius` either side of `x`, then crumble. */
+  spikes(x: number, feetY: number, radius: number, color: number): void;
+  /**
+   * The picture glitches for a moment (Ghostfreak arriving): the world camera
+   * tears and jitters. Reduce Flashing turns it into a gentle shimmer.
+   */
+  glitch(ms: number): void;
   /**
    * Freezes the world into a comic panel for `ms` (XLR8's multi-cut): speed
    * lines at (x, y), a slash across every target and an "X5 CUT!" caption.
@@ -172,6 +181,14 @@ export interface WorldApi {
   groundBelow(x: number, y: number): number;
   /** Merges into a machine whose merge zone overlaps `area` (Upgrade), or returns null if there's none. */
   merge(area: Rect, facing: 1 | -1): MachineHandle | null;
+  /**
+   * Grows a crystal platform (Diamondhead): a one-way ledge `width` px wide
+   * whose top is at `topY`, centred on `x`. It flickers for `warnMs` before
+   * it shatters at `lifeMs`. Returns its id, or null when there's no room.
+   */
+  growPlatform(x: number, topY: number, width: number, lifeMs: number, warnMs: number): number | null;
+  /** Shatters a platform grown earlier (the oldest goes when a third grows). */
+  breakPlatform(id: number): void;
 }
 
 export interface AbilityContext {
@@ -229,6 +246,22 @@ export interface FormAbilities {
   gravityScale?(ctx: AbilityContext): number | null;
   /** How far the form can sense hidden things right now (px), 0 for none. */
   senseRadius?(): number;
+  /** Intangible right now (Ghostfreak phasing): through phase walls, enemies and shots. */
+  phased?(): boolean;
+  /** Enemies can't see the form right now (Ghostfreak holding still while phased): they lose track. */
+  cloaked?(): boolean;
+  /** Sprite opacity right now, 0..1 (a ghost fading out). Missing: fully visible. */
+  fade?(): number;
+  /**
+   * An enemy shot of `kind` touched the form: return true to swallow it
+   * without harm (Diamondhead feeds on crystal shards).
+   */
+  absorbShot?(ctx: AbilityContext, kind: string): boolean;
+  /**
+   * A reflecting face (Diamondhead's tilted shield): its centre, the angle it
+   * sends things off along, and its half length. Laser beams bounce off it.
+   */
+  mirror?(): { x: number; y: number; angle: number; halfLength: number } | null;
   /** A gauge shown by the form (flight stamina): 0..1 and its colour, or null when there's nothing to show. */
   meter?(): { value: number; color: number } | null;
 }
@@ -254,7 +287,7 @@ export interface FormFeel {
 }
 
 /** How the alien's name slams onto the screen when it transforms. */
-export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'plain';
+export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'plain';
 
 export interface FormTheme {
   /** Main colour: name slam, transform ring, shield bar, dial while active. */
@@ -352,5 +385,54 @@ export interface FormDefinition {
   reach: Capabilities;
   /** How Kevin copies it (missing: plain energy volleys in its colour). */
   copy?: FormCopy;
+  /**
+   * Scales the damage the alien takes by where it came from: shots (lasers,
+   * bolts, missiles) or contact (claws, slams, bodies). Missing: 1 for both.
+   */
+  damageScale?: { shot: number; contact: number };
+  /**
+   * Something in the watch doesn't want to let go (Ghostfreak): at timeout,
+   * with this chance, the alien holds on for a moment longer and whispers.
+   */
+  hesitate?: FormHesitation;
+  /** Lines the alien whispers in the corner of the screen while it's out (Ghostfreak). */
+  whispers?: FormWhispers;
+  /** How the form rides a mine cart in THE DEEP DIVE (missing: a plain shot in its colour, no special). */
+  ride?: FormRide;
   createAbilities(): FormAbilities;
+}
+
+export interface FormHesitation {
+  chance: number;
+  minMs: number;
+  maxMs: number;
+  /** One of these is whispered as it holds on. */
+  lines: readonly string[];
+}
+
+export interface FormWhispers {
+  /** Whispered now and then while the form is out. */
+  idle: readonly string[];
+  /** Whispered as Ben transforms into it (sometimes). */
+  arrive: readonly string[];
+  /** Whispered after it lets go. */
+  leave: readonly string[];
+  /** A whisper every this many ms while it's out (a random point in the range). */
+  everyMs: readonly [number, number];
+}
+
+/**
+ * THE DEEP DIVE's cart: what ATTACK does from the cart ('shot' fires down
+ * the lane, 'smash' breaks whatever is right ahead, 'strike' hits quickly
+ * right ahead) and what SPECIAL does ('rocket' a big hop, 'brace' ploughs
+ * through, 'boost' a burst of speed, 'senses' lights the dark, 'fly' a long
+ * hover, 'merge' an armoured cart, 'phase' passes through, 'shield' reflects).
+ */
+export interface FormRide {
+  attack: 'shot' | 'smash' | 'strike';
+  special: 'rocket' | 'brace' | 'boost' | 'senses' | 'fly' | 'merge' | 'phase' | 'shield' | null;
+  /** Texture of the form seen from behind, riding (frames: 0 idle, 1 attack, 2 duck). */
+  back?: string;
+  /** Colour of its shots and strikes. */
+  color: number;
 }

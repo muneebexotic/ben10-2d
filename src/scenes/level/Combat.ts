@@ -155,6 +155,17 @@ export class Combat implements CombatApi {
     return count;
   }
 
+  deflect(area: Rect, angle: number, speedMultiplier: number, damage: number): number {
+    let count = 0;
+    this.projectiles.forEachActive('enemy', (p) => {
+      if (!circleRect(p.x, p.y, p.radius + 4, area)) return;
+      this.projectiles.redirect(p, angle, speedMultiplier, damage);
+      count++;
+    });
+    if (count > 0) this.hooks.onParry(count);
+    return count;
+  }
+
   shoot(spec: ShotSpec, x: number, y: number, angle: number): void {
     this.projectiles.spawn(spec.kind, 'player', x, y, Math.cos(angle) * spec.speed, Math.sin(angle) * spec.speed, spec.damage, spec.lifetimeMs, spec.radius, {
       hitKind: spec.hitKind,
@@ -397,6 +408,11 @@ export class Combat implements CombatApi {
 
     this.projectiles.forEachActive('enemy', (p) => {
       if (!circleRect(p.x, p.y, p.radius, this.a)) return;
+      // Some forms swallow certain shots (Diamondhead and crystal shards).
+      if (player.absorbShot(p.kind)) {
+        this.projectiles.kill(p, false);
+        return;
+      }
       const outcome = player.takeDamage(p.damage, p.x - p.vx * 0.05, 'shot');
       if (outcome.applied) {
         this.projectiles.kill(p, true);
@@ -430,7 +446,7 @@ export class Combat implements CombatApi {
         this.projectiles.kill(p, true);
         return;
       }
-      const hit: Hit = { damage: p.damage, kind: p.hitKind, x: p.x - Math.sign(p.vx) * 10, y: p.y, knockback: p.knockback, stunMs: p.stunMs || undefined, slowMs: p.slowMs || undefined };
+      const hit: Hit = { damage: p.damage, kind: p.hitKind, x: p.x - Math.sign(p.vx) * 10, y: p.y, knockback: p.knockback, stunMs: p.stunMs || undefined, slowMs: p.slowMs || undefined, shot: p.kind };
       this.apply(t, hit);
       if (p.pierce) p.hits.push(t);
       else this.projectiles.kill(p, true);

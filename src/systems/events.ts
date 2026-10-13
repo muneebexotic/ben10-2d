@@ -63,6 +63,10 @@ export interface GameEvents {
   'alien:swapStrike': { alienId: string; hits: number };
   'alien:reverted': { alienId: string; reason: RevertReason };
   'omnitrix:perfect': { bonusMs: number; count: number };
+  /** Past its time, the alien is holding on for `ms` more (Ghostfreak). */
+  'omnitrix:hesitating': { alienId: string; ms: number };
+  /** The forced misfire's fix swap is held back: `ms` left (0 when it's free again). */
+  'omnitrix:fixHeld': { ms: number };
   'combo:update': { count: number; best: number; forms: readonly string[] };
   /** A new form joined a live combo (2 or more forms in it). */
   'combo:tag': { forms: readonly string[]; refundMs: number };
@@ -83,6 +87,8 @@ export interface GameEvents {
   'hud:letterbox': { visible: boolean };
   'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean; portrait?: string };
   'hud:dialogClear': undefined;
+  /** A whisper in the corner of the screen (Ghostfreak). */
+  'hud:whisper': { text: string; color: number };
   'hud:visible': { visible: boolean; omnitrix?: boolean };
   'hud:omnitrixSymbol': { color: number; big: boolean };
   'boss:show': { name: string; subtitle: string };

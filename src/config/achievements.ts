@@ -17,9 +17,11 @@ export type LifetimeCounter =
   | 'pounceHits'
   | 'cards'
   | 'jokes'
-  | 'takeovers';
+  | 'takeovers'
+  | 'reflected'
+  | 'frightened';
 
-export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
+export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
 
 export interface AchievementDef {
   id: string;
@@ -56,6 +58,11 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'high-score', title: 'NEW HIGH SCORE', text: "BEAT KEV'S SUMO SLAMMERS RECORD", icon: 'card' },
   { id: 'hostile-takeover', title: 'HOSTILE TAKEOVER', text: 'TAKE OVER 15 MACHINES AS UPGRADE', icon: 'upgrade', counter: 'takeovers', goal: 15 },
   { id: 'nothing-to-copy', title: 'NOTHING TO COPY', text: 'BEAT KEVIN 11 BEFORE ANY COPY HITS LEVEL III', icon: 'boss' },
+  { id: 'reflected', title: 'REFLECTED', text: 'SEND 25 SHOTS BACK AS DIAMONDHEAD', icon: 'diamondhead', counter: 'reflected', goal: 25 },
+  { id: 'boo', title: 'BOO!', text: 'FRIGHTEN 20 ENEMIES AS GHOSTFREAK', icon: 'ghostfreak', counter: 'frightened', goal: 20 },
+  { id: 'clutch-misfire', title: 'CLUTCH MISFIRE', text: 'SURVIVE THE LIFT WITHOUT TAKING A HIT', icon: 'laugh' },
+  { id: 'deep-diver', title: 'DEEP DIVER', text: 'RIDE THE DEEP DIVE WITHOUT A SCRATCH', icon: 'star' },
+  { id: 'bounty-void', title: 'BOUNTY VOID', text: 'BEAT THE HUNTERS', icon: 'boss' },
 ];
 
 /** Thrown enemies that bowl over this many in one throw: STEE-RIKE! */

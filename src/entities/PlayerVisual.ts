@@ -29,6 +29,8 @@ export class PlayerVisual {
   /** Cutscenes show and hide Ben; a form can hide itself too (`hidden`). He shows only when both allow it. */
   private shown = true;
   private hidden = false;
+  /** How see-through the form is right now (a phasing ghost), 1 for solid. */
+  private fade = 1;
 
   constructor(private readonly scene: Phaser.Scene, x: number, y: number, form: FormDefinition, private prefix: string) {
     this.sprite = scene.add.sprite(x, y, form.texture, 0).setDepth(DEPTH.player);
@@ -121,6 +123,10 @@ export class PlayerVisual {
     this.blink = on;
   }
 
+  setFade(alpha: number): void {
+    this.fade = alpha;
+  }
+
   setSpin(radiansPerSecond: number): void {
     this.spin = radiansPerSecond;
     if (radiansPerSecond === 0) this.sprite.setRotation(0);
@@ -148,7 +154,7 @@ export class PlayerVisual {
     } else {
       s.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     }
-    s.setAlpha(this.blink && blinkOn(now, 70) ? 0.35 : 1);
+    s.setAlpha((this.blink && blinkOn(now, 70) ? 0.35 : 1) * this.fade);
     this.drawMeter(x, feetY, facing, dtMs);
   }
 

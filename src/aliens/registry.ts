@@ -1,5 +1,7 @@
 import type { FormDefinition } from './types';
+import { DIAMONDHEAD_FORM } from './diamondhead';
 import { FOURARMS_FORM } from './fourarms';
+import { GHOSTFREAK_FORM } from './ghostfreak';
 import { HEATBLAST_FORM } from './heatblast';
 import { HUMAN_FORM } from './human';
 import { STINKFLY_FORM } from './stinkfly';
@@ -12,7 +14,7 @@ import { XLR8_FORM } from './xlr8';
  * module in src/aliens/ + one line here; Player, Omnitrix, HUD, touch controls,
  * music and the asset map all read from this list.
  */
-const ALIENS: readonly FormDefinition[] = [HEATBLAST_FORM, FOURARMS_FORM, XLR8_FORM, WILDMUTT_FORM, STINKFLY_FORM, UPGRADE_FORM];
+const ALIENS: readonly FormDefinition[] = [HEATBLAST_FORM, FOURARMS_FORM, XLR8_FORM, WILDMUTT_FORM, STINKFLY_FORM, UPGRADE_FORM, DIAMONDHEAD_FORM, GHOSTFREAK_FORM];
 
 const BY_ID = new Map(ALIENS.map((a) => [a.id, a]));
 

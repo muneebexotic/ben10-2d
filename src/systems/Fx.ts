@@ -4,7 +4,7 @@ import { PALETTE as P } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import type { Lighting } from './Lighting';
 import type { TimeController } from './TimeController';
-import { shakeCamera } from './Accessibility';
+import { a11y, shakeCamera } from './Accessibility';
 import { quality } from './Quality';
 import { perf } from './PerfSwitches';
 import { frameScale } from './Pacing';
@@ -33,7 +33,9 @@ export type BurstKind =
   | 'sense'
   | 'circuit'
   | 'volt'
-  | 'pixel';
+  | 'pixel'
+  | 'crystal'
+  | 'ghost';
 
 type EmitterConfig = Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
 
@@ -129,6 +131,17 @@ const PRESETS: Record<BurstKind, { texture: string; config: EmitterConfig; depth
   volt: {
     texture: TEX.spark,
     config: { lifespan: { min: 140, max: 360 }, speed: { min: 90, max: 260 }, scale: { start: 1.2, end: 0 }, color: [P.white, P.kevin, P.kevinDark], blendMode: 'ADD' },
+  },
+  // Diamondhead: glints of crystal that fall and sparkle out.
+  crystal: {
+    texture: TEX.px,
+    config: { lifespan: { min: 280, max: 680 }, speed: { min: 50, max: 200 }, scale: { start: 1.6, end: 0.4 }, gravityY: 360, color: [P.white, P.diamondheadGlow, P.diamondhead, P.diamondheadDark], blendMode: 'ADD' },
+  },
+  // Ghostfreak: cold wisps that drift up and fade.
+  ghost: {
+    texture: TEX.smoke,
+    config: { lifespan: { min: 500, max: 1000 }, speed: { min: 6, max: 34 }, scale: { start: 0.4, end: 1.3 }, alpha: { start: 0.5, end: 0 }, gravityY: -22, tint: [P.ghostfreakGlow, P.ghostfreak, 0xc8a8ff] },
+    depth: DEPTH.fx - 1,
   },
   // Arcade pixels: chunky squares in every screen colour (an arcade cabinet's GAME OVER).
   pixel: {
@@ -329,6 +342,60 @@ export class Fx {
     const k = 0.5 + size * 0.9;
     img.setPosition(x, feetY - 1).setOrigin(0.5, 0).setScale(k * (Math.random() < 0.5 ? -1 : 1), Math.min(1.3, k)).setAlpha(1).setVisible(true).setDepth(DEPTH.terrain + 2);
     this.scene.tweens.add({ targets: img, alpha: 0, delay: FX.crackLingerMs, duration: 700, onComplete: () => img.setVisible(false) });
+  }
+
+  /** Crystal spikes burst out of the ground either side of `x`, hold a moment and crumble (Diamondhead). */
+  spikes(x: number, feetY: number, radius: number, color: number): void {
+    const count = Math.max(4, Math.round(radius / 12));
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const dx = side * (8 + (Math.floor(i / 2) / Math.ceil(count / 2)) * radius);
+      const img = this.take(TEX.crystalSpike, x + dx, feetY + 2, color, DEPTH.props + 1);
+      img.setFrame(i % 3).setBlendMode(Phaser.BlendModes.NORMAL).setOrigin(0.5, 1).setScale(1, 0.1).setAlpha(1).setFlipX(side < 0);
+      this.scene.tweens.add({ targets: img, scaleY: 0.8 + Math.random() * 0.5, duration: 90, delay: Math.abs(dx) * 0.8, ease: 'Back.easeOut' });
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        scaleY: 0.2,
+        delay: 420 + Math.abs(dx) * 0.8,
+        duration: 260,
+        ease: 'Quad.easeIn',
+        onComplete: () => {
+          img.setFrame(0).setOrigin(0.5, 0.5).setFlipX(false);
+          this.release(img);
+        },
+      });
+    }
+  }
+
+  /**
+   * The picture tears for a moment (Ghostfreak arriving): bars of the view
+   * jump sideways in ghostly colours and the camera twitches. With Reduce
+   * Flashing it's a single soft shimmer instead.
+   */
+  glitch(ms: number): void {
+    if (!perf.fx) return;
+    const cam = this.scene.cameras.main;
+    const v = cam.worldView;
+    const soft = a11y.reduceFlashing;
+    const bars = soft ? 1 : 5;
+    for (let i = 0; i < bars; i++) {
+      const h = soft ? v.height : 6 + Math.random() * 22;
+      const y = soft ? v.centerY : v.y + Math.random() * v.height;
+      const img = this.take(TEX.whitePx, v.centerX + (soft ? 0 : (Math.random() - 0.5) * 30), y, i % 2 === 0 ? P.ghostfreak : P.ghostfreakEye, DEPTH.fxTop + 2);
+      img.setScale(v.width / 4, h / 4).setAlpha(soft ? 0.12 : 0.22);
+      this.scene.tweens.add({
+        targets: img,
+        x: img.x + (soft ? 0 : (Math.random() - 0.5) * 60),
+        alpha: 0,
+        delay: soft ? 0 : Math.random() * ms * 0.5,
+        duration: soft ? ms : ms * 0.5,
+        ease: soft ? 'Sine.easeInOut' : 'Stepped',
+        easeParams: soft ? undefined : [3],
+        onComplete: () => this.release(img),
+      });
+    }
+    if (!soft) this.shake(FX.shakeLight, ms * 0.6);
   }
 
   /** Composite explosion: the workhorse for drone deaths and big hits. */

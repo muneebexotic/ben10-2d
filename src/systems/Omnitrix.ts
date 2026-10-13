@@ -26,6 +26,12 @@ export interface OmnitrixConfig {
   misfireFixCostScale?: number;
   /** Alien time refunded by the first KO as a misfired alien (missing: none). */
   improviseBonusMs?: number;
+  /**
+   * Aliens that don't always let go (Ghostfreak): at timeout, with `chance`,
+   * the alien holds on for a moment between `minMs` and `maxMs` before it
+   * reverts. Missing or null: it reverts on time.
+   */
+  hesitation?: (alienId: string) => { chance: number; minMs: number; maxMs: number } | null;
 }
 
 /** Options for one transform or swap. */
@@ -50,6 +56,10 @@ export type OmnitrixEvent =
   | { type: 'swapped'; fromId: string; alienId: string; requestedId: string; wrong: boolean; costMs: number; fix: boolean }
   | { type: 'warning'; secondsLeft: number }
   | { type: 'reverted'; alienId: string; reason: RevertReason }
+  /** The timer ran out but the alien is holding on for `ms` more (Ghostfreak). */
+  | { type: 'hesitating'; alienId: string; ms: number }
+  /** A story moment forced a misfire (the one named exception, see MisfireRules). */
+  | { type: 'forcedMisfire'; alienId: string; requestedId: string; exception: string }
   | { type: 'ready' }
   | { type: 'dial'; selectedId: string; index: number; count: number }
   | { type: 'unlocked'; alienId: string };
@@ -68,6 +78,10 @@ export class Omnitrix {
   private frozen = false;
   private fixOwed = false;
   private misfire: MisfireState | null = null;
+  /** Holding on past the timeout (ms left), or 0. */
+  private holdLeftMs = 0;
+  /** This transformation already rolled for a hold (one per timeout). */
+  private holdRolled = false;
   /** Aliens on the dial that can't be used right now (Kevin stole their DNA). */
   private readonly blocked = new Set<string>();
 
@@ -115,6 +129,11 @@ export class Omnitrix {
     if (this._state !== 'cooldown') return 0;
     if (this.config.cooldownMs <= 0) return 1;
     return clamp01(1 - this.cooldownLeftMs / this.config.cooldownMs);
+  }
+
+  /** Past its time, but the alien is holding on (Ghostfreak). */
+  get hesitating(): boolean {
+    return this._state === 'active' && this.holdLeftMs > 0;
   }
 
   get isWarning(): boolean {
@@ -233,6 +252,8 @@ export class Omnitrix {
     this.activeAlien = alienId;
     this.sinceChangeMs = 0;
     this.lastWarningSecond = -1;
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
     this.remainingMs = Math.max(this.remainingMs, this.config.transformDurationMs);
     this.setMisfire(null, alienId);
     events.push({ type: 'swapped', fromId, alienId, requestedId: alienId, wrong: false, costMs: 0, fix: false });
@@ -274,6 +295,8 @@ export class Omnitrix {
     this.remainingMs = this.config.transformDurationMs;
     this.lastWarningSecond = -1;
     this.sinceChangeMs = 0;
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
     this.setMisfire(wrong ? requestedId : null, alienId);
     return [{ type: 'transformed', alienId, requestedId, wrong }];
   }
@@ -313,6 +336,8 @@ export class Omnitrix {
     this.activeAlien = alienId;
     this.sinceChangeMs = 0;
     this.lastWarningSecond = -1;
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
     this.setMisfire(wrong ? requestedId : null, alienId);
     return [{ type: 'swapped', fromId, alienId, requestedId, wrong, costMs, fix }];
   }
@@ -333,6 +358,9 @@ export class Omnitrix {
   /** Adds alien time (the perfect transform reward). The ring can sit above full until it drains back. */
   extend(ms: number): void {
     if (this._state !== 'active' || ms <= 0) return;
+    // Time added while holding on past the timeout: it's simply more time now.
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
     this.remainingMs += ms;
     if (this.remainingMs > this.config.warningMs) this.lastWarningSecond = -1;
   }
@@ -356,9 +384,21 @@ export class Omnitrix {
     if (this._state === 'active') {
       this.sinceChangeMs += dtMs;
       if (this.frozen) return events;
+      if (this.holdLeftMs > 0) {
+        this.holdLeftMs -= dtMs;
+        if (this.holdLeftMs <= 0) events.push(...this.enterCooldown('timeout', 0));
+        return events;
+      }
       this.remainingMs -= dtMs;
       if (this.remainingMs <= 0) {
         const overflow = -this.remainingMs;
+        const hold = this.rollHold();
+        if (hold > 0) {
+          this.remainingMs = 0;
+          this.holdLeftMs = hold;
+          events.push({ type: 'hesitating', alienId: this.activeAlien ?? '', ms: hold });
+          return events;
+        }
         events.push(...this.enterCooldown('timeout', overflow));
       } else if (this.remainingMs <= this.config.warningMs) {
         const secondsLeft = Math.ceil(this.remainingMs / 1000);
@@ -378,11 +418,59 @@ export class Omnitrix {
   /** Back to a fresh, ready watch (checkpoint respawn). Keeps unlocks and dial position. */
   reset(): void {
     this._state = 'ready';
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
     this.activeAlien = null;
     this.remainingMs = 0;
     this.cooldownLeftMs = 0;
     this.lastWarningSecond = -1;
     this.setMisfire(null, null);
+  }
+
+  /** At timeout: whether the alien holds on, and for how long (one roll per timeout). */
+  private rollHold(): number {
+    if (this.holdRolled || this.activeAlien === null) return 0;
+    this.holdRolled = true;
+    const h = this.config.hesitation?.(this.activeAlien) ?? null;
+    if (!h || h.chance <= 0 || this.rng() >= h.chance) return 0;
+    return Math.round(h.minMs + this.rng() * (h.maxMs - h.minMs));
+  }
+
+  /**
+   * The one scripted misfire the story is allowed (see `FORCED_MISFIRES` in
+   * MisfireRules): Ben asked for `wantedId` and gets `gotId`, from the ready
+   * state (a transformation) or mid-transformation (a swap). The fix swap is
+   * owed afterwards like after any misfire. Callers name the exception; the
+   * controller refuses any other name.
+   */
+  forceMisfire(wantedId: string, gotId: string, exception: string): OmnitrixEvent[] {
+    if (!this.unlocked.includes(gotId) || this.blocked.has(gotId) || wantedId === gotId) return [];
+    const events: OmnitrixEvent[] = [];
+    if (this._state === 'cooldown') events.push(...this.finishCooldown());
+    const fromId = this.activeAlien;
+    if (this.unlocked.includes(wantedId)) {
+      const index = this.unlocked.indexOf(wantedId);
+      this.selectedIndex = index;
+      events.push(this.dialEvent());
+    }
+    if (this._state === 'ready') {
+      this._state = 'active';
+      this.remainingMs = this.config.transformDurationMs;
+      events.push({ type: 'transformed', alienId: gotId, requestedId: wantedId, wrong: true });
+    } else if (fromId !== null && fromId !== gotId) {
+      this.remainingMs = Math.max(this.remainingMs, this.config.transformDurationMs);
+      events.push({ type: 'swapped', fromId, alienId: gotId, requestedId: wantedId, wrong: true, costMs: 0, fix: false });
+    } else {
+      return events;
+    }
+    this.activeAlien = gotId;
+    this.sinceChangeMs = 0;
+    this.lastWarningSecond = -1;
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
+    this.setMisfire(wantedId, gotId);
+    events.push({ type: 'forcedMisfire', alienId: gotId, requestedId: wantedId, exception });
+    return events;
   }
 
   /** Remembers a misfire (the fix swap is owed) or clears it. */
@@ -393,6 +481,8 @@ export class Omnitrix {
 
   private enterCooldown(reason: RevertReason, overflowMs: number): OmnitrixEvent[] {
     const alienId = this.activeAlien ?? '';
+    this.holdLeftMs = 0;
+    this.holdRolled = false;
     this.setMisfire(null, null);
     this.activeAlien = null;
     this.remainingMs = 0;
