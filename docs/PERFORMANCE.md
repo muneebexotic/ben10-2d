@@ -70,6 +70,9 @@ Results go to `bench-results/` (ignored by git), with each build's rows and the 
 | `ch4-arcade` | Chapter 4's GAME ZONE: neon, cabinets, the TOKEN TOONS, Kevin as a buddy |
 | `ch4-station` | Rosewood station: trains, track-bots, turrets |
 | `ch4-kevin` | KEVIN 11: copies, the coils, the hybrid |
+| `ch5-street` | Chapter 5's Main Street: tracker drones, missile salvos, Sixsix's duel, the moonlit town |
+| `ch5-dive` | THE DEEP DIVE: the ray-traced tunnel and the sprites projected onto it |
+| `ch5-hunters` | THE HUNTERS: Kraab in the chamber, Sixsix strafing, salvos, rockfalls |
 | `misfire` | Training with misfires on CHAOS: the transform gag on every swap |
 | `stress` | A synthetic worst case: three explosions every 450 ms on top of the KING CROAK brawl |
 
@@ -82,7 +85,7 @@ What it records:
 - **Render targets:** WebGL framebuffers created per second, and the size of Phaser's render-target pool. Both stay flat in steady play.
 - **Draw calls, texture binds, shader switches** per frame (`--gl`, a separate pass because counting adds overhead).
 - **FPS and 1% low FPS:** reported, not budgeted.
-- **Leak check** (`--leak`): plays Chapter 1's boss, Chapter 2's convoy and boss, Chapter 3's frog, Chapter 4's station and KEVIN 11, and Training in turn, leaving each one mid-action (transformed, running, charging), then goes to Chapter Select; repeated. After every cycle it counts EventBus and game listeners, textures, display objects, tweens, timers, live Web Audio sources and held sounds (sources nobody scheduled a stop for), and the heap after a forced GC. Then it restarts Training eight times as XLR8 at full speed and counts held sounds each time.
+- **Leak check** (`--leak`): plays Chapter 1's boss, Chapter 2's convoy and boss, Chapter 3's frog, Chapter 4's station and KEVIN 11, Chapter 5's dive (left mid-ride: the 3D scene and its texture must go with the level) and THE HUNTERS, and Training in turn, leaving each one mid-action (transformed, running, charging), then goes to Chapter Select; repeated. After every cycle it counts EventBus and game listeners, textures, display objects, tweens, timers, live Web Audio sources and held sounds (sources nobody scheduled a stop for), and the heap after a forced GC. Then it restarts Training eight times as XLR8 at full speed and counts held sounds each time.
 
 **Why not FPS.** Headless Chromium has no GPU. It draws WebGL in software (SwiftShader) and then reads every frame back for its software compositor, which takes 40-60 ms a frame on its own: headless runs at about 40-49 FPS unthrottled and 8-15 FPS throttled, whatever the game does. That measures the container. The game's own CPU time per frame doesn't depend on that and scales with the throttle, so it's what the budget limits. Under throttle the game also runs in slow motion (frames are clamped at 34 ms), which doesn't change the per-frame costs. How to read the numbers: unthrottled on the machine that set the budget, the game's own work takes 2.8-4.9 ms per frame across the scenarios; at 4x, 12-20 ms. A phone at 60 Hz has 16.7 ms per frame for everything (game, browser, GPU), at 120 Hz 8.3 ms. So if 4x on that machine were exactly a mid-range phone, the heaviest moments would fill most of a 60 Hz frame with the game's own work. How close that comparison is (a phone runs WebGL on a real GPU driver, so its render share differs) is what the real-phone check below settles.
 
@@ -90,12 +93,12 @@ What it records:
 
 ### The autobench (`?autobench=1`): the phone tests itself
 
-Open `https://ben10-2d.vercel.app/?autobench=1` on the phone (in Chrome, not an app's built-in browser), plugged in, and tap START. The game then plays every heavy scene by itself with the scripted player and god mode (the same moves as `npm run bench`), on a throwaway save file held in memory (the real save is never touched), and ends on a report with a COPY button. About 24 minutes for 80 runs (QUICK: about 14); the screen stays on (Wake Lock) and it goes fullscreen like normal play.
+Open `https://ben10-2d.vercel.app/?autobench=1` on the phone (in Chrome, not an app's built-in browser), plugged in, and tap START. The game then plays every heavy scene by itself with the scripted player and god mode (the same moves as `npm run bench`), on a throwaway save file held in memory (the real save is never touched), and ends on a report with a COPY button. About 26 minutes for 87 runs (QUICK: about 15); the screen stays on (Wake Lock) and it goes fullscreen like normal play.
 
 What it plays, each for 3 s of warm-up and 12 s of measurement (4 s more warm-up on a scene's first run and after a page reload, which compile shaders and upload textures the later runs reuse):
 
 1. **blank**: an empty canvas (the browser and compositor alone), then the same with `css=smooth`.
-2. **calm** (Chapter 1's forest at night, standing still) and the heavy scenes: the four bosses (`ch1-boss`, `ch2-boss`, `ch3-frog`, `ch4-kevin`), `ch2-convoy`, `ch3-blackout`, `ch4-arcade` and `misfire` (Training on CHAOS). Each runs normally (`base`), then once with each bisect switch: `fx=0`, `particles=0`, `bg=0`, `scale=0.5`, `bodies=1` and `governor=0`.
+2. **calm** (Chapter 1's forest at night, standing still) and the heavy scenes: the four bosses (`ch1-boss`, `ch2-boss`, `ch3-frog`, `ch4-kevin`), `ch2-convoy`, `ch3-blackout`, `ch4-arcade`, `ch5-dive` (THE DEEP DIVE: a full-screen shader, so it's the phone GPU's heaviest scene) and `misfire` (Training on CHAOS). Each runs normally (`base`), then once with each bisect switch: `fx=0`, `particles=0`, `bg=0`, `scale=0.5`, `bodies=1` and `governor=0`.
 3. **Extras** on `calm` and `ch4-arcade`: `orphan=0`, `css=smooth`, `audio=0`, and `all-off` (`fx`, `particles` and `bg` together).
 4. **Drift**: the first base run again, to see whether the phone slowed down over the session (heat, power saving).
 5. **Context variants**: the page reloads three times (default, `ctx=desync`, `ctx=lean`) and plays `calm` and `ch4-arcade` on each. Tap once on each reload to go back to fullscreen, or leave it: it carries on after 8 s.
@@ -399,6 +402,8 @@ Boot is unchanged by this pass (the differences are run-to-run noise; the very f
 
 **Boot art generation: measured, not changed.** At 4x, generating every texture takes about 1.3 s of the boot, in one long task with the loading bar full: about 0.4 s is creating and uploading 230 canvases, about 0.3 s the characters' frames, the rest props, backdrops and outlines. Chapters 2 and 3's art is about 0.15-0.25 s of it. Options if it grows: spread generation over several frames so the loading bar moves (same total time), generate a chapter's art when it is first played, or pack small textures into shared canvases.
 
+**Chapter art on demand (Chapter 5).** Generating Chapter 5's art at boot made the cold boot to the title 27% slower than main (median of 7 at 4x: 4002 ms against 3140; longest task 2623 ms against 2041). Chapter art is now listed per chapter (`CHAPTER_ART` in `scenes/preload/catalog.ts`) and a chapter marked `atBoot: false` is generated when it loads (`ensureChapterArt` in `LevelScene.create`, plus older chapters that use its gear), with its Chapter Select window making only the sprite it shows. Chapter 5 and every form's back view (only THE DEEP DIVE draws them) are lazy: boot is now 8% over main (3334 ms against 3093; longest task 2217 against 1884), the two new aliens' own art. The first load of Chapter 5 pays the generation instead, behind the level's fade. New chapters should start lazy.
+
 **Revisit when:** the compressed JavaScript passes 600 KB, or warm boot to the title at 4x passes 3.5 s. Each chapter so far added about 90 KB of code (about 23 KB compressed) and about 0.1 s of boot art at 4x.
 
 ## Chapter 4 check (Milestone 4, part 3)
@@ -431,3 +436,31 @@ The full `npm run bench` failed the mean CPU limit in most scenarios on this pas
 | ch4-station | 29.5 | 28.8 | 32.8 |
 
 The ch4-arcade rows above were measured on a frozen GAME ZONE (BUGS.md L3), before and after alike; with L3 fixed it measures 32 to 35 ms, because the room now actually runs. No regression outside noise. What changed on hot paths: vertex uploads re-specify the buffer (`orphan`), floating words rest at 1x or 2x, the combo count's pop moves in whole steps, the music skips steps after a stall, and the speech bubble's depth. None of them adds per-frame allocations or listeners.
+
+## Chapter 5 check (Milestone 4, part 4)
+
+The first run of the relative gate (`npm run bench`: this build against main d21914b, two alternating rounds at 4x on the emulated wide phone, best round of each). Mean CPU ms per frame:
+
+| Scenario | main | this | change |
+|---|---|---|---|
+| ch1-forest | 33.25 | 30.72 | -7.6% |
+| ch1-boss | 20.61 | 19.66 | -4.6% |
+| ch2-convoy | 30.11 | 27.66 | -8.1% |
+| ch2-boss | 22.23 | 25.62 | +15.2% (rerun over four rounds: 26.02 against 23.46, -9.8%) |
+| ch3-blackout | 27.91 | 27.40 | -1.8% |
+| ch3-frog | 29.63 | 28.41 | -4.1% |
+| ch4-arcade | 29.64 | 28.52 | -3.8% |
+| ch4-station | 33.78 | 30.76 | -8.9% |
+| ch4-kevin | 34.97 | 31.05 | -11.2% |
+| ch5-street | - | 25.58 | new (p95 41.7) |
+| ch5-dive | - | 11.48 | new (p95 18.7) |
+| ch5-hunters | - | 29.29 | new (p95 45.9) |
+| misfire | 20.14 | 19.48 | -3.3% |
+| stress | 34.92 | 32.96 | -5.6% |
+
+- **Chapter 5's scenarios are lighter than main's heaviest** (`ch4-kevin`, 34.97) on every stat, so they pass the new-chapter rule. THE DEEP DIVE is the lightest scene in the game on the CPU (11.5 ms): the tunnel is one shader quad and everything else is a pooled sprite. Its cost is the GPU's (a fragment shader over half the screen's pixels), which headless can't measure: `?autobench=1` plays it on a phone (`ch5-dive`).
+- **`ch2-boss` failed the first run** at +15% (25.62 against 25.05 allowed), with main's own two rounds 16% apart (22.23 and 25.90). Rerun alone over four rounds it was 9.8% faster than main. A lone scenario failing by a few percent should be rerun with `--only=<scenario> --rounds=4` before anything is changed.
+- **The leak check** now visits Chapter 5 (leaving THE DEEP DIVE mid-ride, and THE HUNTERS). Flat over eight cycles: 50 EventBus listeners, 393 textures (the ride's render texture goes with the level), no held sounds, heap +1.3 MB. The first full run failed on live audio sources (7 to 16 on the last cycle only, none held: sounds still ringing at the snapshot); the rerun read 8 to 7.
+- **Fixed while measuring:** the bench restarted the level after every scenario's setup, so `ch4-kevin` had been measuring the start of Chapter 4 since it was added (the restart dropped the teleport into the hall). Only Training's scenario restarts now (`restartAfterSetup`), so `ch4-kevin` really plays KEVIN 11 from this run on, in both builds. The same restart found a crash: leaving the level mid-ride threw during shutdown (BUGS.md C13).
+- **Final run, after the playtest fixes** (Sixsix's hover, the shield's reflect assist, the ground guard, the cavern, the lift's smoothie, the dial's pop as a tween). The full run (two rounds) flagged ch1-boss (+15.9%) and ch2-boss (+16.2%) and the p95 or long-frame counts of ch4-station, ch4-kevin and stress, with main's own numbers far from the first run's (ch4-kevin 28.70 against 34.97, ch1-boss 16.83 against 20.61). None of the changes touch those scenes' frames (the only per-frame additions: one tile lookup for the ground guard; the dial now does less). Rerun over four rounds (`--only=ch1-boss,ch2-boss,ch4-station,ch4-kevin,stress --rounds=4`): **no regression** (ch1-boss -9.2%, ch2-boss -5.3%, ch4-station +0.7%, stress -7.5%, ch4-kevin +10.5%, inside the slack). Watch ch4-kevin: this build read 31.05, 31.04 and 33.58 over the three measurements, main 34.97, 28.70 and 30.40. Chapter 5 in the full run: ch5-street 27.28, ch5-dive 10.79, ch5-hunters 29.39 (all under main's heaviest). Leak check flat over seven cycles: 50 listeners, 393 textures, 7-8 audio sources with none held, heap 15.0 to 15.7 MB.
+- **Bundle:** 567 KB of JavaScript compressed (brotli): Phaser 276 KB, the game 291 KB. Chapter 5 added about 65 KB (two aliens, THE DEEP DIVE's renderer and track, three hunters, four music tracks and the composition kit, the hazards), the most of any chapter, and the total is now near the 600 KB revisit line: the next chapter should look at splitting chapter code out (`Loading` above).

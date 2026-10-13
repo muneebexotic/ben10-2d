@@ -4,13 +4,11 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 ## Status
 
-**Act 2 has begun: Milestone 4, part 3 built Chapter 4, Kevin 11.** Four story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11), six aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly, Upgrade), four bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK, KEVIN 11), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. The Act 2 plan (Chapters 4 to 6) is in [GAME_DESIGN.md](GAME_DESIGN.md); Chapter 4 is described in full in [history/milestone-4-part-3-chapter-4.md](history/milestone-4-part-3-chapter-4.md).
+**Milestone 4, part 4 built Chapter 5, Bounty Hunters.** Five story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11, Bounty Hunters), eight aliens (Heatblast, XLR8, Four Arms, Wildmutt, Stinkfly, Upgrade, Ghostfreak, Diamondhead), five bosses (the Hunter-Killer drone, ROADBREAKER, KING CROAK, KEVIN 11, THE HUNTERS), the Act 1 ending, Omnitrix Training, achievements, the card album, JOKES FOUND, splits, ghosts and Omnitrix Master. The full record of this milestone is [history/milestone-4-part-4-chapter-5.md](history/milestone-4-part-4-chapter-5.md).
 
-**This session: a quality pass, no new content.** An on-device benchmark (`?autobench=1`) that plays every heavy scene on the phone with bisect switches and ends on a report to copy, and a bug hunt across Chapters 1 to 4 with permanent tooling (`npm run qa`: screenshots and text checks at three screen sizes plus fuzz runs at every checkpoint; a string lint and fit tests in `npm test`). 35 bugs found, 34 fixed and one minor deferred (two critical: quitting during the misfire gag froze the game, and the first arcade cabinet Upgrade used froze the GAME ZONE for good), two design questions open: all in [BUGS.md](BUGS.md), the record in [history/quality-pass-after-chapter-4.md](history/quality-pass-after-chapter-4.md). The phone fix (vertex uploads re-specify their buffer) took every scene the autobench plays on the owner's phone to 60 FPS with 1% lows of 52 to 58 at Q0, the GAME ZONE included once its cabinet bug was fixed. `npm run typecheck`, `npm run build` and `npm test` pass; `npm run bench` shows no regression but misses its CPU limits on this session's slower machine, as the build before the pass does too (`docs/PERFORMANCE.md`).
+**This session:** the owner's housekeeping (red tells for every villain, PRACTICE RANK, the bench as a no-regression gate against main, `npm run qa` in the workflow), then Chapter 5: Silver Spur and the Diamond Deep, Sixsix, Kraab and Tetrax, Ghostfreak (phasing, invisibility, a watch that doesn't quite want to let him go) and Diamondhead (a reflecting shield, crystal platforms), the forced misfire on the lift (the story's one named exception), THE HUNTERS, and **THE DEEP DIVE**, a ray-traced 3D mine-cart ride in the middle of the chapter. The new aliens also open four secrets in Chapters 1, 3 and 4. Chapter 5's art is made when the chapter loads, so boot grew 8% instead of 27%.
 
-**Before that (Chapter 4):** Upgrade and the machine framework, Kevin from buddy to rival, the KEVIN 11 boss, SUMO SLAMMERS, three music tracks, Chapter 4's city art and robots, and one Upgrade secret in each Act 1 chapter.
-
-Next, when asked: Chapter 5 (Bounty Hunters) or Chapter 6 (Magic), both planned in GAME_DESIGN.md. Still deferred: Training trials, more Chapter 1 revisits, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
+Next, when asked: Chapter 6 (Magic), planned in GAME_DESIGN.md. Still deferred: Training trials, more Chapter 1 revisits, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
 
 ## How to run
 
@@ -20,7 +18,7 @@ npm run dev        # http://localhost:5173
 npm run build      # typecheck + production build into dist/
 npm run typecheck
 npm test
-npm run bench      # performance benchmark against the budget (docs/PERFORMANCE.md)
+npm run bench      # performance gate: this build against a build of current main, plus the leak check (docs/PERFORMANCE.md)
 npm run qa         # screenshot sweep and text checks at 3 screen sizes (add -- --fuzz for random play at every checkpoint and every boss fight)
 ```
 
@@ -32,8 +30,9 @@ URL switches for playtesting:
 | `?level=ch2` | Play Chapter 2 directly (a practice run). Combine with `&start=`: `cp-canyon`, `cp-river`, `cp-island` (Easy only), `cp-farbank`, `cp-convoy` (straight onto the RV roof), `cp-truckstop`, `cp-arena` (ROADBREAKER) |
 | `?level=ch3` | Play Chapter 3 directly (a practice run). Combine with `&start=`: `cp-hall` (Easy and Normal), `cp-mammals`, `cp-dark` (the blackout), `cp-shaft` (Easy only), `cp-upper` (Easy and Normal), `cp-atrium`, `cp-lockdown`, `cp-lab` (Easy and Normal), `cp-frog` (KING CROAK) |
 | `?level=ch4` | Play Chapter 4 directly (a practice run). Combine with `&start=`: `cp-arcade` (Easy and Normal), `cp-lair`, `cp-highscore` (Easy and Normal), `cp-station` (Easy and Normal), `cp-line`, `cp-turn`, `cp-depot` (Easy and Normal), `cp-kevin` (KEVIN 11) |
+| `?level=ch5` | Play Chapter 5 directly (a practice run). Combine with `&start=`: `cp-street`, `cp-hotel`, `cp-minehead`, `cp-tunnels`, `cp-crystals` (Easy and Normal), `cp-jail`, `cp-dive` (THE DEEP DIVE), `cp-cavern`, `cp-lift`, `cp-hunters` (THE HUNTERS) |
 | `?training=1` | Straight into Omnitrix Training (with the last file's aliens and difficulty) |
-| `?aliens=fourarms,xlr8` | Adds aliens to the Chapter 1 dial (a practice run). With Four Arms the vault card spawns and counts |
+| `?aliens=fourarms,xlr8` | Adds aliens to the dial (a practice run). With Four Arms the Chapter 1 vault card spawns and counts; `?aliens=diamondhead,ghostfreak` opens the older chapters' new secrets |
 | `?mute=1` | Start muted |
 | `?debug=1` | Physics bodies plus a readout: position, quality level (`Q0` best to `Q2`), and the frame meter (CPU per frame, FPS, 1% low, heap, render targets). What to look for on a phone is in `docs/PERFORMANCE.md` |
 | `?autobench=1` | The on-device benchmark: plays every heavy scene by itself and ends on a report to copy (`docs/PERFORMANCE.md`). `?autobench=report` shows the last report |
@@ -69,6 +68,10 @@ What ATTACK and SPECIAL do depends on the form (the touch buttons change icon wi
 | Wildmutt | Hold: claw rakes, every 3rd a double rake | Pounce (Up: high pounce); landing on an enemy from above is a POUNCE! | Push into a wall to climb, Jump to leap off. Senses reveal invisible enemies and hidden doors |
 | Stinkfly | Slime glob (slows; 3 quick ones gum an enemy in place) | Stink cloud (fire sets it off) | Jump in mid-air: fly (hold to climb, release to hover, Down to dive) until the wings tire |
 | Upgrade | Eye laser (hold; Up aims high, Down in the air aims low; every 4th is a triple) | Merge: a puddle that flows into a machine and possesses it (K again ejects) or takes over a robot | Possessed: a turret aims and fires with J, a cart drives with left/right (J: horn), lifts and shutters work on their own |
+| Ghostfreak | Tentacle lash (hold; every 3rd reaches further and drags) | Hold: phase (through phase walls, enemies and shots; can't attack). Phased and still: invisible | Floats down slowly. Swap-in scream frightens enemies |
+| Diamondhead | Crystal shards (hold; every 3rd a fan; Up aims high) | Hold: crystal shield, reflects shots and laser beams (Up/Down while holding tilts it). Up+K: a crystal platform (two at a time) | Swap-in crystal spikes |
+
+**THE DEEP DIVE (Chapter 5's 3D ride):** left/right switch tracks, Jump hops, Down ducks, J attacks what's ahead, K is the alien's ride special (rocket jump, brace, slow time, sniff, fly, merge, phase, shield), T transforms and swaps as usual.
 
 On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO / ON / OFF). In AUTO, pressing a key hides them and touching the screen brings them back.
 
@@ -78,10 +81,9 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **Touch controls are untested on real hardware.** They were tested with emulated phones and multi-touch in headless Chromium. Button sizes and positions live in `config/touch.ts`.
 - **Measured on one phone.** Every heavy scene runs at 60 FPS and Q0 on the owner's Android phone (Mali-G78, 60 Hz); other GPUs (Adreno, PowerVR, iOS) and 90/120 Hz screens haven't been measured. `?autobench=1` on any phone gives the same report.
 - **A blocked punch thunks a few times** (BUGS.md T12, deferred).
-- **Boot generates all art in code:** about 3 s from a cold start to the title screen at 4x CPU throttle, about 1.3 s of it a single frozen frame on the loading bar. It grows a little with every chapter's art; options are in `docs/PERFORMANCE.md`.
+- **Boot generates the shared art in code:** about 3.3 s from a cold start to the title screen at 4x CPU throttle. A chapter's own art can be made when it loads instead (Chapter 5's is); the first load of Chapter 5 pays for it behind the fade. `docs/PERFORMANCE.md`.
 - **iOS Safari can't go fullscreen** or lock orientation from a web page; the game still fits the screen with the browser bars visible. Adding it to the home screen (web manifest) gives a fullscreen landscape launch.
 - **Phones wider than 21.6:9 still get thin side bars** (the view stops growing at 864 px wide so level design stays readable).
-- **Practice runs still show a rank** on Chapter Complete (it isn't saved). Waiting on the owner's call (BUGS.md D2).
 - **Settings' difficulty details line** is long; on the smallest phones it reads small.
 - **Zoom shimmer.** The camera zoom punch on transform briefly shows pixel shimmer, because `pixelArt` rendering doesn't zoom by integer steps.
 - **No gamepad support yet** (deferred).
@@ -102,6 +104,11 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **Upgrade's feel needs a human pass:** the puddle's speed and reach into machines, the laser's rate and the cart's handling (`config/aliens/upgrade.ts`, `config/tech.ts`).
 - **Kevin the buddy is a follower, not a fighter with physics:** he retraces Ben's steps and pops in behind Ben when left far behind; on a long flight or a lift ride he catches up rather than following the path.
 - **Flyers can skip the power depot's shutter** by going over the wall (deliberate); walkers need Upgrade.
+- **THE HUNTERS with damage on is unproven.** The scripted player cleared the chapter on every difficulty with damage off, but with damage on (Normal) it didn't beat the boss in 12 attempts: Kraab fell in 9 of them once it kept its distance, then 7 attempts ended up the shaft to Sixsix's salvos (one every 2.6-3.4 s, 950 ms tell) and 2 at Tetrax. It never jumps over Kraab or watches the missiles come in, so people should do much better, but play it by hand first. Levers: `SIXSIX.boss.salvoEveryMs` and `salvo` in `config/hunters.ts`, `MISSILE.damage` in `config/bounty.ts`. Resuming at the stage you died in is a proposal in IDEAS.md.
+- **Chapter 5 is tuned by scripted playtests, not people.** THE HUNTERS' health (Kraab 90, Sixsix 70, Tetrax 110), the trackers' paint time (1.5 s) and salvo, the duels on Main Street (the trackers keep firing during them) and the lift's 15 seconds are the first things to check with real players. Numbers are in `config/hunters.ts`, `config/bounty.ts` and `config/dive.ts`.
+- **THE DEEP DIVE needs a human feel pass:** track speed (11 to 24 m/s), lane switching, jump and duck timing, and how readable the obstacles are at speed on a phone. Headless runs it at about a third of real speed. Its GPU cost on phones other than the owner's is unmeasured: `?autobench=1` plays it (`ch5-dive`).
+- **Ghostfreak's whispers and hesitation** (a 40% chance at timeout to hold on 0.9-1.9 s) are by design; if the hesitation reads as a bug to players, `GHOSTFREAK.hesitate` in `config/aliens/ghostfreak.ts`.
+- **Chapter 4's sealed room needs two aliens:** Upgrade's lift (or a flyer) up to the mezzanine, then a swap to Ghostfreak. Intended, but nothing says so beyond the hint.
 - **Lurkers are nearly invisible** to aliens without senses until they're slimed, hit or about to spit (their throat glows first). Fair by design, but worth watching in playtests.
 - **The Act 1 ending is procedural pixel art** like everything else; Kevin's look is a placeholder until real art.
 - **Saves live in one browser:** no cloud sync or export yet (see IDEAS.md).
@@ -109,22 +116,20 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 
 ## How to test the latest chapter
 
-**Milestone 4, part 3: Chapter 4, desktop** (`npm run dev`). Chapter 3's steps are in [history/milestone-4-part-2-chapter-3.md](history/milestone-4-part-2-chapter-3.md).
+**Milestone 4, part 4: Chapter 5, desktop** (`npm run dev`). Chapter 4's steps are in [history/milestone-4-part-3-chapter-4.md](history/milestone-4-part-3-chapter-4.md).
 
-1. **Get there:** a file that has cleared Chapter 3, Chapter Select: the ACT 2 header and KEVIN 11 (the arcade at dusk) > PLAY. Sections on their own: `?level=ch4&start=<checkpoint>` (see the URL switches).
-2. **Cold open:** the Rustbucket smoking on Main Street, CHAPTER 4 banner, the family talking; any key skips, it doesn't replay on a retry. Rooftop sign card: Heatblast's rocket jump or Stinkfly.
-3. **Meet Kevin:** walk into the GAME ZONE. The ??? portrait turns into KEVIN, he drinks the cabinet next to him dry (its screen dies), throws the bolt, then juices the breaker: FREE GAMES FOR EVERYBODY, and the TOKEN TOONS climb off the band stage. Die and retry: no talking, the band still wakes.
-4. **Kevin as a buddy:** he follows you (hops where you jumped, catches up if you leave him behind), throws purple bolts at enemies, cheers the first time he sees each alien, chats when it's quiet. Mascots: cymbals up with flashing eyes, then a smash and shockwaves (jump them).
-5. **LASER LAIR:** LOCKDOWN!, the turrets wake, get behind cover; NEW DNA, Upgrade's glitch slam. K flows into a turret (green outline and a [K] badge show what's in reach): aim with up/down, J fires, K ejects. Kevin outside the glass: "YOU CAN BECOME... A MACHINE?". The dead lift to the catwalk card, the shutter out (K into its keypad).
-6. **Takeovers and cabinets:** K into a mascot or a track-bot: it shakes green, then blows up (TAKEOVER!). K into an arcade cabinet: GAME OVER! blasts what's in front (one per cabinet).
-7. **SUMO SLAMMERS:** Kevin's dare; K into the cabinet: mash J, and when KEV raises his arms (the "!") press K to sidestep. Three rounds. Win: NEW HIGH SCORE, the card pops out, Kevin sulks; lose: he gloats. Escape forfeits.
-8. **Rosewood station:** trains warn (lamps, horn, headlights) then roar through the track bed; stay on the decks. Off the end of the first deck, the maintenance step leads up to the second. Kevin's drain: the lights die bank by bank, the trains stop.
-9. **The cart:** K into the maintenance cart, drive right along the live rail (J honks and stuns), smash the barricade at speed. Let the watch run out mid-line: the cart brakes and you stand on it; step off into the rail and you respawn on the deck (one heart) while the empty cart rolls back to the start (BACK TO THE START).
-10. **The turn:** Kevin's speech, the grab: whatever alien you are (or the one on the dial) goes dark on the dial (DNA STOLEN!; picking it says so) and Kevin becomes a purple copy of it. Hit him with a different alien right away for OUT OF SYNC. Beat him: DNA RESTORED!, he shorts the shutter and runs.
-11. **The depot:** Kevin pops up ahead, taunts and flings sparks. Upgrade's lift to the grating (drop through it with Down + Jump, or walk off its end) (or fly over), the shutter, the cracked wall (Four Arms' card), the security laser and the sealed room (later aliens' silhouettes).
-12. **KEVIN 11:** his intro, then watch the copy meter on the boss bar fill as you lean on one alien. Tells: the hand charging (bolts), the crouch and dashed line (the absorb lunge: getting caught as an alien costs time and levels his copy), the scan beam locking on (he copies whatever you are when it ends). Phase 2: the coils' striped bands then arcs; as Upgrade, K into a coil for OVERLOAD!. Phase 3: the hybrid wears a piece of each alien he copied; UNSTABLE! every three attacks. Defeat: POWERED DOWN!, the train escape, the family's last word.
-13. **Achievements:** NEW HIGH SCORE (SUMO), HOSTILE TAKEOVER (15 takeovers), NOTHING TO COPY (beat him before any copy reaches III: keep switching).
-14. **Older secrets with Upgrade:** Chapter Select flags the Act 1 chapters SECRET WAITING!. Camp Crash: a Vilgax supply hatch in the ground just before the crash site (flow over it with K and drop in). Road Trip: the service shed left of where the RV drops you at the truck stop. Dr. Animo: the guard room's shutter in the security wing, right of the Four Arms wall.
-15. **Difficulty:** Hard keeps LASER LAIR, MAINTENANCE LINE, THE TURN and KEVIN 11 only; Upgrade's 12 s is enough to get out of the lair, and the watch recharges at the turn.
+1. **Get there:** a file that has cleared Chapter 4, Chapter Select: BOUNTY HUNTERS (Silver Spur under the moon, Sixsix's laser on Ben) > PLAY. Sections on their own: `?level=ch5&start=<checkpoint>` (see the URL switches).
+2. **Cold open:** Vilgax's bridge (the hologram of Ben turning on the war table, the three hunters), then Silver Spur, the CHAPTER 5 card, then the family. Any key skips; a retry doesn't replay it. A few steps in: the jetpack roar and the first salvo.
+3. **Main Street:** a tracker paints you (red line, LOCKED!), then markers and missiles: break line of sight under a porch roof or behind a building (LOCK LOST), or shoot it down. Sixsix's two duels (slashes, cannon, hop; he leaves after about 13 s or when hurt enough). The water tower card.
+4. **The jail:** walk into the sheriff's office: the net, the drag into the cell, NEW DNA: Ghostfreak. Hold K and walk through the stone wall on the right (or back through the bars to smash the generator: NET DOWN!). Whispers in the corner; let the timer run out to see him hesitate.
+5. **The hotel:** boarded doors only Ghostfreak passes, the upper hall, the back room's card, the window out. Phase and stand still near a tracker: it loses you.
+6. **The mine:** Kraab's three ambushes (a crack racing to you, then the eruption), crab-bots (smash one over), falling rocks, the cave-in (Heatblast's fire on the dynamite), the alcove card under the floor (a second crate).
+7. **THE DEEP DIVE:** run into the cart. Left/right tracks, Jump, Down, J ahead, K the alien's special, T to swap mid-ride (try Four Arms' brace, Ghostfreak's phase, Wildmutt's sniff). Kraab's cracks, the drone's painted track, the cannon's glow. The high card (jump), the trestle, the landing. Without a hit: DEEP DIVER.
+8. **The cavern:** Kraab charges on the trestle, Tetrax at the other side, NEW DNA: Diamondhead. Hold K facing Kraab: REFLECTED!. Then Up+K platforms (the ledge card), sentries (Diamondhead eats their shards), and the security laser: stand under it facing the emitter, hold K, then Up: the beam bounces into the receiver (a two-tile target) and the crystal gate drops. Die after the standoff on Easy or Normal: you're back at CRYSTAL FIELD, not before it; die during it: it replays with Diamondhead already in hand.
+9. **The lift:** step on, it rises and jams, the hunters corner you, press T: the misfire (never the alien you picked). 15 seconds: FIX is locked with a countdown, two crab-bots drop in (KO one for IMPROVISED!). Untouched: CLUTCH MISFIRE. Then the drop and the crash into the chamber.
+10. **THE HUNTERS:** Kraab (smash his shell, or hit his back; reflect his cannon; three heavy hits on the cracked pillar bring the roof down: CAVE-IN!), Sixsix up the shaft (he hovers over the far side from you: fire up at him, fly or climb up to him, or tilt the shield and send a missile into his jetpack; then climb out of the top), Tetrax in the yard (watch for the glint; Four Arms cracks him, three fire hits heat him and the next blow shatters). He yields; the ending, and the dial's last click to Ghostfreak: "SOON...".
+11. **Achievements:** REFLECTED (25 reflects), BOO! (frighten 20), CLUTCH MISFIRE, DEEP DIVER, BOUNTY VOID.
+12. **Older secrets** (`?aliens=diamondhead,ghostfreak` or a file that cleared Chapter 5): Chapter 4's laser vault in the power depot (Diamondhead under the beam, shield tilted up) and the sealed room off the mezzanine (Upgrade's lift up, then Ghostfreak through the welded door); Chapter 3's exhibit vault at the foot of the Night Gallery's climbing wall (Ghostfreak); Chapter 1's jammer beam (destroy the jammer, then Diamondhead on two crystal platforms over it, shield tilted down onto the crystal seam: the cliff opens).
+13. **Difficulty:** Hard keeps JAIL, DEEP DIVE, CRYSTAL CAVERN, THE LIFT and THE HUNTERS only.
 
-**Phone (emulated wide phone or real):** the radial dial now has six faces; Upgrade's touch buttons (eye beam, merge); SUMO SLAMMERS with the right half to push and the left to sidestep; the copy meter readable on the boss bar above the thumbs; the dialogue box clear of the controls.
+**Phone (emulated wide phone or real):** the radial dial now has eight faces; THE DEEP DIVE with the stick for tracks (stick down ducks); the lift's countdown and the FIX lock above the thumbs; `?autobench=1` now plays the ride too.

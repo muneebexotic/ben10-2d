@@ -67,6 +67,13 @@ Built within Milestone 4, part 3 (Chapter 4, not proposed beforehand, recorded h
 - **Machines framework:** Upgrade possesses turrets, cabinets, shutters, lifts, carts and the boss's tesla coils; any machine enemy (and Vilgax's drones) can be taken over and blown up.
 - **Upgrade opens one secret in each Act 1 chapter** (a supply hatch, a shed shutter, a security room).
 
+Built within Milestone 4, part 4 (Chapter 5, not proposed beforehand, recorded here for reference):
+
+- **THE DEEP DIVE:** a ray-traced 3D mine-cart ride in the middle of Chapter 5, every form with its own ride attack and special (the owner asked for "something unique... maybe something in 3D").
+- **Ghostfreak's hesitant revert:** at timeout he sometimes holds on a second or two with a whisper.
+- **The new aliens open four older secrets** (Chapters 1, 3 and 4), two of them new cards.
+- **Lazy chapter art:** a chapter's own art is generated when it loads, not at boot.
+
 ## Deferred (approved for later)
 
 | Idea | Target |
@@ -120,3 +127,14 @@ Built within Milestone 4, part 3 (Chapter 4, not proposed beforehand, recorded h
 - **Kevin's copy gallery:** an EXTRAS page with every alien Kevin has copied on this file and the highest copy level he reached with it ("YOUR HEATBLAST, LEVEL III. YOU REALLY LIKE FIRE, HUH?").
 - **Lights-out Line 11:** the station after the drain as a timed run where Upgrade's glow and Heatblast are the only light.
 - **Kevin co-op:** a local second player as Kevin during the buddy section (bolts and absorbing cabinets), a stepping stone to the Ben vs Kevin duels in the viral layer.
+
+### From Chapter 5 (Milestone 4)
+
+- **DEEP DIVE ATTACK in EXTRAS:** once Chapter 5 is cleared, the ride on its own from the title screen: a score run (distance, smashes, near misses, no-hit streaks) with a medal per alien ridden and a share line ("DEEP DIVE 812 M AS FOUR ARMS"). The track is already pure data, so seeded remixes (a daily track) are cheap. The most clip-friendly 45 seconds in the game.
+- **More 3D moments, one per Act at most:** the same shader-and-billboard trick fits a Rustbucket highway chase seen from behind (Act 3) or Stinkfly's flight through a canyon. Rare on purpose, so each one feels like the game evolving.
+- **Bounty board:** after Chapter 5, WANTED posters in later chapters' towns with bounties Vilgax put on Ben (beat a section without being hit, finish a ride without a scratch) paying cards or Omnitrix face-plate colours.
+- **Tetrax as a sparring partner in Training:** an honourable duel with no damage, teaching tells (each glint), heat combos and guard breaks. He's the game's best-telegraphed fighter.
+- **Ghostfreak's diary:** the whispers he says while out, collected in EXTRAS like JOKES FOUND, with a last locked line that unlocks in Chapter 9 (when he breaks free). Long-term foreshadowing players can follow.
+- **Phase-wall speedrun skips:** a few walls in older chapters that Ghostfreak can cut through for a faster route (marked only by a faint sigil), so returning players find new lines on the split timer.
+- **THE HUNTERS resume at the stage you died in:** the three hunters fight in three places (chamber, shaft, yard), so a death on Tetrax could restart at the yard with Kraab buried and Sixsix in the tower, instead of replaying all three (two to three minutes). Scripted damage-on runs mostly died in the second and third stages and replayed Kraab every time. Needs a "start at stage" path in `Hunters.ts` (the arena, the ledges, the health bar) and a hidden checkpoint per stage; a proposal, since it changes how every boss retry feels.
+- **Dynamite chains:** a missile, a fireball or a burning stink cloud setting off a row of crates in sequence (CHAIN REACTION!), a natural clip.
