@@ -6,6 +6,7 @@ import { CELL } from '../../levels/tiles';
 import type { DecorKind, LevelData } from '../../levels/types';
 import type { Lighting } from '../../systems/Lighting';
 import { TEX } from '../preload/assetKeys';
+import { CH5_TEX as T5 } from '../preload/bounty';
 import type { LevelWorld } from './LevelWorld';
 import { StaticCuller } from './StaticCuller';
 
@@ -63,6 +64,18 @@ const GLOWS: Partial<Record<DecorKind, Array<{ dx: number; dy: number; radius: n
   transformer: [{ dx: 0, dy: -46, radius: 50, color: PALETTE.railGlow, intensity: 0.6, flicker: true }],
   generator: [{ dx: 7, dy: -26, radius: 30, color: PALETTE.omnitrix, intensity: 0.5 }],
   securityLaser: [{ dx: 7, dy: -34, radius: 24, color: PALETTE.enemy, intensity: 0.9 }, { dx: 7, dy: -22, radius: 24, color: PALETTE.enemy, intensity: 0.9 }, { dx: 7, dy: -10, radius: 24, color: PALETTE.enemy, intensity: 0.9 }],
+  // Silver Spur: oil lamps and lit windows, warm against the moonlight; the mine's lanterns; the cavern's crystals.
+  saloon: [{ dx: -34, dy: -44, radius: 60, color: 0xffc070, intensity: 0.8, flicker: true }, { dx: 34, dy: -44, radius: 60, color: 0xffc070, intensity: 0.8, flicker: true }],
+  shopFront: [{ dx: -20, dy: -34, radius: 46, color: 0xffc070, intensity: 0.5 }],
+  lanternPost: [{ dx: 0, dy: -46, radius: 80, color: 0xffb860, intensity: 0.95, flicker: true }],
+  hangingLantern: [{ dx: 0, dy: -6, radius: 76, color: 0xffb860, intensity: 0.95, flicker: true }],
+  hotelSign: [{ dx: 0, dy: -14, radius: 60, color: 0xff6a5a, intensity: 0.5, flicker: true }],
+  townGate: [{ dx: -78, dy: -60, radius: 50, color: 0xffb860, intensity: 0.7, flicker: true }, { dx: 78, dy: -60, radius: 50, color: 0xffb860, intensity: 0.7, flicker: true }],
+  headframe: [{ dx: 0, dy: -150, radius: 70, color: PALETTE.enemy, intensity: 0.5, flicker: true }],
+  minePortal: [{ dx: 0, dy: -30, radius: 60, color: 0xffb860, intensity: 0.5 }],
+  crystalCluster: [{ dx: 0, dy: -16, radius: 60, color: PALETTE.diamondhead, intensity: 0.75 }],
+  crystalSpire: [{ dx: 0, dy: -50, radius: 100, color: PALETTE.diamondhead, intensity: 0.85 }],
+  netGenerator: [{ dx: 0, dy: -8, radius: 40, color: PALETTE.sixsix, intensity: 0.8, flicker: true }],
 };
 
 const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
@@ -149,6 +162,32 @@ const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   securityLaser: { key: TEX.securityLaser },
   sealedDoor: { key: TEX.sealedDoor },
   catwalkRail: { key: TEX.catwalkRail },
+  townGate: { key: T5.townGate },
+  saloon: { key: T5.saloon },
+  shopFront: { key: T5.shopFront },
+  wanted: { key: T5.wanted },
+  hitchingPost: { key: T5.hitchingPost },
+  wagonWheel: { key: T5.wagonWheel },
+  crates: { key: T5.crates },
+  lanternPost: { key: T5.lanternPost },
+  coffin: { key: T5.coffin },
+  waterTower: { key: T5.waterTower },
+  hotelSign: { key: T5.hotelSign },
+  barCounter: { key: T5.barCounter },
+  piano: { key: T5.piano },
+  mouseHole: { key: T5.mouseHole },
+  jailFurniture: { key: T5.jailFurniture },
+  headframe: { key: T5.headframe },
+  minePortal: { key: T5.minePortal },
+  mineRails: { key: T5.mineRails },
+  timbers: { key: T5.timbers },
+  hangingLantern: { key: T5.hangingLantern },
+  crystalCluster: { key: T5.crystalCluster },
+  crystalSpire: { key: T5.crystalSpire },
+  dynamiteSign: { key: T5.dynamiteSign },
+  prospector: { key: T5.prospector },
+  oreCart: { key: T5.oreCart },
+  netGenerator: { key: T5.netGenerator },
 };
 
 /** Big set dressing that sits behind the action. */
@@ -156,6 +195,7 @@ const BACK_DECOR: readonly DecorKind[] = [
   'rv', 'tent', 'wreck', 'diner', 'smoothyStand', 'billboard', 'poleSign', 'garage', 'haulerWreck', 'neon', 'girder', 'carWreck', 'bridgeEnd',
   'museumFacade', 'trex', 'mammoth', 'whale', 'pterosaur', 'columns', 'painting', 'banner', 'staffDoor', 'mutagenTank', 'cage', 'labConsole', 'pipes', 'exitSign', 'lampPost',
   'storefront', 'arcadeFront', 'streetLamp', 'powerPole', 'neonSign', 'prizeCounter', 'bandStage', 'breakerBox', 'poster', 'uvLight', 'stationSign', 'subwayMap', 'pillar', 'tunnelLight', 'cables', 'transformer', 'generator', 'warningSign', 'sealedDoor', 'ticketMachine', 'skeeBall',
+  'townGate', 'saloon', 'shopFront', 'wanted', 'waterTower', 'hotelSign', 'headframe', 'minePortal', 'timbers', 'crystalSpire', 'dynamiteSign', 'mouseHole', 'hangingLantern', 'lanternPost', 'barCounter', 'piano', 'jailFurniture',
 ];
 
 function hash(x: number, salt: number): number {
@@ -227,8 +267,8 @@ export class Decor {
       this.sprinkleDesert(scene, level, world);
       return;
     }
-    // The museum and downtown are dressed by hand.
-    if (level.theme === 'museum' || level.theme === 'city') return;
+    // The museum, downtown and Silver Spur are dressed by hand.
+    if (level.theme === 'museum' || level.theme === 'city' || level.theme === 'western') return;
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {

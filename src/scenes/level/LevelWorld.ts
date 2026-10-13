@@ -4,10 +4,11 @@ import { autotile, buildCells, cellAt, type TileGrid } from '../../levels/buildL
 import { CELL, ONE_WAY_FRAMES, SOLID_FRAMES } from '../../levels/tiles';
 import type { LevelData, LiquidKind } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
+import { CH5_TEX } from '../preload/bounty';
 import type { Rect } from '../../entities/types';
 import { BakedGraphics } from '../../ui/BakedGraphics';
 
-const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity } as const;
+const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity, western: CH5_TEX.tiles } as const;
 
 /** How each liquid looks: its surface texture and the colour it fades to when deeper than one texture. */
 const LIQUIDS = {
@@ -187,9 +188,10 @@ export class LevelWorld {
     return w ? (w.kind ?? 'water') : null;
   }
 
-  ambientAt(x: number): LevelData['ambience'][number]['ambient'] {
+  /** The lighting zone at (x, y); `y` only matters where a zone starts below a row (a cavern under a yard). */
+  ambientAt(x: number, y = 0): LevelData['ambience'][number]['ambient'] {
     let zone = this.data.ambience[0].ambient;
-    for (const a of this.data.ambience) if (x >= a.x * TILE) zone = a.ambient;
+    for (const a of this.data.ambience) if (x >= a.x * TILE && y >= (a.fromRow ?? 0) * TILE) zone = a.ambient;
     return zone;
   }
 }

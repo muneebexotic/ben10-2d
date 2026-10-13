@@ -5,7 +5,7 @@ import type { InteriorWall, LevelData } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
 import { StaticCuller } from './StaticCuller';
 
-const WALLS: Record<InteriorWall, string> = {
+const WALLS: Partial<Record<InteriorWall, string>> = {
   hall: TEX.hallWall,
   lab: TEX.labWall,
   arcade: TEX.arcadeWall,
@@ -38,7 +38,9 @@ export class CityBackdrop {
     for (const room of level.interiors ?? []) {
       const x = room.x * TILE;
       const w = room.w * TILE;
-      const wall = this.culler.add(scene.add.tileSprite(x, 0, w, heightPx, WALLS[room.wall]).setOrigin(0, 0).setDepth(DEPTH.pinesMid));
+      const tex = WALLS[room.wall];
+      if (!tex) continue;
+      const wall = this.culler.add(scene.add.tileSprite(x, 0, w, heightPx, tex).setOrigin(0, 0).setDepth(DEPTH.pinesMid));
       // The pattern is 192 px tall: line its panelling up with the room's floor.
       wall.tilePositionY = 192 - (((room.floor ?? 30) * TILE) % 192);
     }

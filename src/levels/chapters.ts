@@ -30,7 +30,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 2, act: 1, title: 'ROAD TRIP', levelId: 'ch2', tease: 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', cast: ['fourarms', 'xlr8'] },
   { number: 3, act: 1, title: 'DR. ANIMO', levelId: 'ch3', tease: 'SOMETHING AT THE MUSEUM IS... EVOLVING.', cast: ['wildmutt', 'stinkfly'] },
   { number: 4, act: 2, title: 'KEVIN 11', levelId: 'ch4', tease: 'NEW FRIEND AT THE ARCADE. WHAT COULD GO WRONG?', cast: ['kevin', 'upgrade'] },
-  { number: 5, act: 2, title: 'BOUNTY HUNTERS', levelId: null, tease: 'THREE HUNTERS. ONE BOUNTY. GUESS WHO.', cast: ['diamondhead', 'ghostfreak'] },
+  { number: 5, act: 2, title: 'BOUNTY HUNTERS', levelId: 'ch5', tease: 'THREE HUNTERS. ONE BOUNTY. GUESS WHO.', cast: ['diamondhead', 'ghostfreak'] },
   { number: 6, act: 2, title: 'MAGIC', levelId: null, tease: "MAGIC ISN'T REAL. RIGHT, GWEN?", cast: ['greymatter'] },
   { number: 7, act: 3, title: 'THE PLUMBERS', levelId: null, tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },
   { number: 8, act: 3, title: 'ZOMBOZO', levelId: null, tease: 'NEVER TRUST A CLOWN WHO LAUGHS LAST.', cast: ['cannonbolt'] },

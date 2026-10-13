@@ -100,6 +100,15 @@ export const LIGHTING = {
   ambientSubway: 0x8a92a0,
   ambientTunnel: 0x3e4658,
   ambientSubstation: 0x5a6078,
+  // Silver Spur under a full moon, and the Diamond Deep under it.
+  ambientGhostTown: 0x7c84c4,
+  ambientSaloon: 0x8a7468,
+  ambientJail: 0x4c4a64,
+  ambientHotel: 0x4a3e5c,
+  ambientMineHead: 0x6a6c9c,
+  ambientMine: 0x3a3442,
+  ambientCavern: 0x4a6a96,
+  ambientShaft: 0x30303e,
   ambientBlendMs: 900,
 } as const;
 

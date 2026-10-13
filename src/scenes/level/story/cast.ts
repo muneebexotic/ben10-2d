@@ -1,8 +1,10 @@
 import { PALETTE } from '../../../config/palette';
 import { TEX } from '../../preload/assetKeys';
 import { WILDMUTT_TEX } from '../../../aliens/wildmutt/art';
+import { GHOSTFREAK_TEX } from '../../../aliens/ghostfreak/art';
+import { CH5_TEX } from '../../preload/bounty';
 
-export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger';
+export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak';
 
 export interface CastMember {
   name: string;
@@ -24,6 +26,12 @@ export const CAST: Record<CastId, CastMember> = {
   kevin: { name: 'KEVIN', color: PALETTE.kevin, portrait: TEX.portraitKevinGrin, voicePitch: 1.05 },
   /** Kevin before he gives his name (the Act 1 ending's shadowy portrait). */
   stranger: { name: '???', color: PALETTE.kevin, portrait: TEX.portraitKevin, voicePitch: 1.05 },
+  /** Sixsix only speaks in clicks: the box subtitles him. */
+  sixsix: { name: 'SIXSIX', color: PALETTE.sixsix, portrait: CH5_TEX.portraitSixsix, voicePitch: 1.6 },
+  kraab: { name: 'KRAAB', color: PALETTE.kraab, portrait: CH5_TEX.portraitKraab, voicePitch: 0.75 },
+  tetrax: { name: 'TETRAX', color: PALETTE.tetrax, portrait: CH5_TEX.portraitTetrax, voicePitch: 0.65 },
+  /** The thing in the watch (whispers at the very end). */
+  ghostfreak: { name: '...', color: PALETTE.ghostfreakEye, portrait: GHOSTFREAK_TEX.portrait, voicePitch: 0.45 },
 };
 
 export function isCastId(id: string): id is CastId {

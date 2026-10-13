@@ -41,6 +41,14 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch1-card-hatch', number: 26, name: 'HATCH HAYATO', flavour: 'FOUND A SPACESHIP HATCH IN THE WOODS. HAS NOT SLEPT SINCE.', color: 0x6ad8a0, holo: true },
   { id: 'ch2-card-garage', number: 27, name: 'GREASEMONKEY GOEMON', flavour: 'CHANGES A TIRE MID-MATCH. HIS OPPONENT USUALLY HELPS.', color: 0xa8784a, holo: true },
   { id: 'ch3-card-security', number: 28, name: 'NIGHT WATCH NOBORU', flavour: 'GUARDS THE MUSEUM BY NIGHT. NOTHING HAS EVER COME BACK TO LIFE ON HIS SHIFT. ONCE.', color: 0x4a6ad8, holo: true },
+  { id: 'ch5-card-tower', number: 29, name: 'WATER TOWER WATARU', flavour: 'TRAINS ON TOP OF WATER TOWERS. HAS NEVER ONCE BEEN THIRSTY.', color: 0xc8843a },
+  { id: 'ch5-card-hotel', number: 30, name: 'ROOM 13 RYOTA', flavour: 'CHECKED INTO A HAUNTED HOTEL IN 1889. HAS NOT CHECKED OUT.', color: 0x8a6aa8, holo: true },
+  { id: 'ch5-card-alcove', number: 31, name: 'DYNAMITE DAIKI', flavour: 'HIS ENTRANCE MUSIC IS AN EXPLOSION. SO IS HIS EXIT.', color: 0xd83a2a },
+  { id: 'ch5-card-dive', number: 32, name: 'MINECART MASA', flavour: 'NO BRAKES. NO FEAR. NO IDEA WHERE THE TRACK GOES.', color: 0x9a7a5a, holo: true },
+  { id: 'ch5-card-ledge', number: 33, name: 'CRYSTAL KENJI', flavour: 'SO SHINY HIS OPPONENTS SURRENDER TO STOP SQUINTING.', color: 0x6ae4ff },
+  { id: 'ch5-card-mouse', number: 34, name: 'MOUSEHOLE MOMO', flavour: 'THE SMALLEST WRESTLER ON RECORD. THE RECORD IS ALSO VERY SMALL.', color: 0xa89a8a, holo: true },
+  { id: 'ch5-card-flooded', number: 35, name: 'DEEP WATER DAICHI', flavour: 'HOLDS HIS BREATH FOR TWENTY MINUTES. HOLDS GRUDGES FOR LONGER.', color: 0x2a7ab8, holo: true },
+  { id: 'ch5-card-loop', number: 36, name: 'LOOP-DE-LOOP ROKU', flavour: 'ROLLS INTO THE RING. ROLLS OUT OF IT. NEVER STOPS ROLLING.', color: 0xd8c83a, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {

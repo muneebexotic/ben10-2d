@@ -76,6 +76,8 @@ export class Banner {
     else if (opts.style === 'howl') this.howlSlam(text, color, scale, hold, y);
     else if (opts.style === 'buzz') this.buzzSlam(text, color, scale, hold, y);
     else if (opts.style === 'glitch') this.glitchSlam(text, color, scale, hold, y);
+    else if (opts.style === 'shatter') this.shatterSlam(text, color, scale, hold, y);
+    else if (opts.style === 'haunt') this.hauntSlam(text, color, scale, hold, y);
     else this.blazeSlam(text, color, scale, hold, y, opts.first);
   }
 
@@ -338,6 +340,114 @@ export class Banner {
       delay: hold + 200,
       duration: 160,
       ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /**
+   * Shards of glass fly in from every side and lock together into the name
+   * with a white flash and a ring of glints (Diamondhead); it leaves the way
+   * glass does: a crack runs through it and the pieces drop away.
+   */
+  private shatterSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const shadow = pixelText(scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.white });
+    title.setTint(PALETTE.white, PALETTE.white, color, color);
+    const half = title.width / 2;
+    const h = title.height;
+    // The shards: thin slivers of glass that converge on the letters.
+    const shards: Phaser.GameObjects.Rectangle[] = [];
+    for (let i = 0; i < 18; i++) {
+      const tx = -half + (i / 17) * half * 2;
+      const ty = (Math.random() - 0.5) * h;
+      const a = Math.random() * Math.PI * 2;
+      const r = 90 + Math.random() * 90;
+      const shard = scene.add.rectangle(tx + Math.cos(a) * r, ty + Math.sin(a) * r, 2 + Math.random() * 6, 2, i % 3 === 0 ? PALETTE.white : color).setAngle(Math.random() * 180);
+      shards.push(shard);
+      scene.tweens.add({ targets: shard, x: tx, y: ty, angle: 0, duration: 230, delay: Math.random() * 60, ease: 'Cubic.easeIn' });
+      scene.tweens.add({ targets: shard, alpha: 0, delay: 300, duration: 120 });
+    }
+    const cracks = scene.add.graphics().setAlpha(0);
+    cracks.lineStyle(1, PALETTE.white, 0.9);
+    let cx = -half * 0.2;
+    let cy = -h / 2;
+    cracks.beginPath();
+    cracks.moveTo(cx, cy);
+    for (let k = 0; k < 5; k++) {
+      cx += (Math.random() - 0.5) * 18;
+      cy += h / 5;
+      cracks.lineTo(cx, cy);
+    }
+    cracks.strokePath();
+    const c = scene.add.container(GAME_WIDTH / 2, y, [shadow, title, ...shards, cracks]).setDepth(450);
+    this.current = c;
+    shadow.setAlpha(0);
+    title.setAlpha(0);
+    scene.tweens.add({
+      targets: [title, shadow],
+      alpha: 1,
+      delay: 250,
+      duration: 60,
+      onComplete: () => {
+        shakeCamera(scene.cameras.main, 160, 0.008, false);
+        title.setScale(title.scaleX * 1.15);
+        scene.tweens.add({ targets: title, scaleX: title.scaleX / 1.15, scaleY: title.scaleY, duration: 200, ease: 'Back.easeOut' });
+      },
+    });
+    // Out: the crack runs through, the halves slip apart and fall.
+    scene.tweens.add({ targets: cracks, alpha: 1, delay: hold + 200, duration: 60 });
+    scene.tweens.add({
+      targets: c,
+      y: y + 26,
+      alpha: 0,
+      angle: 4,
+      delay: hold + 300,
+      duration: 260,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /**
+   * The name drifts in mirrored and faint, then snaps the right way round;
+   * while it holds it twitches now and then, as if something is wrong with
+   * it (Ghostfreak). It leaves stretching upward like breath on a cold day.
+   */
+  private hauntSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const ghost = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color }).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD);
+    const shadow = pixelText(scene, 3, 3, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(scene, 0, 0, text, { scale, originX: 0.5, originY: 0.5, color: PALETTE.white });
+    title.setTint(PALETTE.white, PALETTE.white, color, color);
+    const c = scene.add.container(GAME_WIDTH / 2, y, [ghost, shadow, title]).setDepth(450);
+    this.current = c;
+    // Backwards first: mirrored and faint.
+    for (const t of [shadow, title]) t.setScale(-t.scaleX, t.scaleY).setAlpha(0);
+    scene.tweens.add({ targets: [shadow, title], alpha: 0.35, duration: 260, ease: 'Sine.easeIn' });
+    scene.time.delayedCall(300, () => {
+      if (!c.active) return;
+      for (const t of [shadow, title]) t.setScale(Math.abs(t.scaleX), t.scaleY).setAlpha(1);
+      ghost.setAlpha(0.6);
+      scene.tweens.add({ targets: ghost, alpha: 0, scaleX: ghost.scaleX * 1.3, scaleY: ghost.scaleY * 1.3, duration: 360 });
+    });
+    // Twitches while it holds.
+    const twitches = Math.max(2, Math.floor(hold / 260));
+    for (let i = 0; i < twitches; i++) {
+      scene.time.delayedCall(420 + i * 260 + Math.random() * 90, () => {
+        if (!c.active) return;
+        c.setPosition(GAME_WIDTH / 2 + (Math.random() - 0.5) * 8, y + (Math.random() - 0.5) * 3).setAngle((Math.random() - 0.5) * 4);
+        scene.time.delayedCall(50, () => c.active && c.setPosition(GAME_WIDTH / 2, y).setAngle(0));
+      });
+    }
+    scene.tweens.add({
+      targets: c,
+      alpha: 0,
+      scaleY: 1.6,
+      y: y - 18,
+      delay: hold + 300,
+      duration: 340,
+      ease: 'Sine.easeIn',
       onComplete: () => this.finish(c),
     });
   }

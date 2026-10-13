@@ -39,7 +39,8 @@ import { playSfx } from '../systems/audio/Sfx';
 import { bindAudioUnlock, bindMuteKey } from '../systems/Settings';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import { pixelText } from '../ui/text';
-import { BossArena } from './level/BossArena';
+import { BossArena, type ArenaDeps } from './level/BossArena';
+import { ShaftLedges } from '../entities/hunters/ShaftLedges';
 import { CameraRig } from './level/CameraRig';
 import { Combat, isFlame } from './level/Combat';
 import { Decor } from './level/Decor';
@@ -50,6 +51,7 @@ import { Parallax } from './level/Parallax';
 import { SimBackdrop } from './level/SimBackdrop';
 import { MuseumBackdrop } from './level/MuseumBackdrop';
 import { CityBackdrop } from './level/CityBackdrop';
+import { WesternBackdrop } from './level/WesternBackdrop';
 import { SpecialTerrain } from './level/SpecialTerrain';
 import { TechSystem } from './level/TechSystem';
 import { checkpointsFor, spawnEntities } from './level/Spawner';
@@ -78,6 +80,11 @@ import { saveSystem } from '../systems/SaveSystem';
 import { session } from '../systems/Session';
 import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
+import { CrystalPlatforms } from '../entities/crystal/CrystalPlatforms';
+import { Haunting } from './level/Haunting';
+import { HazardSystem } from './level/Hazards';
+import { DIAMONDHEAD } from '../config/aliens/diamondhead';
+import type { ForcedMisfire } from '../systems/MisfireRules';
 import { availableCards, countedCards, waitingSecrets } from '../levels/secrets';
 import { CHAPTERS } from '../levels/chapters';
 import { TRAINING } from '../config/training';
@@ -122,7 +129,18 @@ const AMBIENT: Record<AmbientKind, number> = {
   subway: LIGHTING.ambientSubway,
   tunnel: LIGHTING.ambientTunnel,
   substation: LIGHTING.ambientSubstation,
+  ghosttown: LIGHTING.ambientGhostTown,
+  saloon: LIGHTING.ambientSaloon,
+  jail: LIGHTING.ambientJail,
+  hotel: LIGHTING.ambientHotel,
+  minehead: LIGHTING.ambientMineHead,
+  mine: LIGHTING.ambientMine,
+  cavern: LIGHTING.ambientCavern,
+  shaft: LIGHTING.ambientShaft,
 };
+
+/** Ambient zones under the open sky (Chapter 5's tumbleweeds). */
+const OUTDOORS: readonly AmbientKind[] = ['ghosttown', 'minehead'];
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
 
@@ -175,6 +193,17 @@ export class LevelScene extends Phaser.Scene {
   private terrain: SpecialTerrain | null = null;
   /** Machines Upgrade merges into, and the subway's trains (Chapter 4 on). */
   private tech: TechSystem | null = null;
+  /** Diamondhead's crystal platforms. */
+  private crystals!: CrystalPlatforms;
+  /** Missiles, dynamite, falling rocks, phase walls and security lasers (Chapter 5 on, and the older secrets). */
+  private hazards: HazardSystem | null = null;
+  /** Ghostfreak's whispers and the glitch when he arrives. */
+  private haunting!: Haunting;
+  /**
+   * Every misfire this attempt, and whether a story moment was running: only
+   * a named exception (FORCED_MISFIRES) may ever misfire during one (QA checks).
+   */
+  readonly misfireLog: Array<{ gotId: string; forced: ForcedMisfire | null; storyLock: boolean; x: number }> = [];
   /** A stretch of the level with the lights out (Chapter 3's blackout). */
   private darkZone: { fromX: number; toX: number } | null = null;
   private stats!: RunStats;
@@ -199,6 +228,8 @@ export class LevelScene extends Phaser.Scene {
   private readonly perfect = new PerfectWindow(PERFECT_TRANSFORM);
   private vignette: Phaser.Filters.Vignette | null = null;
   private backdropOn = true;
+  /** THE DEEP DIVE draws the world in its own scene: the level's camera, lightmap and scenery rest. */
+  private worldHidden = false;
   private desaturate: Phaser.Filters.ColorMatrix | null = null;
   private readonly onResume = () => audio.setLoopsMuted(false);
 
@@ -222,6 +253,7 @@ export class LevelScene extends Phaser.Scene {
     this.alarm = false;
     this.desaturate = null;
     this.darkZone = null;
+    this.worldHidden = false;
     this.alienKills.clear();
     this.level = getLevel(data.levelId ?? CHAPTER_1.id);
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
@@ -273,7 +305,9 @@ export class LevelScene extends Phaser.Scene {
           ? new MuseumBackdrop(this, this.level)
           : this.level.theme === 'city'
             ? new CityBackdrop(this, this.level)
-            : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
+            : this.level.theme === 'western'
+              ? new WesternBackdrop(this, this.level, (x) => OUTDOORS.includes(this.world.ambientAt(x)), (x, y) => this.world.groundBelow(x, y))
+              : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
     // bg=0 (bisect switch): the sky, parallax and backdrop walls are hidden and never updated.
     this.backdropOn = perf.bg;
     if (!perf.bg) for (const o of this.children.list.slice(beforeBackdrop)) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible?.(false);
@@ -282,6 +316,8 @@ export class LevelScene extends Phaser.Scene {
     this.lighting.enabled = perf.fx;
     this.time2 = new TimeController();
     this.fx = new Fx(this, this.lighting, this.time2);
+    this.haunting = new Haunting(this.fx);
+    this.misfireLog.length = 0;
     this.telegraph = new Telegraphs(this);
     this.projectiles = new Projectiles(this, this.fx, this.lighting);
     this.combat = new Combat(
@@ -291,7 +327,8 @@ export class LevelScene extends Phaser.Scene {
         onPlayerHurt: (o) => this.onPlayerHurt(o),
         onParry: (n) => {
           this.stats.parries += n;
-          this.achievements.count('parries', n);
+          // DEFLECTOR is Ben's punch; Diamondhead's shield has its own (REFLECTED).
+          this.achievements.count(this.player.form.reach.canReflect ? 'reflected' : 'parries', n);
           this.bumpCombo(n);
         },
         onThrowLanded: (hits, x, y) => this.onThrowLanded(hits, x, y),
@@ -327,6 +364,8 @@ export class LevelScene extends Phaser.Scene {
         this.achievements.count('gummed');
       },
       onOverload: (d) => this.onOverload(d.x, d.y),
+      onFrightened: () => this.achievements.count('frightened'),
+      salvo: (x, feetY) => this.hazards?.salvo(x, feetY),
       threat: (d, at) => this.perfect.register(d, at, d.x, d.y),
       cancelThreat: (d) => this.perfect.cancel(d),
     });
@@ -359,6 +398,9 @@ export class LevelScene extends Phaser.Scene {
     EventBus.on('difficulty:changed', () => this.onDifficultyChanged(), this);
     EventBus.on('level:quit', () => this.onQuit(), this);
     EventBus.on('alien:misfire', (e) => this.onJoke(e.gotId, e.line), this);
+    EventBus.on('alien:reverted', (e) => {
+      if (hasAlien(e.alienId)) this.haunting.onLeft(getAlien(e.alienId));
+    }, this);
     EventBus.on('alien:misfire', () => {
       const bonus = Math.round(MISFIRE.improviseBonusMs / 1000);
       this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
@@ -421,6 +463,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.mode === 'training') return 'simulation';
     if (this.level.theme === 'museum') return 'museum';
     if (this.level.theme === 'city') return (this.resumeTileX() ?? 0) >= (this.level.story?.drain?.fromX ?? Infinity) ? 'subway' : 'arcade';
+    if (this.level.theme === 'western') return (this.resumeTileX() ?? 0) >= (this.level.story?.bounty?.kraabHunt.fromX ?? Infinity) ? 'mine' : 'ghosttown';
     return this.level.theme === 'highway' ? 'highway' : 'forest';
   }
 
@@ -471,6 +514,18 @@ export class LevelScene extends Phaser.Scene {
       setTrains: (running) => this.tech?.setTrains(running),
       powerOff: (fromX, toX) => this.decor.powerOff(fromX, toX),
       nearestEnemy: (x, y, range) => this.nearestEnemy(x, y, range),
+      hazards: this.hazards,
+      achievement: (id) => this.achievements.unlock(id),
+      addTarget: (t, hazard) => {
+        this.combat.addTarget(t);
+        if (hazard) this.combat.addHazard(hazard);
+      },
+      whisper: (text) => EventBus.emit('hud:whisper', { text, color: PALETTE.ghostfreakEye }),
+      setWorldHidden: (hidden) => {
+        self.worldHidden = hidden;
+        this.cameras.main.setVisible(!hidden);
+      },
+      payReward: (reward, x, y) => this.onSumoWon(reward, x, y),
     };
     return new StoryDirector(kit, resumeX, { onIntroControl: () => this.spawnIntroDrones() });
   }
@@ -556,6 +611,8 @@ export class LevelScene extends Phaser.Scene {
         isSolid: (x, y) => this.world.isSolid(x, y),
         groundBelow: (x, y) => this.world.groundBelow(x, y),
         merge: (area, facing) => this.tech?.merge(area, facing) ?? null,
+        growPlatform: (x, topY, width, lifeMs, warnMs) => this.crystals.grow(x, topY, width, lifeMs, warnMs),
+        breakPlatform: (id) => this.crystals.shatter(id),
       },
       notify: (a) => this.onAbility(a),
       // Read live: changing difficulty in Settings applies to the very next hit.
@@ -564,8 +621,10 @@ export class LevelScene extends Phaser.Scene {
       },
     });
     if (launchParams().god || launchParams().autobench) this.player.setInvulnerable(1e9);
+    this.crystals = new CrystalPlatforms(this, this.fx, this.player, (x, y) => this.world.isSolid(x, y));
+    // A crystal platform shatters, a live rail kills: neither is ground to respawn on.
     this.player.isSafeSpot = (x, y) =>
-      !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12) && !this.world.overRail(x - 12) && !this.world.overRail(x + 12);
+      !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12) && !this.world.overRail(x - 12) && !this.world.overRail(x + 12) && !this.crystals.under(x, y);
     this.player.respawnFeetY = (x, y, h) => this.world.standingFeetY(x, y, h);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
     this.player.isWaterSurface = (x, y) => this.world.onWaterSurface(x, y);
@@ -592,6 +651,7 @@ export class LevelScene extends Phaser.Scene {
       this.tutorial.clearFormTip();
       if (reason !== 'jammed') this.tutorial.tip('human', 'HUMAN AGAIN! {J} PUNCH   {K} DODGE ROLL', 6000, 6);
     };
+    this.omni.onMisfire = (gotId, forced) => this.misfireLog.push({ gotId, forced, storyLock: this.story?.storyLock ?? false, x: Math.round(this.player.x / TILE) });
     this.omni.onDenied = (reason) => {
       if (reason === 'cooldown') this.tutorial.tip('cooldown', 'OMNITRIX RECHARGING... HANG IN THERE!', 3000, 7);
     };
@@ -648,6 +708,22 @@ export class LevelScene extends Phaser.Scene {
       onSecretFound: (id) => this.onHiddenPath(id),
     });
     this.tech = this.createTech(resumeX);
+    this.hazards = new HazardSystem({
+      scene: this,
+      level: this.level,
+      world: this.world,
+      fx: this.fx,
+      lighting: this.lighting,
+      telegraph: this.telegraph,
+      projectiles: this.projectiles,
+      combat: this.combat,
+      player: this.player,
+      resumeX,
+      onPlayerHurt: (o) => this.onPlayerHurt(o),
+      onGateOpened: () => this.onGateOpened(),
+      onDud: () => this.tutorial.tip('dynamite', 'DYNAMITE! FIRE WOULD SET THAT OFF...', 3000, 6),
+      threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),
+    });
     if (this.jammer) {
       const jammer = this.jammer;
       this.combat.addTarget(jammer);
@@ -769,7 +845,37 @@ export class LevelScene extends Phaser.Scene {
       addMachine: (m) => this.tech?.add(m),
       copies: (list, current) => EventBus.emit('boss:copies', { list, current }),
       achievement: (id) => this.achievements.unlock(id),
+      hunt: this.level.story?.bounty ? this.huntWorld() : undefined,
     });
+  }
+
+  /** What THE HUNTERS can reach in the level (Chapter 5's boss moves through it). */
+  private huntWorld(): NonNullable<ArenaDeps['hunt']> {
+    const ledges = new ShaftLedges(this, this.player);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => ledges.clear());
+    const player = this.player;
+    return {
+      level: this.level,
+      player: {
+        get cloaked() {
+          return player.cloaked;
+        },
+        get formId() {
+          return player.form.id;
+        },
+      },
+      isSolid: (x, y) => this.world.isSolid(x, y),
+      groundBelow: (x, y) => this.world.groundBelow(x, y),
+      salvo: (x, floorY, count, spread, warnMs) => this.hazards?.salvo(x, floorY, count, spread, warnMs),
+      blastPlayer: (x, y, r, d) => this.hazards?.blasts.add(x, y, r, d),
+      rockfall: (x, cy) => this.hazards?.rockfalls.drop(x, cy),
+      collapse: (rect) => this.world.clearCells(rect),
+      say: (who, text, ms) => {
+        if (!this.dialogue.playing) this.dialogue.say(who, text, ms);
+      },
+      addLedge: (x, topY, w, solid) => ledges.add(x, topY, w, solid),
+      removeLedge: (id) => ledges.remove(id),
+    };
   }
 
   private createTraining(): TrainingDirector {
@@ -925,9 +1031,10 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.misfireBeat.update(realDt);
+    this.haunting.update(this.player.form, this.gameNow, this.state === 'play' && !this.cinematic && !this.player.dead);
     this.camRig.update(this.player.x, this.player.y, this.player.facing, this.player.grounded, realDt * Math.max(0.3, visual));
-    if (this.backdropOn) this.backdrop.update(this.cameras.main, realDt);
-    this.decor.update(this.cameras.main, this.lighting, this.gameNow);
+    if (this.backdropOn && !this.worldHidden) this.backdrop.update(this.cameras.main, realDt);
+    if (!this.worldHidden) this.decor.update(this.cameras.main, this.lighting, this.gameNow);
     this.world.update(realDt);
     this.speech.update(this.player.x, this.player.y - this.player.headHeight, realDt);
     if (!this.intro?.cinematic) {
@@ -944,7 +1051,7 @@ export class LevelScene extends Phaser.Scene {
       const light = p.isAlien ? 0 : p.hasWatch ? PLAYER.lightRadiusWithWatch : PLAYER.lightRadiusNoWatch;
       if (light > 0) p.hasWatch ? this.lighting.add(p.x, p.centerY, light, 0xb8ffc8, 0.85) : this.lighting.add(p.x, p.centerY, light, 0xc8d0ff, 0.6);
     }
-    const zone = this.world.ambientAt(p.x);
+    const zone = this.world.ambientAt(p.x, p.y - 8);
     let ambient = this.alarm ? this.alarmAmbient() : AMBIENT[zone];
     if (this.darkZone && p.x >= this.darkZone.fromX && p.x < this.darkZone.toX) ambient = LIGHTING.ambientBlackout;
     // A form that doesn't see like Ben (Wildmutt): the world dims and his own senses light it.
@@ -955,7 +1062,8 @@ export class LevelScene extends Phaser.Scene {
     }
     this.lighting.setAmbient(ambient, this.alarm ? 250 : LIGHTING.ambientBlendMs);
     this.lighting.update(realDt);
-    this.lighting.render(this.cameras.main);
+    if (this.worldHidden) this.lighting.skip();
+    else this.lighting.render(this.cameras.main);
   }
 
   /** Boss phase 2 alarm lights: a hard red strobe, or a slow gentle pulse with Reduce Flashing on. */
@@ -966,6 +1074,8 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private updateProps(dt: number): void {
+    this.crystals.update(this.gameNow);
+    this.hazards?.update(dt);
     for (const b of this.barricades) b.update(dt);
     this.terrain?.update(dt);
     this.tech?.update(dt, this.player.form.reach.canMerge === true && !this.player.dead, inputMode.format('{K}'));
@@ -1057,6 +1167,12 @@ export class LevelScene extends Phaser.Scene {
 
   private onAbility(action: AbilityAction): void {
     this.tutorial.onAction(action);
+    // Diamondhead drinks crystal shards in: alien time and a sliver of shield back.
+    if (action === 'absorb' && this.player.isAlien) {
+      this.omni.omnitrix.extend(DIAMONDHEAD.absorb.timeMs);
+      this.player.formHp = Math.min(this.player.form.maxFormHealth, this.player.formHp + DIAMONDHEAD.absorb.shield);
+      this.emitFormHealth(DIAMONDHEAD.absorb.shield);
+    }
     if (action === 'pounceHit') this.achievements.count('pounceHits');
     if (action === 'swapStrike' && this.player.isAlien) EventBus.emit('alien:swapStrike', { alienId: this.player.form.id, hits: 1 });
   }
@@ -1199,6 +1315,13 @@ export class LevelScene extends Phaser.Scene {
     // An earlier chapter has a secret this file can open now: point Ben back to it.
     const back = this.earlierSecret();
     this.speech.show(back ? `WAIT... THERE WAS ONE OF THESE BACK IN ${back}!` : "NOW THAT'S WHAT I CALL A SECRET!", 2600);
+  }
+
+  /** A bounced laser lit a receiver and its crystal gate shattered. */
+  private onGateOpened(): void {
+    this.time2.slowMo(0.35, 500, 250);
+    EventBus.emit('hud:banner', { title: 'GATE OPEN!', subtitle: 'LASER REFLECTED', color: PALETTE.diamondhead, durationMs: 1500, style: 'slam' });
+    if (this.player.form.id === 'diamondhead') this.speech.show('ROCK SOLID. LITERALLY.', 1800);
   }
 
   /** Wildmutt's senses opened a hidden passage. */
@@ -1393,8 +1516,16 @@ export class LevelScene extends Phaser.Scene {
     // The family's last word (portraits in the box) before the results.
     if (outro.length > 0) this.time.delayedCall(STORY_BEATS.bossOutroAt, () => this.dialogue.play(outro));
     const outroMs = outro.reduce((sum, line) => sum + line.ms, 0);
+    // Chapter 5's last beat: the dial clicks to Ghostfreak on its own for a moment, and a whisper.
+    const epilogueMs = this.level.story?.bounty ? STORY_BEATS.ghostEpilogueMs : 0;
+    if (epilogueMs > 0) {
+      this.time.delayedCall(STORY_BEATS.bossOutroAt + outroMs + 200, () => {
+        EventBus.emit('omnitrix:hesitating', { alienId: 'ghostfreak', ms: 900 });
+        EventBus.emit('hud:whisper', { text: 'SOON...', color: PALETTE.ghostfreakEye });
+      });
+    }
     this.flushPlayTime();
-    this.time.delayedCall(outro.length > 0 ? STORY_BEATS.bossOutroAt + outroMs + 500 : 3800, () => {
+    this.time.delayedCall(outro.length > 0 ? STORY_BEATS.bossOutroAt + outroMs + 500 + epilogueMs : 3800, () => {
       EventBus.emit('level:complete', { stats: cloneRunStats(this.stats) });
       this.scene.stop(SCENES.ui);
       this.scene.stop(SCENES.touch);
@@ -1509,6 +1640,9 @@ export class LevelScene extends Phaser.Scene {
     this.training?.destroy();
     this.story?.destroy();
     this.tech?.destroy();
+    this.hazards?.destroy();
+    this.hazards = null;
+    this.crystals?.clear();
     this.dialogue?.stop(false);
     this.time2?.clearSlowMo();
     this.tweens.timeScale = 1;

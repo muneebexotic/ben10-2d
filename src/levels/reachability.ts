@@ -17,6 +17,10 @@ export interface Capabilities {
   canSense?: boolean;
   /** Merges with machines (Upgrade): opens security shutters, rides lifts and carts. */
   canMerge?: boolean;
+  /** Phases through phase walls (Ghostfreak): bars, sealed doors, haunted walls. */
+  canPhase?: boolean;
+  /** Bounces laser beams with a crystal shield (Diamondhead): security lasers and receivers. */
+  canReflect?: boolean;
 }
 
 /** Each alien declares its own envelope in its definition (`reach`). */

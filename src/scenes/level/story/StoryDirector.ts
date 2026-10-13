@@ -11,6 +11,8 @@ import { MuseumIntro } from './museum/MuseumIntro';
 import { VillainIntro } from './museum/VillainIntro';
 import { buildKevinStory } from './kevin';
 import type { CityIntro } from './kevin/CityIntro';
+import { buildBountyStory } from './bounty';
+import type { ColdOpen } from './bounty/ColdOpen';
 
 /**
  * Builds a chapter's scripted moments from its level data and runs them:
@@ -19,7 +21,7 @@ import type { CityIntro } from './kevin/CityIntro';
 export class StoryDirector {
   private readonly pieces: SetPiece[] = [];
   private readonly unlockBeats = new Map<string, UnlockBeat>();
-  readonly intro: RoadIntro | MuseumIntro | CityIntro | null;
+  readonly intro: RoadIntro | MuseumIntro | CityIntro | ColdOpen | null;
 
   constructor(private readonly kit: StoryKit, resumeX: number, hooks: { onIntroControl(): void }) {
     const plan = kit.level.story;
@@ -28,9 +30,11 @@ export class StoryDirector {
       this.unlockBeats.set(u.alien, beat);
     }
     const kevin = plan?.cityIntro || plan?.kevin ? buildKevinStory(kit, resumeX, this.unlockBeats) : null;
-    this.intro = plan?.roadIntro ? new RoadIntro(kit, plan.roadIntro, () => hooks.onIntroControl()) : plan?.museumIntro ? new MuseumIntro(kit, plan.museumIntro) : (kevin?.intro ?? null);
-    if (this.intro && !kevin) this.pieces.push(this.intro);
+    const bounty = plan?.bounty ? buildBountyStory(kit, resumeX, this.unlockBeats) : null;
+    this.intro = plan?.roadIntro ? new RoadIntro(kit, plan.roadIntro, () => hooks.onIntroControl()) : plan?.museumIntro ? new MuseumIntro(kit, plan.museumIntro) : (kevin?.intro ?? bounty?.intro ?? null);
+    if (this.intro && !kevin && !bounty) this.pieces.push(this.intro);
     if (kevin) this.pieces.push(...kevin.pieces);
+    if (bounty) this.pieces.push(...bounty.pieces);
     this.pieces.push(...this.unlockBeats.values());
     this.pieces.push(new WaveTriggers(kit, resumeX));
     this.pieces.push(new AlienHints(kit));

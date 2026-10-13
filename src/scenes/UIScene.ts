@@ -25,6 +25,8 @@ import { MISFIRE, SWAP } from '../config/omnitrix';
 import { frameView } from '../ui/view';
 import { AchievementToast } from '../ui/AchievementToast';
 import { achievementById } from '../systems/Achievements';
+import { Whisper } from '../ui/Whisper';
+import { whisper as whisperSound } from '../aliens/ghostfreak/audio';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -40,6 +42,7 @@ export class UIScene extends Phaser.Scene {
   private dialog!: DialogBox;
   private comic!: ComicPanel;
   private unlockCard!: UnlockCard;
+  private whisper!: Whisper;
   private vignette!: Phaser.GameObjects.Image;
   private readonly pops: (Phaser.GameObjects.BitmapText | null)[] = [];
   private hp: number = PLAYER.maxHealth;
@@ -68,6 +71,7 @@ export class UIScene extends Phaser.Scene {
     this.dialog = new DialogBox(this);
     this.comic = new ComicPanel(this, frame);
     this.unlockCard = new UnlockCard(this);
+    this.whisper = new Whisper(this);
     const toast = new AchievementToast(this, 104);
     // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
     frame.onResize((w) => {
@@ -78,6 +82,7 @@ export class UIScene extends Phaser.Scene {
       this.combo.setRight(frame.right);
       this.splits.setRight(frame.right);
       this.dialog.setRight(frame.right);
+      this.whisper.setLeft(frame.left);
       toast.setLeft(frame.left);
     });
 
@@ -159,6 +164,7 @@ export class UIScene extends Phaser.Scene {
       this.dialog.clear();
       this.combo.hide();
       this.comic.hide();
+      this.whisper.clear();
     }, this);
     on('combo:update', (p) => this.combo.set(p.count, this.time.now, p.forms.map((id) => ({ icon: getForm(id).hudIcon, color: getForm(id).theme.color }))), this);
     on('combo:tag', (p) => {
@@ -185,6 +191,11 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip, p.portrait), this);
     on('hud:dialogClear', () => this.dialog.clear(), this);
+    on('hud:whisper', (p) => {
+      this.whisper.show(p.text, p.color);
+      playSfx(whisperSound, 0.7);
+    }, this);
+    on('omnitrix:hesitating', () => this.dial.glitch(), this);
     on('boss:show', (p) => this.bossBar.show(p.name), this);
     on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
     on('boss:hide', () => this.bossBar.hide(), this);
@@ -228,6 +239,7 @@ export class UIScene extends Phaser.Scene {
     this.dialog.update(delta, now);
     this.comic.update(delta);
     this.unlockCard.update(delta);
+    this.whisper.update(delta, now);
 
     const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
     const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;

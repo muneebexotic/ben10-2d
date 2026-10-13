@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import type { DamageOutcome, Player } from '../../../entities/Player';
+import type { Damageable, Hazard } from '../../../entities/types';
 import type { Projectiles } from '../../../entities/Projectiles';
 import type { Drone, DroneWorld } from '../../../entities/enemies/Drone';
 import type { Machine } from '../../../entities/tech/Machine';
@@ -14,6 +15,7 @@ import type { SpeechBubble } from '../../../ui/SpeechBubble';
 import type { CameraRig } from '../CameraRig';
 import type { Combat } from '../Combat';
 import type { HighwayBackdrop } from '../HighwayBackdrop';
+import type { HazardSystem } from '../Hazards';
 import type { LevelWorld } from '../LevelWorld';
 import type { OmnitrixController } from '../OmnitrixController';
 import type { Tutorial } from '../Tutorial';
@@ -90,4 +92,16 @@ export interface StoryKit {
   setTrains(running: boolean): void;
   /** The closest live enemy within `range` of (x, y), or null. */
   nearestEnemy(x: number, y: number, range: number): { x: number; y: number } | null;
+  /** Missiles, blasts, rockfalls (Chapter 5's hunters use them). */
+  hazards: HazardSystem | null;
+  /** A chapter achievement a set piece decides (CLUTCH MISFIRE). */
+  achievement(id: string): void;
+  /** A set piece's own thing to hit (a hunter, a net generator): Combat knows about it from now on, and hurts Ben with it if it's a hazard. */
+  addTarget(t: Damageable, hazard?: Hazard): void;
+  /** A whisper in the corner of the screen (the thing in the watch). */
+  whisper(text: string): void;
+  /** Another scene draws the world for a while (THE DEEP DIVE): the level's camera, lightmap and scenery stop drawing. */
+  setWorldHidden(hidden: boolean): void;
+  /** A set piece's prize card drops out at (x, y) (the dive's card, the high score). */
+  payReward(reward: string, x: number, y: number): void;
 }

@@ -41,13 +41,15 @@ export interface WaterSpan {
   kind?: LiquidKind;
 }
 
-/** Flying enemies (Vilgax's drones, Dr. Animo's mutant bats, Kevin's sparks): they use the Drone body. */
-export type DroneKind = 'scout' | 'striker' | 'gunner' | 'armored' | 'hornet' | 'bat' | 'spark';
+/** Flying enemies (Vilgax's drones, Dr. Animo's mutant bats, Kevin's sparks, Sixsix's trackers): they use the Drone body. */
+export type DroneKind = 'scout' | 'striker' | 'gunner' | 'armored' | 'hornet' | 'bat' | 'spark' | 'tracker';
 /** Dr. Animo's ground mutants: they walk, climb and leap. */
 export type MutantKind = 'rat' | 'roach' | 'lurker' | 'brute';
 /** Machines that walk or roll (Chapter 4): the arcade's animatronic mascots and the subway's track-bots (Kevin overcharges some: voltbots). */
 export type RobotKind = 'mascot' | 'trackbot' | 'voltbot';
-export type EnemyKind = DroneKind | MutantKind | RobotKind;
+/** The bounty hunters' ground gear (Chapter 5): Kraab's crab-bots and Tetrax's crystal sentries. */
+export type GearKind = 'crabbot' | 'sentry';
+export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind;
 export type Density = 'sparse' | 'normal' | 'frequent';
 export type FormFilter = 'any' | 'human' | 'alien';
 
@@ -57,6 +59,8 @@ export type EntitySpawn =
   | { type: 'mutant'; kind: MutantKind; x: number; y: number; ceiling?: boolean }
   /** A walking or rolling machine standing on row `y`. */
   | { type: 'robot'; kind: RobotKind; x: number; y: number }
+  /** A hunter's crab-bot or crystal sentry standing on row `y`. */
+  | { type: 'gear'; kind: GearKind; x: number; y: number }
   | { type: 'barricade'; id: string; x: number; y: number; w: number; h: number }
   /**
    * `label` names the speedrun split. A `hidden` checkpoint has no post: a set
@@ -118,6 +122,21 @@ export type EntitySpawn =
   | { type: 'sumo'; id: string; x: number; y: number; reward: string }
   /** Subway trains roar along the track bed between `fromX` and `toX` (tiles) at row `y` (their wheels), every `everyMs`. */
   | { type: 'trains'; id: string; fromX: number; toX: number; y: number; everyMs: number; firstMs: number }
+  /**
+   * Chapter 5 on. A wall only Ghostfreak walks through (phased): `w` x `h`
+   * tiles from (x, y), drawn as iron bars, stone or a boarded door.
+   */
+  | { type: 'phaseWall'; id: string; x: number; y: number; w: number; h: number; look: 'bars' | 'stone' | 'boards' }
+  /** A crate of dynamite standing on row `y`: fire sets it off, and the blast clears the cracked rock in `breaks` (tiles). */
+  | { type: 'dynamite'; id: string; x: number; y: number; breaks?: { x: number; y: number; w: number; h: number } }
+  /** Rocks fall on tiles x..x+w from the ceiling row `ceiling` while Ben is near. */
+  | { type: 'rockfall'; id: string; x: number; w: number; ceiling: number }
+  /** A security laser emitter in tile (x, y), firing `dir`. */
+  | { type: 'laser'; id: string; x: number; y: number; dir: 'left' | 'right' | 'up' | 'down' }
+  /** A crystal receiver in tile (x, y): a bounced beam lights it and opens `gate` (and switches off the emitter `kills`). */
+  | { type: 'receiver'; id: string; x: number; y: number; gate: string; kills?: string }
+  /** A crystal gate filling `w` x `h` tiles from (x, y) until its receiver lights. */
+  | { type: 'crystalGate'; id: string; x: number; y: number; w: number; h: number }
   | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean; frame?: number };
 
 export type DecorKind =
@@ -206,7 +225,34 @@ export type DecorKind =
   | 'warningSign'
   | 'securityLaser'
   | 'sealedDoor'
-  | 'catwalkRail';
+  | 'catwalkRail'
+  // Bounty Hunters (Silver Spur and the Diamond Deep).
+  | 'townGate'
+  | 'saloon'
+  | 'shopFront'
+  | 'wanted'
+  | 'hitchingPost'
+  | 'wagonWheel'
+  | 'crates'
+  | 'lanternPost'
+  | 'coffin'
+  | 'waterTower'
+  | 'hotelSign'
+  | 'barCounter'
+  | 'piano'
+  | 'mouseHole'
+  | 'jailFurniture'
+  | 'headframe'
+  | 'minePortal'
+  | 'mineRails'
+  | 'timbers'
+  | 'hangingLantern'
+  | 'crystalCluster'
+  | 'crystalSpire'
+  | 'dynamiteSign'
+  | 'prospector'
+  | 'oreCart'
+  | 'netGenerator';
 
 export interface PromptZone {
   id: string;
@@ -225,20 +271,23 @@ export interface PromptZone {
 
 export type AmbientKind =
   | 'camp' | 'forest' | 'ravine' | 'crash' | 'sim' | 'sunset' | 'dusk' | 'night' | 'neon' | 'street' | 'museum' | 'gallery' | 'blackout' | 'atrium' | 'lab'
-  | 'downtown' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation';
+  | 'downtown' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation'
+  | 'ghosttown' | 'saloon' | 'jail' | 'hotel' | 'minehead' | 'mine' | 'cavern' | 'shaft';
 
 export interface AmbientZone {
   x: number;
   ambient: AmbientKind;
+  /** Only at or below this row (a cavern under an open yard). Default: every row. */
+  fromRow?: number;
 }
 
-/** Visual set: the night forest, the Omnitrix's training simulation, the desert highway at sundown, the museum at night, or downtown and under it. */
-export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city';
+/** Visual set: the night forest, the Omnitrix's training simulation, the desert highway at sundown, the museum at night, downtown and under it, or a ghost town and its mine. */
+export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western';
 
-export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin';
+export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters';
 
-/** Interior back walls (museum halls and lab; the arcade, the laser tag arena, the subway, its tunnels and the substation). */
-export type InteriorWall = 'hall' | 'lab' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation';
+/** Interior back walls (museum halls and lab; the arcade, the laser tag arena, the subway, its tunnels and the substation; Silver Spur's saloon, jail and hotel, the mine, its crystal cavern and shafts). */
+export type InteriorWall = 'hall' | 'lab' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation' | 'saloon' | 'jail' | 'hotel' | 'mine' | 'cavern' | 'shaft';
 
 /** A strip of asphalt drawn over the ground (row `y` is the road surface). */
 export interface RoadSpan {
@@ -317,6 +366,42 @@ export interface StoryPlan {
   absorb?: { triggerX: number; fromX: number; toX: number; floor: number; kevinX: number; exitX: number };
   /** After the turn: Kevin runs ahead between these tiles, throwing sparks back at Ben. */
   hunt?: { fromX: number; toX: number; floor: number };
+  /** Chapter 5: the bounty hunters' set pieces. */
+  bounty?: BountyPlan;
+}
+
+/** Chapter 5's set pieces, in the order they play. Positions are tiles. */
+export interface BountyPlan {
+  /** The cold open on Vilgax's ship, then the Rustbucket parked at Silver Spur's gate (`rvX` on row `floor`). */
+  coldOpen: { rvX: number; floor: number };
+  /** Sixsix drops in for a short blade duel when Ben passes `triggerX`, landing at `x` on row `floor`. */
+  duels: Array<{ id: string; triggerX: number; x: number; floor: number }>;
+  /**
+   * The jail: walking past `triggerX`, Sixsix's net drags Ben into the cell (behind the bars at
+   * `barsX`, landing at `cellX`), and `alien` arrives in there. `sixsixX`: where he fires from.
+   */
+  netTrap: { triggerX: number; cellX: number; barsX: number; floor: number; sixsixX: number; generatorX: number; alien: string };
+  /** Kraab hunts the rail tunnels: a burrowing ambush at each spot, then he goes deeper. */
+  kraabHunt: { fromX: number; toX: number; ambushes: Array<{ x: number; floor: number }> };
+  /** THE DEEP DIVE: the runaway ore cart from (`cartX`, `floor`); Ben lands in the cavern at (`landX`, `landY`). */
+  dive: { triggerX: number; cartX: number; floor: number; landX: number; landY: number; checkpoint: string };
+  /** The crystal cavern: Kraab charges his cannon from (`kraabX`, `kraabY`), Tetrax blocks the way at `tetraxX`, and `alien` arrives. */
+  crystal: { floor: number; kraabX: number; kraabY: number; tetraxX: number; alien: string };
+  /** The mine lift (`x`, `w` tiles wide in its shaft) rises from row `bottom` and jams at `stop`: the hunters corner Ben there. */
+  lift: { triggerX: number; x: number; w: number; bottom: number; stop: number; checkpoint: string };
+  /**
+   * THE HUNTERS: Kraab in the chamber (`chamber`, its wall to the shaft `wall` comes down), Sixsix up
+   * the lift shaft (`shaft`), Tetrax in the yard on top (`yard`). The cracked crystal pillar at
+   * `pillarX`, the water tower at `towerX`.
+   */
+  hunters: {
+    chamber: { from: number; to: number; floor: number };
+    wall: { x: number; y: number; w: number; h: number };
+    shaft: { x: number; w: number; bottom: number; top: number };
+    yard: { from: number; to: number; floor: number };
+    pillarX: number;
+    towerX: number;
+  };
 }
 
 export interface LevelData {
@@ -342,7 +427,10 @@ export interface LevelData {
   introSpawns: Array<{ kind: DroneKind; x: number; y: number }>;
   roads?: RoadSpan[];
   sky?: SkyKey[];
-  /** Interiors: the back wall behind each stretch (tiles), outdoors elsewhere. `floor`: the row its panelling sits on (default 30). */
-  interiors?: Array<{ x: number; w: number; wall: InteriorWall; floor?: number }>;
+  /**
+   * Interiors: the back wall behind each stretch (tiles), outdoors elsewhere. `floor`: the row its
+   * panelling sits on (default 30). `top`: the first row it covers (default 0: the whole height).
+   */
+  interiors?: Array<{ x: number; w: number; wall: InteriorWall; floor?: number; top?: number }>;
   story?: StoryPlan;
 }

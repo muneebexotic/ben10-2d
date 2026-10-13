@@ -51,4 +51,6 @@ export const STORY_BEATS = {
   },
   /** After a boss falls: the family's closing lines start this long after the hit. */
   bossOutroAt: 3300,
+  /** Chapter 5: after the family's last word, the dial clicks to Ghostfreak and something whispers (ms before the results). */
+  ghostEpilogueMs: 2200,
 } as const;
