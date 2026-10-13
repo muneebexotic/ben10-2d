@@ -8,6 +8,8 @@ export class CameraRig {
   private look = 0;
   private groundY = 0;
   private lock: { x: number; y: number } | null = null;
+  /** A shaft: x held on the column, y follows Ben as usual. */
+  private column: number | null = null;
   private focus = { x: 0, y: 0, weight: 0 };
 
   constructor(private readonly cam: Phaser.Cameras.Scene2D.Camera) {}
@@ -25,6 +27,13 @@ export class CameraRig {
 
   unlock(): void {
     this.lock = null;
+    this.column = null;
+  }
+
+  /** Holds the view's x on a column (a climb up a shaft); y keeps following. */
+  lockColumn(x: number): void {
+    this.lock = null;
+    this.column = x;
   }
 
   /** Pulls the view toward a point (0..1 of the way), e.g. a comedic close-up on Ben's face. 0 releases it. */
@@ -55,8 +64,9 @@ export class CameraRig {
       // Anchor to the ground Ben stands on; follow jumps only near the top of the screen, always follow falls.
       if (grounded || feetY > this.groundY) this.groundY = feetY;
       else if (feetY < top + 80) this.groundY = Math.min(this.groundY, feetY + 60);
-      tx = x + this.look;
-      ty = this.groundY - CAMERA.verticalOffset;
+      tx = this.column ?? x + this.look;
+      // Climbing a shaft, keep Ben a little under the middle: the threat is above.
+      ty = this.column !== null ? feetY - CAMERA.verticalOffset * 0.4 : this.groundY - CAMERA.verticalOffset;
       this.cx += (tx - this.cx) * (1 - Math.exp(-7 * dt));
       this.cy += (ty - this.cy) * (1 - Math.exp(-4.5 * dt));
     }

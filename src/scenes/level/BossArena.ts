@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { CAMERA, DEPTH, LIGHTING, TILE } from '../../config/constants';
 import type { EnemyKind, EntitySpawn } from '../../levels/types';
 import { BossHazards } from '../../entities/bosses/BossHazards';
-import type { BossWorld } from '../../entities/bosses/HunterDrone';
+import type { BossWorld, HuntWorld } from '../../entities/bosses/HunterDrone';
 import type { ArenaBoss } from '../../entities/bosses/ArenaBoss';
 import { BOSS_KINDS } from '../../entities/bosses/bossKinds';
 import { barrierBody } from '../../entities/barrier';
@@ -59,6 +59,8 @@ export interface ArenaDeps {
   addMachine(m: Machine): void;
   copies(list: ReadonlyArray<{ id: string; level: number }>, current: string | null): void;
   achievement(id: string): void;
+  /** THE HUNTERS' level hooks (everything but `relocate`, which the arena does itself). */
+  hunt?: Omit<HuntWorld, 'relocate'>;
 }
 
 /** Locks Ben into the boss's arena, runs Vilgax's hologram and the boss's entrance, then hands over the fight. */
@@ -120,24 +122,43 @@ export class BossArena {
     }
   }
 
+  /** The laser walls at both edges of the arena, from `top` down to `bottom` (px). */
+  private buildWalls(left: number, right: number, top: number, bottom: number): void {
+    const scene = this.d.scene;
+    for (const [x, side] of [[left + 4, 1], [right - 4, -1]] as const) {
+      const wall = barrierBody(scene, x + side * 4, side, top, bottom);
+      scene.physics.add.collider(this.d.player.zone, wall);
+      this.walls.push(wall);
+      for (let y = top; y < bottom; y += TILE) {
+        const s = scene.add.sprite(x, y + 8, TEX.arenaWall, 0).setDepth(DEPTH.emissive).setBlendMode(Phaser.BlendModes.ADD);
+        s.play('arena-hum');
+        s.setScale(1, 0);
+        scene.tweens.add({ targets: s, scaleY: 1, duration: 300, delay: (bottom - y) * 2 });
+        this.wallSprites.push(s);
+      }
+    }
+  }
+
+  /** The fight moves on (THE HUNTERS): new walls, a new frame for the camera. */
+  private relocate(area: { left: number; right: number; top: number; bottom: number }, camera: 'lock' | 'column' | 'follow'): void {
+    for (const w of this.walls) w.destroy();
+    for (const s of this.wallSprites) s.destroy();
+    this.walls.length = 0;
+    this.wallSprites.length = 0;
+    this.buildWalls(area.left, area.right, area.top, area.bottom);
+    const cam = this.d.camera;
+    if (camera === 'lock') cam.lockTo((area.left + area.right) / 2, area.bottom - (inputMode.current === 'touch' ? CAMERA.arenaLockAboveTouch : CAMERA.arenaLockAbove));
+    else if (camera === 'column') cam.lockColumn((area.left + area.right) / 2);
+    else cam.unlock();
+    playSfx('gateDown', 0.6, 1.4);
+  }
+
   private start(): void {
     const d = this.d;
     const { scene, combat, camera } = d;
     this.started = true;
 
-    for (const [x, side] of [[this.left + 4, 1], [this.right - 4, -1]] as const) {
-      const top = this.floorY - 14 * TILE;
-      const wall = barrierBody(scene, x + side * 4, side, top, this.floorY);
-      scene.physics.add.collider(this.d.player.zone, wall);
-      this.walls.push(wall);
-      for (let y = top; y < this.floorY; y += TILE) {
-        const s = scene.add.sprite(x, y + 8, TEX.arenaWall, 0).setDepth(DEPTH.emissive).setBlendMode(Phaser.BlendModes.ADD);
-        s.play('arena-hum');
-        s.setScale(1, 0);
-        scene.tweens.add({ targets: s, scaleY: 1, duration: 300, delay: (this.floorY - y) * 2 });
-        this.wallSprites.push(s);
-      }
-    }
+    this.buildWalls(this.left, this.right, this.floorY - 14 * TILE, this.floorY);
     playSfx('gateDown', 0.8, 1.4);
     d.onStart(this.left, this.right);
 
@@ -200,6 +221,7 @@ export class BossArena {
       addMachine: (m) => d.addMachine(m),
       copies: (list, current) => d.copies(list, current),
       achievement: (id) => d.achievement(id),
+      hunt: d.hunt ? { ...d.hunt, relocate: (area, camera) => this.relocate(area, camera) } : undefined,
     };
     if (this.kind.hologram.length === 0) d.onHologramSeen();
     const boss = this.kind.create(scene, world, (this.left + this.right) / 2);
@@ -229,6 +251,7 @@ export class BossArena {
     this.hazards?.clear();
     this.d.setAlarm(false);
     for (const w of this.walls) w.disableBody(true, true);
+    this.d.camera.unlock();
     for (const s of this.wallSprites) s.setVisible(false);
     EventBus.emit('boss:hide');
     this.d.onDefeated(x, y);

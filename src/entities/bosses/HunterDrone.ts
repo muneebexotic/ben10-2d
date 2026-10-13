@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { BOSS } from '../../config/boss';
 import { DEPTH, FX } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
-import type { EnemyKind } from '../../levels/types';
+import type { EnemyKind, LevelData } from '../../levels/types';
 import { TEX } from '../../scenes/preload/assetKeys';
 import { BOSS_EYE_FRAMES } from '../../scenes/preload/enemies';
 import type { Fx } from '../../systems/Fx';
@@ -57,6 +57,27 @@ export interface BossWorld {
   copies?(list: ReadonlyArray<{ id: string; level: number }>, current: string | null): void;
   /** A chapter achievement the fight itself decides. */
   achievement?(id: string): void;
+  /** THE HUNTERS (Chapter 5): the fight moves through the level, so it gets the level around it. */
+  hunt?: HuntWorld;
+}
+
+/** What a fight that moves through the level can do (Chapter 5's THE HUNTERS). */
+export interface HuntWorld {
+  readonly level: LevelData;
+  readonly player: { readonly cloaked: boolean; readonly formId: string };
+  isSolid(x: number, y: number): boolean;
+  groundBelow(x: number, y: number): number;
+  salvo(x: number, floorY: number, count?: number, spread?: number, warnMs?: number): void;
+  blastPlayer(x: number, y: number, radius: number, damage: number): void;
+  rockfall(x: number, ceilingY: number): void;
+  /** Solid tiles in this rect (tiles) come down for good. */
+  collapse(rect: { x: number; y: number; w: number; h: number }): void;
+  say(who: 'sixsix' | 'kraab' | 'tetrax', text: string, ms: number): void;
+  /** Moves the arena's walls (px) and how the camera frames it: locked on the middle, held on a column (a shaft), or following Ben. */
+  relocate(area: { left: number; right: number; top: number; bottom: number }, camera: 'lock' | 'column' | 'follow'): void;
+  /** A ledge (one-way, or a solid lid) from x for w px with its top at topY. Returns an id to take it away. */
+  addLedge(x: number, topY: number, w: number, solid: boolean): number;
+  removeLedge(id: number): void;
 }
 
 type BossState = 'intro' | 'idle' | 'attack' | 'transition' | 'dying' | 'dead';
