@@ -46,7 +46,7 @@ export class OmnitrixDial {
   private carouselKey = '';
   private tick: OmnitrixTick | null = null;
   private shakeLeft = 0;
-  private popScale = 1;
+  private popTween: Phaser.Tweens.Tween | null = null;
   private visible = false;
   private shownIcon = '';
 
@@ -99,8 +99,11 @@ export class OmnitrixDial {
     this.shakeLeft = 260;
   }
 
+  /** A tween, not a per-frame ease, so it runs on the scene clock (and QA knows the text is mid-animation). */
   pop(): void {
-    this.popScale = 1.35;
+    this.popTween?.stop();
+    this.root.setScale(1.35);
+    this.popTween = this.scene.tweens.add({ targets: this.root, scale: 1, duration: 260, ease: 'Quad.easeOut', onComplete: () => (this.popTween = null) });
   }
 
   /** The watch glitches after a misfire: the hologram stutters for a moment. */
@@ -159,9 +162,8 @@ export class OmnitrixDial {
     if (!t || !this.visible) return;
     this.shakeLeft = Math.max(0, this.shakeLeft - dtMs);
     this.glitchLeft = Math.max(0, this.glitchLeft - dtMs);
-    this.popScale += (1 - this.popScale) * Math.min(1, dtMs / 90);
     const sx = this.shakeLeft > 0 ? (Math.random() - 0.5) * 4 : 0;
-    this.root.setPosition(this.x + sx, this.y).setScale(this.popScale);
+    this.root.setPosition(this.x + sx, this.y);
 
     if (this.carouselLeft > 0) {
       this.carouselLeft -= dtMs;
