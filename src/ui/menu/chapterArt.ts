@@ -3,6 +3,8 @@ import { getAlien, hasAlien } from '../../aliens/registry';
 import { PALETTE } from '../../config/palette';
 import type { ChapterInfo } from '../../levels/chapters';
 import { TEX } from '../../scenes/preload/assetKeys';
+import { CH5_TEX } from '../../scenes/preload/bounty';
+import { ensureChapterAssets } from '../../scenes/preload/generate';
 import { SILHOUETTE_KEYS, type SilhouetteId } from '../../scenes/preload/silhouettes';
 import { seededRng } from '../../systems/Rng';
 import { pixelText } from '../text';
@@ -33,6 +35,8 @@ export function chapterArt(scene: Phaser.Scene, chapter: ChapterInfo, open: bool
     out.push(...museumNight(scene, bg, w, h));
   } else if (open && chapter.number === 4) {
     out.push(...arcadeDusk(scene, bg, w, h));
+  } else if (open && chapter.number === 5) {
+    out.push(...silverSpur(scene, bg, w, h));
   } else {
     const rim = ACT_COLORS[chapter.act] ?? PALETTE.omnitrix;
     bg.fillGradientStyle(0x05070f, 0x05070f, 0x141a33, 0x141a33, 1).fillRect(-w / 2, -h / 2, w, h);
@@ -207,6 +211,47 @@ function arcadeDusk(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: numb
   const spark = scene.add.image(kx - 9, floor - 20, TEX.light).setScale(0.35).setTint(PALETTE.kevin).setAlpha(0.8).setBlendMode(Phaser.BlendModes.ADD);
   scene.tweens.add({ targets: spark, scale: 0.5, alpha: 0.4, yoyo: true, repeat: -1, duration: 260 });
   out.push(kevin, spark);
+  return out;
+}
+
+/** Chapter 5's window: Silver Spur under a full moon, the water tower, and Sixsix's targeting laser on Ben in the street. */
+function silverSpur(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number, h: number): Phaser.GameObjects.GameObject[] {
+  ensureChapterAssets(scene, 'ch5', [CH5_TEX.sixsix]);
+  const left = -w / 2;
+  const top = -h / 2;
+  const floor = h / 2 - 8;
+  g.fillGradientStyle(PALETTE.sky0, PALETTE.sky0, 0x3a3a6a, 0x3a3a6a, 1).fillRect(left, top, w, floor - top);
+  const rng = seededRng(5);
+  for (let i = 0; i < 18; i++) g.fillStyle(PALETTE.star, 0.3 + rng() * 0.6).fillRect(Math.round(left + rng() * w), Math.round(top + rng() * h * 0.45), 1, 1);
+  const out: Phaser.GameObjects.GameObject[] = [];
+  out.push(scene.add.image(left + 30, top + 18, TEX.moon).setScale(0.8));
+  // False-front buildings along the street, a window or two lit, and the water tower.
+  const town = scene.add.graphics();
+  const fronts: ReadonlyArray<readonly [number, number, number]> = [[-0.5, 0.16, 30], [-0.3, 0.14, 24], [0.16, 0.15, 34], [0.33, 0.17, 26]];
+  for (const [x0, fw, fh] of fronts) {
+    const x = left + (x0 + 0.5) * w;
+    town.fillStyle(0x2a1c1a, 1).fillRect(x, floor - fh, fw * w, fh);
+    town.fillStyle(0x3a2622, 1).fillRect(x, floor - fh, fw * w, 2);
+    if (rng() < 0.8) town.fillStyle(0xffd890, 0.75).fillRect(x + 4, floor - fh + 9, 3, 3);
+  }
+  const tx = left + w * 0.56;
+  town.fillStyle(0x24181a, 1).fillRect(tx - 9, floor - 40, 18, 12);
+  town.lineStyle(1, 0x24181a, 1).lineBetween(tx - 7, floor - 28, tx - 10, floor).lineBetween(tx + 7, floor - 28, tx + 10, floor).lineBetween(tx - 8, floor - 14, tx + 8, floor - 14);
+  town.fillStyle(0x2e2a2a, 1).fillRect(left, floor, w, h / 2 - floor);
+  town.fillStyle(0x4a3a30, 1).fillRect(left, floor, w, 1);
+  out.push(town);
+  const benX = left + w * 0.32;
+  out.push(scene.add.sprite(benX, floor + 1, TEX.ben, 0).setOrigin(0.5, 27 / 28));
+  // Sixsix hovers top right; his drone's laser blinks on Ben.
+  const sx = w / 2 - 22;
+  const sy = top + 22;
+  const sixsix = scene.add.sprite(sx, sy, CH5_TEX.sixsix).setOrigin(0.5, 0.5).setScale(0.8).setFlipX(true).play('sixsix-fly');
+  scene.tweens.add({ targets: sixsix, y: sy + 3, yoyo: true, repeat: -1, duration: 700, ease: 'Sine.easeInOut' });
+  const laser = scene.add.graphics();
+  laser.lineStyle(1, PALETTE.enemy, 0.9).lineBetween(sx - 8, sy + 4, benX, floor - 14);
+  laser.fillStyle(PALETTE.enemy, 0.9).fillCircle(benX, floor - 14, 2);
+  scene.tweens.add({ targets: laser, alpha: 0.25, yoyo: true, repeat: -1, duration: 160, repeatDelay: 500 });
+  out.push(laser, sixsix);
   return out;
 }
 

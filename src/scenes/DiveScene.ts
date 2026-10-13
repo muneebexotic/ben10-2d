@@ -8,8 +8,12 @@ import { TUNNEL_FRAG } from './dive/tunnelShader';
 import { project, type DiveView } from './dive/DiveView';
 
 const POOL = 48;
-/** The tunnel is drawn in 2x2 blocks: chunky like the rest of the game's pixels. */
+/**
+ * The tunnel is traced at half resolution into a texture and drawn at 2x:
+ * chunky like the rest of the game's pixels, and a quarter of the fragments.
+ */
 const SHADER_PIXEL = 2;
+const TUNNEL_TEXTURE = 'dive-tunnel-rt';
 const LANE_HALF = 0.5;
 
 export interface DiveSceneData {
@@ -24,7 +28,8 @@ export interface DiveSceneData {
  */
 export class DiveScene extends Phaser.Scene {
   private view!: DiveView;
-  private shader!: Phaser.GameObjects.Shader;
+  private shader: Phaser.GameObjects.Shader | null = null;
+  private tunnel: Phaser.GameObjects.Image | null = null;
   private readonly pool: Phaser.GameObjects.Image[] = [];
   private floor!: Phaser.GameObjects.Graphics;
   private streaks!: Phaser.GameObjects.Graphics;
@@ -43,13 +48,34 @@ export class DiveScene extends Phaser.Scene {
   create(data: DiveSceneData): void {
     this.view = data.view;
     const { width: w, height: h } = this.scale;
-    this.shader = this.add.shader(
+    this.buildTunnel(w, h);
+    this.floor = this.add.graphics().setDepth(1);
+    for (let i = 0; i < POOL; i++) this.pool.push(this.add.image(0, 0, TEX.px).setVisible(false).setDepth(2));
+    this.streaks = this.add.graphics().setDepth(40).setBlendMode(Phaser.BlendModes.ADD);
+    this.aura = this.add.image(0, 0, TEX.light).setDepth(48).setBlendMode(Phaser.BlendModes.ADD).setVisible(false);
+    this.cart = this.add.image(0, 0, CH5_TEX.diveCart).setOrigin(0.5, 1).setDepth(50);
+    this.rider = this.add.image(0, 0, TEX.benBack).setOrigin(0.5, 1).setDepth(49);
+    this.fade = this.add.rectangle(0, 0, w, h, 0x000000, 1).setOrigin(0, 0).setDepth(100);
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.onResize, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.onResize, this);
+      this.destroyTunnel();
+    });
+    this.draw();
+  }
+
+  /** The tunnel shader, rendering into a half-size texture, and the image that shows it full screen. */
+  private buildTunnel(w: number, h: number): void {
+    this.destroyTunnel();
+    const sw = Math.ceil(w / SHADER_PIXEL);
+    const sh = Math.ceil(h / SHADER_PIXEL);
+    const shader = this.add.shader(
       {
         name: 'dive-tunnel',
         fragmentSource: TUNNEL_FRAG,
         setupUniforms: (set: (name: string, value: unknown) => void) => {
           const v = this.view;
-          set('uRes', [this.shader.width, this.shader.height]);
+          set('uRes', [sw, sh]);
           set('uTravel', v.travel);
           set('uYaw', v.yaw);
           set('uCam', [v.camX, v.camY]);
@@ -61,28 +87,32 @@ export class DiveScene extends Phaser.Scene {
           set('uTrestle', v.trestle);
           set('uFlash', v.flash);
           set('uLamp', v.lamp * DIVE.lamp);
-          set('uPixel', SHADER_PIXEL);
+          set('uPixel', 1);
         },
       } as unknown as Phaser.Types.GameObjects.Shader.ShaderQuadConfig,
-      w / 2,
-      h / 2,
-      w,
-      h,
+      sw / 2,
+      sh / 2,
+      sw,
+      sh,
     );
-    this.floor = this.add.graphics().setDepth(1);
-    for (let i = 0; i < POOL; i++) this.pool.push(this.add.image(0, 0, TEX.px).setVisible(false).setDepth(2));
-    this.streaks = this.add.graphics().setDepth(40).setBlendMode(Phaser.BlendModes.ADD);
-    this.aura = this.add.image(0, 0, TEX.light).setDepth(48).setBlendMode(Phaser.BlendModes.ADD).setVisible(false);
-    this.cart = this.add.image(0, 0, CH5_TEX.diveCart).setOrigin(0.5, 1).setDepth(50);
-    this.rider = this.add.image(0, 0, TEX.benBack).setOrigin(0.5, 1).setDepth(49);
-    this.fade = this.add.rectangle(0, 0, w, h, 0x000000, 1).setOrigin(0, 0).setDepth(100);
-    this.scale.on(Phaser.Scale.Events.RESIZE, this.onResize, this);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, this.onResize, this));
-    this.draw();
+    if (this.textures.exists(TUNNEL_TEXTURE)) this.textures.remove(TUNNEL_TEXTURE);
+    shader.setRenderToTexture(TUNNEL_TEXTURE);
+    this.textures.get(TUNNEL_TEXTURE).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.shader = shader;
+    this.tunnel = this.add.image(0, 0, TUNNEL_TEXTURE).setOrigin(0, 0).setScale(SHADER_PIXEL).setDepth(0.5);
+  }
+
+  private destroyTunnel(): void {
+    this.tunnel?.destroy();
+    this.tunnel = null;
+    // The shader takes its texture with it.
+    this.shader?.destroy();
+    this.shader = null;
+    if (this.textures.exists(TUNNEL_TEXTURE)) this.textures.remove(TUNNEL_TEXTURE);
   }
 
   private onResize(size: Phaser.Structs.Size): void {
-    this.shader.setPosition(size.width / 2, size.height / 2).setSize(size.width, size.height);
+    this.buildTunnel(size.width, size.height);
     this.fade.setSize(size.width, size.height);
   }
 

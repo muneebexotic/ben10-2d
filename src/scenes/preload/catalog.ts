@@ -1,6 +1,6 @@
 import { allAliens } from '../../aliens/registry';
 import type { FormDefinition } from '../../aliens/types';
-import { ANIMS, ASSETS } from './assetKeys';
+import { ANIMS, ASSETS, TEX } from './assetKeys';
 import type { AnimDef, AssetDef } from './assetTypes';
 import { CH5_ANIMS, CH5_ASSETS } from './bounty';
 
@@ -14,8 +14,11 @@ export function buildAssetCatalog(aliens: readonly FormDefinition[]): { assets: 
 
 const CATALOG = buildAssetCatalog(allAliens());
 
-/** THE single list Preload loads: every texture and animation in the game. */
-export const ALL_ASSETS: readonly AssetDef[] = CATALOG.assets;
+/** Every form seen from behind: only THE DEEP DIVE draws them, so they're made with Chapter 5's art. */
+const RIDE_BACKS: ReadonlySet<string> = new Set([TEX.benBack, ...allAliens().flatMap((a) => (a.ride?.back ? [a.ride.back] : []))]);
+
+/** THE single list of shared art: every texture and animation used across chapters. */
+export const ALL_ASSETS: readonly AssetDef[] = CATALOG.assets.filter((a) => !RIDE_BACKS.has(a.key));
 export const ALL_ANIMS: readonly AnimDef[] = CATALOG.anims;
 
 /**
@@ -25,7 +28,8 @@ export const ALL_ANIMS: readonly AnimDef[] = CATALOG.anims;
  * doesn't grow with every chapter (docs/PERFORMANCE.md, "Loading").
  */
 export const CHAPTER_ART: Readonly<Record<string, { assets: readonly AssetDef[]; anims: readonly AnimDef[]; atBoot: boolean }>> = {
-  ch5: { assets: CH5_ASSETS, anims: CH5_ANIMS, atBoot: true },
+  // Generated when Chapter 5 (or an older chapter using its gear) loads: at boot it added about a quarter to the time to title.
+  ch5: { assets: [...CH5_ASSETS, ...CATALOG.assets.filter((a) => RIDE_BACKS.has(a.key))], anims: CH5_ANIMS, atBoot: false },
 };
 
 /** The art Preload generates at boot: the shared catalog plus every chapter that isn't lazy. */

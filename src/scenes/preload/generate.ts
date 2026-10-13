@@ -35,6 +35,17 @@ export function ensureChapterArt(scene: Phaser.Scene, levelId: string): number {
   return performance.now() - t0;
 }
 
+/** Just some of a chapter's art (a Chapter Select window needs one sprite, not the whole chapter), with its animations. */
+export function ensureChapterAssets(scene: Phaser.Scene, levelId: string, keys: readonly string[]): void {
+  const art = CHAPTER_ART[levelId];
+  if (!art) return;
+  for (const asset of art.assets) if (keys.includes(asset.key) && !asset.url && !scene.textures.exists(asset.key)) generate(scene, asset);
+  for (const anim of art.anims) {
+    if (!keys.includes(anim.texture) || scene.anims.exists(anim.key)) continue;
+    scene.anims.create({ key: anim.key, frames: anim.frames.map((frame) => ({ key: anim.texture, frame })), frameRate: anim.frameRate, repeat: anim.repeat });
+  }
+}
+
 /** Every chapter's own art (the gallery shows everything). */
 export function ensureAllChapterArt(scene: Phaser.Scene): void {
   for (const id of Object.keys(CHAPTER_ART)) ensureChapterArt(scene, id);
