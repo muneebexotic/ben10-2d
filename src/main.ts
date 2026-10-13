@@ -17,6 +17,7 @@ import { FileSelectScene } from './scenes/FileSelectScene';
 import { DifficultyScene } from './scenes/DifficultyScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ArcadeScene } from './scenes/ArcadeScene';
+import { DiveScene } from './scenes/DiveScene';
 import { AutobenchScene } from './scenes/AutobenchScene';
 import { applySavedSettings, installPageAudio } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
@@ -40,6 +41,7 @@ const game = new Phaser.Game(
     DifficultyScene,
     ChapterSelectScene,
     LevelScene,
+    DiveScene,
     UIScene,
     TouchScene,
     PauseScene,

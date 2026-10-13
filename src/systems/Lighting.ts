@@ -92,6 +92,11 @@ export class Lighting {
     }
   }
 
+  /** Nothing to light this frame (the world isn't on screen): drop the frame's lights without drawing. */
+  skip(): void {
+    this.frameCount = 0;
+  }
+
   render(camera: Phaser.Cameras.Scene2D.Camera): void {
     const rt = this.rt;
     if (!this.enabled) {

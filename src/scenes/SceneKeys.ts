@@ -6,6 +6,7 @@ export const SCENES = {
   difficulty: 'Difficulty',
   chapterSelect: 'ChapterSelect',
   level: 'Level',
+  dive: 'Dive',
   ui: 'UI',
   pause: 'Pause',
   gameOver: 'GameOver',
