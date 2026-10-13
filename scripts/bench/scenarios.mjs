@@ -85,7 +85,8 @@ async function explosionStorm(page, untilMs) {
 }
 
 /**
- * id: report name. url: query string. setup: runs after the level is live (before warm-up).
+ * id: report name. url: query string. setup: runs after the level is live (before warm-up);
+ * restartAfterSetup: restart the level after it (for options read at level start).
  * play: drives input during warm-up and measurement (called with the total ms to fill).
  */
 export const SCENARIOS = [
@@ -188,6 +189,8 @@ export const SCENARIOS = [
         window.__trainingOptions.alienTimer = false;
       });
     },
+    // Training reads its options when it starts.
+    restartAfterSetup: true,
     play: (page, ms) => brawl(page, ms),
   },
   {

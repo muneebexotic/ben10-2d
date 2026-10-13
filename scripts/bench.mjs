@@ -310,12 +310,15 @@ async function runScenario(browser, base, sc, throttle) {
     await waitForLevel(page);
     if (sc.setup) {
       await sc.setup(page);
-      await page.evaluate(() => {
-        const lvl = window.__game.scene.getScene('Level');
-        lvl.scene.restart({ levelId: lvl.level?.id ?? 'training' });
-      });
-      await sleep(500);
-      await waitForLevel(page);
+      // Only a setup that changes options read at level start restarts it (a restart drops a teleport or a ride).
+      if (sc.restartAfterSetup) {
+        await page.evaluate(() => {
+          const lvl = window.__game.scene.getScene('Level');
+          lvl.scene.restart({ levelId: lvl.level?.id ?? 'training', checkpoint: lvl.checkpointId ?? undefined });
+        });
+        await sleep(500);
+        await waitForLevel(page);
+      }
     }
     await sleep(1200);
     const textures = await page.evaluate(() => {
