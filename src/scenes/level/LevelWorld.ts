@@ -105,6 +105,12 @@ export class LevelWorld {
     for (const w of this.waterSprites) w.sprite.tilePositionX += dtMs * w.drift;
   }
 
+  /** Inside a ground or rock tile (the level's own terrain, never a phase wall, gate or lift). */
+  inGround(x: number, y: number): boolean {
+    const c = cellAt(this.grid, Math.floor(x / TILE), Math.floor(y / TILE));
+    return c === CELL.GROUND || c === CELL.ROCK;
+  }
+
   isSolid(x: number, y: number): boolean {
     const c = cellAt(this.grid, Math.floor(x / TILE), Math.floor(y / TILE));
     if (c === CELL.GROUND || c === CELL.ROCK) return true;

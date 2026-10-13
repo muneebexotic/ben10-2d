@@ -631,7 +631,9 @@ export class LevelScene extends Phaser.Scene {
     if (launchParams().god || launchParams().autobench) this.player.setInvulnerable(1e9);
     this.crystals = new CrystalPlatforms(this, this.fx, this.player, (x, y) => this.world.isSolid(x, y));
     // A crystal platform shatters, a live rail kills: neither is ground to respawn on.
+    // Never inside solid ground either: a respawn there would fall straight back out of the level.
     this.player.isSafeSpot = (x, y) =>
+      !this.world.isSolid(x, y - 4) &&
       !this.world.inWater(x, y + 12) && !this.world.inWater(x - 12, y + 12) && !this.world.inWater(x + 12, y + 12) && !this.world.overRail(x - 12) && !this.world.overRail(x + 12) && !this.crystals.under(x, y);
     this.player.respawnFeetY = (x, y, h) => this.world.standingFeetY(x, y, h);
     this.player.onPlatform = (p) => this.world.isOneWay(p.x - 4, p.y + 2) || this.world.isOneWay(p.x + 4, p.y + 2);
@@ -1133,6 +1135,10 @@ export class LevelScene extends Phaser.Scene {
     // No need to hint at who can break it when Ben already is that alien.
     if (!p.form.reach.canSmash) for (const w of this.walls) if (w.touching(p.x, p.y)) w.tease();
 
+    // Feet inside the ground (seen once in THE HUNTERS' shaft, cause not pinned down): inside a floor there
+    // are no tile faces, so he would fall out of the level. Back up onto the surface instead.
+    if (this.world.inGround(p.x, p.y - 4)) this.unbury(p);
+
     if (this.world.inWater(p.x, p.y) || p.y > this.world.heightPx + 40) {
       this.fx.burst('splash', p.x, Math.min(p.y, this.world.heightPx), 18);
       playSfx('splash');
@@ -1350,6 +1356,13 @@ export class LevelScene extends Phaser.Scene {
       if (waitingSecrets(getLevel(info.levelId), this.dialAliens, found).length > 0) return info.title;
     }
     return null;
+  }
+
+  /** Lifts Ben out of solid ground onto the surface above his feet (a few tiles at most: deeper, it's a wall). */
+  private unbury(p: Player): void {
+    let feetY = Math.floor((p.y - 4) / TILE) * TILE;
+    for (let i = 0; i < 3 && this.world.inGround(p.x, feetY - 1); i++) feetY -= TILE;
+    if (!this.world.inGround(p.x, feetY - 1)) p.teleport(p.x, feetY);
   }
 
   private dropSmoothy(x: number, y: number): void {
