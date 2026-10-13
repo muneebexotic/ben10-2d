@@ -18,6 +18,8 @@ const JOKE_W = 420;
 const JOKES_Y = 196;
 const JOKES_H = 206;
 const JOKES_BOTTOM = JOKES_Y + JOKES_H / 2;
+/** Lines per page of the panel (two text rows each, 24 px apart); more go on further pages (left/right). */
+const JOKES_PER_PAGE = 8;
 
 /**
  * JOKES FOUND: the misfire log. Every reaction line Ben can blurt out when the
@@ -30,6 +32,7 @@ export class JokesPage implements ExtrasPage {
   private readonly found: Set<string>;
   private readonly rowBgs: Phaser.GameObjects.Graphics[] = [];
   private index = 0;
+  private jokePage = 0;
   private list: Phaser.GameObjects.Container | null = null;
 
   constructor(private readonly scene: Phaser.Scene, file: SlotData | null) {
@@ -57,13 +60,27 @@ export class JokesPage implements ExtrasPage {
     this.select(0, true);
   }
 
-  move(_dx: number, dy: number): void {
+  move(dx: number, dy: number): void {
+    if (dx !== 0) {
+      this.turnPage(dx);
+      return;
+    }
     const n = allAliens().length;
     this.select(Phaser.Math.Clamp(this.index + dy, 0, n - 1));
   }
 
+  /** The selected alien's lines go a page at a time; left/right (or a tap on the counter) turn it. */
+  private turnPage(dir: number): void {
+    const pages = Math.ceil(this.catalog.filter((j) => j.gotId === allAliens()[this.index].id).length / JOKES_PER_PAGE);
+    if (pages < 2) return;
+    this.jokePage = (this.jokePage + Math.sign(dir) + pages) % pages;
+    playSfx('uiMove', 0.8, 1.1);
+    this.showJokes(allAliens()[this.index].id);
+  }
+
   private select(i: number, quiet = false): void {
     if (!quiet && i !== this.index) playSfx('uiMove', 0.8, 1 + i * 0.05);
+    if (i !== this.index) this.jokePage = 0;
     this.index = i;
     const aliens = allAliens();
     this.rowBgs.forEach((g, r) => {
@@ -80,8 +97,16 @@ export class JokesPage implements ExtrasPage {
     const g = scene.add.graphics();
     drawPanel(g, JOKE_X + JOKE_W / 2, JOKES_Y, JOKE_W, JOKES_H, { fill: PALETTE.ink, fillAlpha: 0.8, stroke: getAlien(gotId).theme.color, strokeAlpha: 0.6, radius: 6 });
     const items: Phaser.GameObjects.GameObject[] = [g];
-    const jokes = this.catalog.filter((j) => j.gotId === gotId);
-    const step = Math.min(24, 196 / Math.max(1, jokes.length));
+    const all = this.catalog.filter((j) => j.gotId === gotId);
+    const pages = Math.max(1, Math.ceil(all.length / JOKES_PER_PAGE));
+    const page = Math.min(this.jokePage, pages - 1);
+    const jokes = all.slice(page * JOKES_PER_PAGE, (page + 1) * JOKES_PER_PAGE);
+    const step = 24;
+    if (pages > 1) {
+      const label = pixelText(scene, JOKE_X + JOKE_W - 10, 104, `< ${page + 1}/${pages} >`, { originX: 1, originY: 0.5, color: PALETTE.cream });
+      label.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.turnPage(1));
+      items.push(label);
+    }
     jokes.forEach((j, k) => {
       const y = 104 + k * step;
       const heard = this.found.has(j.id);
