@@ -16,6 +16,9 @@ import { RoachBrain } from './mutants/roach';
 import { MascotBrain } from './robots/mascot';
 import { SparkBrain } from './robots/spark';
 import { TrackbotBrain } from './robots/trackbot';
+import { CrabbotBrain } from './bounty/crabbot';
+import { SentryBrain } from './bounty/sentry';
+import { TrackerBrain } from './bounty/tracker';
 import { pace } from '../../systems/Difficulty';
 import { chance, damp } from '../../systems/Pacing';
 
@@ -281,5 +284,11 @@ export function createBrain(kind: EnemyKind, opts: { ceiling?: boolean } = {}): 
       return new TrackbotBrain(true);
     case 'spark':
       return new SparkBrain();
+    case 'tracker':
+      return new TrackerBrain();
+    case 'crabbot':
+      return new CrabbotBrain();
+    case 'sentry':
+      return new SentryBrain();
   }
 }

@@ -57,7 +57,7 @@ export function walkPhysics(d: Drone, w: DroneWorld, dtMs: number): Footing {
 /** Ben is close enough, roughly level, and fair game. */
 export function notices(d: Drone, w: DroneWorld, rangeX: number = M.noticeX, rangeY: number = M.noticeY): boolean {
   const p = w.player;
-  return w.aggressive && !p.dead && Math.abs(p.x - d.x) < rangeX && Math.abs(p.centerY - d.y) < rangeY && w.onScreen(d.x, d.y, -20);
+  return w.aggressive && !p.dead && !p.cloaked && Math.abs(p.x - d.x) < rangeX && Math.abs(p.centerY - d.y) < rangeY && w.onScreen(d.x, d.y, -20);
 }
 
 /** Wanders back and forth near its spawn, turning at walls and ledges. */

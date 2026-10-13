@@ -15,6 +15,10 @@ export const DRONE_SHARED = {
   downedMaxFall: 420,
   downedDamageMultiplier: 1.25,
   recoverDelayMs: 700,
+  /** Ghostfreak's scream: a frightened enemy flees this fast and can't hurt anyone until it calms down. */
+  fearFleeSpeed: 120,
+  /** It needs a moment after calming down before it attacks again. */
+  fearRecoverMs: 600,
 } as const;
 
 export const SCOUT = {

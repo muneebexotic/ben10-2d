@@ -16,7 +16,8 @@ import { chance } from '../../systems/Pacing';
 
 export interface DroneWorld {
   now: number;
-  player: { x: number; y: number; centerY: number; dead: boolean; vx: number; senseRadius: number };
+  /** `cloaked`: Ghostfreak holding still while phased; enemies have lost track of him. */
+  player: { x: number; y: number; centerY: number; dead: boolean; vx: number; senseRadius: number; cloaked: boolean };
   fx: Fx;
   lighting: Lighting;
   projectiles: Projectiles;
@@ -34,6 +35,10 @@ export interface DroneWorld {
   onGummed?(drone: Drone): void;
   /** Upgrade's takeover ran its course: the machine blows up here (the level deals the blast). */
   onOverload?(drone: Drone): void;
+  /** Ghostfreak's scream sent it running (BOO!). */
+  onFrightened?(drone: Drone): void;
+  /** A tracker drone's lock landed: Sixsix's missile salvo comes down on (x, feetY) (Chapter 5). */
+  salvo?(x: number, feetY: number, drone: Drone): void;
   /** This drone's attack lands at game time `at` (perfect transform timing). */
   threat(drone: Drone, at: number): void;
   cancelThreat(drone: Drone): void;
@@ -112,6 +117,8 @@ export class Drone implements Damageable, Hazard, Liftable {
   downedLeft = 0;
   /** Taken over by Upgrade: frozen, crawling with circuitry, about to blow (ms left). */
   hackedLeft = 0;
+  /** Panicking from Ghostfreak's scream: fleeing, harmless (ms left). */
+  frightenedLeft = 0;
   private fallVy = 0;
   private grounded = false;
   private carryState: Carry = 'none';
@@ -157,7 +164,11 @@ export class Drone implements Damageable, Hazard, Liftable {
   }
 
   get active(): boolean {
-    return this.alive && this.awake && this.carryState === 'none' && !this.downed && this.hackedLeft <= 0 && this.brain.harmful(this);
+    return this.alive && this.awake && this.carryState === 'none' && !this.downed && this.hackedLeft <= 0 && this.frightenedLeft <= 0 && this.brain.harmful(this);
+  }
+
+  get frightened(): boolean {
+    return this.frightenedLeft > 0;
   }
 
   hitbox(out: Rect): boolean {
@@ -212,6 +223,7 @@ export class Drone implements Damageable, Hazard, Liftable {
       return 'killed';
     }
     this.brain.onHurt?.(this, this.world, hit);
+    if (hit.fear) this.frighten(hit.fear);
     // Upgrade's nanotech shorts out circuits; it does nothing to an animal's nerves.
     if (hit.stunMs && (hit.kind !== 'tech' || machine)) this.knockDown(hit.stunMs);
     if (this.slime.apply(hit, this.world.now, this.brain.slimeGroundsAt) === 'stuck') {
@@ -221,6 +233,18 @@ export class Drone implements Damageable, Hazard, Liftable {
       this.world.onGummed?.(this);
     }
     return 'hit';
+  }
+
+  /** Ghostfreak's scream: it drops what it was doing and flees for `ms`. */
+  frighten(ms: number): void {
+    if (!this.alive || this.carryState !== 'none' || this.hackedLeft > 0) return;
+    const fresh = this.frightenedLeft <= 0;
+    this.frightenedLeft = Math.max(this.frightenedLeft, ms);
+    this.setCharging(false);
+    this.world.cancelThreat(this);
+    if (!fresh) return;
+    this.world.fx.popText(this.x, this.y - 14, '!!', PALETTE.ghostfreak);
+    this.world.onFrightened?.(this);
   }
 
   /** Upgrade took it over: it freezes and fizzes green, then blows up (see `COMBAT.hack`). */
@@ -283,6 +307,8 @@ export class Drone implements Damageable, Hazard, Liftable {
 
     if (this.downed) {
       this.updateDowned(dtMs, dt);
+    } else if (this.frightenedLeft > 0) {
+      this.updateFrightened(dtMs, dt);
     } else {
       this.brain.update(this, w, dtMs * f);
       this.x += (this.vx * f + this.kx) * dt;
@@ -317,6 +343,31 @@ export class Drone implements Damageable, Hazard, Liftable {
     if (this.downedLeft <= 0) this.recover();
   }
 
+  /** Running from Ghostfreak: away from Ben, shaking, no attacks. Walkers stay on the ground; flyers bolt up and away. */
+  private updateFrightened(dtMs: number, dt: number): void {
+    const w = this.world;
+    const dir = Math.sign(this.x - w.player.x) || 1;
+    const half = this.brain.body.height / 2;
+    let vx = dir * DRONE_SHARED.fearFleeSpeed;
+    if (w.isSolid(this.x + dir * (this.brain.body.width / 2 + 3), this.y)) vx = 0;
+    if (this.brain.walker) {
+      const ground = w.groundBelow(this.x, this.y - half + 1);
+      this.y = Math.min(this.y + 260 * dt, ground - half);
+      // Never run off a ledge in a panic (it would be gone for good).
+      if (w.groundBelow(this.x + dir * (this.brain.body.width / 2 + 6), this.y) > this.y + half + 20) vx = 0;
+    } else {
+      this.y -= 30 * dt;
+    }
+    this.x += (vx + this.kx) * dt;
+    this.frightenedLeft -= dtMs;
+    if (this.frightenedLeft <= 0) {
+      this.frightenedLeft = 0;
+      this.setState('idle');
+      this.nextActionAt = Math.max(this.nextActionAt, w.now + DRONE_SHARED.fearRecoverMs);
+      this.brain.onRecover?.(this, w);
+    }
+  }
+
   private updateHacked(dtMs: number): void {
     const w = this.world;
     this.hackedLeft -= dtMs;
@@ -346,7 +397,8 @@ export class Drone implements Damageable, Hazard, Liftable {
   private render(now: number): void {
     const walker = this.brain.walker ?? false;
     const bobY = this.downed || this.carryState !== 'none' || walker ? 0 : Math.sin(now * 0.004 + this.seed) * 1.5;
-    this.sprite.setPosition(Math.round(this.x), Math.round(this.y + bobY));
+    const tremble = this.frightenedLeft > 0 ? Math.round(Math.sin(now * 0.09) * 1.5) : 0;
+    this.sprite.setPosition(Math.round(this.x + tremble), Math.round(this.y + bobY));
     if (this.carryState === 'none') {
       // Knocked down: drones tumble onto their side, walking mutants flip onto their backs.
       const down = walker ? (this.grounded ? 180 : 150) : this.grounded ? 160 : 140;
@@ -356,6 +408,7 @@ export class Drone implements Damageable, Hazard, Liftable {
     if (this.flashLeft > 0) this.sprite.setTint(PALETTE.white).setTintMode(Phaser.TintModes.FILL);
     else if (this.slime.slowed) this.sprite.setTint(0xd8f070).setTintMode(Phaser.TintModes.MULTIPLY);
     else if (this.downed) this.sprite.setTint(0x8a8aa0).setTintMode(Phaser.TintModes.MULTIPLY);
+    else if (this.frightenedLeft > 0) this.sprite.setTint(0xc8d0ff).setTintMode(Phaser.TintModes.MULTIPLY);
     else this.sprite.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     this.brain.render?.(this, this.world);
   }

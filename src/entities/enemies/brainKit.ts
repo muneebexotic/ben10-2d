@@ -19,7 +19,7 @@ export function aimAt(d: Drone, w: DroneWorld): number {
 }
 
 export function canShoot(d: Drone, w: DroneWorld, range: number): boolean {
-  return w.aggressive && !w.player.dead && w.onScreen(d.x, d.y, 10) && Math.abs(w.player.x - d.x) < range;
+  return w.aggressive && !w.player.dead && !w.player.cloaked && w.onScreen(d.x, d.y, 10) && Math.abs(w.player.x - d.x) < range;
 }
 
 export function fireLaser(d: Drone, w: DroneWorld, angle: number, speed: number, damage: number): void {
@@ -28,4 +28,15 @@ export function fireLaser(d: Drone, w: DroneWorld, angle: number, speed: number,
   w.projectiles.spawn('laser', 'enemy', ox, oy, Math.cos(angle) * speed, Math.sin(angle) * speed, damage, LASER.lifetimeMs, LASER.radius);
   w.fx.burst('red', ox, oy, 4);
   w.lighting.flash(ox, oy, 40, PALETTE.enemy, 120);
+}
+
+/** Nothing solid between two points (sampled every 6 px): cover breaks a lock. */
+export function lineOfSight(w: DroneWorld, x0: number, y0: number, x1: number, y1: number): boolean {
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  const steps = Math.ceil(len / 6);
+  for (let i = 1; i < steps; i++) {
+    const t = i / steps;
+    if (w.isSolid(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)) return false;
+  }
+  return true;
 }

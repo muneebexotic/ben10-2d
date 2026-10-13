@@ -63,6 +63,7 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, e.y * TILE + TILE / 2, createBrain(e.kind)));
         break;
       case 'robot':
+      case 'gear':
       case 'mutant': {
         if (behind(e.x)) break;
         // Ground mutants stand on row y; a ceiling roach clings under the solid row y.
