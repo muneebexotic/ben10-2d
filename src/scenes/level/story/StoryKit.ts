@@ -73,6 +73,8 @@ export interface StoryKit {
   setLetterbox(visible: boolean): void;
   /** Ben fell somewhere he can't be (off the Rustbucket): hurt and put back at `x`, `feetY`. */
   rescue(x: number, feetY: number): void;
+  /** A smoothie drops in from (x, y) and bounces onto the ground below. */
+  dropSmoothy(x: number, y: number): void;
   /** Report damage a set piece dealt Ben directly (combo break, HUD, death). */
   onPlayerHurt(outcome: DamageOutcome): void;
   /** An enemy that isn't a drone went down (a convoy truck): stats, improvise bonus, tips. */

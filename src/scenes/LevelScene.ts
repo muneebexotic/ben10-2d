@@ -511,6 +511,7 @@ export class LevelScene extends Phaser.Scene {
         EventBus.emit('hud:letterbox', { visible });
       },
       rescue: (x, feetY) => this.rescue(x, feetY),
+      dropSmoothy: (x, y) => this.dropSmoothy(x, y),
       onPlayerHurt: (outcome) => this.onPlayerHurt(outcome),
       onEnemyKilled: () => this.creditKill(),
       threat: (key, at) => this.perfect.register(key, at, 0, 0, Infinity),

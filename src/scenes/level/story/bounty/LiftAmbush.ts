@@ -358,6 +358,9 @@ export class LiftAmbush implements SetPiece {
     kit.fx.burst('debris', wx, this.bottomY - 40, 30);
     this.kraab.look.play('charge');
     kit.scene.tweens.add({ targets: this.kraab.look, x: wx + 60, duration: 500, onComplete: () => this.kraab.hide() });
+    // The crash knocks a smoothie loose: the volley comes straight before THE HUNTERS, and every boss
+    // so far has a breather between its last challenge and the arena.
+    kit.dropSmoothy(this.rect.x + this.rect.w - 16, this.bottomY - 60);
     kit.reachCheckpoint(this.spec.checkpoint);
     kit.camera.unlock();
   }
