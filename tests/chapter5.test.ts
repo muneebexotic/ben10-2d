@@ -122,6 +122,13 @@ describe('chapter 5 layout', () => {
     expect(bounty.lift.checkpoint).toBe('cp-hunters');
   });
 
+  it("on Easy and Normal a checkpoint past the cavern standoff means a death at the laser doesn't replay it", () => {
+    const crystals = cp('cp-crystals');
+    expect(crystals.x).toBeGreaterThan(bounty.crystal.tetraxX);
+    expect(crystals.x).toBeLessThan(Math.min(...entity('laser').map((l) => l.x), ...entity('gear').map((g) => g.x).filter((x) => x > bounty.crystal.tetraxX)));
+    expect(checkpointsFor(level, 'normal').some((c) => c.id === 'cp-crystals')).toBe(true);
+  });
+
   it('Ghostfreak joins in the jail, Diamondhead in the cavern; a restart past either already has them', () => {
     const unlocks = story.unlocks!;
     expect(pendingUnlocks(unlocks, BEFORE_IDS, null)).toEqual(['ghostfreak', 'diamondhead']);

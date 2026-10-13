@@ -122,7 +122,12 @@ export class CrystalCave implements SetPiece {
       this.startCharge();
     };
     if (this.beat && !this.beat.done) this.beat.start(standoff);
-    else standoff();
+    else {
+      // A replay (a retry from the cavern): the watch reads the crystals again, so the standoff's
+      // answer is in hand rather than a human Ben told to hold a shield he hasn't got.
+      if (kit.player.form.id !== 'diamondhead') kit.omni.forceInto('diamondhead');
+      standoff();
+    }
   }
 
   private startCharge(): void {

@@ -311,6 +311,8 @@ export const CHAPTER_5: LevelData = {
     { type: 'decor', kind: 'crystalSpire', x: 409, y: 58 },
     { type: 'decor', kind: 'crystalCluster', x: 424, y: 58, frame: 0 },
     { type: 'checkpoint', id: 'cp-cavern', x: 353, y: 58, density: 'sparse', label: 'CRYSTAL CAVERN' },
+    // Past Tetrax: only reached once the standoff is over, so a retry from here doesn't replay it.
+    { type: 'checkpoint', id: 'cp-crystals', x: 367, y: 58, density: 'normal', label: 'CRYSTAL FIELD' },
     { type: 'gear', kind: 'sentry', x: 374, y: 58 },
     { type: 'gear', kind: 'crabbot', x: 395, y: 58 },
     { type: 'gear', kind: 'sentry', x: 401, y: 58 },
