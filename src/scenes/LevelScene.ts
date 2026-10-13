@@ -530,7 +530,8 @@ export class LevelScene extends Phaser.Scene {
       whisper: (text) => EventBus.emit('hud:whisper', { text, color: PALETTE.ghostfreakEye }),
       setWorldHidden: (hidden) => {
         self.worldHidden = hidden;
-        this.cameras.main.setVisible(!hidden);
+        // Called from a set piece's destroy too: on shutdown Phaser has already taken the cameras down (BUGS.md T1).
+        this.cameras?.main?.setVisible(!hidden);
       },
       payReward: (reward, x, y) => this.onSumoWon(reward, x, y),
     };
