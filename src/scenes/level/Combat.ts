@@ -155,11 +155,14 @@ export class Combat implements CombatApi {
     return count;
   }
 
-  deflect(area: Rect, angle: number, speedMultiplier: number, damage: number): number {
+  deflect(area: Rect, angle: number, speedMultiplier: number, damage: number, assistCone = 0, assistRange = 0): number {
     let count = 0;
+    let aimed = angle;
     this.projectiles.forEachActive('enemy', (p) => {
       if (!circleRect(p.x, p.y, p.radius + 4, area)) return;
-      this.projectiles.redirect(p, angle, speedMultiplier, damage);
+      // The assist is worked out once, and only when something is actually turned.
+      if (count === 0 && assistCone > 0) aimed = this.aimAssist(area.x + area.w / 2, area.y + area.h / 2, angle, assistCone, assistRange);
+      this.projectiles.redirect(p, aimed, speedMultiplier, damage);
       count++;
     });
     if (count > 0) this.hooks.onParry(count);

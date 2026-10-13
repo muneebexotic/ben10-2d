@@ -22,8 +22,10 @@ export const SIXSIX = {
   /** Boss phase 2, up the lift shaft. */
   boss: {
     hp: 70,
-    /** Hovers this far above Ben (px) and within the shaft. */
+    /** Hovers this far above Ben (px), over the far side of the shaft from him (this far in from its wall), drifting a little. */
     hoverAbove: 120,
+    hoverInset: 16,
+    hoverDriftPx: 8,
     moveSpeed: 120,
     /** Salvos onto Ben's ledge, then a cannon burst, in turn. */
     salvoEveryMs: [2600, 3400] as const,

@@ -404,8 +404,11 @@ export class SixsixFighter implements Damageable, Hazard {
       }
       return;
     }
-    // Hover above Ben, inside the shaft, bobbing; drift side to side.
-    const tx = Phaser.Math.Clamp(p.x + Math.sin(w.now * 0.0012) * 40, this.bounds.left + 12, this.bounds.right - 12);
+    // Hover above Ben over the far side of the shaft (a diagonal: up-shots, up-shards and a tilted shield
+    // reach him; straight above, nothing would), swooping across when Ben crosses the middle; bob and drift.
+    const mid = (this.bounds.left + this.bounds.right) / 2;
+    const far = p.x < mid ? this.bounds.right - B.hoverInset : this.bounds.left + B.hoverInset;
+    const tx = Phaser.Math.Clamp(far + Math.sin(w.now * 0.0012) * B.hoverDriftPx, this.bounds.left + 12, this.bounds.right - 12);
     const ty = Phaser.Math.Clamp(p.y - B.hoverAbove + Math.sin(w.now * 0.003) * 8, this.bounds.top + 50, this.bounds.bottom - 60);
     this.vx = Phaser.Math.Clamp((tx - this.x) * 2, -B.moveSpeed, B.moveSpeed);
     this.vy = Phaser.Math.Clamp((ty - this.y) * 2, -B.moveSpeed, B.moveSpeed);

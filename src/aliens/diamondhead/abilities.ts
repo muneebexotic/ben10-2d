@@ -119,7 +119,7 @@ export class DiamondheadAbilities implements FormAbilities {
     a.x = player.x + (player.facing > 0 ? SH.area.ahead : -SH.area.ahead - a.w);
     a.y = player.y - a.h - (this.tilt < 0 ? 8 : 0) + (this.tilt > 0 ? 4 : 0);
     const angle = this.mirrorAngle();
-    const turned = combat.deflect(a, angle, SH.reflectSpeed, SH.reflectDamage);
+    const turned = combat.deflect(a, angle, SH.reflectSpeed, SH.reflectDamage, SH.reflectAssistDeg * DEG, SH.reflectAssistRange);
     if (turned > 0) {
       fx.flash(player.x + player.facing * 14, player.y - 22, C.glow, 22, 160);
       fx.burst('crystal', player.x + player.facing * 14, player.y - 22, 6 * turned);

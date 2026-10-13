@@ -59,6 +59,9 @@ export const DIAMONDHEAD = {
     reflectDamage: 3,
     /** Up or Down while holding tilts the face this far. */
     tiltDeg: 40,
+    /** A turned shot bends toward an enemy this close to where the face sends it (Sixsix across the lift shaft). */
+    reflectAssistDeg: 24,
+    reflectAssistRange: 320,
     /** It cracks after holding this long, then needs a moment. */
     maxHoldMs: 4200,
     cooldownMs: 650,

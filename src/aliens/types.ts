@@ -87,8 +87,11 @@ export interface CombatApi {
   forget(key: object): void;
   /** Knocks enemy projectiles inside `area` back the way they came. Returns how many. */
   parry(area: Rect, facing: 1 | -1, speedMultiplier: number, damage: number): number;
-  /** Turns enemy projectiles inside `area` around and sends them off along `angleRad` (a tilted crystal shield). Returns how many. */
-  deflect(area: Rect, angleRad: number, speedMultiplier: number, damage: number): number;
+  /**
+   * Turns enemy projectiles inside `area` around and sends them off along `angleRad` (a tilted crystal shield),
+   * nudged toward an enemy inside `assistConeRad` when one is given. Returns how many.
+   */
+  deflect(area: Rect, angleRad: number, speedMultiplier: number, damage: number, assistConeRad?: number, assistRange?: number): number;
   shoot(spec: ShotSpec, x: number, y: number, angleRad: number): void;
   /** Nudges an aim angle toward the best enemy inside a cone, so fire feels powerful without pixel-perfect aim. */
   aimAssist(x: number, y: number, angleRad: number, coneRad: number, range: number): number;

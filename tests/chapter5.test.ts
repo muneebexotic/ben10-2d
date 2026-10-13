@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getAlien } from '../src/aliens/registry';
 import { DIVE } from '../src/config/dive';
-import { TETRAX } from '../src/config/hunters';
+import { DIAMONDHEAD as DIAMONDHEAD_TUNING } from '../src/config/aliens/diamondhead';
+import { HEATBLAST as HEATBLAST_TUNING } from '../src/config/aliens/heatblast';
+import { HUNTERS_BOSS, SIXSIX, TETRAX } from '../src/config/hunters';
 import { cracksPillar, crabShelled, kraabShelled, pickForcedMisfire } from '../src/entities/hunters/huntRules';
 import { tetraxDamage } from '../src/entities/hunters/tetraxRules';
 import { buildCells, cellAt } from '../src/levels/buildLevel';
@@ -324,6 +326,36 @@ describe("the hunters' rules", () => {
     expect(tetraxDamage({ damage: 4, kind: 'melee', heavy: false, x: 120 }, guard)).toMatchObject({ blocked: true, damage: 0 });
     expect(tetraxDamage({ damage: 4, kind: 'smash', heavy: false, x: 120 }, guard).blocked).toBe(false);
     expect(tetraxDamage({ damage: 4, kind: 'melee', heavy: false, x: 80 }, guard).blocked).toBe(false);
+  });
+});
+
+describe('Sixsix up the lift shaft', () => {
+  // Ben on a ledge (anywhere on its outer two thirds) and Sixsix over the far side, at the worst of his drift.
+  const { shaft } = bounty.hunters;
+  const T = 16;
+  const B = SIXSIX.boss;
+  const elevations = HUNTERS_BOSS.ledges.flatMap((l) => {
+    const onLeft = l.x * T + (l.w * T) / 2 < (shaft.w * T) / 2;
+    const wall = onLeft ? l.x * T + 6 : (l.x + l.w) * T - 6;
+    const inner = onLeft ? (l.x + (l.w * 2) / 3) * T : (l.x + l.w / 3) * T;
+    const sixsix = onLeft ? shaft.w * T - B.hoverInset - B.hoverDriftPx : B.hoverInset + B.hoverDriftPx;
+    return [wall, inner].map((x) => (Math.atan2(B.hoverAbove, Math.abs(sixsix - x)) * 180) / Math.PI);
+  });
+  const steepest = Math.max(...elevations);
+
+  it('hovers on a diagonal every answer the tip names can reach: up-shots, up-shards and a tilted shield', () => {
+    const F = HEATBLAST_TUNING.fireball;
+    const S = DIAMONDHEAD_TUNING.shard;
+    const SH = DIAMONDHEAD_TUNING.shield;
+    expect(steepest).toBeLessThanOrEqual(38 + F.assistConeDeg);
+    expect(steepest).toBeLessThanOrEqual(S.upDeg + S.assistConeDeg);
+    expect(steepest).toBeLessThanOrEqual(SH.tiltDeg + SH.reflectAssistDeg);
+  });
+
+  it('stays clear of the next ledge up, so the climb never jumps Ben into him', () => {
+    const gap = (HUNTERS_BOSS.ledges[1].up - HUNTERS_BOSS.ledges[0].up) * T;
+    // Ben is about 40 px tall: his head on the next ledge stays under Sixsix's feet.
+    expect(B.hoverAbove - gap).toBeGreaterThan(40);
   });
 });
 
