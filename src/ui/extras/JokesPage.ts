@@ -11,7 +11,8 @@ import type { ExtrasPage } from './pages';
 const LIST_X = 22;
 const LIST_W = 160;
 const ROW_Y = 106;
-const ROW_H = 38;
+/** Each alien's row in the list: as tall as fits above the screen's bottom edge, never more than 38 px. */
+const ROW_H = Math.min(38, Math.floor(244 / allAliens().length));
 const JOKE_X = 200;
 const JOKE_W = 420;
 const JOKES_Y = 196;
