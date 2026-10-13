@@ -138,8 +138,11 @@ export class Missiles {
     playSfx(missileBoom, 0.8, 0.9 + Math.random() * 0.2);
   }
 
-  clear(): void {
-    for (const s of this.strikes) if (s.missile?.active) this.w.projectiles.kill(s.missile, false);
+  /**
+   * The level is ending: let go of every strike. The projectile pool owns the missiles' sprites and
+   * may already have destroyed them (killing one here threw and stopped the game loop: BUGS.md C15).
+   */
+  forget(): void {
     this.strikes.length = 0;
   }
 }

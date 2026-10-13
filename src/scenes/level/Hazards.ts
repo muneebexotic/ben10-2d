@@ -160,7 +160,7 @@ export class HazardSystem {
   }
 
   destroy(): void {
-    this.missiles.clear();
+    this.missiles.forget();
     this.rockfalls.clear();
     this.blasts.clear();
     this.phaseWalls.destroy();
