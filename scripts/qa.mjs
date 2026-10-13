@@ -250,8 +250,11 @@ async function sweepLevels(s) {
     }
     if (level !== 'training') {
       // Game Over, then Chapter Complete with this chapter's stats.
+      // The death slow-mo stretches the delay before GameOver: wait for the scene itself. Stopping
+      // Level any earlier races its queued pause (Phaser runs scene ops at the start of the next frame).
       await s.page.evaluate(() => window.__level.onDeath());
-      await sleep(2600);
+      await s.waitScene('GameOver', 20000).catch(() => undefined);
+      await sleep(900);
       await s.check(`${level}-gameover`);
       await s.page.evaluate((id) => {
         const stats = JSON.parse(JSON.stringify(window.__level.stats));
