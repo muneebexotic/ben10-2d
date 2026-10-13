@@ -320,7 +320,7 @@ export const CHAPTER_5: LevelData = {
     { type: 'card', id: 'ch5-card-flooded', x: 385, y: 63, requires: 'ripjaws' },
     { type: 'alienHint', id: 'ch5-flooded-hint', alien: 'ripjaws', x: 378, y: 54, w: 13, h: 5, line: "THE LOWER SHAFT'S FLOODED... SOMETHING DOWN THERE IS GLINTING." },
     { type: 'laser', id: 'cavern-laser', x: 405, y: 55, dir: 'right' },
-    { type: 'receiver', id: 'cavern-receiver', x: 412, y: 47, gate: 'cavern-gate', kills: 'cavern-laser' },
+    { type: 'receiver', id: 'cavern-receiver', x: 412, y: 47, w: 2, gate: 'cavern-gate', kills: 'cavern-laser' },
     { type: 'crystalGate', id: 'cavern-gate', x: 430, y: 54, w: 1, h: 4 },
     { type: 'smoothy', x: 371, y: 58 },
     { type: 'smoothy', x: 391, y: 58 },
