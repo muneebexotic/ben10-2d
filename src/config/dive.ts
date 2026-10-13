@@ -29,6 +29,8 @@ export const DIVE = {
   boostScale: 0.55,
   /** A crate going off this close to the cart (m) catches it too. */
   crateBlastRange: 4,
+  /** Wildmutt's senses: obstacles' tracks glow this far ahead (m) while it lasts; the hunters' tells come twice as early. */
+  sniffAhead: 70,
   /** Tells: how far ahead (m) warnings show up for things that happen at a spot (Kraab, the drone's missile, the cannon). */
   warnAhead: { kraab: 26, missile: 30, cannon: 34 },
   /** The camera: behind the cart and above it (m), and the swing in and out (ms). */

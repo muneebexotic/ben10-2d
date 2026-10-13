@@ -203,6 +203,11 @@ export class OmnitrixController {
     return true;
   }
 
+  /** The forced misfire's fix swap is held back right now. */
+  get fixHeld(): boolean {
+    return this.nowMs < this.fixHeldUntil;
+  }
+
   /** Time left (ms) before the forced misfire's fix swap comes back, 0 when it's free. */
   fixHeldFor(now: number): number {
     return Math.max(0, this.fixHeldUntil - now);

@@ -113,7 +113,7 @@ export const HUNTERS_BOSS = {
 
 /** Story timings for Chapter 5's set pieces (ms). */
 export const CH5_BEATS = {
-  coldOpen: { bridgeMs: 600, fadeMs: 500, bannerAt: 400, linesAt: 1200 },
+  coldOpen: { bridgeMs: 600, fadeMs: 500, linesAt: 1200, bannerAt: 300, bannerMs: 1600, arrivalLinesAt: 2300 },
   /** Sixsix's first strike after the arrival: once Ben walks past the gate. */
   firstStrike: { triggerTilesPast: 14, warnMs: 1100 },
   netTrap: { flyMs: 380, dragMs: 900, sealMs: 500 },

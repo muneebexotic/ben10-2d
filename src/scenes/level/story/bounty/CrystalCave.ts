@@ -164,6 +164,7 @@ export class CrystalCave implements SetPiece {
     const kit = this.kit;
     const kx = this.kraab.x;
     const ky = this.kraab.y;
+    kit.tutorial.complete('shield-reflect');
     kit.fx.explosion(kx, ky - 20, 'big');
     kit.fx.popText(kx, ky - 64, 'REFLECTED!', PALETTE.diamondhead, 2);
     kit.fx.hitStop(110);

@@ -113,27 +113,30 @@ export function drawShopFront(pc: PixelCanvas, frame: number): void {
   pc.outline(INK);
 }
 
-/** WANTED posters: 0 Ben ("THE BOY WITH THE WATCH"), 1 an outlaw, 2 torn. 22x28. */
+/** WANTED posters: 0 Ben ("THE BOY WITH THE WATCH"), 1 an outlaw, 2 torn. 40x40. */
 export function drawWanted(pc: PixelCanvas, frame: number): void {
-  pc.rect(0, 0, 22, 28, 0xd8c08a);
-  pc.rect(1, 1, 20, 26, 0xe8d4a0);
-  lettering(pc, 2, 2, 'WANTED', 0x5a2a1a);
-  pc.rect(5, 10, 12, 11, 0xc8b080);
+  pc.rect(0, 0, 40, 40, 0xd8c08a);
+  pc.rect(1, 1, 38, 38, 0xe8d4a0);
+  letteringCentred(pc, 20, 3, 'WANTED', 0x5a2a1a);
+  pc.rect(12, 12, 16, 17, 0xc8b080);
   if (frame === 0) {
     // Ben: brown hair, the watch drawn big.
-    pc.ellipse(11, 16, 4, 4, 0xf2c29b);
-    pc.rect(7, 11, 8, 3, P.hair0);
-    pc.px(9, 16, INK).px(13, 16, INK);
-    pc.rect(15, 18, 3, 3, P.omnitrixDark);
+    pc.ellipse(20, 21, 5, 6, 0xf2c29b);
+    pc.rect(14, 14, 12, 4, P.hair0).rect(14, 18, 2, 3, P.hair0);
+    pc.px(18, 21, INK).px(22, 21, INK);
+    pc.hline(18, 22, 25, 0xb07a5a);
+    pc.rect(25, 24, 4, 4, P.omnitrixDark).px(26, 25, P.omnitrix);
   } else {
-    pc.ellipse(11, 16, 4, 5, 0x9a7a5a);
-    pc.rect(6, 11, 10, 2, INK).rect(8, 9, 6, 3, INK);
-    pc.hline(8, 14, 18, INK);
+    pc.ellipse(20, 22, 5, 6, 0x9a7a5a);
+    pc.rect(13, 15, 14, 2, INK).rect(16, 11, 8, 4, INK);
+    pc.hline(16, 24, 24, INK);
+    pc.px(18, 20, INK).px(22, 20, INK);
   }
-  pc.hline(3, 18, 23, 0x5a2a1a);
-  pc.hline(5, 16, 25, 0x8a5a3a);
-  // A torn corner.
-  if (frame === 2) for (let y = 0; y < 10; y++) pc.ctx.clearRect(pc.ox + 21 - Math.round((9 - y) * 0.8), pc.oy + y, Math.round((9 - y) * 0.8) + 1, 1);
+  // Reward lines.
+  pc.hline(6, 33, 32, 0x5a2a1a);
+  pc.hline(9, 30, 35, 0x8a5a3a);
+  // A torn corner, under the lettering.
+  if (frame === 2) for (let y = 0; y < 12; y++) pc.ctx.clearRect(pc.ox + 39 - Math.round(y * 0.9), pc.oy + 28 + y, Math.round(y * 0.9) + 1, 1);
   pc.outline(INK);
 }
 

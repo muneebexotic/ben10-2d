@@ -126,15 +126,16 @@ export type EntitySpawn =
    * Chapter 5 on. A wall only Ghostfreak walks through (phased): `w` x `h`
    * tiles from (x, y), drawn as iron bars, stone or a boarded door.
    */
-  | { type: 'phaseWall'; id: string; x: number; y: number; w: number; h: number; look: 'bars' | 'stone' | 'boards' }
+  /** A wall only Ghostfreak walks through. `hidden`: no art of its own (the level's decor shows what it is). */
+  | { type: 'phaseWall'; id: string; x: number; y: number; w: number; h: number; look: 'bars' | 'stone' | 'boards' | 'hidden' }
   /** A crate of dynamite standing on row `y`: fire sets it off, and the blast clears the cracked rock in `breaks` (tiles). */
   | { type: 'dynamite'; id: string; x: number; y: number; breaks?: { x: number; y: number; w: number; h: number } }
   /** Rocks fall on tiles x..x+w from the ceiling row `ceiling` while Ben is near. */
   | { type: 'rockfall'; id: string; x: number; w: number; ceiling: number }
   /** A security laser emitter in tile (x, y), firing `dir`. */
   | { type: 'laser'; id: string; x: number; y: number; dir: 'left' | 'right' | 'up' | 'down' }
-  /** A crystal receiver in tile (x, y): a bounced beam lights it and opens `gate` (and switches off the emitter `kills`). */
-  | { type: 'receiver'; id: string; x: number; y: number; gate: string; kills?: string }
+  /** A crystal receiver in tile (x, y), `w` tiles wide (a seam), default 1: a bounced beam lights it and opens `gate` (and switches off the emitter `kills`). */
+  | { type: 'receiver'; id: string; x: number; y: number; w?: number; gate: string; kills?: string }
   /** A crystal gate filling `w` x `h` tiles from (x, y) until its receiver lights. */
   | { type: 'crystalGate'; id: string; x: number; y: number; w: number; h: number }
   | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean; frame?: number };
@@ -383,7 +384,7 @@ export interface BountyPlan {
   netTrap: { triggerX: number; cellX: number; barsX: number; floor: number; sixsixX: number; generatorX: number; alien: string };
   /** Kraab hunts the rail tunnels: a burrowing ambush at each spot, then he goes deeper. */
   kraabHunt: { fromX: number; toX: number; ambushes: Array<{ x: number; floor: number }> };
-  /** THE DEEP DIVE: the runaway ore cart from (`cartX`, `floor`); Ben lands in the cavern at (`landX`, `landY`). */
+  /** THE DEEP DIVE: the runaway ore cart from (`cartX`, `floor`); Ben lands in the cavern at (`landX`, `landY`), which reaches `checkpoint`. */
   dive: { triggerX: number; cartX: number; floor: number; landX: number; landY: number; checkpoint: string };
   /** The crystal cavern: Kraab charges his cannon from (`kraabX`, `kraabY`), Tetrax blocks the way at `tetraxX`, and `alien` arrives. */
   crystal: { floor: number; kraabX: number; kraabY: number; tetraxX: number; alien: string };

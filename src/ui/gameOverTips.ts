@@ -31,6 +31,16 @@ export const GAME_OVER_TIPS: readonly GameOverTip[] = [
   { text: 'TOKEN TOONS RAISE THEIR CYMBALS BEFORE THE SMASH. HIT THEM WHILE THEY BEND.', chapters: [4] },
   { text: 'TRACK-BOTS THROW SPARKS BEFORE THEY CHARGE. JUMP THEM, HIT THEIR BACKS.', chapters: [4] },
   { text: 'UPGRADE TAKES OVER ROBOTS: {K} INTO ONE AND IT BLOWS UP.', chapters: [4], needs: 'upgrade' },
+  { text: 'A TRACKER DRONE PAINTS YOU BEFORE THE MISSILES. BREAK ITS LINE OF SIGHT, OR SHOOT IT DOWN.', chapters: [5] },
+  { text: 'MISSILE MARKERS SHOW WHERE THEY LAND. GET UNDER A PORCH ROOF!', chapters: [5] },
+  { text: 'CRAB-BOT SHELLS SHRUG OFF HITS. FLIP THEM WITH A SMASH, THEN HIT THE SOFT SIDE.', chapters: [5] },
+  { text: 'A CRACK RACING ALONG THE FLOOR MEANS SOMETHING IS ABOUT TO ERUPT UNDER IT. MOVE!', chapters: [5] },
+  { text: "CRYSTAL SENTRIES GLINT BEFORE A SHARD VOLLEY. DIAMONDHEAD'S SHIELD {K} SENDS IT BACK.", chapters: [5], needs: 'diamondhead' },
+  { text: 'HOLD {K} AS DIAMONDHEAD TO REFLECT SHOTS. LASERS, MISSILES, EVEN A CLAW CANNON.', chapters: [5], needs: 'diamondhead' },
+  { text: 'GHOSTFREAK PHASES {K} THROUGH SHOTS AND WALLS. STAND STILL WHILE PHASED TO VANISH.', chapters: [5], needs: 'ghostfreak' },
+  { text: 'DYNAMITE GOES OFF WITH FIRE, AN EXPLOSION OR A HARD HIT. CRACKED ROCK DOES NOT LIKE IT.', chapters: [5] },
+  { text: "KRAAB'S FRONT IS SHELLED. HIT HIM FROM BEHIND, OR LURE HIM UNDER THE CRACKED PILLAR.", chapters: [5] },
+  { text: 'TETRAX GLINTS BEFORE EVERY STRIKE. SMASHES CRACK HIM; FIRE HEATS HIM UP FOR A COMBO.', chapters: [5] },
 ];
 
 export function tipsFor(chapter: number, aliens: readonly string[]): readonly GameOverTip[] {

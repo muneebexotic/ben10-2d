@@ -1,14 +1,15 @@
 import Phaser from 'phaser';
 import { DEPTH, TILE } from '../../../../config/constants';
 import { CH5_BEATS, TETRAX } from '../../../../config/hunters';
+import { MISFIRE } from '../../../../config/omnitrix';
 import { PALETTE } from '../../../../config/palette';
 import { TELL } from '../../../../config/tells';
 import { KraabFighter } from '../../../../entities/hunters/KraabFighter';
 import { HunterLook } from '../../../../entities/hunters/HunterLook';
+import { pickForcedMisfire } from '../../../../entities/hunters/huntRules';
 import type { Rect } from '../../../../entities/types';
 import type { BountyPlan } from '../../../../levels/types';
 import { blinkOn } from '../../../../systems/Accessibility';
-import { EventBus } from '../../../../systems/EventBus';
 import type { Controls } from '../../../../systems/InputMap';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import { brakeScreech, glint, liftRattle, shardVolley, sixsixLaugh } from '../../../../systems/audio/bountySfx';
@@ -20,20 +21,12 @@ import { LIFT_CORNERED, LIFT_DUD, LIFT_PROMPT, LIFT_SURVIVED } from './lines';
 type Phase = 'wait' | 'rise' | 'cornered' | 'pick' | 'survive' | 'drop' | 'done';
 type Attack = 'volley' | 'salvo' | 'claw';
 
-/** The misfire is picked so it can be survived with skill, best first (never the alien Ben asked for). */
-const SURVIVABLE = ['ghostfreak', 'xlr8', 'fourarms', 'stinkfly', 'heatblast', 'upgrade', 'wildmutt', 'diamondhead'] as const;
 /** How long the watch waits for Ben to pick before it goes off on its own (ms). */
 const PICK_TIMEOUT_MS = 3500;
 /** The hunters' attacks while he survives: one every so often, in turn. */
 const ATTACK_EVERY_MS = 2300;
 const ATTACKS: readonly Attack[] = ['volley', 'salvo', 'claw'];
 const DEG = Math.PI / 180;
-
-/** The alien the watch gives Ben instead of `wanted`, from what's on the dial. Pure: unit tested. */
-export function pickForcedMisfire(wanted: string, dial: readonly string[]): string | null {
-  for (const id of SURVIVABLE) if (id !== wanted && dial.includes(id)) return id;
-  return dial.find((id) => id !== wanted) ?? null;
-}
 
 /**
  * The lift (GAME_DESIGN.md Chapter 5, beat 8). Ben rides the mine lift up
@@ -73,7 +66,8 @@ export class LiftAmbush implements SetPiece {
   ) {
     this.bottomY = spec.bottom * TILE;
     this.stopY = spec.stop * TILE;
-    this.rect = { x: spec.x * TILE, y: this.bottomY - 10, w: spec.w * TILE, h: 10 };
+    // The deck sits flush with the floor (sunk into it), so Ben walks straight on.
+    this.rect = { x: spec.x * TILE, y: this.bottomY, w: spec.w * TILE, h: 10 };
     const r = this.rect;
     this.chains = kit.scene.add.graphics().setDepth(DEPTH.terrain - 1);
     this.deck = kit.scene.add.tileSprite(r.x, r.y, r.w, 10, TEX.liftDeck).setOrigin(0, 0).setDepth(DEPTH.terrain + 1);
@@ -118,7 +112,7 @@ export class LiftAmbush implements SetPiece {
         return;
       case 'rise': {
         const k = Math.min(1, this.t / CH5_BEATS.lift.riseMs);
-        this.moveDeck(Phaser.Math.Linear(this.bottomY - 10, this.stopY - 10, Phaser.Math.Easing.Sine.InOut(k)));
+        this.moveDeck(Phaser.Math.Linear(this.bottomY, this.stopY, Phaser.Math.Easing.Sine.InOut(k)));
         this.rattleIn -= realDtMs;
         if (this.rattleIn <= 0) {
           this.rattleIn = 700;
@@ -136,11 +130,11 @@ export class LiftAmbush implements SetPiece {
         return;
       case 'drop': {
         this.vy = Math.min(900, this.vy + 1600 * (realDtMs / 1000));
-        const y = Math.min(this.bottomY - 10, this.rect.y + this.vy * (realDtMs / 1000));
+        const y = Math.min(this.bottomY, this.rect.y + this.vy * (realDtMs / 1000));
         this.moveDeck(y);
         this.kraab.look.feetY = y;
         this.tetrax.feetY = y;
-        if (y >= this.bottomY - 10) this.crash();
+        if (y >= this.bottomY) this.crash();
         return;
       }
       default:
@@ -246,11 +240,12 @@ export class LiftAmbush implements SetPiece {
     this.crabsIn = 3200;
     this.kraab.look.play('idle');
     this.tetrax.play('idle');
-    kit.scene.time.delayedCall(1300, () => {
+    // The hunters' jeers wait for the misfire card to clear.
+    kit.scene.time.delayedCall(MISFIRE.cardMs + 400, () => {
+      if (this.phase !== 'survive') return;
       kit.dialogue.play(LIFT_DUD);
       playSfx(sixsixLaugh, 1);
     });
-    EventBus.emit('hud:banner', { title: 'SURVIVE!', subtitle: '15 SECONDS', color: PALETTE.enemy, durationMs: 1400, style: 'soft' });
   }
 
   private updateSurvive(dtMs: number): void {

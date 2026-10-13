@@ -132,7 +132,7 @@ export const CHAPTER_5: LevelData = {
       ],
       netTrap: { triggerX: 129, cellX: 141, barsX: 136, floor: 30, sixsixX: 121, generatorX: 131, alien: 'ghostfreak' },
       kraabHunt: { fromX: 252, toX: 333, ambushes: [{ x: 262, floor: 30 }, { x: 287, floor: 36 }, { x: 313, floor: 40 }] },
-      dive: { triggerX: 327, cartX: 329, floor: 40, landX: 350, landY: 58, checkpoint: 'cp-dive' },
+      dive: { triggerX: 327, cartX: 329, floor: 40, landX: 350, landY: 58, checkpoint: 'cp-cavern' },
       crystal: { floor: 58, kraabX: 341, kraabY: 58, tetraxX: 365, alien: 'diamondhead' },
       lift: { triggerX: 446, x: 444, w: 8, bottom: 58, stop: 46, checkpoint: 'cp-hunters' },
       hunters: {
@@ -310,7 +310,7 @@ export const CHAPTER_5: LevelData = {
     { type: 'decor', kind: 'crystalCluster', x: 393, y: 58, frame: 1 },
     { type: 'decor', kind: 'crystalSpire', x: 409, y: 58 },
     { type: 'decor', kind: 'crystalCluster', x: 424, y: 58, frame: 0 },
-    { type: 'checkpoint', id: 'cp-cavern', x: 368, y: 58, density: 'sparse', label: 'CRYSTAL CAVERN' },
+    { type: 'checkpoint', id: 'cp-cavern', x: 353, y: 58, density: 'sparse', label: 'CRYSTAL CAVERN' },
     { type: 'gear', kind: 'sentry', x: 374, y: 58 },
     { type: 'gear', kind: 'crabbot', x: 395, y: 58 },
     { type: 'gear', kind: 'sentry', x: 401, y: 58 },

@@ -88,7 +88,7 @@ export const CH5_ASSETS: AssetDef[] = [
   one(T.townGate, 176, 112, props.drawTownGate),
   one(T.saloon, 128, 104, props.drawSaloon),
   sheet(T.shopFront, 96, 88, 4, props.drawShopFront),
-  sheet(T.wanted, 22, 28, 3, props.drawWanted),
+  sheet(T.wanted, 40, 40, 3, props.drawWanted),
   one(T.hitchingPost, 36, 16, props.drawHitchingPost),
   one(T.wagonWheel, 20, 20, props.drawWagonWheel),
   one(T.crates, 24, 24, props.drawCrates),

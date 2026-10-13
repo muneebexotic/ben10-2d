@@ -59,6 +59,8 @@ import { checkpointSpawn } from '../levels/checkpoints';
 import { TransformSequence } from './level/TransformSequence';
 import { MisfireBeat } from './level/MisfireBeat';
 import { misfireAllowed } from '../systems/MisfireRules';
+import { ensureChapterArt } from './preload/generate';
+import { usesBountyGear } from '../levels/bountyGear';
 import { Tutorial } from './level/Tutorial';
 import { TrainingDirector } from './level/TrainingDirector';
 import { HighwayBackdrop } from './level/HighwayBackdrop';
@@ -256,6 +258,9 @@ export class LevelScene extends Phaser.Scene {
     this.worldHidden = false;
     this.alienKills.clear();
     this.level = getLevel(data.levelId ?? CHAPTER_1.id);
+    // Chapter art made on demand (CHAPTER_ART): this level's own, and the mine's gear wherever an older chapter uses it.
+    ensureChapterArt(this, this.level.id);
+    if (usesBountyGear(this.level)) ensureChapterArt(this, 'ch5');
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
     const extra = this.mode === 'story' ? knownAliens(launchParams().aliens) : [];
     this.checkpointId = data.checkpoint ?? null;
@@ -403,7 +408,9 @@ export class LevelScene extends Phaser.Scene {
     }, this);
     EventBus.on('alien:misfire', () => {
       const bonus = Math.round(MISFIRE.improviseBonusMs / 1000);
-      this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
+      // The lift's forced misfire holds the fix swap back: don't offer it.
+      if (this.omni.fixHeld) this.tutorial.tip('misfire-held', `STUCK WITH IT! THE WATCH WON'T SWAP YET... KO SOMETHING: +${bonus}S`, 7000, 9);
+      else this.tutorial.tip('misfire', `WRONG ALIEN! {T} SWAPS BACK FOR HALF PRICE... OR KO SOMETHING: +${bonus}S`, 7000, 6);
     }, this);
     EventBus.on('system:pause', () => {
       if (this.state === 'play' && this.scene.isActive() && !this.cinematic) this.openPause();

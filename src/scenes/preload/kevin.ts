@@ -226,7 +226,7 @@ export function drawChimeraBase(pc: PixelCanvas, frame: number): void {
  * the parts of the copies he swallowed. Unknown aliens get a generic set of
  * spines tinted in their colour at runtime.
  */
-export const CHIMERA_PARTS = ['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade', 'generic'] as const;
+export const CHIMERA_PARTS = ['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade', 'diamondhead', 'ghostfreak', 'generic'] as const;
 export type ChimeraPart = (typeof CHIMERA_PARTS)[number];
 
 export function drawChimeraPart(part: ChimeraPart): (pc: PixelCanvas, frame: number) => void {
@@ -278,6 +278,23 @@ export function drawChimeraPart(part: ChimeraPart): (pc: PixelCanvas, frame: num
         pc.circle(27 + ux, 32 + uy, 3, P.upgrade);
         pc.circle(27 + ux, 32 + uy, 2, P.upgradeBody);
         pc.px(28 + ux, 31 + uy, P.white);
+        break;
+      case 'diamondhead':
+        // Crystal shards jutting from the head and shoulders, and a crystal blade for a forearm.
+        pc.poly([[hx - 2, hy - 2], [hx + 2, hy - 13], [hx + 5, hy - 2]], P.diamondhead);
+        pc.poly([[hx + 1, hy - 3], [hx + 2, hy - 11], [hx + 3, hy - 3]], P.diamondheadGlow);
+        for (const [x, h] of [[15, 9], [21, 6], [34, 8]] as const) pc.poly([[x + ux - 2, 22 + uy], [x + ux + 2, 22 + uy], [x + ux + 1, 22 + uy - h]], x === 21 ? P.diamondheadGlow : P.diamondhead);
+        pc.poly([[40 + ux + reach, 30 + uy - reach], [52 + ux + reach, 34 + uy - reach], [40 + ux + reach, 37 + uy - reach]], P.diamondheadDark);
+        pc.line(41 + ux + reach, 33 + uy - reach, 49 + ux + reach, 34 + uy - reach, P.diamondheadGlow);
+        break;
+      case 'ghostfreak':
+        // Pale wisps trailing off him, chest tentacles, and one staring eye.
+        for (let i = 0; i < 4; i++) pc.line(14 + ux - i * 2, 26 + uy + i * 4, 6 + ux - i * 3 - frame, 30 + uy + i * 5, P.ghostfreak, 2);
+        pc.line(24 + ux, 30 + uy, 30 + ux + reach, 40 + uy - reach * 0.5, P.ghostfreakDark, 2);
+        pc.line(30 + ux, 30 + uy, 38 + ux + reach, 38 + uy - reach * 0.5, P.ghostfreakDark, 2);
+        pc.circle(hx + 3, hy + 1, 3, P.ink);
+        pc.circle(hx + 3, hy + 1, 2, P.ghostfreakEye);
+        pc.px(hx + 4, hy, P.white);
         break;
       case 'generic':
         for (let i = 0; i < 5; i++) pc.poly([[16 + ux + i * 5, 22 + uy], [19 + ux + i * 5, 22 + uy], [17 + ux + i * 5, 13 + uy]], P.white);

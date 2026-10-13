@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { getAlien } from '../../../../aliens/registry';
 import { DEPTH, TILE } from '../../../../config/constants';
 import { DIVE } from '../../../../config/dive';
 import { PALETTE } from '../../../../config/palette';
@@ -567,6 +568,8 @@ export class MineDive implements SetPiece {
         playSfx('explode', 0.8, 0.7);
       },
     });
+    // Landing is the cavern's checkpoint: a fall in the standoff below doesn't mean riding the dive again.
+    kit.reachCheckpoint(this.spec.checkpoint);
     if (this.cardTaken) kit.payReward('dive', x + 40, y - 60);
     if (this.hits === 0) kit.achievement('deep-diver');
     kit.playMusic('mine');
@@ -632,10 +635,17 @@ export class MineDive implements SetPiece {
     let n = 0;
     let w = 0;
     const max = v.sprites.length - 2;
+    // Wildmutt's senses: every obstacle's track glows from far off, and the hunters' tells come twice as early.
+    const sniff = this.special === 'senses';
+    const early = sniff ? 2 : 1;
+    const sniffColor = sniff ? getAlien('wildmutt').theme.color : 0;
     for (const l of this.live) {
       if (n >= max) break;
       const ev = l.ev;
       const ahead = ev.at - this.d;
+      if (sniff && w < v.warnings.length && ahead > 4 && ahead < DIVE.sniffAhead && (ev.kind === 'rock' || ev.kind === 'crate' || ev.kind === 'crabbot')) {
+        this.warn(w++, ev.lanes, ev.at - 1.5, ev.at + 0.5, sniffColor, PALETTE.white, 0.55);
+      }
       if (l.state !== 'ahead' || ahead > 95 || ahead < -2) continue;
       const lane = ev.lanes[0];
       switch (ev.kind) {
@@ -665,7 +675,7 @@ export class MineDive implements SetPiece {
         }
         case 'kraab': {
           // A crack racing back along the track toward the cart, then Kraab erupting.
-          if (w < v.warnings.length && ahead < DIVE.warnAhead.kraab) this.warn(w++, [lane], ev.at - Math.max(0, ahead - 2), ev.at + 1, TELL.kraab.core, TELL.kraab.edge, 0.9);
+          if (w < v.warnings.length && ahead < DIVE.warnAhead.kraab * early) this.warn(w++, [lane], ev.at - Math.max(0, ahead - 2), ev.at + 1, TELL.kraab.core, TELL.kraab.edge, 0.9);
           if (ahead < 9) {
             const s = this.slot(n++);
             s.x = DIVE.lanes[lane];
@@ -687,7 +697,7 @@ export class MineDive implements SetPiece {
           s.size = 0.9 + Math.sin(this.time * 0.02) * 0.1;
           s.tint = PALETTE.kraab;
           s.additive = true;
-          if (w < v.warnings.length && ahead < DIVE.warnAhead.cannon) this.warn(w++, ev.lanes, ev.at - 2, ev.at + 2, TELL.kraab.core, TELL.kraab.edge, 0.95);
+          if (w < v.warnings.length && ahead < DIVE.warnAhead.cannon * early) this.warn(w++, ev.lanes, ev.at - 2, ev.at + 2, TELL.kraab.core, TELL.kraab.edge, 0.95);
           if (ahead < 6) {
             const b = this.slot(n++);
             b.x = 0.5;
@@ -741,7 +751,7 @@ export class MineDive implements SetPiece {
         }
         case 'gap':
           // The shader cuts the rails; a warning sign hangs before it.
-          if (w < v.warnings.length && ahead < 40) this.warn(w++, [0, 1, 2], ev.at - 3, ev.at, PALETTE.enemy, PALETTE.gold, 0.5);
+          if (w < v.warnings.length && ahead < 40 * early) this.warn(w++, [0, 1, 2], ev.at - 3, ev.at, PALETTE.enemy, PALETTE.gold, 0.5);
           break;
         default:
           break;

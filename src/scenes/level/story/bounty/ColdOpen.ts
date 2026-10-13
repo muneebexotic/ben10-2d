@@ -76,15 +76,17 @@ export class ColdOpen implements SetPiece {
     const bg = scene.add.image(w / 2, h / 2, CH5_TEX.vilgaxBridge).setOrigin(0.5);
     bg.setScale(Math.max(w / bg.width, h / bg.height));
     const floor = h * 0.92;
-    const vilgax = scene.add.image(w * 0.2, floor, TEX.vilgax).setOrigin(0.5, 1).setScale(1.2);
+    const vilgax = scene.add.image(w * 0.2, floor, TEX.vilgax).setOrigin(0.5, 1).setScale(1.2).setTint(0x9ccf94);
     const hunters = [
       scene.add.sprite(w * 0.66, floor, CH5_TEX.kraab).setOrigin(0.5, 1).play('kraab-idle').setFlipX(true),
       scene.add.sprite(w * 0.78, floor - 18, CH5_TEX.sixsix).setOrigin(0.5, 1).play('sixsix-fly').setFlipX(true),
       scene.add.sprite(w * 0.88, floor, CH5_TEX.tetrax).setOrigin(0.5, 1).play('tetrax-idle').setFlipX(true),
     ];
     // The bounty: Ben, turning over the war table in red light.
-    this.holo = scene.add.sprite(w * 0.45, floor - 46, TEX.ben, 0).setOrigin(0.5, 1).setScale(1.6).setTint(PALETTE.enemy).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.8);
-    c.add([bg, vilgax, ...hunters, this.holo]);
+    // The projector's cone, from the table up through the figure.
+    const beam = scene.add.triangle(w * 0.45, floor - 40, 0, 0, 52, 0, 26, 84, PALETTE.enemy, 0.16).setOrigin(0.5, 1).setBlendMode(Phaser.BlendModes.ADD);
+    this.holo = scene.add.sprite(w * 0.45, floor - 46, TEX.ben, 0).setOrigin(0.5, 1).setScale(2.2).setTint(PALETTE.enemy).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.8);
+    c.add([bg, vilgax, ...hunters, beam, this.holo]);
     c.setAlpha(0);
     scene.tweens.add({ targets: c, alpha: 1, duration: CH5_BEATS.coldOpen.bridgeMs });
     this.overlay = c;
@@ -101,7 +103,9 @@ export class ColdOpen implements SetPiece {
       case 'bridge': {
         // The hologram turns and flickers.
         if (this.holo) {
-          this.holo.setScale(1.6 * Math.cos(this.t * 0.0015), 1.6);
+          // It turns on the spot, never thinner than a quarter, so the bounty always reads as Ben.
+          const turn = Math.cos(this.t * 0.0015);
+          this.holo.setScale(2.2 * Math.sign(turn || 1) * Math.max(0.25, Math.abs(turn)), 2.2);
           this.holo.setAlpha(0.65 + Math.sin(this.t * 0.05) * 0.15);
         }
         if (!this.talked && this.t >= B.linesAt) {
@@ -114,14 +118,15 @@ export class ColdOpen implements SetPiece {
       case 'arrival':
         if (!this.bannered && this.t >= B.bannerAt) {
           this.bannered = true;
-          EventBus.emit('hud:banner', { title: 'CHAPTER 5', subtitle: this.kit.level.name, color: PALETTE.sixsix, durationMs: 2200, style: 'soft' });
+          EventBus.emit('hud:banner', { title: 'CHAPTER 5', subtitle: this.kit.level.name, color: PALETTE.sixsix, durationMs: B.bannerMs, style: 'soft' });
           this.kit.playMusic('ghosttown');
         }
-        if (!this.talked && this.t >= B.linesAt) {
+        // Max talks once the title card has gone, so the two never overlap.
+        if (!this.talked && this.t >= B.arrivalLinesAt) {
           this.talked = true;
           this.kit.dialogue.play(ARRIVAL_LINES, { skippable: true, onDone: () => this.finish() });
         }
-        if (this.t > 500 && this.t < B.linesAt && (controls.anyPressed || controls.pause)) this.finish();
+        if (this.t > 500 && this.t < B.arrivalLinesAt && (controls.anyPressed || controls.pause)) this.finish();
         return;
       case 'play':
         // A few steps into town: Sixsix strikes first.
