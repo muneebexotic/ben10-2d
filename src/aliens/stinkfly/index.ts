@@ -37,6 +37,8 @@ export const STINKFLY_FORM: FormDefinition = {
         fourarms: ['FOUR ARMS? I GOT SIX LEGS. FAIR TRADE?', 'TINY ARMS! WHY ALWAYS TINY ARMS?!'],
         wildmutt: ['I WANTED A NOSE, NOT A... SMELL.', 'WRONG ANIMAL! THESE EYES ARE ON STICKS!'],
         upgrade: ['A BUG. IN THE SYSTEM. GET IT?', 'I WANTED IN THE MACHINE, NOT TO GUM IT!'],
+        diamondhead: ['A BUG IS NOT A GEM. TRUST ME.', 'WANTED ROCK HARD. GOT BUG SOFT.'],
+        ghostfreak: ['SPOOKY? NO. JUST STINKY.', 'GHOST? MORE LIKE GROSS.'],
       },
       any: ['A BUG?! I WANTED A HERO, NOT A PEST!'],
     },
@@ -52,5 +54,6 @@ export const STINKFLY_FORM: FormDefinition = {
   // A normal jump, then up to ~2 s of flapping: tall shafts and long gaps are his.
   reach: { jumpUp: 11, jumpAcross: 13, canBurn: false, canSmash: false, canRunWater: false },
   copy: { style: 'flyer', tell: 'spit', attack: 'spit', air: 'fly', cheer: 'A GIANT BUG! ...IT SMELLS LIKE MY GYM BAG.' },
+  ride: { attack: 'shot', special: 'fly', back: STINKFLY_TEX.back, color: 0xd4e83a },
   createAbilities: () => new StinkflyAbilities(),
 };

@@ -37,6 +37,8 @@ export const FOURARMS_FORM: FormDefinition = {
         wildmutt: ['I WANTED TO SNIFF, NOT SMASH!', 'GOOD NEWS: I HAVE EYES AGAIN. FOUR!'],
         stinkfly: ["TOO HEAVY TO FLY. WAY TOO HEAVY.", 'FOUR ARMS. ZERO WINGS. GREAT.'],
         upgrade: ['I WANTED TO HACK IT, NOT PUNCH IT!', 'FOUR HANDS. ZERO WI-FI.'],
+        diamondhead: ['NO CRYSTALS. JUST KNUCKLES.', 'WANTED SHINY. GOT BEEFY.'],
+        ghostfreak: ['TOO SOLID TO GO THROUGH WALLS!', 'GHOSTS DO NOT HAVE BICEPS.'],
       },
       any: ['WRONG ALIEN! BIG, BUT WRONG!'],
     },
@@ -51,5 +53,6 @@ export const FOURARMS_FORM: FormDefinition = {
   art: { assets: FOURARMS_ASSETS, anims: FOURARMS_ANIMS },
   reach: { jumpUp: 4, jumpAcross: 5, canBurn: false, canSmash: true, canRunWater: false },
   copy: { style: 'slam', tell: 'slamUp', attack: 'slam', cheer: 'FOUR ARMS?! YOU COULD BENCH A BUS!' },
+  ride: { attack: 'smash', special: 'brace', back: FOURARMS_TEX.back, color: 0xd9483a },
   createAbilities: () => new FourArmsAbilities(),
 };

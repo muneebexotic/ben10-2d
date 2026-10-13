@@ -1,10 +1,12 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawStinkflyBack } from './back';
 import type { PixelCanvas } from '../../scenes/preload/PixelCanvas';
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/preload/assetTypes';
 
 /** Stinkfly's textures. Add a `url` to an entry to load real art instead. */
 export const STINKFLY_TEX = {
   sheet: 'stinkfly',
+  back: 'stinkfly-back',
   icon: 'ui-icon-stinkfly',
   touchAttack: 'ui-touch-slime',
   touchSpecial: 'ui-touch-stink',
@@ -236,6 +238,7 @@ function drawTouchStink(pc: PixelCanvas): void {
 }
 
 export const STINKFLY_ASSETS: AssetDef[] = [
+  sheet(STINKFLY_TEX.back, 30, 26, 3, drawStinkflyBack),
   sheet(STINKFLY_TEX.sheet, STINKFLY_FRAME.w, STINKFLY_FRAME.h, FRAME_COUNT, drawStinkfly),
   one(STINKFLY_TEX.icon, 16, 16, drawIcon),
   one(STINKFLY_TEX.touchAttack, 16, 16, drawTouchSlime),

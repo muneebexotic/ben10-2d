@@ -1,10 +1,12 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawXlr8Back } from './back';
 import type { PixelCanvas } from '../../scenes/preload/PixelCanvas';
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/preload/assetTypes';
 
 /** XLR8's textures. Add a `url` to an entry to load real art instead. */
 export const XLR8_TEX = {
   sheet: 'xlr8',
+  back: 'xlr8-back',
   icon: 'ui-icon-xlr8',
   touchAttack: 'ui-touch-claws',
   touchSpecial: 'ui-touch-dash',
@@ -233,6 +235,7 @@ function drawTouchDash(pc: PixelCanvas): void {
 }
 
 export const XLR8_ASSETS: AssetDef[] = [
+  sheet(XLR8_TEX.back, 30, 26, 3, drawXlr8Back),
   sheet(XLR8_TEX.sheet, XLR8_FRAME.w, XLR8_FRAME.h, FRAME_COUNT, drawXlr8),
   one(XLR8_TEX.icon, 16, 16, drawIcon),
   one(XLR8_TEX.touchAttack, 16, 16, drawTouchClaws),

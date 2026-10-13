@@ -41,6 +41,8 @@ export const WILDMUTT_FORM: FormDefinition = {
         fourarms: ['RRR... (I COUNT FOUR LEGS. ZERO ARMS.)', 'ARF. (WRONG KIND OF BIG.)'],
         stinkfly: ["GRR?! (I CAN'T FLY! I CAN'T EVEN SEE!)", 'WOOF. (THIS IS NOT A FLY.)'],
         upgrade: ['GRR... (CAN I SNIFF A COMPUTER?)', 'ARF?! (I WANTED THE ROBOT ONE!)'],
+        diamondhead: ['GRR! (THIS IS NOT A CRYSTAL!)', 'RUFF? (WHERE DID MY DIAMONDS GO?)'],
+        ghostfreak: ['ARF! (WANTED THE SCARY ONE!)', 'GRRR... (I SMELL GHOSTS. NOT BE ONE.)'],
       },
       any: ["GRRR... (WRONG ALIEN, I THINK.)"],
     },
@@ -56,5 +58,6 @@ export const WILDMUTT_FORM: FormDefinition = {
   // A strong jump, the high pounce for height, and any wall is a ladder.
   reach: { jumpUp: 5, jumpAcross: 6, canBurn: false, canSmash: false, canRunWater: false, canClimb: true, canSense: true },
   copy: { style: 'pounce', tell: 'clawA', attack: 'pounce', cheer: 'GROSS! AWESOME! WHERE ARE ITS EYES?!' },
+  ride: { attack: 'strike', special: 'senses', back: WILDMUTT_TEX.back, color: 0xffb45a },
   createAbilities: () => new WildmuttAbilities(),
 };

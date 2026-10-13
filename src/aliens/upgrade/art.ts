@@ -1,4 +1,5 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawUpgradeBack } from './back';
 import type { PixelCanvas } from '../../scenes/preload/PixelCanvas';
 import { runPose, type ArmPose, type LegPose, type Pose } from '../../scenes/preload/poses';
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/preload/assetTypes';
@@ -6,6 +7,7 @@ import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/
 /** Upgrade's textures. Add a `url` to an entry to load real art instead. */
 export const UPGRADE_TEX = {
   sheet: 'upgrade',
+  back: 'upgrade-back',
   icon: 'ui-icon-upgrade',
   touchAttack: 'ui-touch-eyebeam',
   touchSpecial: 'ui-touch-merge',
@@ -276,6 +278,7 @@ function drawPortrait(pc: PixelCanvas): void {
 }
 
 export const UPGRADE_ASSETS: AssetDef[] = [
+  sheet(UPGRADE_TEX.back, 30, 26, 3, drawUpgradeBack),
   one(UPGRADE_TEX.portrait, 48, 48, drawPortrait),
   sheet(UPGRADE_TEX.sheet, UPGRADE_FRAME.w, UPGRADE_FRAME.h, FRAME_COUNT, drawUpgrade),
   one(UPGRADE_TEX.icon, 16, 16, drawIcon),

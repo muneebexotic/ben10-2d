@@ -39,6 +39,8 @@ export const HEATBLAST_FORM: FormDefinition = {
         wildmutt: ['I WANTED A NOSE! I GOT A BONFIRE!', 'HOT DOG? NO. JUST HOT.'],
         stinkfly: ['WINGS! I SAID WINGS! NOT FLAMES!', "AT LEAST I DON'T SMELL. ...MUCH."],
         upgrade: ['I WANTED TO MERGE WITH STUFF, NOT MELT IT!', "FIRE AND COMPUTERS DON'T MIX. GREAT."],
+        diamondhead: ['I WANTED DIAMONDS, NOT A BONFIRE!', 'CRYSTAL? NOPE. JUST A HOT HEAD.'],
+        ghostfreak: ['NOT SPOOKY. JUST SPICY.', 'WANTED A GHOST. GOT A TORCH.'],
       },
       any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
     },
@@ -53,5 +55,6 @@ export const HEATBLAST_FORM: FormDefinition = {
   art: { assets: HEATBLAST_ASSETS, anims: HEATBLAST_ANIMS },
   reach: { jumpUp: 9, jumpAcross: 9, canBurn: true, canSmash: false, canRunWater: false },
   copy: { style: 'fire', tell: 'charge', attack: 'shoot', cheer: 'THE FIRE GUY! DO THE FIRE GUY AGAIN!' },
+  ride: { attack: 'shot', special: 'rocket', back: HEATBLAST_TEX.back, color: PALETTE.fire1 },
   createAbilities: () => new HeatblastAbilities(),
 };

@@ -37,6 +37,8 @@ export const XLR8_FORM: FormDefinition = {
         wildmutt: ['FOUR LEGS? NOPE. TWO WHEELS.', "CAN'T SMELL A THING IN THIS HELMET."],
         stinkfly: ['NO WINGS, BUT I CAN RUN REAL FAST!', 'WANTED TO FLY. GOT A RACECAR.'],
         upgrade: ['TOO FAST TO MERGE WITH ANYTHING!', 'I WANTED A COMPUTER, NOT A RACE CAR!'],
+        diamondhead: ['FAST GLASS? NOPE. JUST FAST.', 'WANTED A SHIELD. GOT SNEAKERS.'],
+        ghostfreak: ["CAN'T PHASE. CAN SPRINT. SO...", 'NOT GHOSTLY. JUST GONE QUICKLY.'],
       },
       any: ['WRONG GUY! ...AT LEAST I GOT HERE FAST.'],
     },
@@ -52,5 +54,6 @@ export const XLR8_FORM: FormDefinition = {
   // Ground jump only, but the dash and top speed carry him across wide gaps and water.
   reach: { jumpUp: 3, jumpAcross: 11, canBurn: false, canSmash: false, canRunWater: true },
   copy: { style: 'dash', tell: 'strikeA', attack: 'dash', cheer: 'WHOA, SPEEDY! I BLINKED AND MISSED IT!' },
+  ride: { attack: 'strike', special: 'boost', back: XLR8_TEX.back, color: 0x52a4ff },
   createAbilities: () => new Xlr8Abilities(),
 };

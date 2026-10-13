@@ -1,10 +1,12 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawFourarmsBack } from './back';
 import type { PixelCanvas } from '../../scenes/preload/PixelCanvas';
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/preload/assetTypes';
 
 /** Four Arms' textures. Add a `url` to an entry to load real art instead. */
 export const FOURARMS_TEX = {
   sheet: 'fourarms',
+  back: 'fourarms-back',
   icon: 'ui-icon-fourarms',
   touchAttack: 'ui-touch-fists',
   touchSpecial: 'ui-touch-slam',
@@ -257,6 +259,7 @@ function drawTouchSlam(pc: PixelCanvas): void {
 }
 
 export const FOURARMS_ASSETS: AssetDef[] = [
+  sheet(FOURARMS_TEX.back, 30, 26, 3, drawFourarmsBack),
   sheet(FOURARMS_TEX.sheet, FOURARMS_FRAME.w, FOURARMS_FRAME.h, FRAME_COUNT, drawFourArms),
   one(FOURARMS_TEX.icon, 16, 16, drawIcon),
   one(FOURARMS_TEX.touchAttack, 16, 16, drawTouchFists),

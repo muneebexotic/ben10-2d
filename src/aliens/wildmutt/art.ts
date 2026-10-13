@@ -1,10 +1,12 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawWildmuttBack } from './back';
 import type { PixelCanvas } from '../../scenes/preload/PixelCanvas';
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/preload/assetTypes';
 
 /** Wildmutt's textures. Add a `url` to an entry to load real art instead. */
 export const WILDMUTT_TEX = {
   sheet: 'wildmutt',
+  back: 'wildmutt-back',
   icon: 'ui-icon-wildmutt',
   touchAttack: 'ui-touch-rake',
   touchSpecial: 'ui-touch-pounce',
@@ -351,6 +353,7 @@ function drawPortrait(pc: PixelCanvas): void {
 }
 
 export const WILDMUTT_ASSETS: AssetDef[] = [
+  sheet(WILDMUTT_TEX.back, 30, 26, 3, drawWildmuttBack),
   one(WILDMUTT_TEX.portrait, 48, 48, drawPortrait),
   sheet(WILDMUTT_TEX.sheet, WILDMUTT_FRAME.w, WILDMUTT_FRAME.h, FRAME_COUNT, drawWildmutt),
   one(WILDMUTT_TEX.icon, 16, 16, drawIcon),

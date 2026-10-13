@@ -1,4 +1,5 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawBenBack } from './benBack';
 import { TILESET_FRAME_COUNT } from '../../levels/tiles';
 import { BEN_FRAME, BEN_FRAME_COUNT, BEN_FRAMES, drawBen } from './characters';
 import { one, sheet, type AnimDef, type AssetDef } from './assetTypes';
@@ -44,6 +45,7 @@ import * as sumo from './sumo';
  */
 export const TEX = {
   ben: 'ben',
+  benBack: 'ben-back',
   benNoWatch: 'ben-nowatch',
   scout: 'drone-scout',
   striker: 'drone-striker',
@@ -113,6 +115,10 @@ export const TEX = {
   shell: 'fx-shell',
   bomb: 'fx-bomb',
   reticle: 'fx-reticle',
+  crystalShard: 'fx-crystal-shard',
+  missile: 'fx-missile',
+  crystalSpike: 'fx-crystal-spike',
+  crystalPlatform: 'prop-crystal-platform',
   beam: 'fx-beam',
   debrisBits: 'fx-debris',
   leaf: 'fx-leaf',
@@ -312,6 +318,7 @@ export const chimeraPartKey = (part: kevin.ChimeraPart) => `boss-chimera-${part}
 
 export const ASSETS: AssetDef[] = [
   sheet(TEX.ben, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, true)),
+  sheet(TEX.benBack, 30, 26, 3, drawBenBack),
   sheet(TEX.benNoWatch, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, false)),
   sheet(TEX.scout, 20, 16, 3, drawScout),
   sheet(TEX.striker, 22, 18, 3, drawStriker),
@@ -382,6 +389,10 @@ export const ASSETS: AssetDef[] = [
   one(TEX.streak, 28, 1, fx.drawStreak),
   one(TEX.crack, 48, 12, fx.drawCrack),
   one(TEX.needle, 9, 3, fx.drawNeedle),
+  one(TEX.crystalShard, 10, 5, fx.drawCrystalShard),
+  sheet(TEX.missile, 14, 6, 2, fx.drawMissile),
+  sheet(TEX.crystalSpike, 10, 22, 3, fx.drawCrystalSpike),
+  one(TEX.crystalPlatform, 48, 10, fx.drawCrystalPlatform),
   one(TEX.shell, 10, 10, fx.drawShell),
   sheet(TEX.bomb, 9, 11, 2, fx.drawBomb),
   one(TEX.reticle, 16, 16, fx.drawReticle),
@@ -593,6 +604,7 @@ export const ANIMS: AnimDef[] = [
   { key: 'shockwave-roll', texture: TEX.shockwave, frames: [0, 1, 2], frameRate: 14, repeat: -1 },
   { key: 'wave-roll', texture: TEX.wave, frames: [0, 1, 2], frameRate: 16, repeat: -1 },
   { key: 'bomb-blink', texture: TEX.bomb, frames: [0, 1], frameRate: 10, repeat: -1 },
+  { key: 'missile-burn', texture: TEX.missile, frames: [0, 1], frameRate: 16, repeat: -1 },
   { key: 'water-flow', texture: TEX.water, frames: [0, 1, 2, 3], frameRate: 6, repeat: -1 },
   { key: 'mutagen-flow', texture: TEX.mutagenPool, frames: [0, 1, 2, 3], frameRate: 6, repeat: -1 },
   { key: 'tar-flow', texture: TEX.tarPool, frames: [0, 1, 2, 3], frameRate: 3, repeat: -1 },

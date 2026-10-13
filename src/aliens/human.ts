@@ -145,5 +145,6 @@ export const HUMAN_FORM: FormDefinition = {
   // Ben's sprites are part of the shared asset map (he exists before the Omnitrix does).
   art: { assets: [], anims: [] },
   reach: HUMAN_CAPS,
+  ride: { attack: 'strike', special: null, back: TEX.benBack, color: PALETTE.omnitrix },
   createAbilities: () => new HumanAbilities(),
 };

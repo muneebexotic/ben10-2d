@@ -267,3 +267,42 @@ export function drawShell(pc: PixelCanvas): void {
   pc.px(4, 4, P.white).px(5, 4, P.enemyGlow);
   pc.outline(P.ink);
 }
+
+/** Diamondhead's shard (and a crystal sentry's): a sharp sliver of crystal pointing right. 10x5. */
+export function drawCrystalShard(pc: PixelCanvas): void {
+  pc.poly([[0, 2], [3, 0], [9, 2], [3, 4]], 0x5ad0f0);
+  pc.poly([[1, 2], [3, 1], [8, 2]], 0xd8fbff);
+  pc.px(9, 2, P.white).px(2, 3, 0x1e7a9a);
+}
+
+/** Sixsix's missile: a dark body, an orange band and a flickering exhaust. 14x6, 2 frames. */
+export function drawMissile(pc: PixelCanvas, frame: number): void {
+  pc.rect(3, 1, 8, 4, 0x2a2e3a);
+  pc.rect(3, 1, 8, 1, 0x4a5064);
+  pc.poly([[11, 1], [14, 3], [11, 5]], 0xd8dce8);
+  pc.rect(7, 1, 2, 4, P.fire2);
+  pc.rect(2, 0, 2, 1, 0x4a5064).rect(2, 5, 2, 1, 0x4a5064);
+  const flame = frame === 0 ? 3 : 2;
+  pc.rect(3 - flame, 2, flame, 2, P.fire1);
+  pc.px(2, 2, P.fire0).px(2, 3, P.fire0);
+}
+
+/** A crystal spike bursting out of the ground (Diamondhead's swap-in). 10x22, 3 shapes. */
+export function drawCrystalSpike(pc: PixelCanvas, frame: number): void {
+  const lean = frame - 1;
+  const top = 2 + frame * 3;
+  pc.poly([[1, 21], [5 + lean * 2, top], [9, 21]], 0x5ad0f0);
+  pc.poly([[2, 21], [5 + lean * 2, top + 1], [5, 21]], 0xd8fbff);
+  pc.poly([[6, 21], [5 + lean * 2, top + 2], [8, 21]], 0x2a90c0);
+  pc.outline(0x08202e);
+}
+
+/** A crystal ledge Diamondhead grows: a faceted slab with a bright top edge. 48x10. */
+export function drawCrystalPlatform(pc: PixelCanvas): void {
+  pc.poly([[1, 1], [47, 1], [44, 6], [36, 9], [12, 9], [4, 6]], 0x5ad0f0);
+  pc.hline(1, 46, 1, 0xd8fbff);
+  pc.hline(2, 45, 2, 0x9af0ff);
+  for (const [x0, x1] of [[6, 14], [18, 28], [32, 42]] as const) pc.poly([[x0, 3], [x1, 3], [x1 - 3, 8], [x0 + 3, 8]], 0x2a90c0);
+  for (const x of [9, 23, 37]) pc.px(x, 4, 0xd8fbff);
+  pc.outline(0x08202e);
+}

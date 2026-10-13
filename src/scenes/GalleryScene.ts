@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { ALL_ASSETS } from './preload/catalog';
+import { EVERY_ASSET as ALL_ASSETS } from './preload/catalog';
+import { ensureAllChapterArt } from './preload/generate';
 import { SCENES } from './SceneKeys';
 import { pixelText } from '../ui/text';
 import { PALETTE } from '../config/palette';
@@ -14,6 +15,7 @@ export class GalleryScene extends Phaser.Scene {
   }
 
   create(): void {
+    ensureAllChapterArt(this);
     this.cameras.main.setBackgroundColor(0x2a2f45);
     const key = new URLSearchParams(window.location.search).get('key');
     if (key) {

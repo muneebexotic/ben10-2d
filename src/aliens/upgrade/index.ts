@@ -43,6 +43,8 @@ export const UPGRADE_FORM: FormDefinition = {
         xlr8: ["I'M NOT FAST. I'M... DOWNLOADING.", 'BUFFERING... BUFFERING... NOT XLR8.'],
         wildmutt: ['I WANTED A NOSE. I GOT A WEBCAM.', 'WRONG ALIEN. AND I CAN SEE. WEIRD.'],
         stinkfly: ['NO WINGS. JUST A LOT OF GOO. TECH GOO.', 'THIS IS NOT FLYING. THIS IS DRIPPING.'],
+        diamondhead: ['WANTED CRYSTAL. GOT CIRCUITS.', 'NOT DIAMONDS. JUST DIODES.'],
+        ghostfreak: ['ERROR: GHOST.EXE NOT FOUND.', 'I CAN HAUNT A COMPUTER. KIND OF.'],
       },
       any: ['ERROR 404: RIGHT ALIEN NOT FOUND.'],
     },
@@ -58,5 +60,6 @@ export const UPGRADE_FORM: FormDefinition = {
   // An ordinary jumper: his reach is the machines he can ride.
   reach: { jumpUp: 4, jumpAcross: 5, canBurn: false, canSmash: false, canRunWater: false, canMerge: true },
   copy: { style: 'beam', tell: 'laser', attack: 'laser', cheer: 'YOU WENT INSIDE THE MACHINE. HOW?!' },
+  ride: { attack: 'shot', special: 'merge', back: UPGRADE_TEX.back, color: PALETTE.upgrade },
   createAbilities: () => new UpgradeAbilities(),
 };

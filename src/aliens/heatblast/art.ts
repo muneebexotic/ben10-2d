@@ -1,4 +1,5 @@
 import { PALETTE as P } from '../../config/palette';
+import { drawHeatblastBack } from './back';
 import type { PixelCanvas } from '../../scenes/preload/PixelCanvas';
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../../scenes/preload/assetTypes';
 import { runPose, type ArmPose, type LegPose, type Pose } from '../../scenes/preload/poses';
@@ -6,6 +7,7 @@ import { runPose, type ArmPose, type LegPose, type Pose } from '../../scenes/pre
 /** Heatblast's textures. The keys are what Preload loads; add a `url` to an entry to use real art. */
 export const HEATBLAST_TEX = {
   sheet: 'heatblast',
+  back: 'heatblast-back',
   icon: 'ui-icon-heatblast',
   touchAttack: 'ui-touch-fire',
   touchSpecial: 'ui-touch-burst',
@@ -242,6 +244,7 @@ function drawTouchBurst(pc: PixelCanvas): void {
 }
 
 export const HEATBLAST_ASSETS: AssetDef[] = [
+  sheet(HEATBLAST_TEX.back, 30, 26, 3, drawHeatblastBack),
   sheet(HEATBLAST_TEX.sheet, HEATBLAST_FRAME.w, HEATBLAST_FRAME.h, FRAME_COUNT, drawHeatblast),
   one(HEATBLAST_TEX.icon, 16, 16, drawIcon),
   one(HEATBLAST_TEX.touchAttack, 16, 16, drawTouchFire),

@@ -1,5 +1,7 @@
 import { AUDIO } from '../../config/audio';
 import { audio, midiToFreq } from './AudioEngine';
+import { arpBar, bassBar, n, seq, type Track } from './musicKit';
+import { DIVE, GHOSTTOWN, HUNTERS, MINE } from './tracks/bounty';
 
 /**
  * Procedural chiptune sequencer. Original compositions (not the show's theme).
@@ -7,8 +9,6 @@ import { audio, midiToFreq } from './AudioEngine';
  * while Ben is an alien, so the music itself reacts to transforming. Each alien
  * re-voices the hero layer its own way (see MusicLayerSpec).
  */
-
-type Note = number | null;
 
 /** One synth voice of a hero layer. */
 export interface MusicVoice {
@@ -52,46 +52,6 @@ export const HERO_LAYER: MusicLayerSpec = {
     double: { wave: 'triangle', volume: 0.03, octave: 1, length: 1.6, filter: 0, detune: 6 },
   },
 };
-
-interface Track {
-  bpm: number;
-  bars: number;
-  bass: Note[];
-  arp: Note[];
-  lead: Note[];
-  drums: string;
-  pad?: number[][];
-  stabs?: Note[];
-  loop: boolean;
-}
-
-const NOTE_INDEX: Record<string, number> = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11, Bb: 10, Eb: 3 };
-
-function n(name: string): number {
-  const m = /^([A-G][#b]?)(\d)$/.exec(name);
-  if (!m) throw new Error(`bad note ${name}`);
-  return NOTE_INDEX[m[1]] + (Number(m[2]) + 1) * 12;
-}
-
-/** Expands "E5 - E5 -" style strings; each token lasts `stepsPer` 16th steps. */
-function seq(text: string, stepsPer: number): Note[] {
-  const out: Note[] = [];
-  for (const token of text.trim().split(/\s+/)) {
-    out.push(token === '-' || token === '.' ? null : n(token));
-    for (let i = 1; i < stepsPer; i++) out.push(null);
-  }
-  return out;
-}
-
-function bassBar(root: number, pattern: Array<[number, number]>): Note[] {
-  const bar: Note[] = new Array(16).fill(null);
-  for (const [step, interval] of pattern) bar[step] = root + interval;
-  return bar;
-}
-
-function arpBar(chord: number[], shape: Array<number | null>): Note[] {
-  return shape.map((i) => (i === null ? null : chord[i % chord.length] + 12 * Math.floor(i / chord.length)));
-}
 
 const FOREST_BASS: Array<[number, number]> = [
   [0, 0],
@@ -483,7 +443,7 @@ const KEVIN: Track = {
   drums: 'k-hsk-hhk-hsk-hs'.repeat(3) + 'k-sss-hhk-sssss-',
 };
 
-export const TRACKS = { forest: FOREST, boss: BOSS, title: TITLE, victory: VICTORY, simulation: SIMULATION, highway: HIGHWAY, chase: CHASE, roadbreaker: ROADBREAKER, museum: MUSEUM, animo: ANIMO, arcade: ARCADE, subway: SUBWAY, kevin: KEVIN } as const;
+export const TRACKS = { forest: FOREST, boss: BOSS, title: TITLE, victory: VICTORY, simulation: SIMULATION, highway: HIGHWAY, chase: CHASE, roadbreaker: ROADBREAKER, museum: MUSEUM, animo: ANIMO, arcade: ARCADE, subway: SUBWAY, kevin: KEVIN, ghosttown: GHOSTTOWN, mine: MINE, hunters: HUNTERS, dive: DIVE } as const;
 export type TrackName = keyof typeof TRACKS;
 
 class MusicPlayer {
@@ -633,6 +593,13 @@ class MusicPlayer {
       audio.tone({ type: 'triangle', freq: 190, freqEnd: 120, duration: 0.07, volume: 0.16, when: t, bus: base });
     } else if (drum === 'h') {
       audio.noise({ duration: 0.03, volume: 0.07, filter: 'highpass', freq: 7500, when: t, bus: base });
+    } else if (drum === 't') {
+      // A floor tom: the mine's echoing hits.
+      audio.tone({ type: 'sine', freq: 110, freqEnd: 70, duration: 0.22, volume: 0.36, when: t, bus: base });
+      audio.noise({ duration: 0.05, volume: 0.05, filter: 'lowpass', freq: 900, when: t, bus: base });
+    } else if (drum === 'w') {
+      // A woodblock: hooves at a gallop.
+      audio.tone({ type: 'triangle', freq: 820, freqEnd: 760, duration: 0.04, volume: 0.12, when: t, bus: base });
     }
   }
 
