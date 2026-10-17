@@ -22,6 +22,13 @@ import { SCENES } from './SceneKeys';
 import { AchievementTracker, fileAchievements } from '../systems/Achievements';
 import { AchievementToast } from '../ui/AchievementToast';
 import { chance, setFrameLength } from '../systems/Pacing';
+import { loadChapter } from '../chapters/registry';
+import type { Cliffhanger } from '../chapters/types';
+import { getDifficulty } from '../config/difficulty';
+import { HARBOUR_END } from '../config/actEnd';
+import { ensureArt } from './preload/generate';
+import { AlienDial } from './actEnd/AlienDial';
+import { ChapterTally, type TallyRow } from './actEnd/ChapterTally';
 
 export interface ActEndData {
   act: number;
@@ -30,7 +37,7 @@ export interface ActEndData {
   then: { cleared: string; firstClear: boolean };
 }
 
-type Phase = 'meanwhile' | 'arcade' | 'title' | 'complete';
+type Phase = 'meanwhile' | 'arcade' | 'cliffhanger' | 'title' | 'complete';
 
 /**
  * The end of an act. First a cliffhanger: somewhere across town a kid at an
@@ -38,6 +45,11 @@ type Phase = 'meanwhile' | 'arcade' | 'title' | 'complete';
  * cabinets of their power with one hand, turns, and grins. KEVIN 11 smashes
  * in. Then ACT 1 COMPLETE, as an event: the stamp, the five aliens of the
  * act flying in, the act's best times and cards, and the next act teased.
+ *
+ * A later act's chapter brings its own cliffhanger (`ChapterModule.cliffhanger`,
+ * Act 2's harbour and the base under the sea); its ACT COMPLETE slams every
+ * alien so far onto the dial, counts up every chapter's best, and has a share
+ * line.
  */
 export class ActEndScene extends Phaser.Scene {
   private data0!: ActEndData;
@@ -50,6 +62,11 @@ export class ActEndScene extends Phaser.Scene {
   private stage!: Phaser.GameObjects.Container;
   private bolts!: Phaser.GameObjects.Graphics;
   private ready = false;
+  private cliff: Cliffhanger | null = null;
+  private finaleUpdate: ((dtMs: number) => void) | null = null;
+  private dial: AlienDial | null = null;
+  private tally: ChapterTally | null = null;
+  private copied: Phaser.GameObjects.BitmapText | null = null;
 
   constructor() {
     super(SCENES.actEnd);
@@ -62,18 +79,47 @@ export class ActEndScene extends Phaser.Scene {
     this.steps.clear();
     this.ready = false;
     this.cabinets = [];
+    this.cliff = null;
+    this.finaleUpdate = null;
+    this.dial = null;
+    this.tally = null;
+    this.copied = null;
     enterMenu(this);
     frameView(this);
     bindMuteKey(this);
     music.stop(600);
     this.add.rectangle(COVER_X, 0, COVER_W, GAME_HEIGHT, 0x000000).setOrigin(0, 0);
     this.caption = pixelText(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'MEANWHILE...', { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.cream, depth: 10 }).setAlpha(0);
-    this.tweens.add({ targets: this.caption, alpha: 1, duration: 500 });
-    this.buildArcade();
+    if (data.act === 1) {
+      this.tweens.add({ targets: this.caption, alpha: 1, duration: 500 });
+      this.buildArcade();
+    } else this.startCliffhanger(data.levelId);
 
     const kb = this.input.keyboard!;
-    kb.on('keydown', () => this.press());
-    this.input.on('pointerdown', () => this.press());
+    kb.on('keydown', (e: KeyboardEvent) => {
+      if (e.code === 'KeyC' && this.phase === 'complete' && this.data0.act > 1) this.share();
+      else this.press();
+    });
+    // A tap on a button (SHARE) is that button's, not a skip.
+    this.input.on('pointerdown', (_p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
+      if (over.length === 0) this.press();
+    });
+  }
+
+  /** A later act: the chapter that ends it brings its own closing scene (and its art, if this was opened straight). */
+  private startCliffhanger(levelId: string): void {
+    this.phase = 'cliffhanger';
+    loadChapter(levelId).then(
+      (m) => {
+        if (!this.sys.isActive() || this.phase !== 'cliffhanger' || this.cliff) return;
+        for (const art of m.art ?? []) ensureArt(this, art);
+        if (m.cliffhanger) this.cliff = m.cliffhanger(this);
+        else this.toComplete();
+      },
+      () => {
+        if (this.sys.isActive() && this.phase === 'cliffhanger') this.toComplete();
+      },
+    );
   }
 
   private once(id: string, at: number): boolean {
@@ -93,6 +139,10 @@ export class ActEndScene extends Phaser.Scene {
       this.toComplete();
       return;
     }
+    if (this.phase === 'cliffhanger') {
+      if (this.cliff?.skip()) this.toTitle();
+      return;
+    }
     this.toTitle();
   }
 
@@ -107,7 +157,12 @@ export class ActEndScene extends Phaser.Scene {
       playSfx('beep', 0.4, 1.6);
     }
     if (this.phase === 'arcade') this.updateArcade();
-    if (this.phase === 'complete') this.updateComplete();
+    if (this.phase === 'cliffhanger' && this.cliff?.update(delta)) this.toTitle();
+    if (this.phase === 'complete') {
+      this.finaleUpdate?.(delta);
+      if (this.data0.act === 1) this.updateComplete();
+      else this.updateSummer(delta);
+    }
   }
 
   // ------------------------------------------------------------ The arcade
@@ -202,15 +257,21 @@ export class ActEndScene extends Phaser.Scene {
     if (this.phase === 'title' || this.phase === 'complete') return;
     this.phase = 'title';
     this.t = 0;
-    this.bolts.clear();
-    for (const c of this.cabinets) c.setFrame(1);
-    this.kevin.setFrame(2);
-    this.stage.setAlpha(0.35);
+    if (this.cliff) this.cliff.stage.setAlpha(0.35);
+    else if (this.data0.act === 1) {
+      this.bolts.clear();
+      for (const c of this.cabinets) c.setFrame(1);
+      this.kevin.setFrame(2);
+      this.stage.setAlpha(0.35);
+    }
     this.caption.setAlpha(0);
-    const shadow = pixelText(this, GAME_WIDTH / 2 + 4, 154, 'KEVIN 11', { scale: 6, originX: 0.5, originY: 0.5, color: PALETTE.ink });
-    const title = pixelText(this, GAME_WIDTH / 2, 150, 'KEVIN 11', { scale: 6, originX: 0.5, originY: 0.5, color: PALETTE.kevin });
-    title.setTint(PALETTE.white, PALETTE.white, PALETTE.kevin, PALETTE.kevin);
-    const act = pixelText(this, GAME_WIDTH / 2, 206, `ACT 2: ${ACTS[2] ?? ''}`, { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.cream });
+    const next = this.data0.act + 1;
+    const smash = this.cliff?.title ?? { text: 'KEVIN 11', color: PALETTE.kevin };
+    const big = smash.text.length > 9 ? 5 : 6;
+    const shadow = pixelText(this, GAME_WIDTH / 2 + 4, 154, smash.text, { scale: big, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(this, GAME_WIDTH / 2, 150, smash.text, { scale: big, originX: 0.5, originY: 0.5, color: smash.color });
+    title.setTint(PALETTE.white, PALETTE.white, smash.color, smash.color);
+    const act = pixelText(this, GAME_WIDTH / 2, 206, `ACT ${next}: ${ACTS[next] ?? ''}`, { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.cream });
     const c = this.add.container(0, 0, [shadow, title, act]);
     c.setScale(2.4).setAlpha(0);
     this.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 240, ease: 'Back.easeOut', onComplete: () => shakeCamera(this.cameras.main, 300, 0.012, false) });
@@ -226,7 +287,12 @@ export class ActEndScene extends Phaser.Scene {
     if (this.phase === 'complete') return;
     this.phase = 'complete';
     this.t = 0;
+    this.tweens.killAll();
     this.children.removeAll(true);
+    if (this.data0.act > 1) {
+      this.toSummer();
+      return;
+    }
     this.add.image(COVER_X, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(COVER_W, GAME_HEIGHT);
     this.add.tileSprite(COVER_X, 0, COVER_W, 200, TEX.stars).setOrigin(0, 0);
     const rays = this.add.image(GAME_WIDTH / 2, 90, TEX.rays).setScale(6).setAlpha(0.18).setTint(PALETTE.gold).setBlendMode(Phaser.BlendModes.ADD);
@@ -312,6 +378,118 @@ export class ActEndScene extends Phaser.Scene {
     pixelText(this, GAME_WIDTH / 2 + 40, y + 2, complete ? formatTime(totalMs) : '--:--', { color: PALETTE.omnitrix });
     pixelText(this, GAME_WIDTH / 2 + 120, y + 2, `${found}/${total} CARDS`, { color: found >= total ? PALETTE.gold : PALETTE.omnitrix });
     playSfx('beep', 0.5, 0.9);
+  }
+
+  // ------------------------------------------------------------ A later act: the summer so far
+
+  /** Fireworks over the harbour (the cliffhanger's backdrop), the stamp, the dial, the table. */
+  private toSummer(): void {
+    const act = this.data0.act;
+    this.finaleUpdate = this.cliff?.finale() ?? null;
+    if (!this.finaleUpdate) {
+      this.add.image(COVER_X, 0, TEX.sky).setOrigin(0, 0).setDisplaySize(COVER_W, GAME_HEIGHT);
+      this.add.tileSprite(COVER_X, 0, COVER_W, 200, TEX.stars).setOrigin(0, 0);
+    }
+    music.play('victory');
+    const shadow = pixelText(this, GAME_WIDTH / 2 + 3, 37, `ACT ${act}`, { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.ink });
+    const title = pixelText(this, GAME_WIDTH / 2, 34, `ACT ${act}`, { scale: 4, originX: 0.5, originY: 0.5, color: PALETTE.gold });
+    title.setTint(PALETTE.white, PALETTE.white, PALETTE.gold, PALETTE.gold);
+    const done = pixelText(this, GAME_WIDTH / 2, 70, 'COMPLETE!', { scale: 2, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    const name = pixelText(this, GAME_WIDTH / 2, 92, ACTS[act] ?? '', { originX: 0.5, originY: 0.5, color: PALETTE.cream });
+    const c = this.add.container(0, 0, [shadow, title, done, name]).setScale(3).setAlpha(0).setDepth(3);
+    this.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 260, ease: 'Back.easeOut', onComplete: () => shakeCamera(this.cameras.main, 280, 0.014, false) });
+    flashCamera(this.cameras.main, 400, 255, 230, 160);
+    playSfx('fanfare');
+    // Top left: the bottom of the screen is the dial's and the table's.
+    const toast = new AchievementToast(this, 34, 50);
+    toast.setLeft(frameView(this).left);
+    const tracker = new AchievementTracker(fileAchievements(session.slot), (def) => this.time.delayedCall(HARBOUR_END.promptAt, () => toast.show(def)));
+    tracker.unlock(`act-${act}`);
+    // Every alien so far, onto the dial; every chapter so far, in the table.
+    const aliens = allAliens().filter((a) => a.unlockChapter > 0 && (CHAPTERS.find((ch) => ch.number === a.unlockChapter)?.act ?? 99) <= act);
+    this.dial = new AlienDial(this, GAME_WIDTH / 2 - 168, 206, 62, aliens);
+    pixelText(this, GAME_WIDTH / 2 - 168, 306, `${aliens.length} ALIENS ON THE DIAL`, { originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
+    const x = GAME_WIDTH / 2 - 56;
+    this.add.rectangle(x - 12, 116, 304, 206, PALETTE.ink, 0.78).setOrigin(0, 0).setStrokeStyle(1, PALETTE.omnitrixDark);
+    pixelText(this, x + 150, 124, 'BEST', { color: PALETTE.uiDim });
+    pixelText(this, x + 230, 124, 'CARDS', { color: PALETTE.uiDim });
+    this.tally = new ChapterTally(this, x, 140, this.summerRows(act), 'THE SUMMER SO FAR', HARBOUR_END.tallyRowMs, HARBOUR_END.countMs);
+  }
+
+  private summerRows(act: number): TallyRow[] {
+    const slot = session.slot;
+    const difficulty = session.file?.difficulty ?? 'normal';
+    return CHAPTERS.filter((c) => c.act <= act && c.levelId && hasLevel(c.levelId)).map((chapter) => {
+      const id = chapter.levelId!;
+      const record = slot === null ? null : saveSystem.getChapter(slot, id);
+      const best = record ? bestOn(record, difficulty) : null;
+      return { chapter, bestMs: best?.bestTimeMs ?? null, rank: best?.bestRank ?? null, cards: record?.cards.length ?? 0, totalCards: countedCards(levelMeta(id)).length };
+    });
+  }
+
+  private updateSummer(dtMs: number): void {
+    const A = HARBOUR_END;
+    for (let i = 0; this.dial && !this.dial.full && this.t >= A.slamAt + i * A.slamEveryMs; i++) {
+      if (this.once(`slam${i}`, A.slamAt + i * A.slamEveryMs)) this.dial.slam();
+    }
+    if (this.t >= A.tallyAt) this.tally?.update(dtMs);
+    if (this.once('prompt', A.promptAt)) {
+      this.ready = true;
+      const touch = inputMode.current === 'touch';
+      const share = pixelText(this, GAME_WIDTH / 2 + 84, 296, touch ? 'SHARE YOUR SUMMER' : '[C] SHARE YOUR SUMMER', { originX: 0.5, originY: 0.5, color: PALETTE.gold });
+      const zone = this.add.zone(share.x, share.y, share.width + 16, 26).setInteractive({ useHandCursor: true });
+      zone.on('pointerdown', () => this.share());
+      this.copied = pixelText(this, GAME_WIDTH / 2 + 84, 312, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
+      const label = touch ? 'TAP TO CONTINUE' : '[ENTER] CONTINUE';
+      const t = pixelText(this, GAME_WIDTH / 2, 340, label, { originX: 0.5, originY: 0.5, color: PALETTE.white });
+      this.tweens.add({ targets: t, alpha: 0.4, yoyo: true, repeat: -1, duration: 700 });
+    }
+  }
+
+  /** The line a player pastes to a friend. */
+  private shareText(): string {
+    const act = this.data0.act;
+    let url = '';
+    try {
+      url = window.location.origin + window.location.pathname;
+    } catch {
+      url = '';
+    }
+    const difficulty = getDifficulty(session.file?.difficulty ?? 'normal').label;
+    const aliens = allAliens().filter((a) => a.unlockChapter > 0 && (CHAPTERS.find((ch) => ch.number === a.unlockChapter)?.act ?? 99) <= act).length;
+    const total = this.tally?.totalMs ?? null;
+    const cards = this.tally?.cards ?? { found: 0, total: 0 };
+    const time = total ? ` in ${formatTime(total)}` : '';
+    return `I finished ACT ${act} of BEN 10: OMNITRIX SUMMER on ${difficulty}: ${aliens} aliens on the dial, ${cards.found}/${cards.total} Sumo Slammers cards, the whole summer so far${time}.${act === 2 ? " Karachi's clock tower is still standing." : ''} Your turn! ${url}`.trim();
+  }
+
+  /** The native share sheet where there is one (phones), otherwise the clipboard. */
+  private share(): void {
+    if (!this.ready) return;
+    const text = this.shareText();
+    const nav = navigator as Navigator & { share?: (data: { title?: string; text?: string }) => Promise<void> };
+    if (typeof nav.share === 'function') {
+      nav.share({ title: 'Ben 10: Omnitrix Summer', text }).then(
+        () => this.copied?.setText('THANKS FOR SHARING!'),
+        (err: unknown) => {
+          if (!(err instanceof Error && err.name === 'AbortError')) this.copy(text);
+        },
+      );
+      return;
+    }
+    this.copy(text);
+  }
+
+  private copy(text: string): void {
+    const done = (ok: boolean) => {
+      this.copied?.setText(ok ? 'COPIED! PASTE IT TO A FRIEND.' : 'COULD NOT COPY. SCREENSHOT IT!');
+      playSfx(ok ? 'uiSelect' : 'denied');
+    };
+    try {
+      navigator.clipboard.writeText(text).then(() => done(true), () => done(false));
+    } catch {
+      done(false);
+    }
   }
 
   private confetti(): void {

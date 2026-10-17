@@ -32,6 +32,23 @@ export interface ChapterStory {
   after?: SetPiece[];
 }
 
+/**
+ * The scene that closes an act, before ACT COMPLETE: ActEndScene plays it in
+ * its own scene (Act 1's, Kevin at the arcade, is built in).
+ */
+export interface Cliffhanger {
+  /** Advances it (real ms); true once it has finished. */
+  update(dtMs: number): boolean;
+  /** A key or a tap: on to its next part. True when there's nothing left to skip to. */
+  skip(): boolean;
+  /** Everything it drew (dimmed behind the title smash). */
+  readonly stage: Phaser.GameObjects.Container;
+  /** The title smash after it. */
+  readonly title: { text: string; color: number };
+  /** Draws the ACT COMPLETE screen's backdrop (behind the stamp) and returns its per-frame update. */
+  finale(): (dtMs: number) => void;
+}
+
 /** Art a chapter makes when it loads (not at boot). */
 export interface ChapterArt {
   assets: readonly AssetDef[];
@@ -63,6 +80,8 @@ export interface ChapterModule {
   arena?(kit: StoryKit): Pick<ArenaDeps, 'hunt'>;
   /** Gwen walks with Ben in this chapter (the story says when she joins): her own banter. */
   gwen?: { chatter?: readonly string[] };
+  /** The act's closing scene, when this chapter ends an act (after its results, on the first clear). */
+  cliffhanger?(scene: Phaser.Scene): Cliffhanger;
   /** Scenes only this chapter uses (the SUMO SLAMMERS cabinet, THE DEEP DIVE). */
   scenes?: ReadonlyArray<{ key: string; scene: new () => Phaser.Scene; /** Drawn just under this scene (default: on top of everything). */ below?: string }>;
 }

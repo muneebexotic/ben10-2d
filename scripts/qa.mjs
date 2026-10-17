@@ -273,6 +273,25 @@ async function sweepLevels(s) {
     await sleep(3500);
     await s.check(`actend-${i}`);
   }
+  // The Act 2 ending: the harbour, the base under the sea, the title, ACT 2 COMPLETE.
+  await s.scenesOnly([['ActEnd', { act: 2, levelId: 'ch6', then: { cleared: 'ch6', firstClear: true } }]]);
+  for (const [i, ms] of [[0, 3200], [1, 8000], [2, 6000]]) {
+    await sleep(ms);
+    await s.check(`act2end-harbour-${i}`);
+  }
+  await s.page.keyboard.press('Enter');
+  await sleep(3600);
+  await s.check('act2end-base-0');
+  await sleep(6400);
+  await s.check('act2end-base-1');
+  await s.page.keyboard.press('Enter');
+  await sleep(1200);
+  await s.check('act2end-title');
+  await s.page.keyboard.press('Enter');
+  await sleep(2600);
+  await s.check('act2end-complete-0');
+  await sleep(4200);
+  await s.check('act2end-complete-1');
   await s.goto('level=ch4&start=cp-highscore&god=1&mute=1', 'arcade');
   await s.waitScene('Level');
   await sleep(1500);

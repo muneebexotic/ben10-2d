@@ -9,6 +9,7 @@ import { RocklingBrain } from '../entities/enemies/magic/rockling';
 import { CHAPTER_6 } from '../levels/chapter6';
 import { KarachiBackdrop } from '../scenes/level/KarachiBackdrop';
 import { buildMagicStory } from '../scenes/level/story/magic';
+import { HarbourCliffhanger } from '../scenes/actEnd/HarbourCliffhanger';
 import { SpellEngineScene } from '../scenes/engine/SpellEngineScene';
 import { TowerScene } from '../scenes/tower/TowerScene';
 import { SCENES } from '../scenes/SceneKeys';
@@ -49,6 +50,7 @@ export const CHAPTER: ChapterModule = {
   track: (x) => ((x ?? 0) >= 430 ? 'engine' : (x ?? 0) >= 140 ? 'manor' : 'fair'),
   gwen: { chatter: GWEN_KARACHI_CHATTER },
   // The Spell Engine draws over the level and under the HUD (its dialogue shows over the puzzle).
+  cliffhanger: (scene) => new HarbourCliffhanger(scene),
   scenes: [
     { key: SCENES.spellEngine, scene: SpellEngineScene, below: SCENES.ui },
     { key: SCENES.tower, scene: TowerScene, below: SCENES.ui },
