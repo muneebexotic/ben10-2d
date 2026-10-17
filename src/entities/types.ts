@@ -56,6 +56,8 @@ export interface Damageable {
   readonly hackable?: boolean;
   /** Panicking from Ghostfreak's scream right now. */
   readonly frightened?: boolean;
+  /** Grey Matter analysed it (a boss can show what's coming: Hex's next Charm). */
+  onAnalyzed?(): void;
 }
 
 /** Something a strong alien can pick up and throw: a stunned drone, a boulder. */

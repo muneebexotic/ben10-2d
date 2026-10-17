@@ -21,6 +21,8 @@ export interface Capabilities {
   canPhase?: boolean;
   /** Bounces laser beams with a crystal shield (Diamondhead): security lasers and receivers. */
   canReflect?: boolean;
+  /** One tile tall (Grey Matter): vents and gaps a tile high are open to him. */
+  tiny?: boolean;
 }
 
 /** Each alien declares its own envelope in its definition (`reach`). */
@@ -139,7 +141,7 @@ function isOpen(grid: TileGrid, blocked: Set<string>, x: number, y: number): boo
 }
 
 export function isStandable(level: LevelData, grid: TileGrid, blocked: Set<string>, x: number, y: number, caps?: Capabilities): boolean {
-  if (!isOpen(grid, blocked, x, y) || !isOpen(grid, blocked, x, y - 1)) return false;
+  if (!isOpen(grid, blocked, x, y) || (!caps?.tiny && !isOpen(grid, blocked, x, y - 1))) return false;
   if (cellAt(grid, x, y) === CELL.PLATFORM) return false;
   if (isWater(level, x, y)) return false;
   if (caps?.canRunWater && isWaterSurface(level, x, y + 1)) return true;
@@ -147,8 +149,8 @@ export function isStandable(level: LevelData, grid: TileGrid, blocked: Set<strin
   return isSolidCell(below) || below === CELL.PLATFORM || blocked.has(`${x},${y + 1}`);
 }
 
-function headroom(grid: TileGrid, blocked: Set<string>, x: number, y: number, rise: number): boolean {
-  for (let k = 1; k <= rise + 1; k++) {
+function headroom(grid: TileGrid, blocked: Set<string>, x: number, y: number, rise: number, tiny = false): boolean {
+  for (let k = 1; k <= rise + (tiny ? 0 : 1); k++) {
     const c = cellAt(grid, x, y - k);
     if (isSolidCell(c) || blocked.has(`${x},${y - k}`)) return false;
   }
@@ -191,14 +193,14 @@ export function reachableFrom(level: LevelData, baseGrid: TileGrid, start: Pos, 
     }
     for (let dy = -caps.jumpUp; dy <= MAX_FALL; dy++) {
       const across = dy <= 0 ? caps.jumpAcross + 1 : caps.jumpAcross + 1 + Math.ceil(dy / 2);
-      if (dy < 0 && !headroom(grid, blocked, x, y, -dy)) continue;
+      if (dy < 0 && !headroom(grid, blocked, x, y, -dy, caps.tiny)) continue;
       for (let dx = -across; dx <= across; dx++) {
         const nx = x + dx;
         const ny = y + dy;
         const key = `${nx},${ny}`;
         if (seen.has(key)) continue;
         if (!isStandable(level, grid, blocked, nx, ny, caps)) continue;
-        if (!pathClear(grid, blocked, x, y, nx, ny, dy)) continue;
+        if (!pathClear(grid, blocked, x, y, nx, ny, dy, caps.tiny)) continue;
         seen.add(key);
         queue.push({ x: nx, y: ny });
       }
@@ -208,9 +210,10 @@ export function reachableFrom(level: LevelData, baseGrid: TileGrid, start: Pos, 
 }
 
 /** Rejects moves that would pass through solid walls at the traversal height. */
-function pathClear(grid: TileGrid, blocked: Set<string>, x0: number, y0: number, x1: number, y1: number, dy: number): boolean {
+function pathClear(grid: TileGrid, blocked: Set<string>, x0: number, y0: number, x1: number, y1: number, dy: number, tiny = false): boolean {
   const solidAt = (x: number, y: number) => isSolidCell(cellAt(grid, x, y)) || blocked.has(`${x},${y}`);
-  const topRow = Math.min(y0, y1) - 1;
+  // A tiny body travels through the row its feet are in; everyone else needs the row above too.
+  const topRow = Math.min(y0, y1) - (tiny ? 0 : 1);
   const step = x1 > x0 ? 1 : -1;
   for (let x = x0; x !== x1; x += step) {
     if (solidAt(x + step, topRow)) return false;

@@ -46,6 +46,7 @@ export const GHOSTFREAK_FORM: FormDefinition = {
         stinkfly: ['I CAN FLOAT... DOWN. ONLY DOWN.', 'WANTED BUG WINGS. GOT SPOOKY TAIL.'],
         upgrade: ["I WANTED IN THE MACHINE, NOT IN THE WALL!", 'HAUNTING IS NOT HACKING.'],
         diamondhead: ['I WANTED SOLID. THIS IS THE OPPOSITE.', 'TOO SEE-THROUGH TO BLOCK ANYTHING!'],
+        greymatter: ['WANTED BRAINS. GOT CREEPY.', 'SMALL? NO. SPOOKY? YES.'],
       },
       any: ['DID THE WATCH... PICK THIS ONE ON PURPOSE?'],
     },

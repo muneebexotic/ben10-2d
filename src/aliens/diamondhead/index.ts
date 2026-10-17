@@ -45,6 +45,7 @@ export const DIAMONDHEAD_FORM: FormDefinition = {
         stinkfly: ["WINGS? NOPE. CRYSTALS DON'T FLY.", 'DIAMONDS ARE HEAVY. WHO KNEW.'],
         upgrade: ["I CAN'T MERGE WITH A ROCK. I AM A ROCK.", 'WANTED TECH. GOT GEOLOGY.'],
         ghostfreak: ["CAN'T PHASE THROUGH WALLS. I AM ONE.", 'TOO SOLID FOR GHOST STUFF.'],
+        greymatter: ['TOO BIG FOR THE VENT. WAY TOO BIG.', 'WANTED A BRAIN. GOT A ROCK.'],
       },
       any: ["WELL, AT LEAST I'M PRETTY."],
     },

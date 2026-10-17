@@ -120,6 +120,14 @@ export interface CombatApi {
    * there was no machine to take.
    */
   hack(area: Rect, hit: Hit): { x: number; y: number } | null;
+  /**
+   * ANALYZE (Grey Matter): marks the enemy inside `area` closest to (fromX, fromY)
+   * with a weak point for `weakMs`: every hit on it does extra damage until then.
+   * Returns its centre, or null when there was nothing to analyse.
+   */
+  analyze(area: Rect, weakMs: number, fromX: number, fromY: number): { x: number; y: number } | null;
+  /** A weak point on every enemy within `radius` of (x, y). Returns how many. */
+  analyzeAround(x: number, y: number, radius: number, weakMs: number): number;
 }
 
 export interface FxApi {
@@ -290,7 +298,7 @@ export interface FormFeel {
 }
 
 /** How the alien's name slams onto the screen when it transforms. */
-export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'plain';
+export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'equation' | 'plain';
 
 export interface FormTheme {
   /** Main colour: name slam, transform ring, shield bar, dial while active. */
@@ -349,6 +357,8 @@ export interface FormDefinition {
   animPrefix: string;
   /** Frame size and the frame row the feet rest on, to align the sprite with the physics body. */
   frame: { w: number; h: number; feetY: number };
+  /** Its physics body, if not the shared one (Grey Matter is small enough for vents). */
+  body?: { width: number; height: number };
   motor: MotorStats;
   feel: FormFeel;
   /** Alien shield health; depleting it forces an early revert. 0 for human. */

@@ -19,7 +19,7 @@ import type { Checkpoint } from '../entities/props/Checkpoint';
 import type { Dummy } from '../entities/props/Dummy';
 import type { Jammer } from '../entities/props/Jammer';
 import { Pickup } from '../entities/props/Pickup';
-import type { Damageable, Hit, HitResult } from '../entities/types';
+import type { Damageable, Hit, HitResult, Rect } from '../entities/types';
 import { ComboCounter } from '../systems/Combo';
 import { EventBus } from '../systems/EventBus';
 import { Fx } from '../systems/Fx';
@@ -81,6 +81,8 @@ import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
 import { CrystalPlatforms } from '../entities/crystal/CrystalPlatforms';
 import { Haunting } from './level/Haunting';
+import { WeakPoints } from './level/WeakPoints';
+import { weakHit } from '../aliens/greymatter/audio';
 import { HazardSystem } from './level/Hazards';
 import { DIAMONDHEAD } from '../config/aliens/diamondhead';
 import type { ForcedMisfire } from '../systems/MisfireRules';
@@ -199,6 +201,8 @@ export class LevelScene extends Phaser.Scene {
   private hazards: HazardSystem | null = null;
   /** Ghostfreak's whispers and the glitch when he arrives. */
   private haunting!: Haunting;
+  /** Reticles on the weak points Grey Matter analysed. */
+  private weakPoints!: WeakPoints;
   /**
    * Every misfire this attempt, and whether a story moment was running: only
    * a named exception (FORCED_MISFIRES) may ever misfire during one (QA checks).
@@ -232,6 +236,7 @@ export class LevelScene extends Phaser.Scene {
   private worldHidden = false;
   private desaturate: Phaser.Filters.ColorMatrix | null = null;
   private readonly onResume = () => audio.setLoopsMuted(false);
+  private readonly weakBox: Rect = { x: 0, y: 0, w: 0, h: 0 };
 
   constructor() {
     super(SCENES.level);
@@ -331,9 +336,11 @@ export class LevelScene extends Phaser.Scene {
         },
         onThrowLanded: (hits, x, y) => this.onThrowLanded(hits, x, y),
         onGasIgnite: (x, y, radius, hits) => this.onGasIgnite(x, y, radius, hits),
+        onWeakHit: (t, hit) => this.onWeakHit(t, hit),
       },
       { isSolid: (x, y) => this.world.isSolid(x, y) },
     );
+    this.weakPoints = new WeakPoints(this, this.combat);
     this.inputMap = new InputMap(this);
     this.speech = new SpeechBubble(this);
     this.dialogue = new Dialogue(this.speech);
@@ -668,6 +675,7 @@ export class LevelScene extends Phaser.Scene {
     this.omni.onMisfire = (gotId, forced) => this.misfireLog.push({ gotId, forced, storyLock: this.story?.storyLock ?? false, x: Math.round(this.player.x / TILE) });
     this.omni.onDenied = (reason) => {
       if (reason === 'cooldown') this.tutorial.tip('cooldown', 'OMNITRIX RECHARGING... HANG IN THERE!', 3000, 7);
+      if (reason === 'cramped') this.speech.show('NO ROOM TO CHANGE BACK IN HERE!', 1600);
     };
   }
 
@@ -994,6 +1002,7 @@ export class LevelScene extends Phaser.Scene {
     if (this.state === 'play') this.combat.update(worldDt);
 
     this.updateProps(dt);
+    this.weakPoints.update(realDt);
     if (this.state === 'play') this.updateZones();
 
     const dropped = this.combo.update(dt);
@@ -1219,6 +1228,16 @@ export class LevelScene extends Phaser.Scene {
     this.fx.burst('gold', x, y, 30);
     playSfx('strike');
     EventBus.emit('hud:strike', { hits });
+  }
+
+  /** A hit on a weak point Grey Matter found: it lands for triple, and says so. */
+  private onWeakHit(target: Damageable, _hit: Hit): void {
+    const box = this.weakBox;
+    if (target.hurtbox(box)) this.fx.popText(box.x + box.w / 2, box.y - 4, `x${COMBAT.weakPoint.multiplier}!`, PALETTE.greymatter, 1);
+    playSfx(weakHit, 0.8, 0.9 + Math.random() * 0.2);
+    this.fx.hitStop(40);
+    this.achievements.count('weakHits');
+    this.tutorial.onAction('weakHit');
   }
 
   /** Fire met one of Stinkfly's stink clouds: it goes up in a fireball. */
@@ -1652,6 +1671,7 @@ export class LevelScene extends Phaser.Scene {
     this.hazards?.destroy();
     this.hazards = null;
     this.crystals?.clear();
+    this.weakPoints?.destroy();
     this.dialogue?.stop(false);
     this.time2?.clearSlowMo();
     this.tweens.timeScale = 1;

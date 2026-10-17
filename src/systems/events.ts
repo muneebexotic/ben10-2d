@@ -46,7 +46,7 @@ export interface GameEvents {
   'omnitrix:dial': { selectedId: string; index: number; count: number; direction: 1 | -1 };
   'omnitrix:warning': { secondsLeft: number };
   'omnitrix:ready': undefined;
-  'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' | 'lowTime' | 'stolen' };
+  'omnitrix:denied': { reason: 'cooldown' | 'jammed' | 'busy' | 'lowTime' | 'stolen' | 'cramped' };
   /** Kevin absorbed an alien's DNA (its dial slot goes dark), or it came back. */
   'omnitrix:stolen': { alienId: string; stolen: boolean };
   /** Kevin's copy meter: every alien he has data on, its copy level (0-3), and the one he's copying now. */

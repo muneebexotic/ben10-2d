@@ -41,6 +41,7 @@ export const HEATBLAST_FORM: FormDefinition = {
         upgrade: ['I WANTED TO MERGE WITH STUFF, NOT MELT IT!', "FIRE AND COMPUTERS DON'T MIX. GREAT."],
         diamondhead: ['I WANTED DIAMONDS, NOT A BONFIRE!', 'CRYSTAL? NOPE. JUST A HOT HEAD.'],
         ghostfreak: ['NOT SPOOKY. JUST SPICY.', 'WANTED A GHOST. GOT A TORCH.'],
+        greymatter: ['I WANTED A BRAIN, NOT A BONFIRE.', 'TOO HOT TO THINK!'],
       },
       any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
     },

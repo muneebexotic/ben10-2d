@@ -11,6 +11,8 @@ export const COMBAT = {
   throwMaxMs: 2600,
   /** A throw keeps this much of its speed after bowling over each enemy. */
   bowlingSlowdown: 0.82,
+  /** Weak points Grey Matter's ANALYZE marks: hits there do this many times the damage, from anyone. */
+  weakPoint: { multiplier: 3 },
   /** STRIKE!: a throw that bowls over at least this many enemies. */
   strikeHits: 2,
   /** Stink clouds (Stinkfly): how often they hit what's inside, and the blast when fire sets one off. */

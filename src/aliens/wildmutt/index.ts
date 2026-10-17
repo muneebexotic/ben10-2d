@@ -43,6 +43,7 @@ export const WILDMUTT_FORM: FormDefinition = {
         upgrade: ['GRR... (CAN I SNIFF A COMPUTER?)', 'ARF?! (I WANTED THE ROBOT ONE!)'],
         diamondhead: ['GRR! (THIS IS NOT A CRYSTAL!)', 'RUFF? (WHERE DID MY DIAMONDS GO?)'],
         ghostfreak: ['ARF! (WANTED THE SCARY ONE!)', 'GRRR... (I SMELL GHOSTS. NOT BE ONE.)'],
+        greymatter: ['*GROWL* (THIS IS NOT A GENIUS.)', '*SNIFF* (SMELLS LIKE THE WRONG ALIEN.)'],
       },
       any: ["GRRR... (WRONG ALIEN, I THINK.)"],
     },

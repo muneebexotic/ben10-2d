@@ -161,6 +161,14 @@ export const PALETTE = {
   ghostfreakDark: 0x4a4a6e,
   ghostfreakEye: 0xa040ff,
 
+  // Grey Matter (a Galvan: grey skin, big green eyes) and Gwen's magic (pink mana).
+  greymatter: 0x9fe870,
+  greymatterGlow: 0xe0ffc8,
+  greymatterDark: 0x3e6a2a,
+  mana: 0xff7ad8,
+  manaGlow: 0xffd2f2,
+  manaDark: 0x8a2a78,
+
   // Bounty Hunters: Silver Spur at night, the Diamond Deep mine, the hunters' signature colours.
   sixsix: 0xffb03a,
   sixsixDark: 0x8a4a12,

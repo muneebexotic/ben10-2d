@@ -39,6 +39,7 @@ export const XLR8_FORM: FormDefinition = {
         upgrade: ['TOO FAST TO MERGE WITH ANYTHING!', 'I WANTED A COMPUTER, NOT A RACE CAR!'],
         diamondhead: ['FAST GLASS? NOPE. JUST FAST.', 'WANTED A SHIELD. GOT SNEAKERS.'],
         ghostfreak: ["CAN'T PHASE. CAN SPRINT. SO...", 'NOT GHOSTLY. JUST GONE QUICKLY.'],
+        greymatter: ['FAST, BUT NOT SMART FAST.', 'I WANTED TO THINK, NOT RUN.'],
       },
       any: ['WRONG GUY! ...AT LEAST I GOT HERE FAST.'],
     },

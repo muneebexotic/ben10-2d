@@ -39,6 +39,7 @@ export const FOURARMS_FORM: FormDefinition = {
         upgrade: ['I WANTED TO HACK IT, NOT PUNCH IT!', 'FOUR HANDS. ZERO WI-FI.'],
         diamondhead: ['NO CRYSTALS. JUST KNUCKLES.', 'WANTED SHINY. GOT BEEFY.'],
         ghostfreak: ['TOO SOLID TO GO THROUGH WALLS!', 'GHOSTS DO NOT HAVE BICEPS.'],
+        greymatter: ['I WANTED SMART. I GOT FOUR FISTS.', 'BIG MUSCLES, SMALL VENTS. PROBLEM.'],
       },
       any: ['WRONG ALIEN! BIG, BUT WRONG!'],
     },

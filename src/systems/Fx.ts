@@ -35,7 +35,10 @@ export type BurstKind =
   | 'volt'
   | 'pixel'
   | 'crystal'
-  | 'ghost';
+  | 'ghost'
+  | 'scan'
+  | 'mana'
+  | 'stone';
 
 type EmitterConfig = Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
 
@@ -142,6 +145,21 @@ const PRESETS: Record<BurstKind, { texture: string; config: EmitterConfig; depth
     texture: TEX.smoke,
     config: { lifespan: { min: 500, max: 1000 }, speed: { min: 6, max: 34 }, scale: { start: 0.4, end: 1.3 }, alpha: { start: 0.5, end: 0 }, gravityY: -22, tint: [P.ghostfreakGlow, P.ghostfreak, 0xc8a8ff] },
     depth: DEPTH.fx - 1,
+  },
+  // Grey Matter's ANALYZE: green data bits that zip outward and blink off.
+  scan: {
+    texture: TEX.px,
+    config: { lifespan: { min: 180, max: 420 }, speed: { min: 70, max: 220 }, scale: { start: 1.2, end: 0.4 }, color: [P.white, P.greymatterGlow, P.greymatter, P.greymatterDark], blendMode: 'ADD' },
+  },
+  // Gwen's magic (and Hex's): pink motes of mana that swirl up and fade.
+  mana: {
+    texture: TEX.spark,
+    config: { lifespan: { min: 300, max: 760 }, speed: { min: 30, max: 140 }, scale: { start: 1.3, end: 0 }, gravityY: -60, color: [P.white, P.manaGlow, P.mana, P.manaDark], blendMode: 'ADD' },
+  },
+  // Charmcaster's rock creatures: pink-grey grit and pebbles that fall.
+  stone: {
+    texture: TEX.px,
+    config: { lifespan: { min: 260, max: 620 }, speed: { min: 50, max: 190 }, scale: { start: 1.6, end: 0.8 }, gravityY: 520, color: [0xd8b8b0, 0xa88a86, 0x7a605e, 0x4a3a3a] },
   },
   // Arcade pixels: chunky squares in every screen colour (an arcade cabinet's GAME OVER).
   pixel: {

@@ -45,6 +45,7 @@ export const UPGRADE_FORM: FormDefinition = {
         stinkfly: ['NO WINGS. JUST A LOT OF GOO. TECH GOO.', 'THIS IS NOT FLYING. THIS IS DRIPPING.'],
         diamondhead: ['WANTED CRYSTAL. GOT CIRCUITS.', 'NOT DIAMONDS. JUST DIODES.'],
         ghostfreak: ['ERROR: GHOST.EXE NOT FOUND.', 'I CAN HAUNT A COMPUTER. KIND OF.'],
+        greymatter: ['SMART MACHINE, WRONG KIND OF SMART.', 'I WANTED A BRAIN. GOT A HARD DRIVE.'],
       },
       any: ['ERROR 404: RIGHT ALIEN NOT FOUND.'],
     },

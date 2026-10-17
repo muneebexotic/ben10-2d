@@ -260,10 +260,37 @@ export class Player implements PlayerHandle {
     this.abilities.onExit?.(this.ctx);
     this.visual.setHidden(false);
     this.form = form;
+    this.resizeBody(form.body ?? PLAYER.body);
     this.abilities = form.createAbilities();
     this.formHp = Math.max(form.maxFormHealth > 0 ? 0.5 : 0, Math.round(form.maxFormHealth * shieldRatio * 2) / 2);
     this.visual.applyForm(form, this.animPrefix());
     this.abilities.onEnter?.(this.ctx);
+  }
+
+  /** A form with its own body size (Grey Matter): the body grows or shrinks around the same feet. */
+  private resizeBody(size: { width: number; height: number }): void {
+    if (this.body.width === size.width && this.body.height === size.height) return;
+    const x = this.x;
+    const feet = this.y;
+    // The zone carries the body's origin: resize both so the body stays centred on x.
+    this.zone.setSize(size.width, size.height);
+    this.body.setSize(size.width, size.height, true);
+    this.body.reset(x, feet - size.height / 2);
+  }
+
+  /**
+   * Whether the shared, full-size body would fit where Ben stands (a small form
+   * in a vent can't change back there: the watch waits until he's out).
+   */
+  get fitsFullSize(): boolean {
+    const { width, height } = PLAYER.body;
+    const isSolid = this.services.world.isSolid;
+    const l = this.x - width / 2 + 1;
+    const r = this.x + width / 2 - 1;
+    for (const y of [this.y - 2, this.y - height / 2, this.y - height + 2]) {
+      if (isSolid(l, y) || isSolid(r, y) || isSolid(this.x, y)) return false;
+    }
+    return true;
   }
 
   /** Fraction of the alien shield left (1 for human Ben). */
@@ -425,6 +452,8 @@ export class Player implements PlayerHandle {
     if (!grounded || this.safeTimer > 0 || this.onWater) return;
     this.safeTimer = PLAYER.safeGroundEveryMs;
     if (this.isSafeSpot && !this.isSafeSpot(this.x, this.y)) return;
+    // Never a spot only a small form fits (a vent): a respawn there would put Ben inside the walls.
+    if (!this.fitsFullSize) return;
     this.lastSafe.x = this.x;
     this.lastSafe.y = this.y;
   }

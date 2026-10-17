@@ -19,9 +19,11 @@ export type LifetimeCounter =
   | 'jokes'
   | 'takeovers'
   | 'reflected'
-  | 'frightened';
+  | 'frightened'
+  | 'spells'
+  | 'weakHits';
 
-export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'ben' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
+export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'greymatter' | 'ben' | 'gwen' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
 
 export interface AchievementDef {
   id: string;
@@ -63,6 +65,10 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'clutch-misfire', title: 'CLUTCH MISFIRE', text: 'SURVIVE THE LIFT WITHOUT TAKING A HIT', icon: 'laugh' },
   { id: 'deep-diver', title: 'DEEP DIVER', text: 'RIDE THE DEEP DIVE WITHOUT A SCRATCH', icon: 'star' },
   { id: 'bounty-void', title: 'BOUNTY VOID', text: 'BEAT THE HUNTERS', icon: 'boss' },
+  { id: 'spellbound', title: 'SPELLBOUND', text: "CALL 30 OF GWEN'S SPELLS", icon: 'gwen', counter: 'spells', goal: 30 },
+  { id: 'big-brain', title: 'BIG BRAIN', text: 'LAND 10 HITS ON WEAK POINTS GREY MATTER FOUND', icon: 'greymatter', counter: 'weakHits', goal: 10 },
+  { id: 'engine-room', title: 'THE ENGINE ROOM', text: 'SOLVE THE SPELL ENGINE WITHOUT A HINT', icon: 'star' },
+  { id: 'act-2', title: 'RIVALS AND HUNTERS', text: 'FINISH ACT 2', icon: 'omnitrix', secret: true },
 ];
 
 /** Thrown enemies that bowl over this many in one throw: STEE-RIKE! */

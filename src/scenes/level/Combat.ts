@@ -26,6 +26,8 @@ export interface CombatHooks {
   onGasPuff?(x: number, y: number, radius: number): void;
   /** Fire set a stink cloud off. */
   onGasIgnite?(x: number, y: number, radius: number, hits: number): void;
+  /** A hit landed on a weak point Grey Matter analysed (it did extra damage). */
+  onWeakHit?(target: Damageable, hit: Hit): void;
 }
 
 interface GasCloud {
@@ -72,6 +74,9 @@ export class Combat implements CombatApi {
   private readonly clouds: GasCloud[] = [];
   private readonly onceHits = new Map<object, Set<Damageable>>();
   private player: Player | null = null;
+  /** ANALYZE's weak points: each target and the combat time its weak point lasts until. */
+  private readonly weak = new Map<Damageable, number>();
+  private clock = 0;
   private readonly a: Rect = { x: 0, y: 0, w: 0, h: 0 };
   private readonly b: Rect = { x: 0, y: 0, w: 0, h: 0 };
 
@@ -370,6 +375,53 @@ export class Combat implements CombatApi {
     return lit;
   }
 
+  analyze(area: Rect, weakMs: number, fromX: number, fromY: number): { x: number; y: number } | null {
+    let best: Damageable | null = null;
+    let bestD = Infinity;
+    let bx = 0;
+    let by = 0;
+    for (const t of this.targets) {
+      if (!t.alive || !t.countsAsEnemy || !t.hurtbox(this.b) || !overlaps(area, this.b)) continue;
+      const cx = rectCenterX(this.b);
+      const cy = rectCenterY(this.b);
+      const d = (cx - fromX) ** 2 + (cy - fromY) ** 2;
+      if (d >= bestD) continue;
+      best = t;
+      bestD = d;
+      bx = cx;
+      by = cy;
+    }
+    if (!best) return null;
+    this.markWeak(best, weakMs);
+    return { x: bx, y: by };
+  }
+
+  analyzeAround(x: number, y: number, radius: number, weakMs: number): number {
+    let n = 0;
+    for (const t of this.targets) {
+      if (!t.alive || !t.countsAsEnemy || !t.hurtbox(this.b) || !circleRect(x, y, radius, this.b)) continue;
+      this.markWeak(t, weakMs);
+      n++;
+    }
+    return n;
+  }
+
+  private markWeak(t: Damageable, ms: number): void {
+    this.weak.set(t, Math.max(this.weak.get(t) ?? 0, this.clock + ms));
+    t.onAnalyzed?.();
+  }
+
+  /** Every live weak point: its target's hurtbox centre and how long it has left (the HUD reticles). */
+  forEachWeak(fn: (x: number, y: number, leftMs: number) => void): void {
+    for (const [t, until] of this.weak) {
+      if (!t.alive || until <= this.clock) {
+        this.weak.delete(t);
+        continue;
+      }
+      if (t.hurtbox(this.b)) fn(rectCenterX(this.b), rectCenterY(this.b), until - this.clock);
+    }
+  }
+
   /** Turns every enemy shot inside the radius around and fires it back outward. Returns how many. */
   reflectAround(x: number, y: number, radius: number, speedMultiplier: number, damage: number): number {
     let count = 0;
@@ -389,6 +441,7 @@ export class Combat implements CombatApi {
   // ------------------------------------------------------------ Per-frame resolution
 
   update(dtMs: number): void {
+    this.clock += dtMs;
     this.projectiles.forEachActive('player', (p) => this.resolvePlayerShot(p));
     this.updateThrown(dtMs);
     this.updateGas(dtMs);
@@ -435,9 +488,14 @@ export class Combat implements CombatApi {
 
   /** Applies a hit and reports it. True when it landed (hit or kill). */
   private apply(t: Damageable, hit: Hit): boolean {
-    const result = t.takeHit(hit);
-    if (result !== 'none') this.hooks.onTargetHit(t, result, hit);
-    return result === 'hit' || result === 'killed';
+    const until = this.weak.get(t);
+    const weak = until !== undefined && until > this.clock && hit.damage > 0;
+    const landed = weak ? { ...hit, damage: hit.damage * COMBAT.weakPoint.multiplier } : hit;
+    const result = t.takeHit(landed);
+    if (result !== 'none') this.hooks.onTargetHit(t, result, landed);
+    const ok = result === 'hit' || result === 'killed';
+    if (weak && ok) this.hooks.onWeakHit?.(t, landed);
+    return ok;
   }
 
   private resolvePlayerShot(p: Projectile): void {

@@ -78,12 +78,65 @@ export class Banner {
     else if (opts.style === 'glitch') this.glitchSlam(text, color, scale, hold, y);
     else if (opts.style === 'shatter') this.shatterSlam(text, color, scale, hold, y);
     else if (opts.style === 'haunt') this.hauntSlam(text, color, scale, hold, y);
+    else if (opts.style === 'equation') this.equationSlam(text, color, scale, hold, y);
     else this.blazeSlam(text, color, scale, hold, y, opts.first);
   }
 
   private finish(c: Phaser.GameObjects.Container): void {
     if (this.current === c) this.current = null;
     c.destroy();
+  }
+
+  /**
+   * The name assembles itself like an equation (Grey Matter): its letters and
+   * a scatter of maths symbols tumble in, each letter snapping into place one
+   * by one, an "=" bar flashes under the solved name, then it all files away.
+   */
+  private equationSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const measure = pixelText(scene, 0, 0, text, { scale });
+    const total = measure.width;
+    measure.destroy();
+    const items: Phaser.GameObjects.GameObject[] = [];
+    const letters: Phaser.GameObjects.BitmapText[] = [];
+    // Each letter from where it ends up in the word (the font is proportional: measure what's before it).
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === ' ') continue;
+      const before = i === 0 ? 0 : pixelText(scene, 0, 0, text.slice(0, i), { scale });
+      const x = (before === 0 ? 0 : before.width) - total / 2;
+      if (before !== 0) before.destroy();
+      const t = pixelText(scene, x, 0, ch, { scale, originX: 0, originY: 0.5, color: i % 2 ? color : PALETTE.white });
+      letters.push(t);
+    }
+    const symbols = ['+', '=', '/', '-', '(', ')', '%', '^'].map((sym, i) =>
+      pixelText(scene, (i - 3.5) * (total / 7), -34 + (i % 2) * 64, sym, { scale: 2, originX: 0.5, originY: 0.5, color }).setAlpha(0),
+    );
+    const bar = scene.add.rectangle(0, letters[0] ? letters[0].height / 2 + 4 : 14, total + 16, 2, PALETTE.white).setScale(0, 1);
+    items.push(bar, ...symbols, ...letters);
+    const c = scene.add.container(GAME_WIDTH / 2, y, items).setDepth(450);
+    this.current = c;
+    symbols.forEach((sym, i) => {
+      scene.tweens.add({ targets: sym, alpha: 0.7, angle: (i % 2 ? 1 : -1) * 90, delay: i * 25, duration: 220, yoyo: true, hold: 120, ease: 'Quad.easeOut' });
+    });
+    letters.forEach((t, i) => {
+      const fx = t.x;
+      t.setPosition(fx + (Math.random() - 0.5) * 220, (Math.random() - 0.5) * 90).setAngle((Math.random() - 0.5) * 120).setAlpha(0);
+      scene.tweens.add({ targets: t, x: fx, y: 0, angle: 0, alpha: 1, delay: 40 + i * 32, duration: 200, ease: 'Back.easeOut' });
+    });
+    const solved = 40 + letters.length * 32 + 200;
+    scene.tweens.add({ targets: bar, scaleX: 1, delay: solved, duration: 120, ease: 'Quad.easeOut' });
+    scene.tweens.add({ targets: bar, alpha: 0, delay: solved + 320, duration: 240 });
+    letters.forEach((t, i) => scene.tweens.add({ targets: t, y: -3, delay: solved + i * 12, duration: 60, yoyo: true }));
+    scene.tweens.add({
+      targets: c,
+      alpha: 0,
+      x: GAME_WIDTH / 2 - 24,
+      delay: Math.max(hold, solved + 200),
+      duration: 220,
+      ease: 'Quad.easeIn',
+      onComplete: () => this.finish(c),
+    });
   }
 
   /** Speed streaks behind a tilted slam that peels away (Heatblast). */

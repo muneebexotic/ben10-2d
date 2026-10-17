@@ -11,8 +11,8 @@ import { formatControls } from '../src/systems/controlLabels';
 const REQUIRED_ANIMS = ['idle', 'run', 'jump', 'fall', 'hurt'];
 
 describe('alien registry', () => {
-  it('has Heatblast for Chapter 1, Four Arms and XLR8 for Chapter 2, Wildmutt and Stinkfly for Chapter 3, Upgrade for Chapter 4, Diamondhead and Ghostfreak for Chapter 5, in dial order', () => {
-    expect(allAliens().map((a) => a.id)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade', 'diamondhead', 'ghostfreak']);
+  it('has Heatblast for Chapter 1, Four Arms and XLR8 for Chapter 2, Wildmutt and Stinkfly for Chapter 3, Upgrade for Chapter 4, Diamondhead and Ghostfreak for Chapter 5, Grey Matter for Chapter 6, in dial order', () => {
+    expect(allAliens().map((a) => a.id)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade', 'diamondhead', 'ghostfreak', 'greymatter']);
     expect(getAlien('diamondhead').unlockChapter).toBe(5);
     expect(getAlien('ghostfreak').unlockChapter).toBe(5);
     expect(getAlien('upgrade').unlockChapter).toBe(4);
@@ -30,6 +30,7 @@ describe('alien registry', () => {
     expect(aliensUnlockedBy(3)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly']);
     expect(aliensUnlockedBy(4)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade']);
     expect(aliensUnlockedBy(5)).toEqual(['heatblast', 'fourarms', 'xlr8', 'wildmutt', 'stinkfly', 'upgrade', 'diamondhead', 'ghostfreak']);
+    expect(aliensUnlockedBy(6)).toContain('greymatter');
   });
 
   it('human Ben is a form but not an alien on the dial', () => {
@@ -37,7 +38,7 @@ describe('alien registry', () => {
     expect(hasAlien(HUMAN_FORM.id)).toBe(false);
     expect(getForm(HUMAN_FORM.id)).toBe(HUMAN_FORM);
     expect(getForm('xlr8')).toBe(getAlien('xlr8'));
-    expect(() => getAlien('greymatter')).toThrow();
+    expect(() => getAlien('ripjaws')).toThrow();
   });
 
   it('every alien is complete data: motor, feel, shield, theme, tips, moves, abilities', () => {

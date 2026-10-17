@@ -32,6 +32,11 @@ export interface OmnitrixConfig {
    * reverts. Missing or null: it reverts on time.
    */
   hesitation?: (alienId: string) => { chance: number; minMs: number; maxMs: number } | null;
+  /**
+   * The active form couldn't change back where it is (Grey Matter in a vent):
+   * the timeout and a damage revert wait until it's out, and swaps are refused.
+   */
+  cramped?: () => boolean;
 }
 
 /** Options for one transform or swap. */
@@ -48,7 +53,7 @@ export interface MisfireState {
   improvised: boolean;
 }
 
-export type SwapDenial = 'off' | 'notActive' | 'sameAlien' | 'lockout' | 'lowTime' | 'stolen';
+export type SwapDenial = 'off' | 'notActive' | 'sameAlien' | 'lockout' | 'lowTime' | 'stolen' | 'cramped';
 
 export type OmnitrixEvent =
   | { type: 'transformed'; alienId: string; requestedId: string; wrong: boolean }
@@ -58,6 +63,8 @@ export type OmnitrixEvent =
   | { type: 'reverted'; alienId: string; reason: RevertReason }
   /** The timer ran out but the alien is holding on for `ms` more (Ghostfreak). */
   | { type: 'hesitating'; alienId: string; ms: number }
+  /** Out of time, but there's no room to change back here (Grey Matter in a vent): waiting until there is. */
+  | { type: 'cramped'; alienId: string }
   /** A story moment forced a misfire (the one named exception, see MisfireRules). */
   | { type: 'forcedMisfire'; alienId: string; requestedId: string; exception: string }
   | { type: 'ready' }
@@ -82,6 +89,8 @@ export class Omnitrix {
   private holdLeftMs = 0;
   /** This transformation already rolled for a hold (one per timeout). */
   private holdRolled = false;
+  /** Out of time and waiting for room to change back (reported once). */
+  private crampedWait = false;
   /** Aliens on the dial that can't be used right now (Kevin stole their DNA). */
   private readonly blocked = new Set<string>();
 
@@ -308,6 +317,7 @@ export class Omnitrix {
     const selected = this.selectedAlien;
     if (selected === null || selected === this.activeAlien) return 'sameAlien';
     if (this.blocked.has(selected)) return 'stolen';
+    if (this.config.cramped?.()) return 'cramped';
     if (this.sinceChangeMs < (this.config.swapLockoutMs ?? 0)) return 'lockout';
     if (!this.frozen && this.remainingMs <= this.swapCostMs) return 'lowTime';
     return null;
@@ -374,6 +384,8 @@ export class Omnitrix {
   /** Ends the transformation early (heavy damage, jammer field) and starts the full cooldown. */
   revert(reason: RevertReason): OmnitrixEvent[] {
     if (this._state !== 'active' || this.activeAlien === null) return [];
+    // No room to change back (a vent): a broken shield waits like the timer does. Story reverts still happen.
+    if (reason === 'damage' && this.config.cramped?.()) return [];
     return this.enterCooldown(reason, 0);
   }
 
@@ -386,12 +398,16 @@ export class Omnitrix {
       if (this.frozen) return events;
       if (this.holdLeftMs > 0) {
         this.holdLeftMs -= dtMs;
-        if (this.holdLeftMs <= 0) events.push(...this.enterCooldown('timeout', 0));
+        if (this.holdLeftMs <= 0) events.push(...this.timeoutOrWait(0));
         return events;
       }
       this.remainingMs -= dtMs;
       if (this.remainingMs <= 0) {
         const overflow = -this.remainingMs;
+        if (this.config.cramped?.()) {
+          events.push(...this.timeoutOrWait(overflow));
+          return events;
+        }
         const hold = this.rollHold();
         if (hold > 0) {
           this.remainingMs = 0;
@@ -400,6 +416,7 @@ export class Omnitrix {
           return events;
         }
         events.push(...this.enterCooldown('timeout', overflow));
+        this.crampedWait = false;
       } else if (this.remainingMs <= this.config.warningMs) {
         const secondsLeft = Math.ceil(this.remainingMs / 1000);
         if (secondsLeft !== this.lastWarningSecond) {
@@ -419,12 +436,25 @@ export class Omnitrix {
   reset(): void {
     this._state = 'ready';
     this.holdLeftMs = 0;
+    this.crampedWait = false;
     this.holdRolled = false;
     this.activeAlien = null;
     this.remainingMs = 0;
     this.cooldownLeftMs = 0;
     this.lastWarningSecond = -1;
     this.setMisfire(null, null);
+  }
+
+  /** Time's up: change back, unless there's no room here (then wait at zero, saying so once). */
+  private timeoutOrWait(overflow: number): OmnitrixEvent[] {
+    if (!this.config.cramped?.()) {
+      this.crampedWait = false;
+      return this.enterCooldown('timeout', overflow);
+    }
+    this.remainingMs = 0;
+    if (this.crampedWait) return [];
+    this.crampedWait = true;
+    return [{ type: 'cramped', alienId: this.activeAlien ?? '' }];
   }
 
   /** At timeout: whether the alien holds on, and for how long (one roll per timeout). */

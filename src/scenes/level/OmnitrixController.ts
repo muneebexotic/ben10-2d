@@ -14,7 +14,7 @@ import type { PerfectWindow } from '../../systems/PerfectTransform';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { TransformSequence } from './TransformSequence';
 
-type DenyReason = 'cooldown' | 'jammed' | 'lowTime' | 'stolen';
+type DenyReason = 'cooldown' | 'jammed' | 'lowTime' | 'stolen' | 'cramped';
 
 /**
  * Glue between the pure Omnitrix and the game: reads dial/transform input,
@@ -82,6 +82,8 @@ export class OmnitrixController {
       improviseBonusMs: MISFIRE.improviseBonusMs,
       // Aliens that don't always let go at timeout (Ghostfreak) say so in their definition.
       hesitation: (id) => (hasAlien(id) ? (getAlien(id).hesitate ?? null) : null),
+      // A small form (Grey Matter) in a vent can't change back there.
+      cramped: () => this.player.isAlien && !this.player.fitsFullSize,
     };
   }
 
@@ -141,7 +143,7 @@ export class OmnitrixController {
         this.pendingPerfect = this.perfect.check(now - lead, this.player.x, this.player.centerY) !== null;
         this.handle(this.omnitrix.swap({ allowMisfire: this.misfireAllowed() }));
         this.pendingPerfect = false;
-      } else if (denial === 'lowTime' || denial === 'stolen') {
+      } else if (denial === 'lowTime' || denial === 'stolen' || denial === 'cramped') {
         this.deny(denial, now);
       }
     }
@@ -286,6 +288,11 @@ export class OmnitrixController {
           EventBus.emit('hud:whisper', { text: line, color: hasAlien(e.alienId) ? getAlien(e.alienId).theme.color : PALETTE.white });
           break;
         }
+        case 'cramped':
+          playSfx('beepFinal', 0.8, 0.8);
+          EventBus.emit('omnitrix:denied', { reason: 'cramped' });
+          this.onDenied?.('cramped');
+          break;
         case 'reverted':
           this.sequence.revert(e.reason);
           EventBus.emit('alien:reverted', { alienId: e.alienId, reason: e.reason });

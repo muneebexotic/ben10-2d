@@ -39,6 +39,7 @@ export const STINKFLY_FORM: FormDefinition = {
         upgrade: ['A BUG. IN THE SYSTEM. GET IT?', 'I WANTED IN THE MACHINE, NOT TO GUM IT!'],
         diamondhead: ['A BUG IS NOT A GEM. TRUST ME.', 'WANTED ROCK HARD. GOT BUG SOFT.'],
         ghostfreak: ['SPOOKY? NO. JUST STINKY.', 'GHOST? MORE LIKE GROSS.'],
+        greymatter: ['TINY AND SMART? GOT TINY AND SMELLY.', 'WRONG BUG BRAIN!'],
       },
       any: ['A BUG?! I WANTED A HERO, NOT A PEST!'],
     },
