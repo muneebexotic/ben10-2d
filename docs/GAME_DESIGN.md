@@ -75,7 +75,7 @@ Mobile (built early, in the Chapter 1 polish pass): a floating thumb stick on th
 ### Act 2: Rivals and Hunters
 - **Ch 4, Kevin 11:** meet Kevin at an arcade. Ally turns rival. Unlock Upgrade. *Set piece: Kevin absorbs your current alien and uses it against you.*
 - **Ch 5, Bounty Hunters:** Sixsix, Tetrax and Kraab hunt Ben. Unlock Diamondhead, Ghostfreak. *Set piece: forced wrong transformation while cornered.*
-- **Ch 6, Magic:** Hex and Charmcaster. Gwen gains spells. Unlock Grey Matter. *Set piece: Grey Matter puzzle inside a spell machine.*
+- **Ch 6, Magic (Karachi):** Hex and Charmcaster. Gwen gains spells. Unlock Grey Matter. *Set piece: Grey Matter puzzle inside a spell machine (a clock tower's clockwork).*
 
 ### Act 3: Secrets
 - **Ch 7, The Plumbers:** Max revealed as a secret alien cop. Unlock Ripjaws. *Set piece: underwater Plumber base.*
@@ -219,40 +219,65 @@ Upgrade's takeover makes every machine enemy (mascots, turrets, track-bots, and 
 
 **Achievements (plan):** REFLECTED (send 25 shots back as Diamondhead), BOO! (frighten 20 enemies as Ghostfreak), CLUTCH MISFIRE (survive the forced misfire without taking a hit), BOUNTY VOID (beat the Hunters).
 
-### Chapter 6: Magic (plan only)
+### Chapter 6: Magic (Karachi)
 
-**Setting.** Hex's manor on a stormy hill outside a county fair: the fair's magic tent, the manor's halls, library and catacombs, and the Spell Engine, Hex's clockwork machine for amplifying the Charms of Bezel. Music: `fair` (organ waltz chiptune), `manor` (harpsichord, minor), `hex` (boss).
+The story, characters, Gwen's arc, Grey Matter, the Spell Engine and the boss are the original plan's; the owner moved the chapter to **Karachi, Pakistan** (DECISIONS.md, Milestone 4 part 5). Stylised pixel art inspired by real places, never exact replicas.
+
+**Why the Tennysons are in Karachi.** The cold open shows a port crane lowering the Rustbucket off a cargo ship at Karachi Port at dusk. Max: "AN OLD NAVY FRIEND OWED ME A FAVOR. A BERTH ON A CARGO SHIP, NO QUESTIONS ASKED." Ben: "WE SHIPPED AN RV ACROSS AN OCEAN AND NOBODY THINKS THAT'S WEIRD?" The navy friend is the first thread of the Act 3 reveal: the Plumbers' underwater base sits in the Arabian Sea off Karachi, and the ending's call comes from there. **Hex** is touring his magic show here because the **Charms of Bezel** are on loan to a travelling exhibition, ANCIENT WONDERS, set up in a tent on the seafront.
+
+**Setting and route** (one night, west to east across the city; each place inspired by, not a copy of, a real one):
+
+| Section | Inspired by | What happens |
+|---|---|---|
+| The fair | Sea View / Clifton beach at night | A seafront fun-fair: camel and horse rides, balloon sellers, chai and bun kebab stalls, a Ferris wheel, kites, the sea breeze, and THE GREAT HEXO's big tent next to the ANCIENT WONDERS exhibition |
+| The pink palace | Mohatta Palace, Clifton (pink sandstone, domes, arches, jharokha balconies, gardens) | Hex's rented manor. The Rustbucket rams its gate. Enchanted armour in the halls; Gwen learns SHIELD |
+| The library wing | Frere Hall (Gothic arches, a painted ceiling, tall shelves) | Floating books, gargoyles; Gwen learns STUN |
+| The old basements | The palace's cellars and a hidden tunnel under the old city towards Kharadar | Hex's illusions, hidden passages; Gwen learns REVEAL. Charmcaster's warded cage: Grey Matter. Then the tunnel (vents, rocklings, Max with a fire extinguisher) |
+| The Spell Engine | The clock mechanism inside a stone clock tower inspired by Merewether Tower | Grey Matter's puzzle in the gears and pendulum of the clock itself |
+| THE TOWER WRAP | The clock tower's outside | A climb around the tower in 3D: the tower turns as Ben circles it (below) |
+| The tower top | Night skyline: the port cranes, the harbour lights, the city | HEX AND CHARMCASTER |
+| The harbour | Keamari / the waterfront looking out at the Arabian Sea | The Act 2 ending |
+
+**Landmarks and respect.** Mosques, Mazar-e-Quaid and other religious or national monuments appear only as distant skyline silhouettes (Mazar-e-Quaid's white dome lit at night, a single-dome mosque), never as a battleground, a magic site or anything that can be hit, damaged or stood on. Battlegrounds and magic sites are civic places: the fair, the palace, the library, the clock tower, the port, and the Manora lighthouse across the harbour, whose beam sweeps the tower top. No real graveyards, tombs or shrines anywhere (the "catacombs" are cellars and a tunnel). Signs are in English and romanised Urdu; no Urdu script is drawn (the pixel font has none, and invented script is never used).
+
+**Karachi flavour in play, not just backdrops.** Hand-painted truck art and colourful buses, rickshaws and chingchis, kites in the sky, crows on wires, the sea breeze (Stinkfly drifts with it on the beach), a busy evening crowd that scatters when trouble starts, chai dhabas, street-food carts and shop signs. **Mr. Smoothy is replaced in this chapter by street-side chai and juice stalls** (the same pickup: a cup of chai or a glass of fresh juice). Some Sumo Slammers cards hide in Karachi spots (a camel's saddle, a kite stuck on a palace dome, the top of a truck-art bus...).
+
+**Side characters** (original, short warm lines in English with light romanised Urdu, always clear from context or subtitled): **Rauf the chai-wala** at the fair ("CHAI PEE LO, BHAI! (HAVE SOME TEA!)"), **Rafiq the rickshaw driver** who knows the "haunted pink palace" ("EVERYONE SAYS IT'S HAUNTED, YAAR. ...YOU'RE GOING IN? SHABASH!"), and **Zain**, a kid who is a huge fan of "the kid with the watch" ("BEN BHAI! IS IT REALLY YOU? DO THE FIRE GUY!").
+
+**Music** with a local flavour on top of the chiptune style: `fair` (qawwali-style handclaps, a harmonium-like lead, dhol rhythm), `manor` (harpsichord in a minor key with a sitar-like lead), `engine` (clockwork ticks and a slow pendulum bass), `hex` (the boss: dhol and a driving lead).
 
 **Story beats.**
-1. **Cold open at the fair's magic show.** The Great Hexo turns out to be Hex; his niece **Charmcaster** steals the Charms of Bezel from the exhibit, and in the chaos Gwen grabs one. It glows for her.
-2. **Grandpa Max's bigger role.** Max drives the Rustbucket through the manor gate (a short ramming cinematic) and comes in with them. He handles himself too well (a fire extinguisher against rock creatures, knowing which runes not to touch): "GRANDPA, WHERE'D YOU LEARN THAT?" / "...THE NAVY." (Act 3 foreshadowing.)
-3. **Gwen becomes a fighter (Milestone 5).** Gwen follows as a companion (the Kevin buddy system from Chapter 4, rebuilt for support): she fights a little on her own, and the player calls her spells with a cooldown each.
+1. **Cold open:** the Rustbucket swung ashore at Karachi Port, then Sea View at night. The family at the fair (Max's chai, Gwen's guidebook, Ben's bun kebab). THE GREAT HEXO's show: Hex, the "great magician", makes the exhibition's Charms of Bezel float into his tent "for the finale". His niece **Charmcaster** grabs them for real; the crowd scatters, her rocklings tumble out of the tent, and Hex's spell animates the fair (kites dive-bomb, the balloon seller's balloons float off). In the chaos one Charm skids to Gwen's feet and glows for her.
+2. **Grandpa Max's bigger role.** Rafiq points them to the pink palace; Max drives the Rustbucket through its gate (a short ramming cinematic) and comes in with them. He handles himself too well (a fire extinguisher against rocklings, knowing which runes not to touch): "GRANDPA, WHERE'D YOU LEARN THAT?" / "...THE NAVY." He holds the stairs in the boss fight.
+3. **Gwen becomes a fighter (Milestone 5).** Gwen follows as a companion (the Kevin buddy system from Chapter 4, rebuilt for support): she throws a small mana bolt at enemies near her now and then, and the player calls her spells, each with its own cooldown.
    - **Shield** (G): a bubble around Ben that blocks shots for 3 s.
    - **Stun** (Up+G): a mana burst that stuns enemies around Ben.
-   - **Reveal** (Down+G): shows hidden doors, invisible enemies and the real Hex among his illusions for a few seconds.
-   - Touch: a Gwen button with the same hold-for-radial picker as the Omnitrix. Her HUD portrait shows the three spells and their cooldowns. Spells grow through the chapter (she learns them one by one: shield in the halls, stun in the library, reveal in the catacombs).
-4. **Grey Matter.** Charmcaster seals Ben in a warded cage built to hold monsters; the bars are too close for anything the watch has. New DNA: **Grey Matter** walks out between the bars.
-5. **Set piece: the Spell Engine.** Hex starts the Engine to drain the Charms (and Gwen with them). Grey Matter crawls in through a vent and solves a puzzle inside the machine: gears to turn, mana pipes to reroute, a pendulum to time, wards to switch off in the right order. Gwen holds the transformation open with a spell ("I'LL KEEP YOU SMALL! HURRY!"), so the timer is paused inside: the puzzle is about thinking, not the clock. Checkpoint on every difficulty, and at each of its two halves on Easy.
-6. **Boss: HEX AND CHARMCASTER.**
-7. **Act 2 ending cliffhanger.** The Charms are safe; Gwen keeps the one that chose her. Packing up, a strange device in Max's jacket beeps; Max steps away to answer it: "THIS IS TENNYSON. ...MAGISTER, I'M RETIRED." Ben sees a badge he doesn't recognise. Then ActEndScene for Act 2: MEANWHILE..., deep underwater, a sealed base powering up, a signal with Max's name on it; PLUMBERS flashes on a screen. ACT 3: SECRETS. ACT 2 COMPLETE with the nine aliens of Acts 1 and 2 and every chapter's best.
+   - **Reveal** (Down+G): a circle of true sight around Ben for a few seconds: hidden doors, invisible enemies, illusory floors (they vanish) and hidden ones (they appear), and the real Hex among his illusions.
+   - Touch: a Gwen button with the same hold-for-radial picker as the Omnitrix. Her HUD portrait shows the three spells and their cooldowns. She learns them one by one: shield in the halls, stun in the library, reveal in the basements.
+   - She is support, not a second protagonist: her bolts are weak, spells help but never win a fight alone, and she never blocks Ben's view, shots or the touch controls (she trails behind Ben, draws behind him, and fades out of the thumb zones).
+4. **Grey Matter.** In the basements Charmcaster seals Ben in a warded cage built to hold monsters; the bars are too close for anything the watch has. New DNA: **Grey Matter** walks out between the bars.
+5. **Set piece: the Spell Engine.** Hex reaches the clock tower and starts the Engine in its clockwork to drain the Charms (and Gwen, through the Charm that chose her). Grey Matter crawls in through a vent and solves a puzzle inside the clock itself: gears to turn, mana pipes to reroute, the pendulum to time, wards to switch off in the right order. Gwen holds the transformation open ("I'LL KEEP YOU SMALL! HURRY!"), so the timer is paused inside: the puzzle is about thinking, not the clock. Solvable on touch and readable on a phone, with hints that kick in after being stuck for a while. Checkpoint on every difficulty, and at each of its two halves on Easy.
+6. **THE TOWER WRAP (3D set piece).** The Engine jams and Hex flees up the outside of the tower. Ben climbs after him on ledges spiralling around it, and the tower **turns** as he goes: the side he's on faces the camera, the far side curves away out of sight, the skyline wheels past behind. Gargoyles, rocklings rolling down the spiral, wind gusts from the wind Charm, the lighthouse beam sweeping across. Easy to grasp (it's a climb), and it looks like nothing else in the game.
+7. **Boss: HEX AND CHARMCASTER** on the tower top.
+8. **Act 2 ending cliffhanger.** The Charms are safe; Gwen keeps the one that chose her. At the harbour, packing up, a strange device in Max's jacket beeps; Max steps away to the water's edge to answer it: "THIS IS TENNYSON. ...MAGISTER, I'M RETIRED." Ben sees a badge he doesn't recognise. Then ActEndScene for Act 2: MEANWHILE..., deep under the Arabian Sea off Karachi, a sealed base powering up, a signal with Max's name on it; PLUMBERS flashes on a screen. ACT 3: SECRETS. **ACT 2 COMPLETE** is an event: the nine aliens of Acts 1 and 2 slam onto the dial, every chapter's best rank and time count up, fireworks over the harbour, and a share line (copied, or the phone's share sheet).
 
-**Level sections:** the fair's midway and magic tent > the manor gate (the Rustbucket rams it) > the great hall (enchanted armour, Gwen's shield) > the library (floating books, gargoyles, Gwen's stun) > the catacombs (illusions, hidden passages, Gwen's reveal) > Charmcaster's cage (Grey Matter's discovery) > the Spell Engine (the puzzle) > the tower top (the boss). Checkpoints on every difficulty at the cage, the Engine and the boss.
+**Level sections:** the fair > the palace gate (the Rustbucket rams it) > the great hall (enchanted armour, Gwen's shield) > the library wing (floating books, gargoyles, Gwen's stun) > the basements (illusions, hidden passages, Gwen's reveal) > Charmcaster's cage (Grey Matter's discovery) > the tunnel to Kharadar (vents, rocklings, Max) > the Spell Engine (the puzzle) > THE TOWER WRAP > the tower top (the boss). Checkpoints on every difficulty at the cage, the Engine, THE TOWER WRAP and the boss.
 
-**Enemies.** Rocklings (Charmcaster's: small rolling stone creatures that curl up and bowl at Ben), stone golems (big, slow, a slam with a long tell; weak spots Grey Matter can analyse), enchanted armour (shield in front, needs smash or a hit from behind), gargoyles (stone while still and invulnerable, swoop when they wake), Hex's illusions (decoys that pop on contact; Gwen's reveal or Wildmutt's senses find the real one).
+**Enemies.** Rocklings (Charmcaster's: small rolling stone creatures that curl up and bowl at Ben), stone golems (big, slow, a slam with a long tell; weak spots Grey Matter can analyse), enchanted armour (a round shield in front, needs a smash or a hit from behind), gargoyles (stone while still and invulnerable, swoop when they wake), Hex's illusions (decoys that pop on contact; Gwen's reveal or Wildmutt's senses find the real one), and at the fair, kites Hex has bewitched (they dive at Ben; fire or a hit cuts their string).
 
 **Alien unlock: Grey Matter** ("SMALL BODY. BIGGEST BRAIN IN THE GALAXY."): J is a weak bite; K is ANALYZE: a scan that marks an enemy's or boss's weak point for a few seconds (weak points take triple damage from any alien, so analyse, then swap to Four Arms or Heatblast and hit it: a designed swap combo); he fits through vents and gaps a tile high and jumps very high for his size. Discovery moment, sounds, colour, music layer and title slam (his name assembles itself letter by letter like an equation).
 
 **Boss: HEX AND CHARMCASTER** (three phases).
 - **Phase 1: Charmcaster** summons rocklings and golems and hurls spell bags; Gwen's stun interrupts a summon.
-- **Phase 2: Hex** with the staff: each Charm of Bezel he holds is a different attack (fire, lightning, stone, wind), each with its own tell; Grey Matter's analyse shows which Charm is powering the next spell, so the right alien can counter it (Stinkfly over the stone wave, Diamondhead reflecting the lightning once Diamondhead exists).
+- **Phase 2: Hex** with the staff: each Charm of Bezel he holds is a different attack (fire, lightning, stone, wind), each with its own tell; Grey Matter's analyse shows which Charm is powering the next spell, so the right alien can counter it (Stinkfly over the stone wave, Diamondhead reflecting the lightning).
 - **Phase 3: both**, Hex splitting into illusions while Charmcaster shields him; Gwen's reveal finds the real Hex, her shield blocks his big spell, and Max holds the stairs against the rocklings.
 - Switching and Gwen's spells are rewarded, never required: any alien can win.
 
-**Milestone 5 work in this chapter.** Gwen's companion and spells (above, also usable in replays of Chapters 1-5 once earned, as a Settings option so old routes stay as designed), Max in the field, and the deferred Chapter 1 intro cameos (Gwen: "GREAT, NOW YOU'RE EVEN MORE ANNOYING.").
+**Milestone 5 work in this chapter.** Gwen's companion and spells (above; also usable in replays of Chapters 1-5 once earned, as a Settings option that defaults to OFF so old routes stay as designed), Max in the field, and the deferred Chapter 1 intro cameos (Gwen: "GREAT, NOW YOU'RE EVEN MORE ANNOYING.").
 
-**Secrets.** For later aliens: the manor's flooded cellar (Ripjaws), a corridor of heavy doors only a rolling battering ram opens (Cannonbolt), the overgrown greenhouse's high balcony (Wildvine's grapple). Grey Matter opens older secrets: Chapter 3's vent card (already waiting), Chapter 4's claw machine, Chapter 5's saloon mouse hole.
+**Secrets.** For later aliens: the palace's flooded cellar (Ripjaws), a corridor of heavy doors only a rolling battering ram opens (Cannonbolt), the overgrown garden's high balcony (Wildvine's grapple). Grey Matter opens older secrets: Chapter 3's vent card (already waiting), Chapter 4's claw machine, Chapter 5's saloon mouse hole.
 
-**Achievements (plan):** SPELLBOUND (call 30 of Gwen's spells), BIG BRAIN (land 10 weak-point hits after an analyse), THE ENGINE ROOM (solve the Spell Engine without a hint), ACT 2 (finish Act 2, secret).
+**Achievements:** SPELLBOUND (call 30 of Gwen's spells), BIG BRAIN (land 10 weak-point hits after an analyse), THE ENGINE ROOM (solve the Spell Engine without a hint), ACT 2 (finish Act 2, secret).
 
 ## Difficulty
 
