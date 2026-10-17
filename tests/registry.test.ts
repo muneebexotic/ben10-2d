@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { aliensUnlockedBy, allAliens, getAlien, getForm, hasAlien, HUMAN_FORM } from '../src/aliens/registry';
 import type { FormDefinition } from '../src/aliens/types';
 import { BARRICADE_SIZES, barricadeKey } from '../src/scenes/preload/assetKeys';
-import { ALL_ANIMS, ALL_ASSETS, buildAssetCatalog, CHAPTER_ART } from '../src/scenes/preload/catalog';
+import { ALL_ANIMS, ALL_ASSETS, buildAssetCatalog, LAZY_ART } from '../src/scenes/preload/catalog';
 import { CHAPTER_1 } from '../src/levels/chapter1';
 import { HEATBLAST_FORM } from '../src/aliens/heatblast';
 import { Omnitrix } from '../src/systems/Omnitrix';
@@ -141,7 +141,7 @@ describe('adding an alien only needs its own module', () => {
     expect(catalog.assets.some((a) => a.key === 'spark-sheet')).toBe(true);
     expect(catalog.anims.some((a) => a.key === 'spark-idle')).toBe(true);
     // Everything shared, plus the back views THE DEEP DIVE draws (made with Chapter 5's art), plus SPARK's two.
-    expect(catalog.assets.length).toBe(ALL_ASSETS.length + CHAPTER_ART.ch5.assets.filter((x) => x.key.endsWith('-back')).length + 2);
+    expect(catalog.assets.length).toBe(ALL_ASSETS.length + LAZY_ART.rideBacks.assets.length + 2);
   });
 
   it('the Omnitrix dials and transforms into it like any other', () => {

@@ -5,7 +5,7 @@ import { PALETTE } from '../config/palette';
 import { allAliens } from '../aliens/registry';
 import { ACTS, CHAPTERS } from '../levels/chapters';
 import { countedCards } from '../levels/secrets';
-import { getLevel, hasLevel } from '../levels/registry';
+import { hasLevel, levelMeta } from '../levels/registry';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
 import { music } from '../systems/audio/Music';
 import { playSfx } from '../systems/audio/Sfx';
@@ -294,7 +294,7 @@ export class ActEndScene extends Phaser.Scene {
       const id = c.levelId!;
       const record = slot === null ? null : saveSystem.getChapter(slot, id);
       const best = record ? bestOn(record, difficulty) : null;
-      const cards = countedCards(getLevel(id)).length;
+      const cards = countedCards(levelMeta(id)).length;
       const have = record?.cards.length ?? 0;
       found += have;
       total += cards;

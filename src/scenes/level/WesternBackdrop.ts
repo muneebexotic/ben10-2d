@@ -3,7 +3,7 @@ import { DEPTH, GAME_HEIGHT, GAME_MAX_WIDTH as W, TILE } from '../../config/cons
 import { PALETTE } from '../../config/palette';
 import type { InteriorWall, LevelData } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
-import { CH5_TEX } from '../preload/bounty';
+import { CH5_TEX } from '../preload/bounty/keys';
 import { StaticCuller } from './StaticCuller';
 
 const WALLS: Partial<Record<InteriorWall, string>> = {

@@ -11,6 +11,7 @@ import { MenuList, type MenuItem } from '../ui/MenuList';
 import { pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { prefetchLevel, prepareLevel } from '../chapters/start';
 import { flashCamera } from '../systems/Accessibility';
 import { allAliens } from '../aliens/registry';
 import { EventBus } from '../systems/EventBus';
@@ -107,6 +108,8 @@ export class MenuScene extends Phaser.Scene {
     const last = saveSystem.lastSlot;
     const summary = last === null ? null : summarize(last);
     if (summary) {
+      // CONTINUE's chapter starts downloading while the title is up.
+      prefetchLevel(summary.file.resume?.levelId);
       const d = getDifficulty(summary.file.difficulty);
       const where = summary.resumeLabel ?? `${summary.chaptersDone}/${summary.chaptersTotal} CHAPTERS`;
       items.push({ label: 'CONTINUE', action: () => this.continueGame(summary.slot), hint: `FILE ${summary.slot + 1}  -  ${d.label}  -  ${where}` });
@@ -187,7 +190,7 @@ export class MenuScene extends Phaser.Scene {
     playSfx('transformBoom', 0.7);
     flashCamera(this.cameras.main, 300, 120, 255, 110);
     music.stop(300);
-    leaveTo(this, SCENES.level, data, null);
+    leaveTo(this, SCENES.level, data, null, { ready: prepareLevel(this.game, data.levelId ?? 'ch1'), onFail: () => (this.menu.enabled = true) });
   }
 
   override update(time: number, delta: number): void {

@@ -4,7 +4,7 @@ import { autotile, buildCells, cellAt, type TileGrid } from '../../levels/buildL
 import { CELL, ONE_WAY_FRAMES, SOLID_FRAMES } from '../../levels/tiles';
 import type { LevelData, LiquidKind } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
-import { CH5_TEX } from '../preload/bounty';
+import { CH5_TEX } from '../preload/bounty/keys';
 import type { Rect } from '../../entities/types';
 import { BakedGraphics } from '../../ui/BakedGraphics';
 

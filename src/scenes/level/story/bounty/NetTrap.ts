@@ -9,7 +9,7 @@ import type { BountyPlan } from '../../../../levels/types';
 import type { Controls } from '../../../../systems/InputMap';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import { jetpack, netSnap, sixsixLaugh } from '../../../../systems/audio/bountySfx';
-import { CH5_TEX } from '../../../preload/bounty';
+import { CH5_TEX } from '../../../preload/bounty/keys';
 import type { SetPiece, StoryKit } from '../StoryKit';
 import type { UnlockBeat } from '../UnlockBeat';
 import { NET_GHOST_LINE, NET_LINES } from './lines';

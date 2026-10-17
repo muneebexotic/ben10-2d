@@ -1,5 +1,7 @@
 import { PALETTE as P } from '../../../config/palette';
 import type { PixelCanvas } from '../PixelCanvas';
+import { SIXSIX_COLORS, KRAAB_COLORS, TETRAX_COLORS } from './colors';
+export { SIXSIX_COLORS, KRAAB_COLORS, TETRAX_COLORS } from './colors';
 
 /**
  * Vilgax's three bounty hunters. Sixsix: slim, gunmetal armour, a jetpack,
@@ -11,40 +13,6 @@ import type { PixelCanvas } from '../PixelCanvas';
  */
 
 const INK = P.ink;
-
-export const SIXSIX_COLORS = {
-  armor0: 0x1c1e28,
-  armor1: 0x2c303e,
-  armor2: 0x444a5c,
-  armor3: 0x6a7288,
-  visor: P.sixsix,
-  visorGlow: 0xffe0a0,
-  blade: 0xd8e0f0,
-  flame: P.fire1,
-} as const;
-
-export const KRAAB_COLORS = {
-  shell0: 0x4a1e14,
-  shell1: 0x7a3420,
-  shell2: 0xa8583a,
-  shell3: 0xd88a5a,
-  belly: 0xc8a888,
-  eye: 0xffe14a,
-  glow: P.kraab,
-  glowDark: P.kraabDark,
-  metal: 0x3a3a46,
-} as const;
-
-export const TETRAX_COLORS = {
-  crystal0: 0x0e1a4a,
-  crystal1: P.tetraxDark,
-  crystal2: P.tetrax,
-  crystal3: 0x9ab8ff,
-  glint: 0xeef4ff,
-  armor: 0x14161e,
-  armor2: 0x262a36,
-  eye: 0x8affd8,
-} as const;
 
 // ---------------------------------------------------------------- Sixsix (44x46, feet on row 45)
 

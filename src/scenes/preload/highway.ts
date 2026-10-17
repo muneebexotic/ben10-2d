@@ -182,20 +182,6 @@ export function drawRoad(pc: PixelCanvas): void {
   for (let i = 0; i < 60; i++) pc.px(Math.floor(rnd() * w), 20 + Math.floor(rnd() * (h - 20)), rnd() < 0.5 ? P.sand2 : P.sand0);
 }
 
-/** The asphalt cap laid over level ground where a road runs (16 px tall, tiles horizontally). */
-export function drawRoadCap(pc: PixelCanvas): void {
-  const w = pc.width;
-  pc.rect(0, 0, w, 3, P.asphalt2);
-  pc.rect(0, 0, w, 1, 0x6a6a74);
-  pc.rect(0, 3, w, 8, P.asphalt1);
-  pc.rect(4, 6, 22, 2, P.lineYellow);
-  pc.rect(36, 6, 22, 2, P.lineYellow);
-  pc.rect(0, 11, w, 2, P.asphalt0);
-  pc.rect(0, 13, w, 3, 0x5a4a44);
-  const rnd = seeded(17);
-  for (let i = 0; i < 16; i++) pc.px(Math.floor(rnd() * w), 3 + Math.floor(rnd() * 8), P.asphalt0);
-}
-
 // ---------------------------------------------------------------- Sky and backdrop
 
 export function drawSunsetSky(pc: PixelCanvas): void {
@@ -216,23 +202,6 @@ export function drawDuskSky(pc: PixelCanvas): void {
     [0.92, 0x9c3f5e],
     [1, 0xd8604a],
   ]);
-}
-
-/** A big retro sun with stripes cut out of its lower half. */
-export function drawSun(pc: PixelCanvas): void {
-  const c = pc.width / 2;
-  const r = c - 2;
-  for (let y = -r; y <= r; y++) {
-    const span = Math.floor(Math.sqrt(r * r - y * y));
-    const t = (y + r) / (2 * r);
-    const color = lerpColor(0xfff0a8, 0xff6a4a, t);
-    // Stripes get thicker toward the bottom.
-    if (y > 2) {
-      const period = 7 - Math.floor(t * 3);
-      if (y % period < Math.ceil(t * 3)) continue;
-    }
-    pc.rect(c - span, c + y, span * 2 + 1, 1, color);
-  }
 }
 
 function silhouetteRidge(pc: PixelCanvas, seed: number, base: number, color: number, rim: number, mesas: number): void {
@@ -487,16 +456,6 @@ export function drawGuardrail(pc: PixelCanvas): void {
   pc.rect(0, 1, w, 1, 0xd8d8e4);
   pc.rect(0, 4, w, 1, 0x6a6a76);
   for (const x of [4, w - 6]) pc.rect(x, 5, 2, pc.height - 5, 0x6a6a76);
-  pc.outline(P.ink);
-}
-
-export function drawTumbleweed(pc: PixelCanvas): void {
-  const rnd = seeded(12);
-  for (let i = 0; i < 26; i++) {
-    const a = rnd() * Math.PI * 2;
-    const r = 2 + rnd() * 4;
-    pc.line(7, 6, 7 + Math.cos(a) * r, 6 + Math.sin(a) * r * 0.8, rnd() < 0.5 ? 0xa8804a : 0x7a5a32);
-  }
   pc.outline(P.ink);
 }
 

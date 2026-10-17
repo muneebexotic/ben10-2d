@@ -3,7 +3,7 @@ import { DEPTH } from '../config/constants';
 import { COMBAT } from '../config/combat';
 import { PALETTE as P } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
-import { CH5_TEX } from '../scenes/preload/bounty';
+import { CH5_TEX } from '../scenes/preload/bounty/keys';
 import type { Fx, BurstKind } from '../systems/Fx';
 import type { Lighting } from '../systems/Lighting';
 import { playSfx } from '../systems/audio/Sfx';

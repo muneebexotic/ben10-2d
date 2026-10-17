@@ -15,7 +15,7 @@ import { easierThan, getDifficulty, type DifficultyId } from '../config/difficul
 import { difficultyRows } from '../ui/menu/difficultyInfo';
 import { playSfx } from '../systems/audio/Sfx';
 import { tipsFor } from '../ui/gameOverTips';
-import { getLevel, hasLevel } from '../levels/registry';
+import { hasLevel, levelMeta } from '../levels/registry';
 
 interface GameOverData {
   levelId?: string;
@@ -36,7 +36,7 @@ export class GameOverScene extends Phaser.Scene {
 
   /** A tip about this chapter's enemies and the aliens the player has. */
   private pickTip(data: GameOverData): string {
-    const chapter = data.levelId && hasLevel(data.levelId) ? getLevel(data.levelId).chapter : 1;
+    const chapter = data.levelId && data.levelId !== 'training' && hasLevel(data.levelId) ? levelMeta(data.levelId).chapter : data.levelId === 'training' ? 0 : 1;
     const tips = tipsFor(chapter, data.aliens ?? session.file?.unlockedAliens ?? []);
     return tips[Math.floor(Math.random() * tips.length)]?.text ?? '';
   }

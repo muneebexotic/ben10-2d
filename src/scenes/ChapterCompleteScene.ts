@@ -4,7 +4,7 @@ import { PALETTE } from '../config/palette';
 import { RANK_COLOR, SCORING, type Rank } from '../config/scoring';
 import { getDifficulty } from '../config/difficulty';
 import { CHAPTERS, chapterForLevel } from '../levels/chapters';
-import { getLevel } from '../levels/registry';
+import { levelMeta } from '../levels/registry';
 import type { LevelTheme } from '../levels/types';
 import { music } from '../systems/audio/Music';
 import { playSfx } from '../systems/audio/Sfx';
@@ -17,6 +17,7 @@ import { boxed, pixelText } from '../ui/text';
 import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
+import { prepareLevel } from '../chapters/start';
 import { flashCamera, shakeCamera } from '../systems/Accessibility';
 import { formatDelta } from '../systems/Splits';
 import { inputMode } from '../systems/InputMode';
@@ -77,7 +78,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.stats = data.stats;
     this.levelId = data.levelId ?? 'ch1';
     this.ready = false;
-    const result = computeRank(this.stats, getLevel(this.levelId).parTimeMs);
+    const result = computeRank(this.stats, levelMeta(this.levelId).parTimeMs);
     this.rank = result.rank;
     this.score = result.score;
     const difficulty = this.stats.difficulty;
@@ -103,7 +104,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.newMaster = this.master && !wasMaster;
     this.unlocked = [];
     const tracker = new AchievementTracker(fileAchievements(slot), (def) => this.unlocked.push(def));
-    if (run.timed && this.stats.timeMs <= (getLevel(this.levelId).parTimeMs ?? SCORING.parTimeMs)) tracker.unlock('speed-demon');
+    if (run.timed && this.stats.timeMs <= (levelMeta(this.levelId).parTimeMs ?? SCORING.parTimeMs)) tracker.unlock('speed-demon');
     if (this.stats.fullRun && this.stats.deaths === 0) tracker.unlock('no-sweat');
     if (this.stats.fullRun && difficulty === 'hard' && !this.stats.mixedDifficulty) tracker.unlock('hard-as-nails');
     if (this.master) tracker.unlock('omnitrix-master');
@@ -120,16 +121,16 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.add.rectangle(452, 176, 1, 176, PALETTE.omnitrixDark, 0.6);
 
     pixelText(this, GAME_WIDTH / 2, 28, `CHAPTER ${chapter?.number ?? 1} COMPLETE`, { scale: 3, originX: 0.5, originY: 0.5, color: PALETTE.omnitrix });
-    const name = pixelText(this, GAME_WIDTH / 2 - 4, 52, `${getLevel(this.levelId).name}  -`, { scale: 2, originX: 1, originY: 0.5, color: PALETTE.white });
+    const name = pixelText(this, GAME_WIDTH / 2 - 4, 52, `${levelMeta(this.levelId).name}  -`, { scale: 2, originX: 1, originY: 0.5, color: PALETTE.white });
     pixelText(this, name.x + 8, 52, d.label, { scale: 2, originX: 0, originY: 0.5, color: d.color });
 
     const s = this.stats;
     const rows: Row[] = [
       { label: 'TIME', value: () => formatTime(s.timeMs), ...this.timeHighlight(previousBest) },
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
-      { label: FOES_LABEL[getLevel(this.levelId).theme ?? 'forest'] ?? 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
+      { label: FOES_LABEL[levelMeta(this.levelId).theme ?? 'forest'] ?? 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` }, highlight: s.multiCuts > 0 ? `${s.multiCuts} MULTI-CUT${s.multiCuts === 1 ? '' : 'S'}!` : undefined, highlightColor: 0x9fd8ff },
-      { label: PARRY_LABEL[getLevel(this.levelId).theme ?? 'forest'] ?? 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
+      { label: PARRY_LABEL[levelMeta(this.levelId).theme ?? 'forest'] ?? 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
       ...(s.misfires > 0 || d.wrongTransformChance > 0
         ? [{ label: 'MISFIRES', value: () => String(s.misfires), highlight: s.improvised > 0 ? `${s.improvised} IMPROVISED!` : undefined, highlightColor: PALETTE.gold }]
@@ -310,7 +311,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     } catch {
       url = '';
     }
-    const chapter = getLevel(this.levelId).name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    const chapter = levelMeta(this.levelId).name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
     const difficulty = getDifficulty(s.difficulty).label;
     const article = this.rank === 'A' || this.rank === 'S' ? 'an' : 'a';
     const misfires = s.misfires > 0 ? ` and survived ${s.misfires} Omnitrix misfire${s.misfires === 1 ? '' : 's'}` : '';
@@ -355,7 +356,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     if (!this.ready) return;
     music.stop(200);
     playSfx('transformBoom', 0.7);
-    leaveTo(this, SCENES.level, { levelId: this.levelId }, null);
+    leaveTo(this, SCENES.level, { levelId: this.levelId }, null, { ready: prepareLevel(this.game, this.levelId) });
   }
 
   /** Back to the file's chapters (the title if this run had no file). */
@@ -369,7 +370,7 @@ export class ChapterCompleteScene extends Phaser.Scene {
     playSfx('uiConfirm');
     const then = { cleared: this.levelId, firstClear: this.outcome.firstClear };
     // The act's last chapter, cleared for the first time: its cliffhanger and the ACT COMPLETE screen.
-    const act = getLevel(this.levelId).story?.actEnd;
+    const act = levelMeta(this.levelId).actEnd;
     if (act !== undefined && this.outcome.firstClear) leaveTo(this, SCENES.actEnd, { act, levelId: this.levelId, then }, null);
     else if (session.slot === null) leaveTo(this, SCENES.menu, undefined, null);
     else leaveTo(this, SCENES.chapterSelect, then, null);

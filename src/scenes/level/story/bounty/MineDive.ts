@@ -14,7 +14,7 @@ import { playSfx } from '../../../../systems/audio/Sfx';
 import { brakeScreech, clawCharge, clawFire, crystalBreak, dynamiteBoom, erupt, missileBoom, missileIncoming, railClack, rockSmash, trackerLock } from '../../../../systems/audio/bountySfx';
 import { createDiveView, type DiveSprite, type DiveView } from '../../../dive/DiveView';
 import { TEX } from '../../../preload/assetKeys';
-import { CH5_TEX } from '../../../preload/bounty';
+import { CH5_TEX } from '../../../preload/bounty/keys';
 import { SCENES } from '../../../SceneKeys';
 import type { SetPiece, StoryKit } from '../StoryKit';
 

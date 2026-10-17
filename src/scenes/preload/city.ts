@@ -324,26 +324,6 @@ export function drawStorefront(pc: PixelCanvas, frame: number): void {
   pc.outline(P.ink);
 }
 
-/** The GAME ZONE's front: a flashing marquee sign over glass doors. 112x100. */
-export function drawArcadeFront(pc: PixelCanvas): void {
-  pc.rect(0, 20, 112, 80, 0x2a1438);
-  pc.rect(4, 0, 104, 26, 0x1a0a24);
-  pc.rect(6, 2, 100, 22, 0x3a1a4a);
-  // GAME ZONE in neon, a dark drop shadow under each letter.
-  lettering(pc, 7, 7, 'GAME', 0x1a0a24, 2);
-  lettering(pc, 6, 6, 'GAME', P.neonPink, 2);
-  lettering(pc, 58, 7, 'ZONE', 0x1a0a24, 2);
-  lettering(pc, 57, 6, 'ZONE', P.neonBlue, 2);
-  for (let x = 8; x < 106; x += 6) pc.px(x, 3, P.gold).px(x + 3, 22, P.gold);
-  pc.rect(26, 40, 60, 60, 0x0a0614);
-  pc.rect(28, 42, 27, 58, 0x3a2a6a).rect(57, 42, 27, 58, 0x3a2a6a);
-  pc.rect(30, 46, 23, 30, 0x6a4aa8).rect(59, 46, 23, 30, 0x6a4aa8);
-  pc.vline(55, 42, 99, 0x0a0614);
-  pc.rect(6, 34, 16, 50, 0x1a0e24).rect(90, 34, 16, 50, 0x1a0e24);
-  pc.rect(8, 36, 12, 20, P.neonBlue).rect(92, 36, 12, 20, P.neonPink);
-  pc.outline(P.ink);
-}
-
 export function drawStreetLamp(pc: PixelCanvas): void {
   pc.rect(6, 10, 2, 54, 0x2a2a34);
   pc.rect(4, 60, 6, 4, 0x1a1a22);
@@ -647,30 +627,12 @@ export function drawSecurityLaser(pc: PixelCanvas): void {
   pc.outline(P.ink);
 }
 
-/** A welded-shut door with no handle: whatever's behind it isn't for anyone. 26x48. */
-export function drawSealedDoor(pc: PixelCanvas): void {
-  pc.rect(0, 0, 26, 48, 0x3a3e48);
-  pc.rect(3, 3, 20, 45, 0x2a2e38);
-  for (let y = 6; y < 46; y += 8) pc.line(3, y, 22, y + 3, 0x8a5a3a);
-  for (let y = 4; y < 48; y += 6) pc.px(2, y, 0xffb050).px(23, y + 3, 0xffb050);
-  pc.rect(6, 18, 14, 8, P.hazard);
-  pc.rect(8, 20, 10, 4, P.ink);
-  pc.outline(P.ink);
-}
-
 /** A catwalk railing. 32x10. */
 export function drawCatwalkRail(pc: PixelCanvas): void {
   pc.hline(0, 31, 0, P.hazard);
   pc.hline(0, 31, 1, 0x8a6a1e);
   for (let x = 0; x < 32; x += 8) pc.rect(x, 0, 2, 10, P.concrete2);
   pc.hline(0, 31, 5, P.concrete2);
-}
-
-/** Rails and sleepers laid along a track bed. 32x8. */
-export function drawRails(pc: PixelCanvas): void {
-  for (let x = 1; x < 32; x += 8) pc.rect(x, 3, 5, 5, 0x3a2a1e);
-  pc.rect(0, 1, 32, 2, P.concrete3);
-  pc.hline(0, 31, 3, P.concrete1);
 }
 
 /**

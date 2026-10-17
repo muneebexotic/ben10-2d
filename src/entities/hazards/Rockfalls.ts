@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { ROCKFALL } from '../../config/bounty';
 import { DEPTH, TILE } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
-import { CH5_TEX } from '../../scenes/preload/bounty';
+import { CH5_TEX } from '../../scenes/preload/bounty/keys';
 import type { Fx } from '../../systems/Fx';
 import { blinkOn } from '../../systems/Accessibility';
 import { playSfx } from '../../systems/audio/Sfx';

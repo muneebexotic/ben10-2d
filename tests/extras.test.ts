@@ -4,7 +4,7 @@ import { jokeCatalog, jokeId } from '../src/aliens/jokes';
 import { misfireLines } from '../src/aliens/misfire';
 import { allAliens } from '../src/aliens/registry';
 import { CARDS, cardInfo } from '../src/levels/cards';
-import { storyLevels } from '../src/levels/registry';
+import { STORY_LEVELS } from './support/levels';
 import { AchievementTracker, achievementProgress, counterUnlocks, type AchievementStore } from '../src/systems/Achievements';
 import { isOmnitrixMaster } from '../src/systems/Mastery';
 import { createChapterRecord, createDifficultyRecord, migrateSave, SaveSystem, type StorageLike } from '../src/systems/SaveSystem';
@@ -153,7 +153,7 @@ describe('misfire jokes', () => {
 
 describe('card album', () => {
   it('has an entry for every card in every level, numbered 1 to N with no gaps', () => {
-    const placed = storyLevels().flatMap((l) => l.entities.filter((e) => e.type === 'card').map((e) => (e as { id: string }).id));
+    const placed = STORY_LEVELS.flatMap((l) => l.entities.filter((e) => e.type === 'card').map((e) => (e as { id: string }).id));
     for (const id of placed) expect(cardInfo(id), id).toBeDefined();
     expect(CARDS.map((c) => c.number)).toEqual(CARDS.map((_, i) => i + 1));
     expect(new Set(CARDS.map((c) => c.id)).size).toBe(CARDS.length);

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { DYNAMITE } from '../../config/bounty';
 import { DEPTH, FX, TILE } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
-import { CH5_TEX } from '../../scenes/preload/bounty';
+import { CH5_TEX } from '../../scenes/preload/bounty/keys';
 import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import { playSfx } from '../../systems/audio/Sfx';

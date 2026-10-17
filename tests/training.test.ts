@@ -7,7 +7,11 @@ import { allAliens, getAlien } from '../src/aliens/registry';
 import { DpsMeter, formatDamage } from '../src/systems/DpsMeter';
 import { TRAINING_ENEMIES } from '../src/systems/TrainingState';
 import { getLevel } from '../src/levels/registry';
-import { TRACKS } from '../src/systems/audio/Music';
+import { trackData, type TrackName } from '../src/systems/audio/Music';
+import * as roadTracks from '../src/systems/audio/tracks/road';
+import * as museumTracks from '../src/systems/audio/tracks/museum';
+import * as cityTracks from '../src/systems/audio/tracks/city';
+import * as bountyTracks from '../src/systems/audio/tracks/bounty';
 import { TRAINING } from '../src/config/training';
 import { formatControls } from '../src/systems/controlLabels';
 
@@ -111,7 +115,9 @@ describe('dummy damage meter', () => {
 
 describe('music', () => {
   it('every track has whole bars for every part', () => {
-    for (const [name, track] of Object.entries(TRACKS)) {
+    const core = (['forest', 'boss', 'title', 'victory', 'simulation'] as TrackName[]).map((name) => [name, trackData(name)!] as const);
+    const chapters = [roadTracks, museumTracks, cityTracks, bountyTracks].flatMap((m) => Object.entries(m));
+    for (const [name, track] of [...core, ...chapters]) {
       const steps = track.bars * 16;
       expect(track.bass.length, name).toBe(steps);
       if (track.arp.length) expect(track.arp.length, name).toBe(steps);

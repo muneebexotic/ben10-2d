@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { DEPTH } from '../../../config/constants';
 import { KRAAB } from '../../../config/hunters';
 import { PALETTE } from '../../../config/palette';
-import { CH5_TEX } from '../../../scenes/preload/bounty';
+import { CH5_TEX } from '../../../scenes/preload/bounty/keys';
 import type { Fx } from '../../../systems/Fx';
 import { playSfx } from '../../../systems/audio/Sfx';
 import { crystalBreak } from '../../../systems/audio/bountySfx';

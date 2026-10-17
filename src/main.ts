@@ -16,9 +16,6 @@ import { SettingsScene } from './scenes/SettingsScene';
 import { FileSelectScene } from './scenes/FileSelectScene';
 import { DifficultyScene } from './scenes/DifficultyScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
-import { ArcadeScene } from './scenes/ArcadeScene';
-import { DiveScene } from './scenes/DiveScene';
-import { AutobenchScene } from './scenes/AutobenchScene';
 import { applySavedSettings, installPageAudio } from './systems/Settings';
 import { installDeviceGuards } from './systems/Device';
 import { DEV_TOOLS } from './systems/LaunchParams';
@@ -28,6 +25,7 @@ import { inputMode } from './systems/InputMode';
 import { audio } from './systems/audio/AudioEngine';
 import { contextVariant } from './systems/PerfSwitches';
 import { installRenderSwitches } from './systems/RenderSwitches';
+import { prepareLevel } from './chapters/start';
 
 applySavedSettings();
 installPageAudio();
@@ -41,7 +39,6 @@ const game = new Phaser.Game(
     DifficultyScene,
     ChapterSelectScene,
     LevelScene,
-    DiveScene,
     UIScene,
     TouchScene,
     PauseScene,
@@ -51,8 +48,6 @@ const game = new Phaser.Game(
     ExtrasScene,
     GalleryScene,
     SettingsScene,
-    ArcadeScene,
-    AutobenchScene,
   ], contextVariant),
 );
 
@@ -62,5 +57,6 @@ game.events.once(Phaser.Core.Events.READY, () => installRenderSwitches(game));
 installDeviceGuards(game);
 
 if (DEV_TOOLS) {
-  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus, __inputMode: inputMode, __audio: audio });
+  // __prepare: tools that start a level directly load its chapter's chunk first.
+  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus, __inputMode: inputMode, __audio: audio, __prepare: (id: string) => prepareLevel(game, id) });
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ACTS, CHAPTERS, chapterForLevel, chapterState, defaultChapterIndex, titleRevealed } from '../src/levels/chapters';
-import { getLevel } from '../src/levels/registry';
+import { storyLevel } from './support/levels';
 import { hasAlien } from '../src/aliens/registry';
 import { SILHOUETTE_KEYS } from '../src/scenes/preload/silhouettes';
 
@@ -12,7 +12,7 @@ describe('chapter catalogue', () => {
   });
 
   it('every built chapter points at a real level', () => {
-    for (const c of CHAPTERS.filter((c) => c.levelId)) expect(getLevel(c.levelId!).chapter).toBe(c.number);
+    for (const c of CHAPTERS.filter((c) => c.levelId)) expect(storyLevel(c.levelId!).chapter).toBe(c.number);
     expect(chapterForLevel('ch1')?.title).toBe('CAMP CRASH');
   });
 

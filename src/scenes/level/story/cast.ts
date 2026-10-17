@@ -2,7 +2,7 @@ import { PALETTE } from '../../../config/palette';
 import { TEX } from '../../preload/assetKeys';
 import { WILDMUTT_TEX } from '../../../aliens/wildmutt/art';
 import { GHOSTFREAK_TEX } from '../../../aliens/ghostfreak/art';
-import { CH5_TEX } from '../../preload/bounty';
+import { CH5_TEX } from '../../preload/bounty/keys';
 
 export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak';
 

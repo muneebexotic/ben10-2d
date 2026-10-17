@@ -1,7 +1,7 @@
 import { aliensUnlockedBy, allAliens, hasAlien } from '../aliens/registry';
 import { STORY } from '../config/story';
 import { CHAPTERS, chapterForLevel } from '../levels/chapters';
-import { getLevel, storyLevels } from '../levels/registry';
+import { levelMeta, storyMetas } from '../levels/registry';
 import { countedCards } from '../levels/secrets';
 import { saveSystem, type SlotData } from './SaveSystem';
 
@@ -42,8 +42,7 @@ export function fileAliens(file: SlotData | null): string[] {
 /** A checkpoint's split label ("NEST"), for resume lines. */
 export function checkpointLabel(levelId: string, checkpointId: string): string {
   try {
-    const cp = getLevel(levelId).entities.find((e) => e.type === 'checkpoint' && e.id === checkpointId);
-    return cp && cp.type === 'checkpoint' ? cp.label : checkpointId.toUpperCase();
+    return levelMeta(levelId).checkpoints.find((c) => c.id === checkpointId)?.label ?? checkpointId.toUpperCase();
   } catch {
     return checkpointId.toUpperCase();
   }
@@ -55,7 +54,7 @@ export function summarize(slot: number): FileSummary | null {
   const done = completedLevelIds(file);
   let cards = 0;
   let cardsTotal = 0;
-  for (const level of storyLevels()) {
+  for (const level of storyMetas()) {
     const counted = countedCards(level).map((c) => c.id);
     cardsTotal += counted.length;
     cards += (file.chapters[level.id]?.cards ?? []).filter((id) => counted.includes(id)).length;

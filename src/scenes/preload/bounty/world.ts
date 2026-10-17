@@ -1,6 +1,8 @@
 import { PALETTE as P } from '../../../config/palette';
 import { FRAME } from '../../../levels/tiles';
 import { seeded, type PixelCanvas } from '../PixelCanvas';
+import { WESTERN } from './colors';
+export { WESTERN } from './colors';
 
 /**
  * Chapter 5's ground and skies: Silver Spur's packed-dirt street and the
@@ -9,30 +11,6 @@ import { seeded, type PixelCanvas } from '../PixelCanvas';
  * saloon, the jail, the haunted hotel, the mine and the crystal caverns.
  */
 
-export const WESTERN = {
-  dirt0: 0x3a2418,
-  dirt1: 0x5a3824,
-  dirt2: 0x7a5034,
-  dirt3: 0x9a6a44,
-  road: 0xb08452,
-  rock0: 0x1c1822,
-  rock1: 0x2c2634,
-  rock2: 0x433a4c,
-  rock3: 0x5e5468,
-  vein: P.diamondhead,
-  plank0: 0x3a2214,
-  plank1: 0x6b4226,
-  plank2: 0x8f5c34,
-  plank3: 0xb07a48,
-  nightTop: 0x050818,
-  nightMid: 0x101a3e,
-  nightLow: 0x2a2a5a,
-  horizon: 0x5a4a78,
-  mesa0: 0x120e22,
-  mesa1: 0x1e1834,
-  mesa2: 0x2e2448,
-  moonlit: 0x6a6aa8,
-} as const;
 const W = WESTERN;
 
 // ---------------------------------------------------------------- Tiles

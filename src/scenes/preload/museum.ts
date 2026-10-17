@@ -257,41 +257,6 @@ export function drawLampPost(pc: PixelCanvas): void {
   pc.outline(P.ink);
 }
 
-/** The museum's front: steps, six columns, a pediment and lit bronze doors. 240x150. */
-export function drawMuseumFacade(pc: PixelCanvas): void {
-  const w = 240;
-  const h = 150;
-  // Wall behind the columns.
-  pc.rect(16, 40, w - 32, h - 52, 0x2a2840);
-  // Pediment.
-  pc.poly([[8, 40], [w / 2, 4], [w - 8, 40]], P.marble2);
-  pc.poly([[24, 36], [w / 2, 12], [w - 24, 36]], P.marble1);
-  pc.rect(8, 38, w - 16, 6, P.marble3);
-  pc.hline(8, w - 9, 44, P.marble1);
-  // Lettering band (drawn as blocky glyph marks; the real title is a banner prop).
-  pc.rect(40, 48, w - 80, 9, P.marble2);
-  for (let x = 46; x < w - 46; x += 6) pc.rect(x, 50, 4, 5, P.marble0);
-  // Lit doorway in the middle.
-  pc.rect(w / 2 - 18, 74, 36, 52, 0x3a2a1c);
-  pc.rect(w / 2 - 15, 77, 30, 49, 0xffc870);
-  pc.rect(w / 2 - 1, 77, 2, 49, 0x8a5a2a);
-  pc.rect(w / 2 - 15, 77, 30, 4, 0xffe8b0);
-  // Six columns.
-  for (let i = 0; i < 6; i++) {
-    const cx = 30 + i * 36 + (i >= 3 ? 0 : 0);
-    if (Math.abs(cx - w / 2) < 24) continue;
-    pc.rect(cx - 6, 60, 12, 72, P.marble2);
-    pc.rect(cx - 6, 60, 3, 72, P.marble3);
-    pc.rect(cx + 4, 60, 2, 72, P.marble1);
-    for (let k = -2; k <= 2; k += 2) pc.vline(cx + k, 64, 128, P.marble1);
-    pc.rect(cx - 8, 56, 16, 5, P.marble3);
-    pc.rect(cx - 8, 130, 16, 4, P.marble3);
-  }
-  // Steps.
-  for (let s = 0; s < 4; s++) pc.rect(8 + s * 4, 134 + s * 4, w - 16 - s * 8, 4, s % 2 ? P.marble2 : P.marble3);
-  pc.outline(P.ink);
-}
-
 /** A T-rex skeleton mid-roar on a plinth. 150x110. */
 export function drawTrex(pc: PixelCanvas): void {
   const bone = 0xe8dcc0;
@@ -442,13 +407,6 @@ export function drawVelvetRope(pc: PixelCanvas): void {
   }
   pc.line(4, 4, 16, 8, P.velvet, 2);
   pc.line(16, 8, 28, 4, P.velvet, 2);
-  pc.outline(P.ink);
-}
-
-export function drawBench(pc: PixelCanvas): void {
-  pc.rect(0, 2, 32, 4, 0x5a3a24);
-  pc.hline(0, 31, 2, 0x8a5a34);
-  for (const x of [3, 27]) pc.rect(x, 6, 2, 6, 0x2a2a34);
   pc.outline(P.ink);
 }
 

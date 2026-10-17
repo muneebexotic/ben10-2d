@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { PALETTE } from '../config/palette';
 import { SCENES } from './SceneKeys';
+import { prepareLevel } from '../chapters/start';
 import { pixelText } from '../ui/text';
 import { viewHeight, viewWidth } from '../ui/view';
 import { autopilot } from '../systems/Autopilot';
@@ -317,8 +318,10 @@ export class AutobenchScene extends Phaser.Scene {
       this.setPhase('warmup');
       return;
     }
-    this.scene.launch(SCENES.level, { levelId: scenario.levelId, checkpoint: scenario.checkpoint });
+    const levelId = scenario.levelId;
     this.setPhase('loading');
+    // The chapter's chunk first (fetched once; the 'loading' phase waits for the level to be up).
+    void prepareLevel(this.game, levelId).then(() => this.scene.launch(SCENES.level, { levelId, checkpoint: scenario.checkpoint }));
   }
 
   override update(): void {

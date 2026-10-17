@@ -3,7 +3,7 @@ import { PHASE_WALL } from '../../config/bounty';
 import { DEPTH, TILE } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { TEX } from '../../scenes/preload/assetKeys';
-import { CH5_TEX } from '../../scenes/preload/bounty';
+import { CH5_TEX } from '../../scenes/preload/bounty/keys';
 import type { Fx } from '../../systems/Fx';
 import type { Lighting } from '../../systems/Lighting';
 import { chance } from '../../systems/Pacing';

@@ -4,7 +4,7 @@ import { activeDifficultyId, pace, setActiveDifficulty } from '../src/systems/Di
 import { misfireAllowed } from '../src/systems/MisfireRules';
 import { checkpointsFor } from '../src/levels/checkpoints';
 import { CHAPTER_1 } from '../src/levels/chapter1';
-import { storyLevels } from '../src/levels/registry';
+import { STORY_LEVELS } from './support/levels';
 import { createRunStats, sanitizeRunStats } from '../src/systems/RunStats';
 
 describe('difficulty presets', () => {
@@ -55,7 +55,7 @@ describe('difficulty presets', () => {
   });
 
   it('Hard still checkpoints every major set piece: each boss arena and each chase stage', () => {
-    for (const level of storyLevels()) {
+    for (const level of STORY_LEVELS) {
       const sparse = checkpointsFor(level, 'sparse');
       for (const boss of level.entities.filter((e) => e.type === 'boss')) {
         if (boss.type !== 'boss') continue;

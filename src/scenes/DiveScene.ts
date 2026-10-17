@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { PALETTE } from '../config/palette';
 import { DIVE } from '../config/dive';
-import { CH5_TEX } from './preload/bounty';
+import { CH5_TEX } from './preload/bounty/keys';
 import { TEX } from './preload/assetKeys';
 import { SCENES } from './SceneKeys';
 import { TUNNEL_FRAG } from './dive/tunnelShader';

@@ -42,3 +42,21 @@ export function arpBar(chord: number[], shape: Array<number | null>): Note[] {
   return shape.map((i) => (i === null ? null : chord[i % chord.length] + 12 * Math.floor(i / chord.length)));
 }
 
+
+/** The standard arpeggio walk over a chord (up, down, up to the fifth note). */
+export const ARP_SHAPE = [0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 4, 3, 2, 1];
+
+/** The boss bass line: root, octave pumps and a lean on the seventh. */
+export const BOSS_BASS: Array<[number, number]> = [
+  [0, 0],
+  [2, 0],
+  [4, 12],
+  [6, 0],
+  [8, 0],
+  [10, 12],
+  [12, 0],
+  [14, 10],
+];
+
+/** A creeping, gappy arpeggio (the museum at night, Line 11). */
+export const CREEP_ARP = [0, null, 2, null, 1, null, 2, 3, 0, null, 2, null, 1, 3, 2, null];

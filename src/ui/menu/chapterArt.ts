@@ -3,8 +3,9 @@ import { getAlien, hasAlien } from '../../aliens/registry';
 import { PALETTE } from '../../config/palette';
 import type { ChapterInfo } from '../../levels/chapters';
 import { TEX } from '../../scenes/preload/assetKeys';
-import { CH5_TEX } from '../../scenes/preload/bounty';
-import { ensureChapterAssets } from '../../scenes/preload/generate';
+import { CH5_TEX } from '../../scenes/preload/bounty/keys';
+import { ensureArt } from '../../scenes/preload/generate';
+import { chapterLoaded, chapterModule, loadChapter } from '../../chapters/registry';
 import { SILHOUETTE_KEYS, type SilhouetteId } from '../../scenes/preload/silhouettes';
 import { seededRng } from '../../systems/Rng';
 import { pixelText } from '../text';
@@ -216,7 +217,6 @@ function arcadeDusk(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: numb
 
 /** Chapter 5's window: Silver Spur under a full moon, the water tower, and Sixsix's targeting laser on Ben in the street. */
 function silverSpur(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number, h: number): Phaser.GameObjects.GameObject[] {
-  ensureChapterAssets(scene, 'ch5', [CH5_TEX.sixsix]);
   const left = -w / 2;
   const top = -h / 2;
   const floor = h / 2 - 8;
@@ -245,14 +245,41 @@ function silverSpur(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: numb
   // Sixsix hovers top right; his drone's laser blinks on Ben.
   const sx = w / 2 - 22;
   const sy = top + 22;
-  const sixsix = scene.add.sprite(sx, sy, CH5_TEX.sixsix).setOrigin(0.5, 0.5).setScale(0.8).setFlipX(true).play('sixsix-fly');
-  scene.tweens.add({ targets: sixsix, y: sy + 3, yoyo: true, repeat: -1, duration: 700, ease: 'Sine.easeInOut' });
+  const slot = scene.add.container(0, 0);
+  withWindowArt(scene, 'ch5', () => {
+    const sixsix = scene.add.sprite(sx, sy, CH5_TEX.sixsix).setOrigin(0.5, 0.5).setScale(0.8).setFlipX(true).play('sixsix-fly');
+    scene.tweens.add({ targets: sixsix, y: sy + 3, yoyo: true, repeat: -1, duration: 700, ease: 'Sine.easeInOut' });
+    slot.add(sixsix);
+  }, slot);
   const laser = scene.add.graphics();
   laser.lineStyle(1, PALETTE.enemy, 0.9).lineBetween(sx - 8, sy + 4, benX, floor - 14);
   laser.fillStyle(PALETTE.enemy, 0.9).fillCircle(benX, floor - 14, 2);
   scene.tweens.add({ targets: laser, alpha: 0.25, yoyo: true, repeat: -1, duration: 160, repeatDelay: 500 });
-  out.push(laser, sixsix);
+  out.push(laser, slot);
   return out;
+}
+
+/**
+ * A window whose villain lives in the chapter's chunk: drawn now if the chunk is in,
+ * else as soon as it arrives (Chapter Select fetches the focused chapter ahead anyway),
+ * unless the window has gone by then.
+ */
+function withWindowArt(scene: Phaser.Scene, levelId: string, draw: () => void, owner: Phaser.GameObjects.GameObject): void {
+  const ready = () => {
+    const art = chapterModule(levelId).windowArt;
+    if (art) ensureArt(scene, art);
+    draw();
+  };
+  if (chapterLoaded(levelId)) {
+    ready();
+    return;
+  }
+  loadChapter(levelId).then(
+    () => {
+      if (owner.active && owner.scene) ready();
+    },
+    () => undefined,
+  );
 }
 
 /** Up to two mystery silhouettes, side by side, standing on the window's floor. */

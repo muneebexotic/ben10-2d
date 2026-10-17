@@ -4,7 +4,7 @@ import { HUNTERS_BOSS, KRAAB, SIXSIX } from '../../../config/hunters';
 import { PALETTE } from '../../../config/palette';
 import type { BountyPlan } from '../../../levels/types';
 import { TEX } from '../../../scenes/preload/assetKeys';
-import { CH5_TEX } from '../../../scenes/preload/bounty';
+import { CH5_TEX } from '../../../scenes/preload/bounty/keys';
 import { pace } from '../../../systems/Difficulty';
 import { EventBus } from '../../../systems/EventBus';
 import { chance } from '../../../systems/Pacing';

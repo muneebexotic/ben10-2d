@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { PALETTE } from '../../config/palette';
-import { CH5_TEX } from '../../scenes/preload/bounty';
+import { CH5_TEX } from '../../scenes/preload/bounty/keys';
 import { KRAAB_FRAME, KRAAB_FRAMES, SIXSIX_FRAME, SIXSIX_FRAMES, TETRAX_FRAME, TETRAX_FRAMES } from '../../scenes/preload/bounty/hunters';
 
 export type HunterId = 'sixsix' | 'kraab' | 'tetrax';

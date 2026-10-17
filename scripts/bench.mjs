@@ -438,7 +438,9 @@ async function runLeak(browser, base) {
       for (const entry of plan) {
         const [levelId, checkpoint] = entry;
         await page.evaluate(
-          ([levelId, checkpoint]) => {
+          async ([levelId, checkpoint]) => {
+            // Builds with chapter chunks load the chapter first.
+            if (window.__prepare) await window.__prepare(levelId);
             const lvl = window.__game.scene.getScene('Level');
             lvl.scene.start('Level', { levelId, checkpoint });
           },

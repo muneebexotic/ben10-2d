@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
+import type { ChapterArt } from '../../chapters/types';
 import type { AssetDef } from './assetTypes';
-import { BOOT_ANIMS, BOOT_ASSETS, CHAPTER_ART } from './catalog';
+import { BOOT_ANIMS, BOOT_ASSETS, LAZY_ART } from './catalog';
 import { PixelCanvas } from './PixelCanvas';
 
 /** Queues real art files for any asset that has a `url`. Call from Preload.preload(). */
@@ -20,35 +21,19 @@ export function generateAssets(scene: Phaser.Scene): void {
 }
 
 /**
- * Generates a chapter's own art the first time it's needed (a no-op when it
- * was made at boot or already exists). Returns how long it took (ms).
+ * Generates art made on demand (a chapter's own, or a shared lazy group by name)
+ * the first time it's needed: a no-op for what already exists. Returns how long it took (ms).
  */
-export function ensureChapterArt(scene: Phaser.Scene, levelId: string): number {
-  const art = CHAPTER_ART[levelId];
-  if (!art) return 0;
+export function ensureArt(scene: Phaser.Scene, art: ChapterArt | string): number {
+  const group = typeof art === 'string' ? LAZY_ART[art] : art;
+  if (!group) return 0;
   const t0 = performance.now();
-  for (const asset of art.assets) if (!asset.url && !scene.textures.exists(asset.key)) generate(scene, asset);
-  for (const anim of art.anims) {
+  for (const asset of group.assets) if (!asset.url && !scene.textures.exists(asset.key)) generate(scene, asset);
+  for (const anim of group.anims) {
     if (scene.anims.exists(anim.key)) continue;
     scene.anims.create({ key: anim.key, frames: anim.frames.map((frame) => ({ key: anim.texture, frame })), frameRate: anim.frameRate, repeat: anim.repeat });
   }
   return performance.now() - t0;
-}
-
-/** Just some of a chapter's art (a Chapter Select window needs one sprite, not the whole chapter), with its animations. */
-export function ensureChapterAssets(scene: Phaser.Scene, levelId: string, keys: readonly string[]): void {
-  const art = CHAPTER_ART[levelId];
-  if (!art) return;
-  for (const asset of art.assets) if (keys.includes(asset.key) && !asset.url && !scene.textures.exists(asset.key)) generate(scene, asset);
-  for (const anim of art.anims) {
-    if (!keys.includes(anim.texture) || scene.anims.exists(anim.key)) continue;
-    scene.anims.create({ key: anim.key, frames: anim.frames.map((frame) => ({ key: anim.texture, frame })), frameRate: anim.frameRate, repeat: anim.repeat });
-  }
-}
-
-/** Every chapter's own art (the gallery shows everything). */
-export function ensureAllChapterArt(scene: Phaser.Scene): void {
-  for (const id of Object.keys(CHAPTER_ART)) ensureChapterArt(scene, id);
 }
 
 function generate(scene: Phaser.Scene, asset: AssetDef): void {

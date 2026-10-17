@@ -1,16 +1,13 @@
 import type Phaser from 'phaser';
-import { STORY, type StoryLine } from '../../config/story';
-import type { BossKind } from '../../levels/types';
-import { TEX } from '../../scenes/preload/assetKeys';
+import type { StoryLine } from '../../config/story';
 import type { TrackName } from '../../systems/audio/Music';
 import type { ArenaBoss } from './ArenaBoss';
-import { HunterDrone, type BossWorld } from './HunterDrone';
-import { Roadbreaker } from './roadbreaker/Roadbreaker';
-import { Frog } from './frog/Frog';
-import { Kevin } from './kevin/Kevin';
-import { Hunters } from './hunters/Hunters';
+import type { BossWorld } from './HunterDrone';
 
-/** Everything an arena needs to stage a boss: its music, Vilgax's speech before it, and the boss itself. */
+/**
+ * Everything an arena needs to stage a boss: its music, Vilgax's speech before
+ * it, and the boss itself. Each chapter's chunk brings its own (`ChapterModule.bosses`).
+ */
 export interface BossKindDef {
   music: TrackName;
   /** Vilgax's speech before the fight (empty: the boss brings its own speaker, Dr. Animo). */
@@ -19,16 +16,3 @@ export interface BossKindDef {
   portrait?: string;
   create(scene: Phaser.Scene, world: BossWorld, x: number): ArenaBoss;
 }
-
-export const BOSS_KINDS: Record<BossKind, BossKindDef> = {
-  hunter: { music: 'boss', hologram: STORY.vilgaxLines, create: (scene, world, x) => new HunterDrone(scene, world, x) },
-  roadbreaker: {
-    music: 'roadbreaker',
-    hologram: STORY.vilgaxLinesRoadTrip,
-    portrait: TEX.portraitVilgax,
-    create: (scene, world, x) => new Roadbreaker(scene, world, x),
-  },
-  frog: { music: 'animo', hologram: [], create: (scene, world, x) => new Frog(scene, world, x) },
-  kevin: { music: 'kevin', hologram: [], create: (scene, world, x) => new Kevin(scene, world, x) },
-  hunters: { music: 'hunters', hologram: [], create: (scene, world, x) => new Hunters(scene, world, x) },
-};

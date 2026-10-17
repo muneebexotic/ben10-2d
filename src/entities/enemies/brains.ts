@@ -16,9 +16,6 @@ import { RoachBrain } from './mutants/roach';
 import { MascotBrain } from './robots/mascot';
 import { SparkBrain } from './robots/spark';
 import { TrackbotBrain } from './robots/trackbot';
-import { CrabbotBrain } from './bounty/crabbot';
-import { SentryBrain } from './bounty/sentry';
-import { TrackerBrain } from './bounty/tracker';
 import { pace } from '../../systems/Difficulty';
 import { chance, damp } from '../../systems/Pacing';
 
@@ -254,6 +251,13 @@ export class GunnerBrain implements DroneBrain {
 }
 
 /** A fresh brain for any enemy kind (`ceiling`: a roach that starts clinging to the ceiling). */
+/** Brains a chapter's chunk brings for enemies only it has (Chapter 5's hunters' gear): added when it loads. */
+const chapterBrains: Partial<Record<EnemyKind, (opts: { ceiling?: boolean }) => DroneBrain>> = {};
+
+export function registerBrains(brains: Partial<Record<EnemyKind, (opts: { ceiling?: boolean }) => DroneBrain>>): void {
+  Object.assign(chapterBrains, brains);
+}
+
 export function createBrain(kind: EnemyKind, opts: { ceiling?: boolean } = {}): DroneBrain {
   switch (kind) {
     case 'scout':
@@ -284,11 +288,10 @@ export function createBrain(kind: EnemyKind, opts: { ceiling?: boolean } = {}): 
       return new TrackbotBrain(true);
     case 'spark':
       return new SparkBrain();
-    case 'tracker':
-      return new TrackerBrain();
-    case 'crabbot':
-      return new CrabbotBrain();
-    case 'sentry':
-      return new SentryBrain();
+    default: {
+      const make = chapterBrains[kind];
+      if (!make) throw new Error(`No brain for '${kind}' (its chapter isn't loaded)`);
+      return make(opts);
+    }
   }
 }

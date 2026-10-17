@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
-import { EVERY_ASSET as ALL_ASSETS } from './preload/catalog';
-import { ensureAllChapterArt } from './preload/generate';
+import { ALL_ASSETS as SHARED_ASSETS, LAZY_ART } from './preload/catalog';
+import { ensureArt } from './preload/generate';
+import { knownLevelIds, loadChapter } from '../chapters/registry';
+import type { AssetDef } from './preload/assetTypes';
 import { SCENES } from './SceneKeys';
 import { pixelText } from '../ui/text';
 import { PALETTE } from '../config/palette';
@@ -14,9 +16,21 @@ export class GalleryScene extends Phaser.Scene {
     super(SCENES.gallery);
   }
 
+  private assets: AssetDef[] = [];
+
   create(): void {
-    ensureAllChapterArt(this);
     this.cameras.main.setBackgroundColor(0x2a2f45);
+    // Every chapter's art lives in its chunk: fetch them all, then show everything.
+    void Promise.all(knownLevelIds().map((id) => loadChapter(id))).then((chapters) => {
+      const groups = [...Object.values(LAZY_ART), ...chapters.flatMap((c) => c.art ?? [])];
+      for (const g of groups) ensureArt(this, g);
+      const seen = new Set<string>();
+      this.assets = [...SHARED_ASSETS, ...groups.flatMap((g) => g.assets)].filter((a) => !seen.has(a.key) && seen.add(a.key));
+      this.show();
+    });
+  }
+
+  private show(): void {
     const key = new URLSearchParams(window.location.search).get('key');
     if (key) {
       this.showSheet(key);
@@ -27,7 +41,7 @@ export class GalleryScene extends Phaser.Scene {
     let rowH = 0;
     const page = Number(new URLSearchParams(window.location.search).get('page') ?? 0);
     const scale = 2;
-    const items = ALL_ASSETS.filter((a) => a.frameWidth * a.frames * scale < 1200);
+    const items = this.assets.filter((a) => a.frameWidth * a.frames * scale < 1200);
     const perPage = Number(new URLSearchParams(window.location.search).get('per') ?? 40);
     for (const asset of items.slice(page * perPage, page * perPage + perPage)) {
       const w = Math.min(asset.frameWidth * asset.frames, 600) * scale;
@@ -46,7 +60,7 @@ export class GalleryScene extends Phaser.Scene {
   }
 
   private showSheet(key: string): void {
-    const asset = ALL_ASSETS.find((a) => a.key === key);
+    const asset = this.assets.find((a) => a.key === key);
     if (!asset) return;
     const q = new URLSearchParams(window.location.search);
     const scale = Number(q.get('scale') ?? 4);

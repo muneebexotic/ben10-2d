@@ -1,7 +1,7 @@
 import { BOUNTY_SHARED, SENTRY } from '../../../config/bounty';
 import { PALETTE } from '../../../config/palette';
 import { TELL } from '../../../config/tells';
-import { CH5_TEX } from '../../../scenes/preload/bounty';
+import { CH5_TEX } from '../../../scenes/preload/bounty/keys';
 import { blinkOn } from '../../../systems/Accessibility';
 import { pace } from '../../../systems/Difficulty';
 import { playSfx } from '../../../systems/audio/Sfx';

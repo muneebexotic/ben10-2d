@@ -6,7 +6,7 @@ import { CELL } from '../../levels/tiles';
 import type { DecorKind, LevelData } from '../../levels/types';
 import type { Lighting } from '../../systems/Lighting';
 import { TEX } from '../preload/assetKeys';
-import { CH5_TEX as T5 } from '../preload/bounty';
+import { CH5_TEX as T5 } from '../preload/bounty/keys';
 import type { LevelWorld } from './LevelWorld';
 import { StaticCuller } from './StaticCuller';
 

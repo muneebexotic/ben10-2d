@@ -5,7 +5,7 @@ import { PALETTE } from '../config/palette';
 import { RANK_COLOR } from '../config/scoring';
 import { MENU } from '../config/ui';
 import { ACTS, CHAPTERS, chapterState, defaultChapterIndex, titleRevealed, type ChapterInfo, type ChapterState } from '../levels/chapters';
-import { getLevel } from '../levels/registry';
+import { levelMeta } from '../levels/registry';
 import { availableCards, countedCards, waitingSecrets } from '../levels/secrets';
 import { isOmnitrixMaster } from '../systems/Mastery';
 import { clippedSheen } from '../ui/sheen';
@@ -29,6 +29,7 @@ import { boxed, pixelText } from '../ui/text';
 import { TEX } from './preload/assetKeys';
 import type { LevelStartData } from './LevelScene';
 import { SCENES } from './SceneKeys';
+import { prefetchLevel, prepareLevel } from '../chapters/start';
 
 export interface ChapterSelectData {
   /** A file was just created: a little welcome. */
@@ -108,6 +109,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     CHAPTERS.forEach((info) => this.cards.push(this.buildCard(info)));
     const clearedIndex = data.cleared ? CHAPTERS.findIndex((c) => c.levelId === data.cleared) : -1;
     this.focus = data.focus ?? (clearedIndex >= 0 ? clearedIndex : defaultChapterIndex(this.completed));
+    this.prefetchFocused();
 
     this.primary = new MenuButton(this, GAME_WIDTH / 2, 292, 190, 'PLAY', PALETTE.omnitrix, () => this.playPrimary(), 24);
     this.secondary = new MenuButton(this, GAME_WIDTH / 2 + 104, 292, 104, 'RESTART', PALETTE.uiDim, () => this.restart(), 24);
@@ -164,7 +166,7 @@ export class ChapterSelectScene extends Phaser.Scene {
 
     items.push(pixelText(this, -CARD_W / 2 + 12, top + 14, `CHAPTER ${info.number}`, { originY: 0.5, color: PALETTE.uiDim }));
     // A secret in a cleared chapter that a newer alien can now open: worth a trip back.
-    const waiting = open && record?.completed && info.levelId && this.file ? waitingSecrets(getLevel(info.levelId), fileAliens(this.file), record?.cards ?? []).length > 0 : false;
+    const waiting = open && record?.completed && info.levelId && this.file ? waitingSecrets(levelMeta(info.levelId), fileAliens(this.file), record?.cards ?? []).length > 0 : false;
     const master = open && isOmnitrixMaster(record);
     const chip = waiting
       ? ['SECRET WAITING!', PALETTE.gold]
@@ -245,7 +247,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     });
 
     // Sumo Slammers cards: found, missing, or waiting behind an alien this file doesn't have yet.
-    const level = getLevel(info.levelId!);
+    const level = levelMeta(info.levelId!);
     const counted = countedCards(level);
     const reachable = availableCards(level, fileAliens(file)).map((c) => c.id);
     const found = record?.cards ?? [];
@@ -289,7 +291,14 @@ export class ChapterSelectScene extends Phaser.Scene {
     this.focus = next;
     this.buttonFocus = 0;
     playSfx('uiMove', 1, 0.9 + (next % 4) * 0.06);
+    this.prefetchFocused();
     this.refresh();
+  }
+
+  /** The focused chapter's chunk starts downloading now, so PLAY rarely waits for it. */
+  private prefetchFocused(): void {
+    const info = CHAPTERS[this.focus];
+    if (info && chapterState(info, this.completed) === 'open') prefetchLevel(info.levelId);
   }
 
   /** Bumping the end of the list wobbles the card instead of doing nothing. */
@@ -400,7 +409,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     playSfx('transformBoom', 0.7);
     flashCamera(this.cameras.main, 300, 120, 255, 110);
     music.stop(300);
-    leaveTo(this, SCENES.level, data, null);
+    leaveTo(this, SCENES.level, data, null, { ready: prepareLevel(this.game, data.levelId ?? 'ch1') });
   }
 
   private back(): void {

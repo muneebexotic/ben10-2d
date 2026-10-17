@@ -63,6 +63,8 @@ export interface StoryKit {
   unlockAlien(id: string): void;
   /** On the dial right now. */
   hasAlien(id: string): boolean;
+  /** The level's intro drones fly in (Chapter 2's opening hands control over with them). */
+  spawnIntroDrones(): void;
   /** A drone that joins the fight now. `roam`: free of its spawn leash (it follows the action). */
   spawnDrone(kind: EnemyKind, x: number, y: number, opts?: { roam?: boolean; delayMs?: number }): Drone;
   /** Lights a (hidden) checkpoint: split, save point, banner. */

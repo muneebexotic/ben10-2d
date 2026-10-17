@@ -1,7 +1,6 @@
 import { PALETTE as P } from '../../../config/palette';
 import type { PixelCanvas } from '../PixelCanvas';
-import { KRAAB_COLORS, SIXSIX_COLORS, TETRAX_COLORS } from './hunters';
-import { WESTERN as W } from './world';
+import { KRAAB_COLORS, SIXSIX_COLORS, TETRAX_COLORS, WESTERN as W } from './colors';
 
 /** The hunters' gear and the mine's machinery: drones, crab-bots, crystal sentries, dynamite, the net, phase walls, lasers. */
 

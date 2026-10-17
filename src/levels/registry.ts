@@ -1,31 +1,29 @@
-import { CHAPTER_1 } from './chapter1';
-import { CHAPTER_2 } from './chapter2';
-import { CHAPTER_3 } from './chapter3';
-import { CHAPTER_4 } from './chapter4';
-import { CHAPTER_5 } from './chapter5';
-import { TRAINING_ARENA } from './training';
+import { chapterModule, knownLevelIds } from '../chapters/registry';
+import { LEVEL_META, type LevelMeta } from './manifest';
 import type { LevelData } from './types';
 
-/** Every playable level. Story chapters have a chapter number; the Training arena is chapter 0. */
-const LEVELS: readonly LevelData[] = [CHAPTER_1, CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_5, TRAINING_ARENA];
-
+/** A level id the game knows (a story chapter or Training). */
 export function hasLevel(id: string): boolean {
-  return LEVELS.some((l) => l.id === id);
+  return knownLevelIds().includes(id);
 }
 
+/** A loaded level's data (the level scene's own: its chapter loaded before it started). */
 export function getLevel(id: string): LevelData {
-  const level = LEVELS.find((l) => l.id === id);
-  if (!level) throw new Error(`Unknown level: ${id}`);
-  return level;
+  return chapterModule(id).level;
 }
 
-export function storyLevels(): LevelData[] {
-  return LEVELS.filter((l) => l.chapter > 0);
+/** What the menus know about a story level without loading it. */
+export function levelMeta(id: string): LevelMeta {
+  const meta = LEVEL_META.find((m) => m.id === id);
+  if (!meta) throw new Error(`Unknown level: ${id}`);
+  return meta;
+}
+
+export function storyMetas(): readonly LevelMeta[] {
+  return LEVEL_META;
 }
 
 /** Chapter numbers whose level ids are in `completedIds`. */
 export function completedChapters(completedIds: readonly string[]): number[] {
-  return storyLevels()
-    .filter((l) => completedIds.includes(l.id))
-    .map((l) => l.chapter);
+  return LEVEL_META.filter((l) => completedIds.includes(l.id)).map((l) => l.chapter);
 }

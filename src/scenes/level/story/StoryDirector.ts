@@ -1,52 +1,33 @@
+import type { ChapterModule, StoryIntro } from '../../../chapters/types';
 import type { Controls } from '../../../systems/InputMap';
 import { AlienHints } from './AlienHints';
-import { RoadChase } from './RoadChase';
-import { RoadIntro } from './RoadIntro';
 import type { SetPiece, StoryKit } from './StoryKit';
 import { UnlockBeat } from './UnlockBeat';
 import { WaveTriggers } from './WaveTriggers';
-import { AtriumCollapse } from './museum/AtriumCollapse';
-import { Blackout } from './museum/Blackout';
-import { MuseumIntro } from './museum/MuseumIntro';
-import { VillainIntro } from './museum/VillainIntro';
-import { buildKevinStory } from './kevin';
-import type { CityIntro } from './kevin/CityIntro';
-import { buildBountyStory } from './bounty';
-import type { ColdOpen } from './bounty/ColdOpen';
 
 /**
- * Builds a chapter's scripted moments from its level data and runs them:
- * the opening, alien unlocks, ambush waves, later-alien secrets, the chase.
+ * Builds a chapter's scripted moments from its level data and runs them: the
+ * chapter's own set pieces (its chunk builds them), alien unlocks, ambush
+ * waves and later-alien secrets.
  */
 export class StoryDirector {
   private readonly pieces: SetPiece[] = [];
   private readonly unlockBeats = new Map<string, UnlockBeat>();
-  readonly intro: RoadIntro | MuseumIntro | CityIntro | ColdOpen | null;
+  readonly intro: StoryIntro | null;
 
-  constructor(private readonly kit: StoryKit, resumeX: number, hooks: { onIntroControl(): void }) {
+  constructor(private readonly kit: StoryKit, resumeX: number, build: ChapterModule['story']) {
     const plan = kit.level.story;
     for (const u of plan?.unlocks ?? []) {
       const beat = new UnlockBeat(kit, u, u.scripted === true);
       this.unlockBeats.set(u.alien, beat);
     }
-    const kevin = plan?.cityIntro || plan?.kevin ? buildKevinStory(kit, resumeX, this.unlockBeats) : null;
-    const bounty = plan?.bounty ? buildBountyStory(kit, resumeX, this.unlockBeats) : null;
-    this.intro = plan?.roadIntro ? new RoadIntro(kit, plan.roadIntro, () => hooks.onIntroControl()) : plan?.museumIntro ? new MuseumIntro(kit, plan.museumIntro) : (kevin?.intro ?? bounty?.intro ?? null);
-    if (this.intro && !kevin && !bounty) this.pieces.push(this.intro);
-    if (kevin) this.pieces.push(...kevin.pieces);
-    if (bounty) this.pieces.push(...bounty.pieces);
+    const story = build?.(kit, resumeX, this.unlockBeats) ?? null;
+    this.intro = story?.intro ?? null;
+    if (story) this.pieces.push(...story.pieces);
     this.pieces.push(...this.unlockBeats.values());
     this.pieces.push(new WaveTriggers(kit, resumeX));
     this.pieces.push(new AlienHints(kit));
-    if (plan?.villainIntro) this.pieces.push(new VillainIntro(kit, plan.villainIntro, resumeX));
-    // The museum's two discoveries: Wildmutt in the blackout, Stinkfly when the atrium bridge falls.
-    if (plan?.blackout) this.pieces.push(new Blackout(kit, plan.blackout, this.unlockBeats.get(plan.blackout.alien) ?? null, resumeX));
-    if (plan?.atrium) this.pieces.push(new AtriumCollapse(kit, plan.atrium, this.unlockBeats.get(plan.atrium.alien) ?? null, resumeX));
-    if (plan?.chase) {
-      // The chase starts the chapter's scripted unlock (Four Arms, on the first truck that hooks on).
-      const scripted = (plan.unlocks ?? []).find((u) => u.scripted);
-      this.pieces.push(new RoadChase(kit, plan.chase, resumeX, scripted ? (this.unlockBeats.get(scripted.alien) ?? null) : null));
-    }
+    if (story?.after) this.pieces.push(...story.after);
   }
 
   /** The opening is still running (the watch never misfires then). */

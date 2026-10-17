@@ -4,7 +4,7 @@ import type { EnemyKind, EntitySpawn } from '../../levels/types';
 import { BossHazards } from '../../entities/bosses/BossHazards';
 import type { BossWorld, HuntWorld } from '../../entities/bosses/HunterDrone';
 import type { ArenaBoss } from '../../entities/bosses/ArenaBoss';
-import { BOSS_KINDS } from '../../entities/bosses/bossKinds';
+import type { BossKindDef } from '../../entities/bosses/bossKinds';
 import { barrierBody } from '../../entities/barrier';
 import type { Player } from '../../entities/Player';
 import type { Projectiles } from '../../entities/Projectiles';
@@ -83,16 +83,14 @@ export class BossArena {
 
   constructor(
     private readonly spawn: BossSpawn,
+    /** The boss, its music and Vilgax's speech (the chapter's chunk brings it). */
+    private readonly kind: BossKindDef,
     private readonly d: ArenaDeps,
   ) {
     this.left = spawn.arenaFrom * TILE;
     this.right = spawn.arenaTo * TILE;
     this.floorY = (spawn.floor ?? 24) * TILE;
     this.resumeStage = (spawn.stages ?? []).indexOf(d.startCheckpoint ?? '') + 1;
-  }
-
-  private get kind() {
-    return BOSS_KINDS[this.spawn.kind ?? 'hunter'];
   }
 
   get fighting(): boolean {

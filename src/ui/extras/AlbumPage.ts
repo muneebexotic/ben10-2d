@@ -3,7 +3,7 @@ import { getAlien, hasAlien } from '../../aliens/registry';
 import { PALETTE } from '../../config/palette';
 import { cardInfo, type CardInfo } from '../../levels/cards';
 import { CHAPTERS } from '../../levels/chapters';
-import { getLevel } from '../../levels/registry';
+import { levelMeta } from '../../levels/registry';
 import { countedCards } from '../../levels/secrets';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { SlotData } from '../../systems/SaveSystem';
@@ -46,7 +46,7 @@ export class AlbumPage implements ExtrasPage {
     let found = 0;
     let total = 0;
     CHAPTERS.filter((c) => c.levelId).forEach((chapter, r) => {
-      const level = getLevel(chapter.levelId!);
+      const level = levelMeta(chapter.levelId!);
       const have = file?.chapters[level.id]?.cards ?? [];
       const row: Slot[] = [];
       const y = ROW_Y[r];

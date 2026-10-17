@@ -6,8 +6,7 @@ import { PLAYER } from '../config/player';
 import { COMBAT } from '../config/combat';
 import { getAlien, hasAlien } from '../aliens/registry';
 import type { AbilityAction } from '../aliens/types';
-import { CHAPTER_1 } from '../levels/chapter1';
-import { completedChapters, getLevel } from '../levels/registry';
+import { completedChapters, levelMeta } from '../levels/registry';
 import type { AmbientKind, EnemyKind, EntitySpawn, LevelData } from '../levels/types';
 import { Player, type DamageOutcome } from '../entities/Player';
 import { Projectiles } from '../entities/Projectiles';
@@ -39,19 +38,15 @@ import { playSfx } from '../systems/audio/Sfx';
 import { bindAudioUnlock, bindMuteKey } from '../systems/Settings';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import { pixelText } from '../ui/text';
-import { BossArena, type ArenaDeps } from './level/BossArena';
-import { ShaftLedges } from '../entities/hunters/ShaftLedges';
+import { BossArena } from './level/BossArena';
 import { CameraRig } from './level/CameraRig';
 import { Combat, isFlame } from './level/Combat';
 import { Decor } from './level/Decor';
-import { IntroDirector } from './level/IntroDirector';
+import type { IntroDirector } from './level/IntroDirector';
 import { LevelWorld } from './level/LevelWorld';
 import { OmnitrixController } from './level/OmnitrixController';
 import { Parallax } from './level/Parallax';
 import { SimBackdrop } from './level/SimBackdrop';
-import { MuseumBackdrop } from './level/MuseumBackdrop';
-import { CityBackdrop } from './level/CityBackdrop';
-import { WesternBackdrop } from './level/WesternBackdrop';
 import { SpecialTerrain } from './level/SpecialTerrain';
 import { TechSystem } from './level/TechSystem';
 import { checkpointsFor, spawnEntities } from './level/Spawner';
@@ -59,11 +54,13 @@ import { checkpointSpawn } from '../levels/checkpoints';
 import { TransformSequence } from './level/TransformSequence';
 import { MisfireBeat } from './level/MisfireBeat';
 import { misfireAllowed } from '../systems/MisfireRules';
-import { ensureChapterArt } from './preload/generate';
+import { ensureArt } from './preload/generate';
+import { chapterModule } from '../chapters/registry';
+import type { Backdrop, ChapterModule } from '../chapters/types';
 import { usesBountyGear } from '../levels/bountyGear';
 import { Tutorial } from './level/Tutorial';
 import { TrainingDirector } from './level/TrainingDirector';
-import { HighwayBackdrop } from './level/HighwayBackdrop';
+import type { HighwayBackdrop } from './level/HighwayBackdrop';
 import { Dialogue } from './level/story/Dialogue';
 import { lockedSilhouette } from './level/lockedSilhouette';
 import { StoryDirector } from './level/story/StoryDirector';
@@ -142,8 +139,6 @@ const AMBIENT: Record<AmbientKind, number> = {
   shaft: LIGHTING.ambientShaft,
 };
 
-/** Ambient zones under the open sky (Chapter 5's tumbleweeds). */
-const OUTDOORS: readonly AmbientKind[] = ['ghosttown', 'minehead'];
 
 type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
 
@@ -154,12 +149,14 @@ type BossSpawn = Extract<EntitySpawn, { type: 'boss' }>;
  * Training adds its director, so a later Free Play mode is just another mix.
  */
 export class LevelScene extends Phaser.Scene {
-  private level: LevelData = CHAPTER_1;
+  private level!: LevelData;
+  /** This level's chapter: its chunk's level, story, bosses, backdrop and art. */
+  private chapter!: ChapterModule;
   private mode: 'story' | 'training' = 'story';
   private dialAliens: string[] = [];
   private reachableCards = 0;
   private world!: LevelWorld;
-  private backdrop!: { update(camera: Phaser.Cameras.Scene2D.Camera, dtMs: number): void };
+  private backdrop!: Backdrop;
   private decor!: Decor;
   private lighting!: Lighting;
   private fx!: Fx;
@@ -258,10 +255,12 @@ export class LevelScene extends Phaser.Scene {
     this.darkZone = null;
     this.worldHidden = false;
     this.alienKills.clear();
-    this.level = getLevel(data.levelId ?? CHAPTER_1.id);
-    // Chapter art made on demand (CHAPTER_ART): this level's own, and the mine's gear wherever an older chapter uses it.
-    ensureChapterArt(this, this.level.id);
-    if (usesBountyGear(this.level)) ensureChapterArt(this, 'ch5');
+    // The chapter's chunk was loaded before this scene started (chapters/start.ts).
+    this.chapter = chapterModule(data.levelId ?? 'ch1');
+    this.level = this.chapter.level;
+    // Chapter art is made on demand: this level's own, and the mine's gear wherever an older chapter uses it.
+    for (const art of this.chapter.art ?? []) ensureArt(this, art);
+    if (usesBountyGear(this.level)) ensureArt(this, 'gear');
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
     const extra = this.mode === 'story' ? knownAliens(launchParams().aliens) : [];
     this.checkpointId = data.checkpoint ?? null;
@@ -302,18 +301,11 @@ export class LevelScene extends Phaser.Scene {
 
     const bossSpawn = this.level.entities.find((e): e is BossSpawn => e.type === 'boss') ?? null;
     const beforeBackdrop = this.children.length;
-    this.highway = this.level.theme === 'highway' ? new HighwayBackdrop(this, this.level.sky ?? []) : null;
     this.backdrop =
-      this.highway ??
-      (this.level.theme === 'sim'
-        ? new SimBackdrop(this)
-        : this.level.theme === 'museum'
-          ? new MuseumBackdrop(this, this.level)
-          : this.level.theme === 'city'
-            ? new CityBackdrop(this, this.level)
-            : this.level.theme === 'western'
-              ? new WesternBackdrop(this, this.level, (x) => OUTDOORS.includes(this.world.ambientAt(x)), (x, y) => this.world.groundBelow(x, y))
-              : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
+      this.chapter.backdrop?.(this, this.level, this.world) ??
+      (this.level.theme === 'sim' ? new SimBackdrop(this) : new Parallax(this, bossSpawn ? bossSpawn.x * TILE : this.world.widthPx));
+    // Chapter 2's set pieces drive its highway sky.
+    this.highway = this.level.theme === 'highway' ? (this.backdrop as HighwayBackdrop) : null;
     // bg=0 (bisect switch): the sky, parallax and backdrop walls are hidden and never updated.
     this.backdropOn = perf.bg;
     if (!perf.bg) for (const o of this.children.list.slice(beforeBackdrop)) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible?.(false);
@@ -382,17 +374,28 @@ export class LevelScene extends Phaser.Scene {
     const resuming = this.checkpointId !== null;
     const hasPod = this.level.entities.some((e) => e.type === 'pod');
     this.intro = hasPod && this.mode === 'story'
-      ? new IntroDirector(this, this.level, this.player, this.fx, this.time2, this.speech, {
-          giveOmnitrix: () => this.giveOmnitrix(),
-          spawnIntroDrones: () => this.spawnIntroDrones(),
-          hasTransformed: () => this.omni.transformations > 0,
-          onControlStart: () => undefined,
-        }, resuming, data.stats !== undefined)
+      ? (this.chapter.podIntro?.({
+          scene: this,
+          level: this.level,
+          player: this.player,
+          fx: this.fx,
+          time: this.time2,
+          speech: this.speech,
+          hooks: {
+            giveOmnitrix: () => this.giveOmnitrix(),
+            spawnIntroDrones: () => this.spawnIntroDrones(),
+            hasTransformed: () => this.omni.transformations > 0,
+            onControlStart: () => undefined,
+          },
+          skip: resuming,
+          skipOpening: data.stats !== undefined,
+        }) ?? null)
       : null;
     if (this.intro) this.intro.lightHook = (x, y, r, c, i) => this.lighting.add(x, y, r, c, i);
-    this.arena = bossSpawn ? this.createArena(bossSpawn) : null;
+    const kit = this.mode === 'story' ? this.createKit(data) : null;
+    this.arena = bossSpawn ? this.createArena(bossSpawn, kit) : null;
     this.training = this.mode === 'training' ? this.createTraining() : null;
-    this.story = this.mode === 'story' && this.level.story !== undefined ? this.createStory(data, this.checkpointId ? start.x : 0) : null;
+    this.story = kit && this.level.story !== undefined ? new StoryDirector(kit, this.checkpointId ? start.x : 0, this.chapter.story) : null;
 
     if (resuming || !this.intro) {
       if (resuming) this.player.setInvulnerable(PLAYER.respawnInvulnMs);
@@ -470,15 +473,13 @@ export class LevelScene extends Phaser.Scene {
 
   private levelTrack(): TrackName {
     if (this.mode === 'training') return 'simulation';
-    if (this.level.theme === 'museum') return 'museum';
-    if (this.level.theme === 'city') return (this.resumeTileX() ?? 0) >= (this.level.story?.drain?.fromX ?? Infinity) ? 'subway' : 'arcade';
-    if (this.level.theme === 'western') return (this.resumeTileX() ?? 0) >= (this.level.story?.bounty?.kraabHunt.fromX ?? Infinity) ? 'mine' : 'ghosttown';
-    return this.level.theme === 'highway' ? 'highway' : 'forest';
+    return this.chapter.track?.(this.resumeTileX()) ?? 'forest';
   }
 
-  private createStory(data: LevelStartData, resumeX: number): StoryDirector {
+  /** Everything the chapter's set pieces (and its boss's level hooks) may touch. */
+  private createKit(data: LevelStartData): StoryKit {
     const self = this;
-    const kit: StoryKit = {
+    return {
       scene: this,
       level: this.level,
       world: this.world,
@@ -537,8 +538,8 @@ export class LevelScene extends Phaser.Scene {
         this.cameras?.main?.setVisible(!hidden);
       },
       payReward: (reward, x, y) => this.onSumoWon(reward, x, y),
+      spawnIntroDrones: () => this.spawnIntroDrones(),
     };
-    return new StoryDirector(kit, resumeX, { onIntroControl: () => this.spawnIntroDrones() });
   }
 
   private nearestEnemy(x: number, y: number, range: number): { x: number; y: number } | null {
@@ -828,8 +829,10 @@ export class LevelScene extends Phaser.Scene {
     return { name: alien.name, icon: alien.hudIcon, color: alien.theme.color };
   }
 
-  private createArena(bossSpawn: BossSpawn): BossArena {
-    return new BossArena(bossSpawn, {
+  private createArena(bossSpawn: BossSpawn, kit: StoryKit | null): BossArena {
+    const kind = this.chapter.bosses?.[bossSpawn.kind ?? 'hunter'];
+    if (!kind) throw new Error(`${this.level.id} has no boss '${bossSpawn.kind ?? 'hunter'}'`);
+    return new BossArena(bossSpawn, kind, {
       scene: this,
       player: this.player,
       fx: this.fx,
@@ -858,40 +861,12 @@ export class LevelScene extends Phaser.Scene {
       addMachine: (m) => this.tech?.add(m),
       copies: (list, current) => EventBus.emit('boss:copies', { list, current }),
       achievement: (id) => this.achievements.unlock(id),
-      hunt: this.level.story?.bounty ? this.huntWorld() : undefined,
+      hunt: kit ? this.chapter.arena?.(kit).hunt : undefined,
       startCheckpoint: this.checkpointId,
       reachCheckpoint: (id) => this.reachCheckpoint(id),
     });
   }
 
-  /** What THE HUNTERS can reach in the level (Chapter 5's boss moves through it). */
-  private huntWorld(): NonNullable<ArenaDeps['hunt']> {
-    const ledges = new ShaftLedges(this, this.player);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => ledges.clear());
-    const player = this.player;
-    return {
-      level: this.level,
-      player: {
-        get cloaked() {
-          return player.cloaked;
-        },
-        get formId() {
-          return player.form.id;
-        },
-      },
-      isSolid: (x, y) => this.world.isSolid(x, y),
-      groundBelow: (x, y) => this.world.groundBelow(x, y),
-      salvo: (x, floorY, count, spread, warnMs) => this.hazards?.salvo(x, floorY, count, spread, warnMs),
-      blastPlayer: (x, y, r, d) => this.hazards?.blasts.add(x, y, r, d),
-      rockfall: (x, cy) => this.hazards?.rockfalls.drop(x, cy),
-      collapse: (rect) => this.world.clearCells(rect),
-      say: (who, text, ms) => {
-        if (!this.dialogue.playing) this.dialogue.say(who, text, ms);
-      },
-      addLedge: (x, topY, w, solid) => ledges.add(x, topY, w, solid),
-      removeLedge: (id) => ledges.remove(id),
-    };
-  }
 
   private createTraining(): TrainingDirector {
     return new TrainingDirector({
@@ -1152,7 +1127,7 @@ export class LevelScene extends Phaser.Scene {
       if (!outcome.died) this.camRig.snap(p.x, p.y);
     }
 
-    if (this.level.id !== CHAPTER_1.id) return;
+    if (this.level.id !== 'ch1') return;
     if (!this.tutorial.isDone('rocket') && p.y <= 17 * TILE + 2 && p.x > 102 * TILE && p.x < 126 * TILE) this.tutorial.complete('rocket');
     if (p.x > 20 * TILE) this.tutorial.complete('move');
     if (!p.isAlien && this.omni.acquired && this.jammer?.inField(p.x)) {
@@ -1358,7 +1333,7 @@ export class LevelScene extends Phaser.Scene {
     for (const info of CHAPTERS) {
       if (info.number >= this.level.chapter || !info.levelId) continue;
       const found = file.chapters[info.levelId]?.cards ?? [];
-      if (waitingSecrets(getLevel(info.levelId), this.dialAliens, found).length > 0) return info.title;
+      if (waitingSecrets(levelMeta(info.levelId), this.dialAliens, found).length > 0) return info.title;
     }
     return null;
   }

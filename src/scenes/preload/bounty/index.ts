@@ -1,78 +1,15 @@
 import { animsFor, one, sheet, type AnimDef, type AssetDef } from '../assetTypes';
+import { CH5_TEX } from './keys';
 import { TILESET_FRAME_COUNT } from '../../../levels/tiles';
 import * as gear from './gear';
 import * as hunters from './hunters';
 import * as props from './props';
 import * as world from './world';
 
-/**
- * Chapter 5's textures (Silver Spur, the Diamond Deep, the hunters). Kept out
- * of the boot catalog: they're generated the first time Chapter 5 (or its
- * Chapter Select card, or the gallery) needs them (see `ensureChapterArt`).
- */
-export const CH5_TEX = {
-  tiles: 'tiles-western',
-  sky: 'bg-western-sky',
-  bigMoon: 'bg-big-moon',
-  mesasFar: 'bg-mesas-far',
-  mesasNear: 'bg-mesas-near',
-  saloonWall: 'bg-saloon-wall',
-  jailWall: 'bg-jail-wall',
-  hotelWall: 'bg-hotel-wall',
-  mineWall: 'bg-mine-wall',
-  cavernWall: 'bg-cavern-wall',
-  shaftWall: 'bg-shaft-wall',
-  townGate: 'prop-town-gate',
-  saloon: 'prop-saloon',
-  shopFront: 'prop-shop-front',
-  wanted: 'prop-wanted',
-  hitchingPost: 'prop-hitching-post',
-  wagonWheel: 'prop-wagon-wheel',
-  crates: 'prop-crates',
-  lanternPost: 'prop-lantern-post',
-  coffin: 'prop-coffin',
-  waterTower: 'prop-water-tower',
-  hotelSign: 'prop-hotel-sign',
-  barCounter: 'prop-bar-counter',
-  piano: 'prop-piano',
-  mouseHole: 'prop-mouse-hole',
-  jailFurniture: 'prop-jail-furniture',
-  headframe: 'prop-headframe',
-  minePortal: 'prop-mine-portal',
-  mineRails: 'prop-mine-rails',
-  timbers: 'prop-timbers',
-  hangingLantern: 'prop-hanging-lantern',
-  crystalCluster: 'prop-crystal-cluster',
-  crystalSpire: 'prop-crystal-spire',
-  dynamiteSign: 'prop-dynamite-sign',
-  prospector: 'prop-prospector',
-  oreCart: 'prop-ore-cart',
-  vilgaxBridge: 'story-vilgax-bridge',
-  sixsix: 'hunter-sixsix',
-  kraab: 'hunter-kraab',
-  tetrax: 'hunter-tetrax',
-  portraitSixsix: 'portrait-sixsix',
-  portraitKraab: 'portrait-kraab',
-  portraitTetrax: 'portrait-tetrax',
-  tracker: 'enemy-tracker',
-  crabbot: 'enemy-crabbot',
-  sentry: 'enemy-sentry',
-  dynamite: 'prop-dynamite',
-  fallingRock: 'fx-falling-rock',
-  netGenerator: 'prop-net-generator',
-  energyNet: 'fx-energy-net',
-  phaseWall: 'prop-phase-wall',
-  laserEmitter: 'prop-laser-emitter',
-  receiver: 'prop-receiver',
-  crystalGate: 'prop-crystal-gate',
-  clawBlast: 'fx-claw-blast',
-  cable: 'fx-cable',
-  diveCart: 'dive-cart',
-  diveBeam: 'dive-beam',
-} as const;
 
 const T = CH5_TEX;
 
+/** Chapter 5's own art, made when the chapter loads. Sixsix's sheet is apart (`SIXSIX_ART`): Chapter Select's window shows him. */
 export const CH5_ASSETS: AssetDef[] = [
   sheet(T.tiles, 16, 16, TILESET_FRAME_COUNT, world.drawWesternTile),
   one(T.sky, 8, 360, world.drawWesternSky),
@@ -111,7 +48,6 @@ export const CH5_ASSETS: AssetDef[] = [
   one(T.prospector, 32, 14, props.drawProspector),
   one(T.oreCart, 32, 22, props.drawOreCart),
   one(T.vilgaxBridge, 320, 180, props.drawVilgaxBridge),
-  sheet(T.sixsix, hunters.SIXSIX_FRAME.w, hunters.SIXSIX_FRAME.h, hunters.SIXSIX_FRAME_COUNT, hunters.drawSixsix),
   sheet(T.kraab, hunters.KRAAB_FRAME.w, hunters.KRAAB_FRAME.h, hunters.KRAAB_FRAME_COUNT, hunters.drawKraab),
   sheet(T.tetrax, hunters.TETRAX_FRAME.w, hunters.TETRAX_FRAME.h, hunters.TETRAX_FRAME_COUNT, hunters.drawTetrax),
   one(T.portraitSixsix, 48, 48, hunters.drawSixsixPortrait),
@@ -120,14 +56,8 @@ export const CH5_ASSETS: AssetDef[] = [
   sheet(T.tracker, 22, 14, 3, gear.drawTracker),
   sheet(T.crabbot, 28, 18, 5, gear.drawCrabbot),
   sheet(T.sentry, 20, 30, 3, gear.drawSentry),
-  sheet(T.dynamite, 16, 14, 2, gear.drawDynamite),
-  sheet(T.fallingRock, 16, 14, 3, gear.drawFallingRock),
   sheet(T.netGenerator, 20, 16, 2, gear.drawNetGenerator),
   sheet(T.energyNet, 32, 32, 2, gear.drawEnergyNet),
-  sheet(T.phaseWall, 16, 16, 3, gear.drawPhaseWall),
-  one(T.laserEmitter, 14, 14, gear.drawLaserEmitter),
-  sheet(T.receiver, 14, 14, 2, gear.drawReceiver),
-  sheet(T.crystalGate, 16, 16, 2, gear.drawCrystalGate),
   sheet(T.clawBlast, 14, 10, 2, gear.drawClawBlast),
   one(T.cable, 24, 6, gear.drawCable),
   one(T.diveCart, 64, 36, gear.drawDiveCart),
@@ -135,7 +65,6 @@ export const CH5_ASSETS: AssetDef[] = [
 ];
 
 export const CH5_ANIMS: AnimDef[] = [
-  ...animsFor('sixsix', T.sixsix, hunters.SIXSIX_FRAMES, { idle: 4, fly: 14 }, ['idle', 'fly']),
   ...animsFor('kraab', T.kraab, hunters.KRAAB_FRAMES, { idle: 3, walk: 8 }, ['idle', 'walk']),
   ...animsFor('tetrax', T.tetrax, hunters.TETRAX_FRAMES, { idle: 2, walk: 7 }, ['idle', 'walk']),
   { key: 'tracker-idle', texture: T.tracker, frames: [0, 1], frameRate: 14, repeat: -1 },
@@ -146,3 +75,7 @@ export const CH5_ANIMS: AnimDef[] = [
   { key: 'net-crackle', texture: T.energyNet, frames: [0, 1], frameRate: 10, repeat: -1 },
   { key: 'claw-blast', texture: T.clawBlast, frames: [0, 1], frameRate: 12, repeat: -1 },
 ];
+
+/** Sixsix alone: the chapter's art, and Chapter Select's window for Chapter 5 once the chunk is in. */
+export const SIXSIX_ASSETS: AssetDef[] = [sheet(CH5_TEX.sixsix, hunters.SIXSIX_FRAME.w, hunters.SIXSIX_FRAME.h, hunters.SIXSIX_FRAME_COUNT, hunters.drawSixsix),];
+export const SIXSIX_ANIMS: AnimDef[] = animsFor('sixsix', CH5_TEX.sixsix, hunters.SIXSIX_FRAMES, { idle: 4, fly: 14 }, ['idle', 'fly']);
