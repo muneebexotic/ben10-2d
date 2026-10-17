@@ -21,6 +21,9 @@ export const TELL = {
   sixsix: { core: PALETTE.enemy, edge: PALETTE.sixsix },
   kraab: { core: PALETTE.enemy, edge: PALETTE.kraab },
   tetrax: { core: PALETTE.enemy, edge: PALETTE.tetrax },
+  /** Chapter 6: Hex's violet and Charmcaster's magenta. */
+  hex: { core: PALETTE.enemy, edge: PALETTE.hex },
+  charmcaster: { core: PALETTE.enemy, edge: PALETTE.charmcaster },
 } as const satisfies Record<string, Tell>;
 
 /** A villain's tell for an effect colour (Kevin's purple, Animo's violet...), or plain danger red. */

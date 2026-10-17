@@ -4,13 +4,14 @@ import { COMBAT } from '../config/combat';
 import { PALETTE as P } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import { CH5_TEX } from '../scenes/preload/bounty/keys';
+import { CH6_TEX } from '../scenes/preload/karachi/keys';
 import type { Fx, BurstKind } from '../systems/Fx';
 import type { Lighting } from '../systems/Lighting';
 import { playSfx } from '../systems/audio/Sfx';
 import type { Damageable, HitKind } from './types';
 import { chance } from '../systems/Pacing';
 
-export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw' | 'mana';
+export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw' | 'mana' | 'spell' | 'bag';
 export type Team = 'player' | 'enemy';
 
 interface KindStyle {
@@ -39,6 +40,9 @@ const STYLE: Record<ProjectileKind, KindStyle> = {
   claw: { texture: CH5_TEX.clawBlast, anim: 'claw-blast', trail: 'red', trailChance: 0.6, light: 48, lightColor: P.kraab, impact: 'debris', rotate: true, additive: true },
   // Magic (Gwen's bolts; Hex's and Charmcaster's spells are tinted danger red).
   mana: { texture: TEX.manaOrb, trail: 'mana', trailChance: 0.6, light: 34, lightColor: P.mana, impact: 'mana', rotate: false, additive: true },
+  // Chapter 6: Hex's violet bolts and Charmcaster's spell bags (their art comes with the chapter).
+  spell: { texture: CH6_TEX.spellBolt, anim: 'spell-bolt', trail: 'mana', trailChance: 0.5, light: 36, lightColor: 0xb88aff, impact: 'mana', rotate: false, additive: true },
+  bag: { texture: CH6_TEX.spellBag, trail: 'mana', trailChance: 0.3, light: 26, lightColor: 0xff8ad8, impact: 'mana', rotate: true, additive: false },
 };
 
 /** Extra behaviour for a shot. Defaults match the original fireballs and lasers. */

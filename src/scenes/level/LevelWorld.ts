@@ -5,10 +5,11 @@ import { CELL, ONE_WAY_FRAMES, SOLID_FRAMES } from '../../levels/tiles';
 import type { LevelData, LiquidKind } from '../../levels/types';
 import { TEX } from '../preload/assetKeys';
 import { CH5_TEX } from '../preload/bounty/keys';
+import { CH6_TEX } from '../preload/karachi/keys';
 import type { Rect } from '../../entities/types';
 import { BakedGraphics } from '../../ui/BakedGraphics';
 
-const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity, western: CH5_TEX.tiles } as const;
+const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity, western: CH5_TEX.tiles, karachi: CH6_TEX.tiles } as const;
 
 /** How each liquid looks: its surface texture and the colour it fades to when deeper than one texture. */
 const LIQUIDS = {
@@ -125,6 +126,25 @@ export class LevelWorld {
         if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width) continue;
         this.grid.cells[y][x] = CELL.EMPTY;
         this.layer.removeTileAt(x, y);
+      }
+    }
+    const frames = autotile(this.grid);
+    for (let y = rect.y - 1; y <= rect.y + rect.h; y++) {
+      for (let x = rect.x - 1; x <= rect.x + rect.w; x++) {
+        if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width || this.grid.cells[y][x] === CELL.EMPTY) continue;
+        const tile = this.layer.putTileAt(frames[y][x], x, y);
+        if (ONE_WAY_FRAMES.includes(tile.index)) tile.setCollision(false, false, true, false);
+        else tile.setCollision(true);
+      }
+    }
+  }
+
+  /** Empty cells in this rect (tiles) become solid rock for good (bars slamming down). Neighbours re-tile. */
+  fillCells(rect: { x: number; y: number; w: number; h: number }): void {
+    for (let y = rect.y; y < rect.y + rect.h; y++) {
+      for (let x = rect.x; x < rect.x + rect.w; x++) {
+        if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width) continue;
+        this.grid.cells[y][x] = CELL.ROCK;
       }
     }
     const frames = autotile(this.grid);

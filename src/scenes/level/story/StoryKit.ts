@@ -89,6 +89,8 @@ export interface StoryKit {
   setDarkness(zone: { fromX: number; toX: number } | null): void;
   /** Solid tiles in this rect (tiles) crumble away for good (a collapsing floor). */
   collapse(rect: { x: number; y: number; w: number; h: number }): void;
+  /** Empty tiles in this rect (tiles) turn solid for good (a cage's bars slamming down). */
+  seal(rect: { x: number; y: number; w: number; h: number }): void;
   /** A machine from the level data by id (a door, a turret), if the level has machines. */
   machine(id: string): Machine | undefined;
   /** Lamps, signs and screens between these x positions (px) go dark for good. */

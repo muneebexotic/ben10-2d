@@ -11,6 +11,10 @@ export interface Track {
   drums: string;
   pad?: number[][];
   stabs?: Note[];
+  /** A plucked, sitar-like melody on the base layer (it plays whoever Ben is). */
+  raga?: Note[];
+  /** A tanpura-like drone: root and fifth, held for every bar. */
+  drone?: number;
   loop: boolean;
 }
 

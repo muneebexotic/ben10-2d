@@ -49,7 +49,12 @@ export type MutantKind = 'rat' | 'roach' | 'lurker' | 'brute';
 export type RobotKind = 'mascot' | 'trackbot' | 'voltbot';
 /** The bounty hunters' ground gear (Chapter 5): Kraab's crab-bots and Tetrax's crystal sentries. */
 export type GearKind = 'crabbot' | 'sentry';
-export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind;
+/**
+ * Hex and Charmcaster's magic (Chapter 6): Charmcaster's rolling rocklings and stone golems,
+ * the palace's enchanted armor, Hex's illusions (ground), stone gargoyles and bewitched kites (flying).
+ */
+export type MagicKind = 'rockling' | 'golem' | 'armor' | 'illusion' | 'gargoyle' | 'kite';
+export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind | MagicKind;
 export type Density = 'sparse' | 'normal' | 'frequent';
 export type FormFilter = 'any' | 'human' | 'alien';
 
@@ -61,13 +66,16 @@ export type EntitySpawn =
   | { type: 'robot'; kind: RobotKind; x: number; y: number }
   /** A hunter's crab-bot or crystal sentry standing on row `y`. */
   | { type: 'gear'; kind: GearKind; x: number; y: number }
+  /** Chapter 6's magic: ground ones stand on row `y`, gargoyles perch on it, kites hover in it. */
+  | { type: 'magic'; kind: MagicKind; x: number; y: number }
   | { type: 'barricade'; id: string; x: number; y: number; w: number; h: number }
   /**
    * `label` names the speedrun split. A `hidden` checkpoint has no post: a set
    * piece reaches it (mid-chase), and a restart there hands back to that set piece.
    */
   | { type: 'checkpoint'; id: string; x: number; y: number; density: Density; label: string; hidden?: boolean }
-  | { type: 'smoothy'; x: number; y: number }
+  /** A health pickup: a Mr. Smoothy cup, or (Karachi) a cup of chai or a glass of fresh juice from a street stall. */
+  | { type: 'smoothy'; x: number; y: number; look?: 'chai' | 'juice' }
   /**
    * `requires` hides the card until that alien is on the dial (a reason to replay chapters).
    * `reward`: it only appears when a set piece pays it out (the SUMO SLAMMERS high score).
@@ -141,6 +149,14 @@ export type EntitySpawn =
   | { type: 'receiver'; id: string; x: number; y: number; w?: number; gate: string; kills?: string }
   /** A crystal gate filling `w` x `h` tiles from (x, y) until its receiver lights. */
   | { type: 'crystalGate'; id: string; x: number; y: number; w: number; h: number }
+  /**
+   * Chapter 6: one of Hex's illusions laid over the level, `w` x `h` tiles from (x, y). A `wall`
+   * looks solid but isn't; a `floor` is a real ledge nobody can see. Gwen's REVEAL (or anything
+   * that senses, like Wildmutt) shows the truth while it's near.
+   */
+  | { type: 'illusion'; id: string; x: number; y: number; w: number; h: number; look: 'wall' | 'floor' }
+  /** A local (Chapter 6) who says a line or two when Ben comes close: Rauf the chai-wala, Rafiq, Zain. */
+  | { type: 'local'; who: LocalId; x: number; y: number; flip?: boolean }
   | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean; frame?: number };
 
 export type DecorKind =
@@ -256,7 +272,48 @@ export type DecorKind =
   | 'dynamiteSign'
   | 'prospector'
   | 'oreCart'
-  | 'netGenerator';
+  | 'netGenerator'
+  // Karachi (Chapter 6): the port, the seafront fair, the pink palace, its library and cellars, the clock tower.
+  | 'chaiDhaba'
+  | 'kebabCart'
+  | 'juiceStall'
+  | 'balloonSeller'
+  | 'camel'
+  | 'horse'
+  | 'ferrisWheel'
+  | 'ferrisHub'
+  | 'hexTent'
+  | 'exhibitTent'
+  | 'truckBus'
+  | 'rickshaw'
+  | 'chingchi'
+  | 'shopSign'
+  | 'fairLights'
+  | 'promenadeRail'
+  | 'kiteSeller'
+  | 'palaceGate'
+  | 'palaceFront'
+  | 'jharokha'
+  | 'archway'
+  | 'chandelier'
+  | 'armorStand'
+  | 'carpet'
+  | 'bookshelf'
+  | 'readingLamp'
+  | 'globe'
+  | 'paintedCeiling'
+  | 'cellarArch'
+  | 'runeCircle'
+  | 'wardCage'
+  | 'tunnelLamp'
+  | 'pipesOld'
+  | 'gears'
+  | 'clockFace'
+  | 'pendulum'
+  | 'crowWire';
+
+/** Chapter 6's locals: Rauf the chai-wala, Rafiq the rickshaw driver, Zain (the fan). */
+export type LocalId = 'rauf' | 'rafiq' | 'zain';
 
 export interface PromptZone {
   id: string;
@@ -276,7 +333,8 @@ export interface PromptZone {
 export type AmbientKind =
   | 'camp' | 'forest' | 'ravine' | 'crash' | 'sim' | 'sunset' | 'dusk' | 'night' | 'neon' | 'street' | 'museum' | 'gallery' | 'blackout' | 'atrium' | 'lab'
   | 'downtown' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation'
-  | 'ghosttown' | 'saloon' | 'jail' | 'hotel' | 'minehead' | 'mine' | 'cavern' | 'shaft';
+  | 'ghosttown' | 'saloon' | 'jail' | 'hotel' | 'minehead' | 'mine' | 'cavern' | 'shaft'
+  | 'seafront' | 'palace' | 'library' | 'cellar' | 'oldTunnel' | 'clockwork' | 'towerTop';
 
 export interface AmbientZone {
   x: number;
@@ -286,12 +344,14 @@ export interface AmbientZone {
 }
 
 /** Visual set: the night forest, the Omnitrix's training simulation, the desert highway at sundown, the museum at night, downtown and under it, or a ghost town and its mine. */
-export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western';
+export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western' | 'karachi';
 
-export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters';
+export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters' | 'hex';
 
 /** Interior back walls (museum halls and lab; the arcade, the laser tag arena, the subway, its tunnels and the substation; Silver Spur's saloon, jail and hotel, the mine, its crystal cavern and shafts). */
-export type InteriorWall = 'hall' | 'lab' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation' | 'saloon' | 'jail' | 'hotel' | 'mine' | 'cavern' | 'shaft';
+export type InteriorWall =
+  | 'hall' | 'lab' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation' | 'saloon' | 'jail' | 'hotel' | 'mine' | 'cavern' | 'shaft'
+  | 'palace' | 'library' | 'cellar' | 'oldTunnel' | 'clockwork';
 
 /** A strip of asphalt drawn over the ground (row `y` is the road surface). */
 export interface RoadSpan {
@@ -372,6 +432,26 @@ export interface StoryPlan {
   hunt?: { fromX: number; toX: number; floor: number };
   /** Chapter 5: the bounty hunters' set pieces. */
   bounty?: BountyPlan;
+  /** Chapter 6: Karachi's set pieces. */
+  magic?: MagicPlan;
+}
+
+/** Chapter 6's set pieces, in the order they play. Positions are tiles. */
+export interface MagicPlan {
+  /** The cold open (the port, then the fair): the Rustbucket parks at `rvX`, Hex's tent stands at `tentX`, all on row `floor`. */
+  coldOpen: { rvX: number; tentX: number; floor: number };
+  /** The pink palace's gate at `gateX` (its bars fill rows `top`..`floor`-1): the Rustbucket rams it when Ben gets to `triggerX`. */
+  gate: { triggerX: number; gateX: number; top: number; floor: number };
+  /** Where Gwen learns each spell (Ben walking past `x`), and the checkpoint just before. */
+  lessons: Array<{ spell: 'shield' | 'stun' | 'reveal'; x: number; floor: number }>;
+  /** Charmcaster's warded cage: Ben walks into it at `triggerX`; its bars stand at `fromX` and `toX`; `alien` walks out between them. */
+  cage: { triggerX: number; fromX: number; toX: number; floor: number; charmX: number; alien: string };
+  /** Max in the tunnel: he catches up at `x` and holds the rocklings back with a fire extinguisher. */
+  max: { x: number; floor: number };
+  /** The Spell Engine: Grey Matter crawls into the clock through the vent at `ventX` (row `floor`); `checkpoint` is the room's. */
+  engine: { ventX: number; floor: number; checkpoint: string };
+  /** THE TOWER WRAP starts at `x` (row `floor`) and ends on the tower top, where play picks up at (`endX`, `endY`). */
+  tower: { x: number; floor: number; endX: number; endY: number; checkpoint: string };
 }
 
 /** Chapter 5's set pieces, in the order they play. Positions are tiles. */

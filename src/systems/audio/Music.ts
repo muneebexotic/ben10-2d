@@ -344,6 +344,13 @@ class MusicPlayer {
         audio.tone({ type: 'sawtooth', freq: midiToFreq(note), duration: stepDur * 16, volume: 0.025, attack: 0.6, when: t, bus: base, detune: 7, filter: { type: 'lowpass', freq: 900 } });
       }
     }
+    const raga = track.raga?.[step];
+    if (raga != null) this.sitar(raga, t, stepDur, base);
+    if (track.drone !== undefined && step % 16 === 0) {
+      for (const [interval, vol] of [[0, 0.03], [7, 0.02], [12, 0.015]] as const) {
+        audio.tone({ type: 'sawtooth', freq: midiToFreq(track.drone + interval), duration: stepDur * 16, volume: vol, attack: 0.3, when: t, bus: base, filter: { type: 'lowpass', freq: 1200 } });
+      }
+    }
     const drum = track.drums[step % track.drums.length];
     if (drum === 'k') {
       audio.tone({ type: 'sine', freq: 150, freqEnd: 42, duration: 0.14, volume: 0.55, when: t, bus: base });
@@ -359,7 +366,26 @@ class MusicPlayer {
     } else if (drum === 'w') {
       // A woodblock: hooves at a gallop.
       audio.tone({ type: 'triangle', freq: 820, freqEnd: 760, duration: 0.04, volume: 0.12, when: t, bus: base });
+    } else if (drum === 'c') {
+      // Qawwali handclaps: a few hands, not quite together.
+      for (const dt of [0, 0.008, 0.017]) audio.noise({ duration: 0.05, volume: 0.1, filter: 'bandpass', freq: 1400 + dt * 20000, q: 1.6, when: t + dt, bus: base });
+    } else if (drum === 'd') {
+      // The dhol's bass side: a booming "dhum" with a little bend.
+      audio.tone({ type: 'sine', freq: 120, freqEnd: 58, duration: 0.24, volume: 0.48, when: t, bus: base });
+      audio.noise({ duration: 0.04, volume: 0.08, filter: 'lowpass', freq: 700, when: t, bus: base });
+    } else if (drum === 'g') {
+      // The dhol's treble side: the stick's sharp "ta".
+      audio.noise({ duration: 0.05, volume: 0.16, filter: 'bandpass', freq: 2600, q: 2, when: t, bus: base });
+      audio.tone({ type: 'triangle', freq: 420, freqEnd: 340, duration: 0.05, volume: 0.1, when: t, bus: base });
     }
+  }
+
+  /** A plucked, sitar-like note: it slides into pitch from a step above, buzzes bright and rings out. */
+  private sitar(note: number, t: number, stepDur: number, bus: GainNode): void {
+    const f = midiToFreq(note);
+    audio.tone({ type: 'sawtooth', freq: f * 1.06, freqEnd: f, duration: 0.05, volume: 0.05, when: t, bus, filter: { type: 'lowpass', freq: 3400 } });
+    audio.tone({ type: 'sawtooth', freq: f, duration: stepDur * 3, volume: 0.045, when: t + 0.04, bus, filter: { type: 'lowpass', freq: 2600 } });
+    audio.tone({ type: 'triangle', freq: f * 2, duration: stepDur * 4, volume: 0.015, when: t + 0.04, bus, detune: 8 });
   }
 
   private playHero(track: Track, step: number, t: number, stepDur: number, hero: GainNode): void {

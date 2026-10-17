@@ -162,6 +162,9 @@ export const PALETTE = {
   ghostfreakEye: 0xa040ff,
 
   // Grey Matter (a Galvan: grey skin, big green eyes) and Gwen's magic (pink mana).
+  // Chapter 6's villains: Hex (violet) and Charmcaster (magenta).
+  hex: 0xb88aff,
+  charmcaster: 0xff5ac8,
   greymatter: 0x9fe870,
   greymatterGlow: 0xe0ffc8,
   greymatterDark: 0x3e6a2a,

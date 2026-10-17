@@ -141,6 +141,13 @@ const AMBIENT: Record<AmbientKind, number> = {
   mine: LIGHTING.ambientMine,
   cavern: LIGHTING.ambientCavern,
   shaft: LIGHTING.ambientShaft,
+  seafront: LIGHTING.ambientSeafront,
+  palace: LIGHTING.ambientPalace,
+  library: LIGHTING.ambientLibrary,
+  cellar: LIGHTING.ambientCellar,
+  oldTunnel: LIGHTING.ambientOldTunnel,
+  clockwork: LIGHTING.ambientClockwork,
+  towerTop: LIGHTING.ambientTowerTop,
 };
 
 
@@ -535,6 +542,7 @@ export class LevelScene extends Phaser.Scene {
       cancelThreat: (key) => this.perfect.cancel(key),
       setDarkness: (zone) => (this.darkZone = zone),
       collapse: (rect) => this.world.clearCells(rect),
+      seal: (rect) => this.world.fillCells(rect),
       machine: (id) => this.tech?.get(id),
       setTrains: (running) => this.tech?.setTrains(running),
       powerOff: (fromX, toX) => this.decor.powerOff(fromX, toX),

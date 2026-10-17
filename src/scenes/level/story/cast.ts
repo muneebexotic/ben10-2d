@@ -3,8 +3,11 @@ import { TEX } from '../../preload/assetKeys';
 import { WILDMUTT_TEX } from '../../../aliens/wildmutt/art';
 import { GHOSTFREAK_TEX } from '../../../aliens/ghostfreak/art';
 import { CH5_TEX } from '../../preload/bounty/keys';
+import { CH6_TEX } from '../../preload/karachi/keys';
 
-export type CastId = 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak';
+export type CastId =
+  | 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak'
+  | 'hex' | 'charmcaster' | 'rauf' | 'rafiq' | 'zain';
 
 export interface CastMember {
   name: string;
@@ -32,6 +35,12 @@ export const CAST: Record<CastId, CastMember> = {
   tetrax: { name: 'TETRAX', color: PALETTE.tetrax, portrait: CH5_TEX.portraitTetrax, voicePitch: 0.65 },
   /** The thing in the watch (whispers at the very end). */
   ghostfreak: { name: '...', color: PALETTE.ghostfreakEye, portrait: GHOSTFREAK_TEX.portrait, voicePitch: 0.45 },
+  // Chapter 6 (Karachi).
+  hex: { name: 'HEX', color: PALETTE.hex, portrait: CH6_TEX.portraitHex, voicePitch: 0.6 },
+  charmcaster: { name: 'CHARMCASTER', color: PALETTE.charmcaster, portrait: CH6_TEX.portraitCharmcaster, voicePitch: 1.2 },
+  rauf: { name: 'RAUF', color: 0xffc070, portrait: CH6_TEX.portraitRauf, voicePitch: 0.8 },
+  rafiq: { name: 'RAFIQ', color: 0x6ab8f0, portrait: CH6_TEX.portraitRafiq, voicePitch: 0.9 },
+  zain: { name: 'ZAIN', color: PALETTE.omnitrix, portrait: CH6_TEX.portraitZain, voicePitch: 1.6 },
 };
 
 export function isCastId(id: string): id is CastId {

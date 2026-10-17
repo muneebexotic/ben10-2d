@@ -74,13 +74,21 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, y, brain));
         break;
       }
+      case 'magic': {
+        if (behind(e.x)) break;
+        // Kites hover in row y; everything else stands (or perches) on row y.
+        const brain = createBrain(e.kind);
+        const y = e.kind === 'kite' ? e.y * TILE + TILE / 2 : e.y * TILE - brain.body.height / 2;
+        out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, y, brain));
+        break;
+      }
       case 'barricade':
         if (behind(e.x + e.w)) break;
         out.barricades.push(new Barricade(scene, e.id, e.x, e.y, e.w, e.h, fx));
         break;
       case 'smoothy':
         if (behind(e.x)) break;
-        out.pickups.push(new Pickup(scene, 'smoothy', `smoothy-${e.x}`, e.x, e.y));
+        out.pickups.push(new Pickup(scene, 'smoothy', `smoothy-${e.x}`, e.x, e.y, e.look));
         break;
       case 'card':
         // Cards behind an alien this chapter unlocks on the way are there from the start; prizes wait to be won.

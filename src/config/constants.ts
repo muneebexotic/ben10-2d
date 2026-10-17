@@ -109,6 +109,14 @@ export const LIGHTING = {
   ambientMine: 0x3a3442,
   ambientCavern: 0x4a6a96,
   ambientShaft: 0x30303e,
+  // Karachi: a warm seafront night, the palace's lamplit halls, the moonlit library, cellars, the tunnel, the clockwork, the open tower top.
+  ambientSeafront: 0x8a7ab8,
+  ambientPalace: 0x8a6a8a,
+  ambientLibrary: 0x5a6290,
+  ambientCellar: 0x3a3048,
+  ambientOldTunnel: 0x343040,
+  ambientClockwork: 0x5a4a50,
+  ambientTowerTop: 0x7a76b4,
   ambientBlendMs: 900,
 } as const;
 

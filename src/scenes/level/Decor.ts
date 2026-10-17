@@ -7,6 +7,7 @@ import type { DecorKind, LevelData } from '../../levels/types';
 import type { Lighting } from '../../systems/Lighting';
 import { TEX } from '../preload/assetKeys';
 import { CH5_TEX as T5 } from '../preload/bounty/keys';
+import { CH6_TEX as T6 } from '../preload/karachi/keys';
 import type { LevelWorld } from './LevelWorld';
 import { StaticCuller } from './StaticCuller';
 
@@ -76,6 +77,24 @@ const GLOWS: Partial<Record<DecorKind, Array<{ dx: number; dy: number; radius: n
   crystalCluster: [{ dx: 0, dy: -16, radius: 60, color: PALETTE.diamondhead, intensity: 0.75 }],
   crystalSpire: [{ dx: 0, dy: -50, radius: 100, color: PALETTE.diamondhead, intensity: 0.85 }],
   netGenerator: [{ dx: 0, dy: -8, radius: 40, color: PALETTE.sixsix, intensity: 0.8, flicker: true }],
+  // Karachi: bulbs at the stalls, the fair's lights, the tent's marquee, the palace's lamps and windows, the clock's glow.
+  chaiDhaba: [{ dx: 12, dy: -40, radius: 70, color: 0xffd890, intensity: 0.9 }, { dx: -24, dy: -30, radius: 40, color: 0xff9a4a, intensity: 0.6, flicker: true }],
+  kebabCart: [{ dx: -8, dy: -28, radius: 44, color: 0xff9a4a, intensity: 0.7, flicker: true }],
+  juiceStall: [{ dx: 0, dy: -46, radius: 60, color: 0xffe0a0, intensity: 0.8 }],
+  ferrisHub: [{ dx: 0, dy: -96, radius: 130, color: 0xff8ad8, intensity: 0.55 }],
+  hexTent: [{ dx: 0, dy: -54, radius: 110, color: 0xb88aff, intensity: 0.9, flicker: true }, { dx: 0, dy: -20, radius: 60, color: 0xffb060, intensity: 0.5 }],
+  exhibitTent: [{ dx: 0, dy: -40, radius: 80, color: 0xffe8c0, intensity: 0.6 }],
+  fairLights: [{ dx: -30, dy: -12, radius: 50, color: 0xfff2b0, intensity: 0.5 }, { dx: 30, dy: -12, radius: 50, color: 0xff8ad8, intensity: 0.5 }],
+  shopSign: [{ dx: 0, dy: -11, radius: 44, color: 0xffe0a0, intensity: 0.45 }],
+  palaceGate: [{ dx: -46, dy: -80, radius: 60, color: 0xffb060, intensity: 0.85, flicker: true }, { dx: 46, dy: -80, radius: 60, color: 0xffb060, intensity: 0.85, flicker: true }],
+  palaceFront: [{ dx: 0, dy: -70, radius: 140, color: 0xffb070, intensity: 0.55 }],
+  chandelier: [{ dx: 0, dy: 20, radius: 100, color: 0xffd890, intensity: 0.95 }],
+  readingLamp: [{ dx: 0, dy: -34, radius: 60, color: 0xffd890, intensity: 0.8 }],
+  runeCircle: [{ dx: 0, dy: -6, radius: 50, color: 0xff6ac8, intensity: 0.7, flicker: true }],
+  tunnelLamp: [{ dx: 0, dy: -7, radius: 80, color: 0xffb060, intensity: 0.9, flicker: true }],
+  clockFace: [{ dx: 0, dy: -48, radius: 120, color: 0xf0e0b0, intensity: 0.75 }],
+  rickshaw: [{ dx: 21, dy: -14, radius: 30, color: 0xfff2b0, intensity: 0.6 }],
+  truckBus: [{ dx: 0, dy: -60, radius: 70, color: 0xffd890, intensity: 0.4 }],
 };
 
 const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
@@ -188,6 +207,43 @@ const DECOR_TEXTURE: Record<DecorKind, { key: string; frame?: number }> = {
   prospector: { key: T5.prospector },
   oreCart: { key: T5.oreCart },
   netGenerator: { key: T5.netGenerator },
+  chaiDhaba: { key: T6.chaiDhaba },
+  kebabCart: { key: T6.kebabCart },
+  juiceStall: { key: T6.juiceStall },
+  balloonSeller: { key: T6.balloonSeller },
+  camel: { key: T6.camel },
+  horse: { key: T6.horse },
+  ferrisWheel: { key: T6.ferrisWheel },
+  ferrisHub: { key: T6.ferrisHub },
+  hexTent: { key: T6.hexTent },
+  exhibitTent: { key: T6.exhibitTent },
+  truckBus: { key: T6.truckBus },
+  rickshaw: { key: T6.rickshaw },
+  chingchi: { key: T6.chingchi },
+  shopSign: { key: T6.shopSign },
+  fairLights: { key: T6.fairLights },
+  promenadeRail: { key: T6.promenadeRail },
+  kiteSeller: { key: T6.kiteSeller },
+  palaceGate: { key: T6.palaceGate },
+  palaceFront: { key: T6.palaceFront },
+  jharokha: { key: T6.jharokha },
+  archway: { key: T6.archway },
+  chandelier: { key: T6.chandelier },
+  armorStand: { key: T6.armorStand },
+  carpet: { key: T6.carpet },
+  bookshelf: { key: T6.bookshelf },
+  readingLamp: { key: T6.readingLamp },
+  globe: { key: T6.globe },
+  paintedCeiling: { key: T6.paintedCeiling },
+  cellarArch: { key: T6.cellarArch },
+  runeCircle: { key: T6.runeCircle },
+  wardCage: { key: T6.wardCage },
+  tunnelLamp: { key: T6.tunnelLamp },
+  pipesOld: { key: T6.pipesOld },
+  gears: { key: T6.gears },
+  clockFace: { key: T6.clockFace },
+  pendulum: { key: T6.pendulum },
+  crowWire: { key: T6.crowWire },
 };
 
 /** Big set dressing that sits behind the action. */
@@ -196,7 +252,14 @@ const BACK_DECOR: readonly DecorKind[] = [
   'museumFacade', 'trex', 'mammoth', 'whale', 'pterosaur', 'columns', 'painting', 'banner', 'staffDoor', 'mutagenTank', 'cage', 'labConsole', 'pipes', 'exitSign', 'lampPost',
   'storefront', 'arcadeFront', 'streetLamp', 'powerPole', 'neonSign', 'prizeCounter', 'bandStage', 'breakerBox', 'poster', 'uvLight', 'stationSign', 'subwayMap', 'pillar', 'tunnelLight', 'cables', 'transformer', 'generator', 'warningSign', 'sealedDoor', 'ticketMachine', 'skeeBall',
   'townGate', 'saloon', 'shopFront', 'wanted', 'waterTower', 'hotelSign', 'headframe', 'minePortal', 'timbers', 'crystalSpire', 'dynamiteSign', 'mouseHole', 'hangingLantern', 'lanternPost', 'barCounter', 'piano', 'jailFurniture',
+  'chaiDhaba', 'juiceStall', 'ferrisWheel', 'ferrisHub', 'hexTent', 'exhibitTent', 'truckBus', 'shopSign', 'fairLights', 'kiteSeller', 'crowWire', 'palaceGate', 'palaceFront', 'jharokha', 'archway', 'chandelier',
+  'armorStand', 'bookshelf', 'paintedCeiling', 'cellarArch', 'wardCage', 'tunnelLamp', 'pipesOld', 'gears', 'clockFace', 'pendulum', 'readingLamp', 'globe',
 ];
+
+/** Props that sit behind even the back decor (a Ferris wheel behind the stalls). */
+const FAR_DECOR: readonly DecorKind[] = ['ferrisWheel', 'ferrisHub', 'palaceFront', 'hexTent', 'exhibitTent'];
+/** Props that turn slowly (degrees per second). */
+const SPIN: Partial<Record<DecorKind, number>> = { ferrisWheel: 7, gears: 12 };
 
 function hash(x: number, salt: number): number {
   let h = (x * 374761393 + salt * 668265263) | 0;
@@ -216,6 +279,8 @@ export class Decor {
   private readonly fireflies: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private readonly windowLight: { x: number; y: number } | null = null;
   private readonly glows: Glow[] = [];
+  private readonly spinners: Array<{ img: Phaser.GameObjects.Image; degPerMs: number }> = [];
+  private lastNow = -1;
   /** Props and sprinkled scenery never move: only what is near the camera is drawn. */
   private readonly culler = new StaticCuller();
 
@@ -228,8 +293,15 @@ export class Decor {
       const y = e.y * TILE;
       const frame = e.frame ?? (e.kind === 'tent' ? tentCount++ % 2 : 0);
       const img = scene.add.image(x, y + (e.kind === 'crater' ? 3 : 0), tex.key, frame).setOrigin(0.5, 1);
-      img.setDepth(e.kind === 'crater' ? DEPTH.terrain + 1 : BACK_DECOR.includes(e.kind) ? DEPTH.decorBack : DEPTH.decor);
+      img.setDepth(e.kind === 'crater' ? DEPTH.terrain + 1 : FAR_DECOR.includes(e.kind) ? DEPTH.decorBack - 2 : BACK_DECOR.includes(e.kind) ? DEPTH.decorBack : DEPTH.decor);
       img.setFlipX(e.flip === true);
+      // A Ferris wheel turns about its axle (placed at its stand's top); gears turn about their middle.
+      const spin = SPIN[e.kind];
+      if (spin) {
+        img.setOrigin(0.5, 0.5);
+        if (e.kind === 'gears') img.setY(y - img.height / 2);
+        this.spinners.push({ img, degPerMs: (spin / 1000) * (e.flip ? -1 : 1) });
+      }
       this.culler.add(img);
       if (e.kind === 'neon') this.culler.add(scene.add.sprite(x, y, tex.key, 0).setOrigin(0.5, 1).setDepth(DEPTH.emissive).play({ key: 'neon-flicker', startFrame: Math.floor(e.x % 5) }));
       for (const g of GLOWS[e.kind] ?? []) this.glows.push({ x: x + g.dx * (e.flip ? -1 : 1), y: y + g.dy, radius: g.radius, color: g.color, intensity: g.intensity, flicker: g.flicker ?? false });
@@ -267,8 +339,8 @@ export class Decor {
       this.sprinkleDesert(scene, level, world);
       return;
     }
-    // The museum, downtown and Silver Spur are dressed by hand.
-    if (level.theme === 'museum' || level.theme === 'city' || level.theme === 'western') return;
+    // The museum, downtown, Silver Spur and Karachi are dressed by hand.
+    if (level.theme === 'museum' || level.theme === 'city' || level.theme === 'western' || level.theme === 'karachi') return;
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {
@@ -342,6 +414,9 @@ export class Decor {
   update(camera: Phaser.Cameras.Scene2D.Camera, lighting: Lighting, now: number): void {
     const view = camera.worldView;
     this.culler.update(view);
+    const dt = this.lastNow < 0 ? 0 : Math.min(100, now - this.lastNow);
+    this.lastNow = now;
+    for (const s of this.spinners) if (s.img.visible) s.img.angle += s.degPerMs * dt;
     const zone = this.fireflies?.emitZones[0] as unknown as { source: Phaser.Geom.Rectangle } | undefined;
     if (zone?.source) zone.source.setTo(view.x, view.y + 40, view.width, view.height - 60);
 
