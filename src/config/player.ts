@@ -6,6 +6,8 @@ export const PLAYER = {
   body: { width: 10, height: 22 },
   maxHealth: 5,
   hurtInvulnMs: 1100,
+  /** A ward (Gwen's shield) that eats a hit leaves this much grace after. */
+  wardGraceMs: 500,
   hurtKnockback: { x: 170, y: -210 },
   hurtStunMs: 260,
   fallGravityMultiplier: 1.5,

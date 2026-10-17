@@ -176,14 +176,20 @@ export function drawMax(pc: PixelCanvas, frame: number): void {
 
 // ---------------------------------------------------------------- Gwen's HUD and touch icons (16x16, white for tinting)
 
-/** Gwen's face for the HUD and the touch button: the bob and the clip. */
+/** Gwen's face for the HUD and the touch button: the orange bob, the blue clip, green eyes. In colour (never tinted). */
 export function drawGwenIcon(pc: PixelCanvas): void {
-  pc.rect(3, 2, 10, 4, P.white);
-  pc.rect(3, 2, 3, 11, P.white);
-  pc.rect(11, 4, 2, 7, P.white);
-  pc.rect(6, 6, 6, 7, P.white);
-  pc.ctx.clearRect(pc.ox + 9, pc.oy + 8, 1, 2);
-  pc.ctx.clearRect(pc.ox + 7, pc.oy + 3, 3, 1);
+  pc.rect(3, 1, 10, 2, P.ink);
+  pc.rect(2, 2, 12, 12, P.ink);
+  pc.rect(3, 2, 10, 11, G.hair);
+  pc.rect(4, 2, 6, 1, G.hairLight);
+  pc.rect(5, 5, 6, 7, P.skin0);
+  pc.rect(5, 5, 6, 1, G.hair);
+  pc.rect(4, 4, 3, 2, G.hairLight);
+  pc.rect(10, 3, 2, 2, G.clip);
+  pc.px(6, 7, G.eye).px(9, 7, G.eye);
+  pc.rect(7, 10, 2, 1, P.skin1);
+  pc.rect(3, 12, 2, 2, G.hair).rect(11, 12, 2, 2, G.hair);
+  pc.rect(5, 12, 6, 2, G.top);
 }
 
 /** SHIELD: a bubble. */

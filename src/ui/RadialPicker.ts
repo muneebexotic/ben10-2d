@@ -9,6 +9,24 @@ export interface RadialItem {
   name: string;
 }
 
+/** Where the slots sit (screen angles) and the rim's colour. Default: the Omnitrix's arc. */
+export interface RadialArc {
+  fromDeg: number;
+  toDeg: number;
+  rim: number;
+  /** Where the hovered slot's name shows, from the centre. */
+  labelDx: number;
+  labelDy: number;
+}
+
+const DIAL_ARC: RadialArc = {
+  fromDeg: TOUCH.radial.fromDeg,
+  toDeg: TOUCH.radial.toDeg,
+  rim: PALETTE.omnitrix,
+  labelDx: -TOUCH.radial.radius * 0.6,
+  labelDy: -TOUCH.radial.radius - 26,
+};
+
 /**
  * Which slot a finger at (dx, dy) from the picker's centre points at, or
  * null inside the dead zone. Slots sit on an arc from `fromDeg` to `toDeg`
@@ -47,6 +65,7 @@ export class RadialPicker {
   private hover: number | null = null;
   private cx = 0;
   private cy = 0;
+  private arc: RadialArc = DIAL_ARC;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.backdrop = scene.add.graphics();
@@ -58,11 +77,12 @@ export class RadialPicker {
     return this.root.visible;
   }
 
-  show(cx: number, cy: number, items: RadialItem[], selected: number): void {
+  show(cx: number, cy: number, items: RadialItem[], selected: number, arc: RadialArc = DIAL_ARC): void {
     const R = TOUCH.radial;
     this.cx = cx;
     this.cy = cy;
     this.items = items;
+    this.arc = arc;
     for (const s of this.slots) {
       s.ring.destroy();
       s.icon.destroy();
@@ -70,11 +90,11 @@ export class RadialPicker {
     this.slots = [];
     this.backdrop.clear();
     this.backdrop.fillStyle(PALETTE.ink, 0.55).fillCircle(cx, cy, R.radius + 26);
-    this.backdrop.lineStyle(1, PALETTE.omnitrix, 0.5).strokeCircle(cx, cy, R.radius + 26);
+    this.backdrop.lineStyle(1, arc.rim, 0.5).strokeCircle(cx, cy, R.radius + 26);
     const n = items.length;
-    const step = n > 1 ? (R.toDeg - R.fromDeg) / (n - 1) : 0;
+    const step = n > 1 ? (arc.toDeg - arc.fromDeg) / (n - 1) : 0;
     items.forEach((item, i) => {
-      const a = ((R.fromDeg + step * i) * Math.PI) / 180;
+      const a = ((arc.fromDeg + step * i) * Math.PI) / 180;
       const x = cx + Math.cos(a) * R.radius;
       const y = cy + Math.sin(a) * R.radius;
       const ring = this.scene.add.circle(x, y, R.slotR, PALETTE.ink, 0.85).setStrokeStyle(2, item.color, 0.8);
@@ -90,7 +110,7 @@ export class RadialPicker {
   /** The finger moved: highlight the slot it points at. */
   point(px: number, py: number): void {
     const R = TOUCH.radial;
-    const slot = radialSlot(px - this.cx, py - this.cy, this.items.length, R.fromDeg, R.toDeg, R.deadZone);
+    const slot = radialSlot(px - this.cx, py - this.cy, this.items.length, this.arc.fromDeg, this.arc.toDeg, R.deadZone);
     this.setHover(slot, true);
   }
 
@@ -104,7 +124,7 @@ export class RadialPicker {
     });
     const item = slot !== null ? this.items[slot] : null;
     this.label.setText(item ? item.name : '').setTint(item?.color ?? PALETTE.white);
-    this.label.setPosition(this.cx - TOUCH.radial.radius * 0.6, this.cy - TOUCH.radial.radius - 26);
+    this.label.setPosition(this.cx + this.arc.labelDx, this.cy + this.arc.labelDy);
   }
 
   /** Closes the picker. Returns the slot the finger was on, or null (let go in the middle: cancel). */

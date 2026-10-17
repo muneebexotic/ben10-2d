@@ -25,6 +25,8 @@ export const TOUCH = {
     attack: { right: 118, y: GAME_HEIGHT - 40, r: 25 },
     special: { right: 96, y: GAME_HEIGHT - 108, r: 22 },
     omnitrix: { right: 40, y: GAME_HEIGHT - 132, r: 27 },
+    /** Gwen's spells (when she's along): tap for SHIELD, hold to fan out her spells. */
+    gwen: { right: 168, y: GAME_HEIGHT - 100, r: 19 },
     /** Top centre. */
     pause: { y: 13, r: 11 },
   },
@@ -38,6 +40,8 @@ export const TOUCH = {
    * down, 180 left, 270 up). Let go on one to pick it and transform.
    */
   radial: { holdMs: 300, radius: 70, slotR: 15, fromDeg: 115, toDeg: 255, deadZone: 26 },
+  /** Gwen's spells fan out above her button (up-left to up-right). */
+  spellArc: { fromDeg: 205, toDeg: 335 },
   idleAlpha: 0.38,
   pressedAlpha: 0.78,
 } as const;

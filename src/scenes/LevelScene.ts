@@ -23,7 +23,7 @@ import type { Damageable, Hit, HitResult, Rect } from '../entities/types';
 import { ComboCounter } from '../systems/Combo';
 import { EventBus } from '../systems/EventBus';
 import { Fx } from '../systems/Fx';
-import { InputMap } from '../systems/InputMap';
+import { InputMap, type Controls } from '../systems/InputMap';
 import { DEV_TOOLS, launchParams } from '../systems/LaunchParams';
 import { setFrameLength } from '../systems/Pacing';
 import { physicsSteps } from '../systems/PhysicsSteps';
@@ -36,6 +36,8 @@ import { music } from '../systems/audio/Music';
 import { audio } from '../systems/audio/AudioEngine';
 import { playSfx } from '../systems/audio/Sfx';
 import { bindAudioUnlock, bindMuteKey } from '../systems/Settings';
+import { learnedSpells, spellSeenId } from '../systems/GwenSpells';
+import { GwenCompanion } from './level/family/GwenCompanion';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import { pixelText } from '../ui/text';
 import { BossArena } from './level/BossArena';
@@ -203,6 +205,9 @@ export class LevelScene extends Phaser.Scene {
   private haunting!: Haunting;
   /** Reticles on the weak points Grey Matter analysed. */
   private weakPoints!: WeakPoints;
+  private gwen: GwenCompanion | null = null;
+  /** A replay with Gwen: she joins on the first free frame. */
+  private gwenJoinsAtStart = false;
   /**
    * Every misfire this attempt, and whether a story moment was running: only
    * a named exception (FORCED_MISFIRES) may ever misfire during one (QA checks).
@@ -400,6 +405,8 @@ export class LevelScene extends Phaser.Scene {
       : null;
     if (this.intro) this.intro.lightHook = (x, y, r, c, i) => this.lighting.add(x, y, r, c, i);
     const kit = this.mode === 'story' ? this.createKit(data) : null;
+    this.gwen = kit ? this.createGwen(kit) : null;
+    if (kit) kit.gwen = this.gwen;
     this.arena = bossSpawn ? this.createArena(bossSpawn, kit) : null;
     this.training = this.mode === 'training' ? this.createTraining() : null;
     this.story = kit && this.level.story !== undefined ? new StoryDirector(kit, this.checkpointId ? start.x : 0, this.chapter.story) : null;
@@ -546,7 +553,37 @@ export class LevelScene extends Phaser.Scene {
       },
       payReward: (reward, x, y) => this.onSumoWon(reward, x, y),
       spawnIntroDrones: () => this.spawnIntroDrones(),
+      gwen: null,
     };
+  }
+
+  /** Gwen comes along in a chapter that has her, or in a replay when Settings asks and she's learned a spell. */
+  private createGwen(kit: StoryKit): GwenCompanion | null {
+    const own = this.chapter.gwen;
+    const known = learnedSpells(session.file);
+    if (!own && !(getSettings().gwenInReplays && known.length > 0)) return null;
+    this.gwenJoinsAtStart = !own;
+    const slot = session.slot;
+    return new GwenCompanion(kit, {
+      known,
+      chatter: own?.chatter,
+      onCast: () => this.achievements.count('spells'),
+      onLearn: (id) => {
+        if (slot !== null) saveSystem.markSeen(slot, spellSeenId(id));
+      },
+    });
+  }
+
+  private updateGwen(dt: number, realDt: number, controls: Controls): void {
+    const g = this.gwen;
+    if (!g) return;
+    // In a replay she steps in beside Ben once the opening is over.
+    if (this.gwenJoinsAtStart && !g.present && this.state === 'play' && !this.cinematic && this.player.grounded && !this.player.dead) {
+      this.gwenJoinsAtStart = false;
+      g.join(true);
+    }
+    g.canCast = this.state === 'play' && !this.cinematic && this.player.inputEnabled;
+    g.update(dt, realDt, controls);
   }
 
   private nearestEnemy(x: number, y: number, range: number): { x: number; y: number } | null {
@@ -998,6 +1035,7 @@ export class LevelScene extends Phaser.Scene {
 
     for (const d of this.drones) d.update(worldDt);
     this.arena?.update(dt, realDt, controls);
+    this.updateGwen(dt, realDt, controls);
     this.projectiles.update(worldDt, (x, y) => this.world.isSolid(x, y), this.cameras.main.worldView, (x, y) => this.world.groundBelow(x, y));
     if (this.state === 'play') this.combat.update(worldDt);
 
@@ -1672,6 +1710,8 @@ export class LevelScene extends Phaser.Scene {
     this.hazards = null;
     this.crystals?.clear();
     this.weakPoints?.destroy();
+    this.gwen?.destroy();
+    this.gwen = null;
     this.dialogue?.stop(false);
     this.time2?.clearSlowMo();
     this.tweens.timeScale = 1;

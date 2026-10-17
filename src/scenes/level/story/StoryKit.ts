@@ -20,6 +20,7 @@ import type { LevelWorld } from '../LevelWorld';
 import type { OmnitrixController } from '../OmnitrixController';
 import type { Tutorial } from '../Tutorial';
 import type { Dialogue } from './Dialogue';
+import type { GwenCompanion } from '../family/GwenCompanion';
 
 /**
  * A chapter's scripted moment (the opening drive, an alien unlocking, the
@@ -108,4 +109,6 @@ export interface StoryKit {
   setWorldHidden(hidden: boolean): void;
   /** A set piece's prize card drops out at (x, y) (the dive's card, the high score). */
   payReward(reward: string, x: number, y: number): void;
+  /** Gwen at Ben's side (Chapter 6, or a replay with her spells on), or null. */
+  gwen: GwenCompanion | null;
 }

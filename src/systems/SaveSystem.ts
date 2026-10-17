@@ -81,6 +81,8 @@ export interface SettingsData {
   touchControls: TouchMode;
   /** Race a ghost of your best run. */
   ghost: boolean;
+  /** Gwen (and the spells she's learned) comes along when replaying Chapters 1-5. */
+  gwenInReplays: boolean;
 }
 
 export interface SaveData {
@@ -118,7 +120,7 @@ export interface RecordOutcome {
 }
 
 export function createDefaultSettings(): SettingsData {
-  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true };
+  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true, gwenInReplays: false };
 }
 
 export function createDefaultSave(): SaveData {
@@ -263,6 +265,7 @@ function migrateSettings(raw: unknown): SettingsData {
   if (typeof s.shake === 'number' && Number.isFinite(s.shake)) settings.shake = Math.min(1, Math.max(0, s.shake));
   if (s.touchControls === 'on' || s.touchControls === 'off' || s.touchControls === 'auto') settings.touchControls = s.touchControls;
   if (typeof s.ghost === 'boolean') settings.ghost = s.ghost;
+  if (typeof s.gwenInReplays === 'boolean') settings.gwenInReplays = s.gwenInReplays;
   return settings;
 }
 

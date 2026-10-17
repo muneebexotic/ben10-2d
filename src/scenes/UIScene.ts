@@ -25,6 +25,7 @@ import { MISFIRE, SWAP } from '../config/omnitrix';
 import { frameView } from '../ui/view';
 import { AchievementToast } from '../ui/AchievementToast';
 import { achievementById } from '../systems/Achievements';
+import { GwenHud } from '../ui/GwenHud';
 import { Whisper } from '../ui/Whisper';
 import { whisper as whisperSound } from '../aliens/ghostfreak/audio';
 
@@ -43,6 +44,7 @@ export class UIScene extends Phaser.Scene {
   private comic!: ComicPanel;
   private unlockCard!: UnlockCard;
   private whisper!: Whisper;
+  private gwen!: GwenHud;
   private vignette!: Phaser.GameObjects.Image;
   private readonly pops: (Phaser.GameObjects.BitmapText | null)[] = [];
   private hp: number = PLAYER.maxHealth;
@@ -72,6 +74,7 @@ export class UIScene extends Phaser.Scene {
     this.comic = new ComicPanel(this, frame);
     this.unlockCard = new UnlockCard(this);
     this.whisper = new Whisper(this);
+    this.gwen = new GwenHud(this);
     const toast = new AchievementToast(this, 104);
     // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
     frame.onResize((w) => {
@@ -83,6 +86,7 @@ export class UIScene extends Phaser.Scene {
       this.splits.setRight(frame.right);
       this.dialog.setRight(frame.right);
       this.whisper.setLeft(frame.left);
+      this.gwen.setLeft(frame.left);
       toast.setLeft(frame.left);
     });
 
@@ -95,14 +99,15 @@ export class UIScene extends Phaser.Scene {
       this.health.setVisible(p.visible);
       this.stats.setVisible(p.visible);
       this.splits.setVisible(p.visible);
+      this.gwen.setVisible(p.visible);
       if (p.omnitrix !== undefined) this.dial.setVisible(p.omnitrix && p.visible, false);
     }, this);
     on('omnitrix:acquired', () => this.dial.setVisible(true, true), this);
     on('omnitrix:tick', (t) => this.dial.setTick(t), this);
     on('omnitrix:denied', (p) => {
       this.dial.deny();
-      const text = p.reason === 'jammed' ? 'JAMMED!' : p.reason === 'lowTime' ? 'NOT ENOUGH TIME TO SWAP!' : p.reason === 'stolen' ? 'DNA STOLEN!' : 'RECHARGING!';
-      this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : p.reason === 'stolen' ? PALETTE.kevin : PALETTE.enemy);
+      const text = p.reason === 'jammed' ? 'JAMMED!' : p.reason === 'lowTime' ? 'NOT ENOUGH TIME TO SWAP!' : p.reason === 'stolen' ? 'DNA STOLEN!' : p.reason === 'cramped' ? 'NO ROOM TO CHANGE HERE!' : 'RECHARGING!';
+      this.popText(text, p.reason === 'jammed' ? PALETTE.jammer : p.reason === 'stolen' ? PALETTE.kevin : p.reason === 'cramped' ? PALETTE.greymatter : PALETTE.enemy);
     }, this);
     on('omnitrix:warning', (p) => this.popText(String(p.secondsLeft), PALETTE.enemy, 2), this);
     on('omnitrix:ready', () => {
@@ -201,6 +206,11 @@ export class UIScene extends Phaser.Scene {
     on('boss:hide', () => this.bossBar.hide(), this);
     on('boss:copies', (p) => this.bossBar.setCopies(p.list, p.current), this);
     on('input:mode', () => this.prompts.rerender(), this);
+    on('gwen:state', (p) => this.gwen.setState(p.present, p.known, p.charge), this);
+    on('gwen:cast', (p) => this.gwen.cast(p.spell), this);
+    on('gwen:learned', (p) => this.gwen.learned(p.spell), this);
+    on('settings:changed', () => this.gwen.refresh(), this);
+    on('input:mode', () => this.gwen.refresh(), this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
     EventBus.emit('hud:ready');
@@ -240,6 +250,7 @@ export class UIScene extends Phaser.Scene {
     this.comic.update(delta);
     this.unlockCard.update(delta);
     this.whisper.update(delta, now);
+    this.gwen.update(delta);
 
     const low = !this.alien && this.hp <= 1.5 && this.hp > 0;
     const target = this.dead ? 0.8 : low ? 0.35 + Math.sin(now * 0.008) * 0.15 : 0;

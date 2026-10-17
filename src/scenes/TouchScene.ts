@@ -12,6 +12,11 @@ import { getAlien, getForm, hasAlien, HUMAN_FORM } from '../aliens/registry';
 import { RadialPicker } from '../ui/RadialPicker';
 import type { OmnitrixTick } from '../systems/events';
 import { viewWidth } from '../ui/view';
+import { BakedGraphics } from '../ui/BakedGraphics';
+import { GWEN, SPELL_ORDER, type SpellId } from '../config/gwen';
+import { SPELL_INFO } from './level/family/gwenLines';
+
+const SPELL_ICON: Record<SpellId, string> = { shield: TEX.spellShield, stun: TEX.spellStun, reveal: TEX.spellReveal };
 
 type ButtonId = 'jump' | 'attack' | 'special' | 'pause';
 
@@ -19,6 +24,7 @@ type Track =
   | { kind: 'stick' }
   | { kind: 'button'; id: ButtonId }
   | { kind: 'dial'; startX: number; startY: number; downAt: number; swiped: boolean; radial: boolean }
+  | { kind: 'gwen'; startX: number; startY: number; downAt: number; radial: boolean }
   | { kind: 'tap' };
 
 const PAD_BUTTON: Record<ButtonId, PadButton> = { jump: 'jump', attack: 'attack', special: 'special', pause: 'pause' };
@@ -32,6 +38,13 @@ export class TouchScene extends Phaser.Scene {
   private buttons!: Record<ButtonId, TouchButton>;
   private dial!: TouchDial;
   private picker!: RadialPicker;
+  private gwen!: TouchButton;
+  private gwenPips!: BakedGraphics;
+  private spellPicker!: RadialPicker;
+  /** Gwen's spells as the level last reported them. */
+  private gwenPresent = false;
+  private gwenKnown: readonly SpellId[] = [];
+  private gwenReadyMask = -1;
   private tick: OmnitrixTick | null = null;
   private readonly tracks = new Map<number, Track>();
   private cinematic = false;
@@ -61,6 +74,13 @@ export class TouchScene extends Phaser.Scene {
     };
     this.dial = new TouchDial(this, 0, B.omnitrix.y, B.omnitrix.r);
     this.picker = new RadialPicker(this);
+    this.gwen = new TouchButton(this, 0, B.gwen.y, B.gwen.r, TEX.gwenIcon, 'GWEN', PALETTE.mana).untint();
+    this.gwenPips = BakedGraphics.round(this, B.gwen.r + 4, 5);
+    this.gwen.root.add(this.gwenPips.image);
+    this.spellPicker = new RadialPicker(this);
+    this.gwenPresent = false;
+    this.gwenKnown = [];
+    this.gwenReadyMask = -1;
     this.layout();
     const onResize = () => this.layout();
     this.scale.on(Phaser.Scale.Events.RESIZE, onResize);
@@ -86,6 +106,7 @@ export class TouchScene extends Phaser.Scene {
       this.dial.setTick(t);
     }, this);
     on('omnitrix:dial', (p) => this.dial.nudge(p.direction), this);
+    on('gwen:state', (p) => this.setGwen(p.present, p.known, p.charge), this);
     on('alien:transformed', (p) => this.setFormIcons(p.alienId), this);
     on('alien:reverted', () => this.setFormIcons(HUMAN_FORM.id), this);
     on('hud:reset', () => {
@@ -118,6 +139,7 @@ export class TouchScene extends Phaser.Scene {
     // Whole pixels: the baked ring then lands exactly where the drawn one did.
     this.buttons.pause.moveTo(Math.round(w / 2), B.pause.y);
     this.dial.moveTo(w - B.omnitrix.right, B.omnitrix.y);
+    this.gwen.moveTo(w - B.gwen.right, B.gwen.y);
     this.releaseAll();
   }
 
@@ -144,6 +166,11 @@ export class TouchScene extends Phaser.Scene {
       return;
     }
 
+    if (this.gwenShown && this.gwen.contains(p.x, p.y) < Math.min(this.nearestButton(p.x, p.y).score, this.omnitrixVisible ? this.dial.contains(p.x, p.y) : Infinity)) {
+      this.tracks.set(p.id, { kind: 'gwen', startX: p.x, startY: p.y, downAt: performance.now(), radial: false });
+      this.gwen.setPressed(true);
+      return;
+    }
     if (this.omnitrixVisible && this.dial.contains(p.x, p.y) < this.nearestButton(p.x, p.y).score) {
       this.tracks.set(p.id, { kind: 'dial', startX: p.x, startY: p.y, downAt: performance.now(), swiped: false, radial: false });
       this.dial.setPressed(true);
@@ -180,6 +207,8 @@ export class TouchScene extends Phaser.Scene {
         this.buttons[hit.id].setPressed(true);
         pad.press(PAD_BUTTON[hit.id]);
       }
+    } else if (track.kind === 'gwen') {
+      if (track.radial) this.spellPicker.point(p.x, p.y);
     } else if (track.kind === 'dial') {
       if (track.radial) {
         this.picker.point(p.x, p.y);
@@ -206,6 +235,16 @@ export class TouchScene extends Phaser.Scene {
     } else if (track.kind === 'button') {
       this.buttons[track.id].setPressed(false);
       pad.release(PAD_BUTTON[track.id]);
+    } else if (track.kind === 'gwen') {
+      this.gwen.setPressed(false);
+      // A tap casts her first spell (SHIELD); the fan picks any of them. Let go in the middle: never mind.
+      const slot = track.radial ? this.spellPicker.close() : 0;
+      const spell = slot !== null ? this.gwenKnown[slot] : undefined;
+      if (spell) {
+        pad.chooseSpell(SPELL_ORDER.indexOf(spell));
+        pad.press('spell');
+        pad.release('spell');
+      }
     } else if (track.kind === 'dial') {
       this.dial.setPressed(false);
       if (track.radial) {
@@ -251,12 +290,21 @@ export class TouchScene extends Phaser.Scene {
     if (this.buttons) for (const b of Object.values(this.buttons)) b.setPressed(false);
     this.dial?.setPressed(false);
     this.picker?.close();
+    this.gwen?.setPressed(false);
+    this.spellPicker?.close();
   }
 
-  /** A held, unswiped Omnitrix opens the radial picker. */
+  /** A held, unswiped Omnitrix opens the radial picker (and a held GWEN button her spells). */
   private checkRadial(): void {
     const now = performance.now();
     for (const track of this.tracks.values()) {
+      if (track.kind === 'gwen' && !track.radial && now - track.downAt >= TOUCH.radial.holdMs && this.gwenKnown.length > 1) {
+        track.radial = true;
+        const items = this.gwenKnown.map((id) => ({ icon: SPELL_ICON[id], color: GWEN.spells[id].color, name: SPELL_INFO[id].name }));
+        const A = TOUCH.spellArc;
+        this.spellPicker.show(this.gwen.x, this.gwen.y, items, 0, { fromDeg: A.fromDeg, toDeg: A.toDeg, rim: PALETTE.mana, labelDx: 0, labelDy: -TOUCH.radial.radius - 30 });
+        this.spellPicker.point(track.startX, track.startY);
+      }
       if (track.kind !== 'dial' || track.swiped || track.radial || now - track.downAt < TOUCH.radial.holdMs) continue;
       const aliens = (this.tick?.unlocked ?? []).filter((id) => hasAlien(id));
       if (aliens.length < 2) continue;
@@ -279,6 +327,35 @@ export class TouchScene extends Phaser.Scene {
     this.stick.root.setVisible(show);
     for (const b of Object.values(this.buttons)) b.root.setVisible(show);
     this.dial.root.setVisible(show && this.omnitrixVisible);
+    this.gwen.root.setVisible(show && this.gwenShown);
+  }
+
+  private get gwenShown(): boolean {
+    return this.gwenPresent && this.gwenKnown.length > 0;
+  }
+
+  /** The GWEN button: a pip per spell she knows around the ring, lit when it's ready. */
+  private setGwen(present: boolean, known: readonly SpellId[], charge: readonly number[]): void {
+    this.gwenPresent = present;
+    if (known.length !== this.gwenKnown.length) {
+      this.gwenKnown = known.slice();
+      this.gwenReadyMask = -1;
+    }
+    let mask = 0;
+    for (const id of known) if ((charge[SPELL_ORDER.indexOf(id)] ?? 0) >= 1) mask |= 1 << SPELL_ORDER.indexOf(id);
+    if (mask === this.gwenReadyMask) return;
+    this.gwenReadyMask = mask;
+    const r = TOUCH.buttons.gwen.r + 4;
+    const ids = this.gwenKnown;
+    this.gwenPips.draw((g) => {
+      ids.forEach((id, i) => {
+        // Pips across the top of the ring, left to right in her spell order.
+        const a = ((-90 + (i - (ids.length - 1) / 2) * 32) * Math.PI) / 180;
+        const lit = (mask & (1 << SPELL_ORDER.indexOf(id))) !== 0;
+        g.fillStyle(lit ? GWEN.spells[id].color : PALETTE.inkSoft, 1).fillCircle(Math.cos(a) * r, Math.sin(a) * r, 3);
+        g.lineStyle(1, PALETTE.ink, 1).strokeCircle(Math.cos(a) * r, Math.sin(a) * r, 3);
+      });
+    });
   }
 
   override update(time: number): void {
@@ -292,6 +369,7 @@ export class TouchScene extends Phaser.Scene {
     this.stick.applyAlpha(this.stickInUse());
     for (const b of Object.values(this.buttons)) b.applyAlpha();
     this.dial.applyAlpha();
+    this.gwen.applyAlpha();
     this.dial.update(time);
     this.checkRadial();
   }

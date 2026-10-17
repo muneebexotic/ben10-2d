@@ -73,6 +73,11 @@ export class Player implements PlayerHandle {
 
   private readonly motor: MotorState = createMotorState();
   private invulnUntil = 0;
+  /** A ward (Gwen's shield) eats the next hit until this game time. */
+  private wardUntil = 0;
+  private onWardHit: (() => void) | null = null;
+  /** Someone else's senses (Gwen's reveal) reaching this far around him. */
+  extraSense = 0;
   private stunUntil = 0;
   private wasGrounded = false;
   private fallSpeed = 0;
@@ -193,6 +198,16 @@ export class Player implements PlayerHandle {
     this.invulnUntil = Math.max(this.invulnUntil, this.now + ms);
   }
 
+  /** The next hit within `ms` is absorbed instead (and `onHit` hears about it); 0 drops the ward. */
+  setWard(ms: number, onHit: (() => void) | null): void {
+    this.wardUntil = ms > 0 ? this.now + ms : 0;
+    this.onWardHit = ms > 0 ? onHit : null;
+  }
+
+  get warded(): boolean {
+    return !this.dead && this.now < this.wardUntil;
+  }
+
   glow(color: number, amount: number): void {
     this.visual.glow(color, amount);
   }
@@ -214,7 +229,7 @@ export class Player implements PlayerHandle {
 
   /** How far the current form senses hidden things (Wildmutt), 0 for none. */
   get senseRadius(): number {
-    return this.dead ? 0 : (this.abilities.senseRadius?.() ?? 0);
+    return this.dead ? 0 : Math.max(this.extraSense, this.abilities.senseRadius?.() ?? 0);
   }
 
   /** Intangible right now (Ghostfreak phasing): phase walls let him through. */
@@ -464,6 +479,13 @@ export class Player implements PlayerHandle {
     if (this.dead || !this.controlsEnabled) return NO_DAMAGE;
     if (this.invulnerable) {
       if (this.abilities.isInvulnerable?.()) this.abilities.onDodge?.(this.ctx, source);
+      return NO_DAMAGE;
+    }
+    if (this.warded) {
+      const onHit = this.onWardHit;
+      this.setWard(0, null);
+      this.invulnUntil = this.now + PLAYER.wardGraceMs;
+      onHit?.();
       return NO_DAMAGE;
     }
     // Some forms shrug off shots and crack under blows (Diamondhead), or the reverse.

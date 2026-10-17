@@ -61,6 +61,8 @@ export interface ChapterModule {
   podIntro?(deps: PodIntroDeps): IntroDirector;
   /** Level hooks this chapter's boss needs beyond the arena (THE HUNTERS move through the level). */
   arena?(kit: StoryKit): Pick<ArenaDeps, 'hunt'>;
+  /** Gwen walks with Ben in this chapter (the story says when she joins): her own banter. */
+  gwen?: { chatter?: readonly string[] };
   /** Scenes only this chapter uses (the SUMO SLAMMERS cabinet, THE DEEP DIVE). */
   scenes?: ReadonlyArray<{ key: string; scene: new () => Phaser.Scene; /** Drawn just under this scene (default: on top of everything). */ below?: string }>;
 }

@@ -5,6 +5,7 @@ import type { RunStats } from './RunStats';
 import type { TrainingOptions } from './TrainingState';
 import type { EnemyKind } from '../levels/types';
 import type { DifficultyId } from '../config/difficulty';
+import type { SpellId } from '../config/gwen';
 
 export interface OmnitrixTick {
   state: OmnitrixState;
@@ -80,6 +81,11 @@ export interface GameEvents {
   /** `reachableCards`: cards that exist this run; the rest of `totalCards` wait behind a later alien. */
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number; reachableCards: number };
   'card:collected': { id: string; found: number; total: number };
+  /** Gwen's spells for the HUD and the touch button: which she knows, how charged (0-1), whether she's here to cast. */
+  'gwen:state': { present: boolean; known: readonly SpellId[]; charge: readonly number[] };
+  'gwen:cast': { spell: SpellId };
+  /** Gwen learned a spell (Chapter 6): the HUD shows how to cast it. */
+  'gwen:learned': { spell: SpellId };
   'hud:split': SplitResult;
   'hud:prompt': { id: string; text: string; priority?: number };
   'hud:promptClear': { id: string };

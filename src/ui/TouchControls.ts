@@ -41,6 +41,12 @@ export class TouchButton {
     this.icon.setTexture(key);
   }
 
+  /** Shows the icon in its own colours (a face, not a symbol). */
+  untint(): this {
+    this.icon.clearTint();
+    return this;
+  }
+
   setPressed(on: boolean): void {
     if (on === this.pressed) return;
     this.pressed = on;

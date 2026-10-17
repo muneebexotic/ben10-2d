@@ -57,3 +57,11 @@ export class GwenSpells {
     for (const id of SPELL_ORDER) this.readyAt[id] = 0;
   }
 }
+
+/** A file remembers each spell Gwen learned as a "seen" moment. */
+export const spellSeenId = (id: SpellId): string => `spell:${id}`;
+
+/** The spells a save file's Gwen knows. */
+export function learnedSpells(file: { seen: readonly string[] } | null | undefined): SpellId[] {
+  return SPELL_ORDER.filter((id) => file?.seen.includes(spellSeenId(id)) ?? false);
+}
