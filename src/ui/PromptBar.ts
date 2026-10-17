@@ -30,6 +30,7 @@ export class PromptBar {
   private readonly bg: BakedGraphics;
   private readonly label: Phaser.GameObjects.BitmapText;
   private shownId = '';
+  private muted = false;
 
   constructor(private readonly scene: Phaser.Scene) {
     // Wide enough for the longest prompt on the widest view, and tall enough for two lines at 2x.
@@ -61,6 +62,14 @@ export class PromptBar {
     this.refresh();
   }
 
+  /** Held back (kept, not cleared) while an overlay has the screen. */
+  setMuted(on: boolean): void {
+    if (on === this.muted) return;
+    this.muted = on;
+    this.shownId = '';
+    this.refresh();
+  }
+
   clearAll(): void {
     this.prompts.length = 0;
     this.refresh();
@@ -68,7 +77,7 @@ export class PromptBar {
 
   private refresh(): void {
     const top = [...this.prompts].sort((a, b) => b.priority - a.priority)[0];
-    if (!top) {
+    if (!top || this.muted) {
       this.shownId = '';
       this.root.setVisible(false);
       return;

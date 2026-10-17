@@ -166,6 +166,7 @@ export class UIScene extends Phaser.Scene {
       this.dead = false;
       this.alien = false;
       this.prompts.clearAll();
+      this.prompts.setMuted(false);
       this.dialog.clear();
       this.combo.hide();
       this.comic.hide();
@@ -189,6 +190,7 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('hud:prompt', (p) => this.prompts.add(p.id, p.text, p.priority), this);
     on('hud:promptClear', (p) => this.prompts.clear(p.id), this);
+    on('hud:promptMute', (p) => this.prompts.setMuted(p.muted), this);
     on('hud:banner', (p) => this.banner.show(p), this);
     on('hud:letterbox', (p) => {
       this.letterbox.set(p.visible);

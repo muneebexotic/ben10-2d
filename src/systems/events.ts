@@ -96,6 +96,8 @@ export interface GameEvents {
   /** A whisper in the corner of the screen (Ghostfreak). */
   'hud:whisper': { text: string; color: number };
   'hud:visible': { visible: boolean; omnitrix?: boolean };
+  /** Control prompts held back while a full-screen overlay (a puzzle, the tower) has the screen. */
+  'hud:promptMute': { muted: boolean };
   'hud:omnitrixSymbol': { color: number; big: boolean };
   'boss:show': { name: string; subtitle: string };
   'boss:health': { ratio: number; phase: number };

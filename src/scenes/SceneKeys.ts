@@ -7,6 +7,8 @@ export const SCENES = {
   chapterSelect: 'ChapterSelect',
   level: 'Level',
   dive: 'Dive',
+  spellEngine: 'SpellEngine',
+  tower: 'Tower',
   ui: 'UI',
   pause: 'Pause',
   gameOver: 'GameOver',

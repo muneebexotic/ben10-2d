@@ -13,6 +13,7 @@ const LABELS: Record<string, Record<InputKind, string>> = {
   UP: { keyboard: '[UP]', touch: 'STICK UP' },
   DOWN: { keyboard: '[DOWN]', touch: 'STICK DOWN' },
   MOVE: { keyboard: 'A/D', touch: 'STICK' },
+  ARROWS: { keyboard: 'ARROWS/WASD', touch: 'TAP' },
   DIAL: { keyboard: '[Q]/[E]/[1-9]', touch: 'SWIPE/HOLD THE OMNITRIX' },
   PAUSE: { keyboard: '[ESC]', touch: '[II]' },
   CONFIRM: { keyboard: '[ENTER]', touch: 'TAP' },
