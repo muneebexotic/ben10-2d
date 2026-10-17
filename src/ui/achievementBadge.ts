@@ -9,6 +9,7 @@ import { ACH_ICON_FRAMES } from '../scenes/preload/uiArt';
 export function achievementIcon(icon: AchievementIcon): { key: string; frame: number } {
   if (icon in ACH_ICON_FRAMES) return { key: TEX.achIcons, frame: ACH_ICON_FRAMES[icon as keyof typeof ACH_ICON_FRAMES] };
   if (icon === 'ben') return { key: TEX.iconBen, frame: 0 };
+  if (icon === 'gwen') return { key: TEX.gwenIcon, frame: 0 };
   if (icon === 'smoothy') return { key: TEX.smoothy, frame: 0 };
   if (icon === 'card') return { key: TEX.cardIcon, frame: 1 };
   if (icon === 'boss') return { key: TEX.bossIcon, frame: 0 };

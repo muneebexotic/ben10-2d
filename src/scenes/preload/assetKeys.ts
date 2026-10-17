@@ -2,7 +2,7 @@ import { PALETTE as P } from '../../config/palette';
 import { drawBenBack } from './benBack';
 import { TILESET_FRAME_COUNT } from '../../levels/tiles';
 import { BEN_FRAME, BEN_FRAME_COUNT, BEN_FRAMES, drawBen } from './characters';
-import { one, sheet, type AnimDef, type AssetDef } from './assetTypes';
+import { animsFor, one, sheet, type AnimDef, type AssetDef } from './assetTypes';
 import {
   BOSS_HULL,
   drawBossArm,
@@ -30,6 +30,7 @@ import * as animo from './animo';
 import * as tech from './tech';
 import * as robots from './robots';
 import * as sets from './sharedSets';
+import * as family from './family';
 import * as kevin from './kevin';
 
 /**
@@ -183,6 +184,14 @@ export const TEX = {
   pothole: 'prop-pothole',
   portraitMax: 'portrait-max',
   portraitGwen: 'portrait-gwen',
+  gwen: 'char-gwen',
+  max: 'char-max',
+  gwenIcon: 'ui-icon-gwen',
+  spellShield: 'ui-spell-shield',
+  spellStun: 'ui-spell-stun',
+  spellReveal: 'ui-spell-reveal',
+  manaOrb: 'fx-mana-orb',
+  manaBubble: 'fx-mana-bubble',
   portraitBen: 'portrait-ben',
   portraitVilgax: 'portrait-vilgax',
   // Dr. Animo.
@@ -314,6 +323,14 @@ export const chimeraPartKey = (part: kevin.ChimeraPart) => `boss-chimera-${part}
 
 export const ASSETS: AssetDef[] = [
   sheet(TEX.ben, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, true)),
+  sheet(TEX.gwen, family.GWEN_FRAME.w, family.GWEN_FRAME.h, family.GWEN_FRAME_COUNT, family.drawGwen),
+  sheet(TEX.max, family.MAX_FRAME.w, family.MAX_FRAME.h, family.MAX_FRAME_COUNT, family.drawMax),
+  one(TEX.gwenIcon, 16, 16, family.drawGwenIcon),
+  one(TEX.spellShield, 16, 16, family.drawSpellShield),
+  one(TEX.spellStun, 16, 16, family.drawSpellStun),
+  one(TEX.spellReveal, 16, 16, family.drawSpellReveal),
+  one(TEX.manaOrb, 10, 10, family.drawManaOrb),
+  one(TEX.manaBubble, 48, 48, family.drawManaBubble),
   sheet(TEX.benBack, 30, 26, 3, drawBenBack),
   sheet(TEX.benNoWatch, BEN_FRAME.w, BEN_FRAME.h, BEN_FRAME_COUNT, (pc, f) => drawBen(pc, f, false)),
   sheet(TEX.scout, 20, 16, 3, drawScout),
@@ -488,6 +505,8 @@ const benAnims = (prefix: string, texture: string): AnimDef[] => [
 
 export const ANIMS: AnimDef[] = [
   ...benAnims('ben', TEX.ben),
+  ...animsFor('gwen', TEX.gwen, family.GWEN_FRAMES, { idle: 3, run: 14, cast: 10 }, ['idle', 'run', 'cast']),
+  ...animsFor('max', TEX.max, family.MAX_FRAMES, { idle: 2, walk: 7, spray: 12 }, ['idle', 'walk', 'spray']),
   ...benAnims('bennw', TEX.benNoWatch),
   { key: 'scout-idle', texture: TEX.scout, frames: [0, 1], frameRate: 10, repeat: -1 },
   { key: 'striker-idle', texture: TEX.striker, frames: [0, 1], frameRate: 8, repeat: -1 },

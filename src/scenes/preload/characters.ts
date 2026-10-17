@@ -147,7 +147,7 @@ function drawBenHead(pc: PixelCanvas, x: number, y: number, pose: Pose): void {
   else pc.px(x + 6, y + 6, P.skin1);
 }
 
-function drawLeg(
+export function drawLeg(
   pc: PixelCanvas,
   hipX: number,
   hipY: number,
@@ -170,7 +170,7 @@ function drawLeg(
   pc.rect(fx, ankleY + shoeH, shoeW, 1, 0xd8dbe6);
 }
 
-function drawArm(
+export function drawArm(
   pc: PixelCanvas,
   sx: number,
   sy: number,

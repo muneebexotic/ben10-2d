@@ -212,6 +212,8 @@ const emptyControls = (): Controls => ({
   pause: false,
   confirm: false,
   anyPressed: false,
+  spellPressed: false,
+  spellPick: null,
 });
 
 describe('autopilot', () => {

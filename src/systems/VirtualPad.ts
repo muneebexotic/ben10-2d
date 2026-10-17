@@ -2,7 +2,7 @@
  * On-screen controls as plain state. The Touch scene writes it, InputMap reads
  * it alongside the keyboard, so gameplay never knows which one was used.
  */
-export type PadButton = 'jump' | 'attack' | 'special' | 'transform' | 'pause' | 'dialPrev' | 'dialNext';
+export type PadButton = 'jump' | 'attack' | 'special' | 'transform' | 'pause' | 'dialPrev' | 'dialNext' | 'spell';
 
 export interface StickDirections {
   left: boolean;
@@ -56,6 +56,19 @@ class VirtualPad {
     return p;
   }
 
+  /** A spell picked on Gwen's radial, waiting to be read. */
+  private spellPicked: number | null = null;
+
+  chooseSpell(index: number): void {
+    this.spellPicked = index;
+  }
+
+  consumeSpellPick(): number | null {
+    const p = this.spellPicked;
+    this.spellPicked = null;
+    return p;
+  }
+
   press(button: PadButton): void {
     this.held.add(button);
     this.latched.add(button);
@@ -100,6 +113,7 @@ class VirtualPad {
     this.anyTap = false;
     this.transformLeadMs = 0;
     this.picked = null;
+    this.spellPicked = null;
     this.setStick({ left: false, right: false, up: false, down: false });
   }
 }

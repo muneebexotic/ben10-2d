@@ -338,4 +338,6 @@ const IDLE: Controls = {
   pause: false,
   confirm: false,
   anyPressed: false,
+  spellPressed: false,
+  spellPick: null,
 };

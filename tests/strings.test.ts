@@ -12,7 +12,7 @@ import { extractStrings, HOLE, isPlayerText, playerStrings } from './support/str
 const SOURCES = import.meta.glob('../src/**/*.ts', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const ALL = playerStrings(SOURCES);
 const where = (s: { file: string; line: number }) => `${s.file}:${s.line}`;
-const TOKENS = ['T', 'J', 'K', 'JUMP', 'UP', 'DOWN', 'MOVE', 'DIAL', 'PAUSE', 'CONFIRM', 'SKIP'];
+const TOKENS = ['T', 'J', 'K', 'G', 'JUMP', 'UP', 'DOWN', 'MOVE', 'DIAL', 'PAUSE', 'CONFIRM', 'SKIP'];
 
 /** Spellings that must not appear in player text, with the house form. */
 const WRONG: Array<[RegExp, string]> = [

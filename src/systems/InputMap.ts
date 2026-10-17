@@ -24,6 +24,10 @@ export interface Controls {
   pause: boolean;
   confirm: boolean;
   anyPressed: boolean;
+  /** Gwen's spell button (G; with Up or Down for her other spells). */
+  spellPressed: boolean;
+  /** A spell picked directly on the touch radial (0 shield, 1 stun, 2 reveal), or null. */
+  spellPick: number | null;
 }
 
 export function emptyControls(): Controls {
@@ -47,6 +51,8 @@ export function emptyControls(): Controls {
     pause: false,
     confirm: false,
     anyPressed: false,
+    spellPressed: false,
+    spellPick: null,
   };
 }
 
@@ -65,6 +71,7 @@ const BINDINGS = {
   transform: [K.T],
   pause: [K.ESC, K.P],
   confirm: [K.ENTER, K.SPACE],
+  spell: [K.G],
 } as const;
 
 type Action = keyof typeof BINDINGS;
@@ -145,6 +152,8 @@ export class InputMap {
     s.transformLeadMs = padTransform && !keyTransform ? pad.transformLeadMs : 0;
     s.pause = this.pressed('pause') || pad.consume('pause');
     s.confirm = this.pressed('confirm');
+    s.spellPressed = this.pressed('spell') || pad.consume('spell');
+    s.spellPick = pad.consumeSpellPick();
     const tapped = pad.consumeTap();
     s.anyPressed = s.jumpPressed || s.attackPressed || s.specialPressed || s.transform || s.confirm || tapped;
     autopilot.merge(s);

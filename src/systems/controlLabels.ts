@@ -8,6 +8,7 @@ const LABELS: Record<string, Record<InputKind, string>> = {
   T: { keyboard: '[T]', touch: '[OMNITRIX]' },
   J: { keyboard: '[J]', touch: '[ATTACK]' },
   K: { keyboard: '[K]', touch: '[SPECIAL]' },
+  G: { keyboard: '[G]', touch: '[GWEN]' },
   JUMP: { keyboard: '[SPACE]', touch: '[JUMP]' },
   UP: { keyboard: '[UP]', touch: 'STICK UP' },
   DOWN: { keyboard: '[DOWN]', touch: 'STICK DOWN' },

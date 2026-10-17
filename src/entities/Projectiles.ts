@@ -10,7 +10,7 @@ import { playSfx } from '../systems/audio/Sfx';
 import type { Damageable, HitKind } from './types';
 import { chance } from '../systems/Pacing';
 
-export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw';
+export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw' | 'mana';
 export type Team = 'player' | 'enemy';
 
 interface KindStyle {
@@ -37,6 +37,8 @@ const STYLE: Record<ProjectileKind, KindStyle> = {
   shard: { texture: TEX.crystalShard, trail: 'crystal', trailChance: 0.35, light: 22, lightColor: P.diamondhead, impact: 'crystal', rotate: true, additive: false },
   missile: { texture: TEX.missile, anim: 'missile-burn', trail: 'smoke', trailChance: 0.7, light: 34, lightColor: P.sixsix, impact: 'fire', rotate: true, additive: false },
   claw: { texture: CH5_TEX.clawBlast, anim: 'claw-blast', trail: 'red', trailChance: 0.6, light: 48, lightColor: P.kraab, impact: 'debris', rotate: true, additive: true },
+  // Magic (Gwen's bolts; Hex's and Charmcaster's spells are tinted danger red).
+  mana: { texture: TEX.manaOrb, trail: 'mana', trailChance: 0.6, light: 34, lightColor: P.mana, impact: 'mana', rotate: false, additive: true },
 };
 
 /** Extra behaviour for a shot. Defaults match the original fireballs and lasers. */
