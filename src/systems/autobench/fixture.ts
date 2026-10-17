@@ -24,6 +24,8 @@ export function autobenchSave(now: number = Date.now()): SaveData {
         achievements: {},
         lifetime: {},
         jokes: [],
+        diary: [],
+        seen: [],
       },
       null,
       null,

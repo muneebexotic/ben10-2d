@@ -119,7 +119,8 @@ export const BUDDY = {
 
 /** Chapter 4's scripted beats (real milliseconds). */
 export const CH4_BEATS = {
-  intro: { bannerAt: 400, linesAt: 1400 },
+  // The first line waits for the CHAPTER card to go (BUGS.md C11).
+  intro: { bannerAt: 400, bannerMs: 1600, linesAt: 2400 },
   breaker: { absorbMs: 900, surgeMs: 1100 },
   lair: { pinnedMs: 2300 },
   drain: { gulpEveryMs: 700, banks: 5 },

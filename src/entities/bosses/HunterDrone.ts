@@ -59,6 +59,10 @@ export interface BossWorld {
   achievement?(id: string): void;
   /** THE HUNTERS (Chapter 5): the fight moves through the level, so it gets the level around it. */
   hunt?: HuntWorld;
+  /** A retry from one of the boss's stage checkpoints (`stages` on its spawn): the fight starts at that stage. */
+  readonly resumeStage?: number;
+  /** The fight reached its stage `index` (1 = the second): lights that stage's hidden checkpoint. */
+  reachStage?(index: number): void;
 }
 
 /** What a fight that moves through the level can do (Chapter 5's THE HUNTERS). */

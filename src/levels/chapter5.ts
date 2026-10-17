@@ -332,6 +332,9 @@ export const CHAPTER_5: LevelData = {
     { type: 'decor', kind: 'hangingLantern', x: 434, y: 55 },
     { type: 'smoothy', x: 439, y: 58 },
     { type: 'checkpoint', id: 'cp-hunters', x: 445, y: 58, density: 'sparse', label: 'THE HUNTERS', hidden: true },
+    // THE HUNTERS' later stages: a retry starts at the hunter Ben fell to (Kraab stays buried, Sixsix in the tower).
+    { type: 'checkpoint', id: 'cp-hunters-shaft', x: 446, y: 58, density: 'sparse', label: 'SIXSIX', hidden: true },
+    { type: 'checkpoint', id: 'cp-hunters-yard', x: 453, y: 30, density: 'sparse', label: 'TETRAX', hidden: true },
 
     // ---- THE HUNTERS: the chamber, the shaft, the yard
     { type: 'decor', kind: 'crystalCluster', x: 459, y: 58, frame: 1 },
@@ -341,7 +344,7 @@ export const CHAPTER_5: LevelData = {
     { type: 'decor', kind: 'oreCart', x: 468, y: 30 },
     { type: 'decor', kind: 'crates', x: 482, y: 30 },
     { type: 'decor', kind: 'lanternPost', x: 492, y: 30 },
-    { type: 'boss', kind: 'hunters', x: 476, y: 58, arenaFrom: 454, arenaTo: 499, triggerX: 455, floor: 58 },
+    { type: 'boss', kind: 'hunters', x: 476, y: 58, arenaFrom: 454, arenaTo: 499, triggerX: 455, floor: 58, stages: ['cp-hunters-shaft', 'cp-hunters-yard'] },
   ],
 
   prompts: [

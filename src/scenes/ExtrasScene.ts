@@ -10,6 +10,7 @@ import { bindMuteKey } from '../systems/Settings';
 import { AchievementsPage } from '../ui/extras/AchievementsPage';
 import { AlbumPage } from '../ui/extras/AlbumPage';
 import { JokesPage } from '../ui/extras/JokesPage';
+import { DiaryPage } from '../ui/extras/DiaryPage';
 import type { ExtrasPage } from '../ui/extras/pages';
 import { MenuBackdrop } from '../ui/menu/MenuBackdrop';
 import { enterMenu, isLeaving, leaveTo } from '../ui/menu/transition';
@@ -22,9 +23,9 @@ export interface ExtrasSceneData {
   slot: number | null;
 }
 
-const TABS = ['ACHIEVEMENTS', 'CARD ALBUM', 'JOKES FOUND'] as const;
+const TABS = ['ACHIEVEMENTS', 'CARD ALBUM', 'JOKES FOUND', 'DIARY'] as const;
 
-/** EXTRAS: a file's achievements, its Sumo Slammers album and the misfire jokes it has heard. */
+/** EXTRAS: a file's achievements, its Sumo Slammers album, the misfire jokes it has heard and Ghostfreak's diary. */
 export class ExtrasScene extends Phaser.Scene {
   private backdrop!: MenuBackdrop;
   private tab = 0;
@@ -45,8 +46,8 @@ export class ExtrasScene extends Phaser.Scene {
     menuHeader(this, 'EXTRAS', file && slot !== null ? `FILE ${slot + 1}  -  ${getDifficulty(file.difficulty).label}` : 'NO SAVE FILE YET');
     backButton(this, () => this.back());
 
-    this.pages = [new AchievementsPage(this, file), new AlbumPage(this, file), new JokesPage(this, file)];
-    this.tabs = TABS.map((label, i) => new MenuButton(this, GAME_WIDTH / 2 + (i - 1) * 150, 64, 140, label, PALETTE.omnitrix, () => this.setTab(i), 16));
+    this.pages = [new AchievementsPage(this, file), new AlbumPage(this, file), new JokesPage(this, file), new DiaryPage(this, file)];
+    this.tabs = TABS.map((label, i) => new MenuButton(this, GAME_WIDTH / 2 + (i - (TABS.length - 1) / 2) * 150, 64, 140, label, PALETTE.omnitrix, () => this.setTab(i), 16));
     this.tab = -1;
     this.setTab(0, true);
     this.hint = pixelText(this, GAME_WIDTH / 2, 346, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });

@@ -63,7 +63,7 @@ export class CityIntro implements SetPiece {
     const B = CH4_BEATS.intro;
     if (!this.bannered && this.t >= B.bannerAt) {
       this.bannered = true;
-      EventBus.emit('hud:banner', { title: 'CHAPTER 4', subtitle: this.kit.level.name, color: PALETTE.kevin, durationMs: 2200, style: 'soft' });
+      EventBus.emit('hud:banner', { title: 'CHAPTER 4', subtitle: this.kit.level.name, color: PALETTE.kevin, durationMs: B.bannerMs, style: 'soft' });
       this.kit.playMusic('arcade');
       playSfx('clang', 0.5, 0.8);
     }

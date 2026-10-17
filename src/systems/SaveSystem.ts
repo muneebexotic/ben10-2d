@@ -65,6 +65,10 @@ export interface SlotData {
   lifetime: Record<string, number>;
   /** Misfire jokes this file has seen (ids from aliens/jokes.ts). */
   jokes: string[];
+  /** Ghostfreak's whispers this file has heard (ids from aliens/diary.ts). */
+  diary: string[];
+  /** One-time moments this file has had (a collectible's first pop-up, an alien's file page). */
+  seen: string[];
 }
 
 export type TouchMode = 'auto' | 'on' | 'off';
@@ -130,7 +134,7 @@ export function createDifficultyRecord(): DifficultyRecord {
 }
 
 export function createSlot(difficulty: DifficultyId, now: number = Date.now()): SlotData {
-  return { createdAt: now, lastPlayedAt: now, playTimeMs: 0, difficulty, chapters: {}, unlockedAliens: [], resume: null, achievements: {}, lifetime: {}, jokes: [] };
+  return { createdAt: now, lastPlayedAt: now, playTimeMs: 0, difficulty, chapters: {}, unlockedAliens: [], resume: null, achievements: {}, lifetime: {}, jokes: [], diary: [], seen: [] };
 }
 
 /** The bests on one difficulty (an empty record if it was never cleared there). */
@@ -214,6 +218,8 @@ function migrateSlot(raw: unknown, now: number): SlotData | null {
   slot.achievements = migrateSplits(s.achievements);
   slot.lifetime = migrateSplits(s.lifetime);
   slot.jokes = strings(s.jokes);
+  slot.diary = strings(s.diary);
+  slot.seen = strings(s.seen);
   return slot;
 }
 
@@ -493,6 +499,24 @@ export class SaveSystem {
     const s = this.getSlot(slot);
     if (!s || s.jokes.includes(id)) return false;
     s.jokes.push(id);
+    this.save();
+    return true;
+  }
+
+  /** Records a whisper in Ghostfreak's diary. True if it's new. */
+  addDiary(slot: number, id: string): boolean {
+    const s = this.getSlot(slot);
+    if (!s || s.diary.includes(id)) return false;
+    s.diary.push(id);
+    this.save();
+    return true;
+  }
+
+  /** Marks a one-time moment as had. True the first time. */
+  markSeen(slot: number, id: string): boolean {
+    const s = this.getSlot(slot);
+    if (!s || s.seen.includes(id)) return false;
+    s.seen.push(id);
     this.save();
     return true;
   }

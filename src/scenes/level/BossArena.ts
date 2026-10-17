@@ -61,6 +61,10 @@ export interface ArenaDeps {
   achievement(id: string): void;
   /** THE HUNTERS' level hooks (everything but `relocate`, which the arena does itself). */
   hunt?: Omit<HuntWorld, 'relocate'>;
+  /** The checkpoint this attempt started at (a boss stage's: the fight starts there). */
+  startCheckpoint: string | null;
+  /** Lights a hidden checkpoint (a boss stage reached). */
+  reachCheckpoint(id: string): void;
 }
 
 /** Locks Ben into the boss's arena, runs Vilgax's hologram and the boss's entrance, then hands over the fight. */
@@ -74,6 +78,8 @@ export class BossArena {
   private readonly left: number;
   private readonly right: number;
   private readonly floorY: number;
+  /** Retrying from a later stage's checkpoint: the fight starts at that stage (1 = the second), no trigger. */
+  private readonly resumeStage: number;
 
   constructor(
     private readonly spawn: BossSpawn,
@@ -82,6 +88,7 @@ export class BossArena {
     this.left = spawn.arenaFrom * TILE;
     this.right = spawn.arenaTo * TILE;
     this.floorY = (spawn.floor ?? 24) * TILE;
+    this.resumeStage = (spawn.stages ?? []).indexOf(d.startCheckpoint ?? '') + 1;
   }
 
   private get kind() {
@@ -104,7 +111,7 @@ export class BossArena {
 
   update(dtMs: number, realDtMs: number, controls: Controls): void {
     if (!this.started) {
-      if (this.d.player.x >= this.spawn.triggerX * TILE && !this.d.player.dead) this.start();
+      if ((this.resumeStage > 0 || this.d.player.x >= this.spawn.triggerX * TILE) && !this.d.player.dead) this.start();
       return;
     }
     if (this.hologram) {
@@ -222,6 +229,11 @@ export class BossArena {
       copies: (list, current) => d.copies(list, current),
       achievement: (id) => d.achievement(id),
       hunt: d.hunt ? { ...d.hunt, relocate: (area, camera) => this.relocate(area, camera) } : undefined,
+      resumeStage: this.resumeStage,
+      reachStage: (index) => {
+        const id = this.spawn.stages?.[index - 1];
+        if (id) d.reachCheckpoint(id);
+      },
     };
     if (this.kind.hologram.length === 0) d.onHologramSeen();
     const boss = this.kind.create(scene, world, (this.left + this.right) / 2);

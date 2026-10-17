@@ -1,7 +1,9 @@
 /** Timings for Chapter 3's scripted moments (real milliseconds). */
 export const MUSEUM_INTRO = {
   bannerAt: 400,
-  linesAt: 1500,
+  /** The CHAPTER card's time on screen; the first line waits for it to go (BUGS.md C11). */
+  bannerMs: 1600,
+  linesAt: 2400,
   /** The guard bursts out of the staff door during the conversation's last lines. */
   guardRunMs: 2200,
   ratDelayMs: 500,

@@ -26,7 +26,9 @@ export const ROAD = {
 /** The opening drive (real milliseconds). */
 export const ROAD_INTRO = {
   bannerAt: 200,
-  linesAt: 900,
+  /** The CHAPTER card's time on screen; the first line waits for it to go (BUGS.md C11). */
+  bannerMs: 1600,
+  linesAt: 2200,
   /** The cut to the rest stop, and the RV pulling in. */
   fadeMs: 260,
   pullInMs: 1000,

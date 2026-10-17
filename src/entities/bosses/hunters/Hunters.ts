@@ -95,12 +95,35 @@ export class Hunters implements ArenaBoss {
     this.kraab.onHealth = () => this.reportHealth();
     this.sixsix.onHealth = () => this.reportHealth();
     this.tetrax.onHealth = () => this.reportHealth();
+    if (w.resumeStage) {
+      this.resume(w.resumeStage, x, floor);
+      return;
+    }
     // Kraab erupts out of the chamber floor.
     this.kraab.stand(x, floor, 'erupt', -1);
     w.fx.burst('debris', x, floor, 26);
     w.fx.shake(0.014, 320);
     playSfx(erupt, 1);
     w.dialogue?.(HUNTERS_KRAAB_START, () => this.startKraab());
+  }
+
+  /**
+   * A retry from a later stage's checkpoint (the owner's call after the Chapter 5 playtests: replaying
+   * Kraab after every death up the shaft made people quit). The hunters already beaten stay beaten:
+   * Kraab buried in the chamber, and from the yard on, Sixsix in the wreck of the water tower.
+   */
+  private resume(stage: number, x: number, floor: number): void {
+    this.kraab.stand(x, floor, 'buried', -1);
+    this.kraab.bury();
+    if (stage === 1) {
+      this.startShaft();
+      return;
+    }
+    this.tower.setFrame(1);
+    this.sixsix.look.place(this.tower.x - 10, this.g.yard.floor * TILE);
+    this.sixsix.look.setVisible(true);
+    this.sixsix.look.play('crash');
+    this.startTetrax();
   }
 
   /** The hunters' view of the fight. */
@@ -302,6 +325,7 @@ export class Hunters implements ArenaBoss {
     playSfx(jetpack, 1);
     this.show('SIXSIX');
     w.onPhase2();
+    w.reachStage?.(1);
     w.tip('hunters-sixsix', 'CLIMB! SHOOT HIM, FLY AT HIM, OR SEND HIS MISSILES BACK!', 5000);
   }
 
@@ -365,6 +389,7 @@ export class Hunters implements ArenaBoss {
     this.tetrax.stand(tx, y.floor * TILE, 'idle', -1);
     w.fx.burst('crystal', tx, y.floor * TILE - 26, 26);
     w.holdPlayer?.(true);
+    w.reachStage?.(2);
     this.show('TETRAX SHARD');
     w.dialogue?.(HUNTERS_TETRAX_START, () => {
       w.holdPlayer?.(false);

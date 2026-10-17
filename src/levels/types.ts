@@ -82,8 +82,11 @@ export type EntitySpawn =
   | { type: 'dummy'; x: number; y: number }
   | { type: 'jammer'; x: number; y: number; fieldFrom: number; gateX: number; gateTop: number }
   | { type: 'pod'; x: number; y: number }
-  /** `floor`: the arena's floor row (default 24). `kind` picks the boss. */
-  | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number; kind?: BossKind; floor?: number }
+  /**
+   * `floor`: the arena's floor row (default 24). `kind` picks the boss. `stages`: hidden checkpoints
+   * the boss reaches at each later stage; a retry from one starts the fight there.
+   */
+  | { type: 'boss'; x: number; y: number; arenaFrom: number; arenaTo: number; triggerX: number; kind?: BossKind; floor?: number; stages?: string[] }
   /** Drones that fly in from off-screen once Ben passes `triggerX` (each spawn's x is where it heads). */
   | { type: 'wave'; id: string; triggerX: number; from: 'left' | 'right' | 'above'; spawns: Array<{ kind: EnemyKind; x: number; y: number }> }
   /**

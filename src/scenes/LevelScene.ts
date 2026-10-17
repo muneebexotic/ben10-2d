@@ -96,6 +96,7 @@ import { knownAliens, storyAliens, trainingAliens } from '../systems/Unlocks';
 import { AchievementTracker, fileAchievements } from '../systems/Achievements';
 import { FULL_OMNITRIX_FORMS, STRIKE_ACHIEVEMENT_HITS } from '../config/achievements';
 import { jokeId } from '../aliens/jokes';
+import { diaryEntryFor } from '../aliens/diary';
 import { GHOST_HIDDEN_FRAME, GhostRecorder, ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
 import { GhostRunner } from '../entities/GhostRunner';
 import { getSettings } from '../systems/Settings';
@@ -403,6 +404,7 @@ export class LevelScene extends Phaser.Scene {
     EventBus.on('difficulty:changed', () => this.onDifficultyChanged(), this);
     EventBus.on('level:quit', () => this.onQuit(), this);
     EventBus.on('alien:misfire', (e) => this.onJoke(e.gotId, e.line), this);
+    EventBus.on('hud:whisper', (e) => this.onWhisper(e.text), this);
     EventBus.on('alien:reverted', (e) => {
       if (hasAlien(e.alienId)) this.haunting.onLeft(getAlien(e.alienId));
     }, this);
@@ -857,6 +859,8 @@ export class LevelScene extends Phaser.Scene {
       copies: (list, current) => EventBus.emit('boss:copies', { list, current }),
       achievement: (id) => this.achievements.unlock(id),
       hunt: this.level.story?.bounty ? this.huntWorld() : undefined,
+      startCheckpoint: this.checkpointId,
+      reachCheckpoint: (id) => this.reachCheckpoint(id),
     });
   }
 
@@ -1486,6 +1490,14 @@ export class LevelScene extends Phaser.Scene {
     // Jokes count anywhere, Training's CHAOS misfires included (the rest of Training doesn't).
     const tracker = this.mode === 'story' ? this.achievements : new AchievementTracker(fileAchievements(slot), (def) => EventBus.emit('achievement:unlocked', { id: def.id }));
     tracker.reach('jokes', session.file?.jokes.length ?? 0);
+  }
+
+  /** A whisper from the thing in the watch goes in Ghostfreak's diary (EXTRAS) the first time this file hears it. */
+  private onWhisper(text: string): void {
+    const slot = session.slot;
+    const entry = diaryEntryFor(text);
+    if (slot === null || !entry || launchParams().autobench) return;
+    saveSystem.addDiary(slot, entry.id);
   }
 
   /** Cards this file has, counting the ones picked up this run. */

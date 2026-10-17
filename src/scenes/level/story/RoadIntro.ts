@@ -115,7 +115,7 @@ export class RoadIntro implements SetPiece {
 
   private updateDrive(controls: Controls): void {
     if (this.once('banner', ROAD_INTRO.bannerAt)) {
-      EventBus.emit('hud:banner', { title: 'CHAPTER 2', subtitle: this.kit.level.name, color: PALETTE.omnitrix, durationMs: 2200, style: 'soft' });
+      EventBus.emit('hud:banner', { title: 'CHAPTER 2', subtitle: this.kit.level.name, color: PALETTE.omnitrix, durationMs: ROAD_INTRO.bannerMs, style: 'soft' });
     }
     if (this.once('lines', ROAD_INTRO.linesAt)) {
       this.kit.dialogue.play(ROAD_TRIP_LINES, { skippable: true, onDone: () => this.cut() });

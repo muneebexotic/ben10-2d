@@ -71,7 +71,7 @@ export class MuseumIntro implements SetPiece {
     this.t += realDtMs;
     if (this.phase === 'talk') {
       if (this.once('banner', MUSEUM_INTRO.bannerAt)) {
-        EventBus.emit('hud:banner', { title: 'CHAPTER 3', subtitle: this.kit.level.name, color: PALETTE.animo, durationMs: 2200, style: 'soft' });
+        EventBus.emit('hud:banner', { title: 'CHAPTER 3', subtitle: this.kit.level.name, color: PALETTE.animo, durationMs: MUSEUM_INTRO.bannerMs, style: 'soft' });
         this.kit.playMusic('museum');
       }
       if (this.once('lines', MUSEUM_INTRO.linesAt)) this.kit.dialogue.play(MUSEUM_ARRIVAL_LINES, { skippable: true, onDone: () => this.startGuard() });
