@@ -14,6 +14,7 @@ const LOADERS: Readonly<Record<string, () => Promise<ChapterModule>>> = {
   ch3: () => import('./ch3').then((m) => m.CHAPTER),
   ch4: () => import('./ch4').then((m) => m.CHAPTER),
   ch5: () => import('./ch5').then((m) => m.CHAPTER),
+  ch6: () => import('./ch6').then((m) => m.CHAPTER),
 };
 
 /** Omnitrix Training is part of the shared code (the title screen's sandbox). */

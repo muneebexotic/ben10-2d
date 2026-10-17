@@ -62,6 +62,8 @@ export class GwenCompanion {
   private stateIn = 0;
   private readonly charge: number[] = [0, 0, 0];
   private alpha = 1;
+  /** Spells the file has saved (a forced first cast teaches her before the story saves it). */
+  private readonly saved = new Set<SpellId>();
   /** Story moments can mute her banter (a cutscene, a puzzle with its own talk). */
   quiet = false;
   /** Spells can be called (the level holds them during cinematics). */
@@ -74,6 +76,7 @@ export class GwenCompanion {
     const look = { texture: TEX.gwen, prefix: 'gwen', frameWidth: GWEN_FRAME.w, frameHeight: GWEN_FRAME.h, feetY: GWEN_FRAME.feetY, frames: GWEN_FRAMES, handHeight: 15 };
     this.actor = new FamilyActor(kit.scene, look, DEPTH.player - 1);
     this.spells = new GwenSpells(opts.known);
+    for (const id of opts.known) this.saved.add(id);
     this.bubble = kit.scene.add.image(0, 0, TEX.manaBubble).setDepth(DEPTH.player + 1).setVisible(false).setBlendMode(Phaser.BlendModes.ADD);
     this.lens = kit.scene.add.graphics().setDepth(DEPTH.player + 1).setVisible(false);
     this.drawLens();
@@ -105,9 +108,11 @@ export class GwenCompanion {
     this.trail.length = 0;
   }
 
-  /** She learns a spell (the chapter's story beats). True if it's new. */
+  /** She learns a spell (the chapter's story beats). True if it's new (to the file). */
   learn(id: SpellId, announce: boolean): boolean {
-    if (!this.spells.learn(id)) return false;
+    const fresh = this.spells.learn(id) || !this.saved.has(id);
+    if (!fresh) return false;
+    this.saved.add(id);
     this.opts.onLearn?.(id);
     if (announce) {
       EventBus.emit('gwen:learned', { spell: id });
@@ -236,19 +241,34 @@ export class GwenCompanion {
     const now = this.kit.now();
     if (!this.spells.knows(spell)) return this.complain(GWEN_UNKNOWN);
     if (!this.spells.cast(spell, now)) return this.complain(GWEN_NOT_READY[Math.floor(Math.random() * GWEN_NOT_READY.length)]);
+    this.effect(spell);
+    if (!this.spoken.has(spell)) {
+      this.spoken.add(spell);
+      const lines = GWEN_CAST_LINES[spell];
+      this.shout(lines[Math.floor(Math.random() * lines.length)], GWEN.spells[spell].color);
+    }
+    this.opts.onCast?.(spell);
+  }
+
+  /**
+   * The story makes her cast (the first time a spell comes out of her): no
+   * cooldown starts, so the player can try it right away.
+   */
+  forceCast(spell: SpellId): void {
+    this.spells.learn(spell);
+    this.spoken.add(spell);
+    this.effect(spell);
+  }
+
+  private effect(spell: SpellId): void {
+    const p = this.kit.player;
     this.actor.faceTo(p.x);
     this.actor.hold('cast', 420);
     this.kit.fx.beam(this.actor.handX, this.actor.handY, p.x, p.centerY, GWEN.spells[spell].color, 2, 160);
     if (spell === 'shield') this.castShield();
     else if (spell === 'stun') this.castStun();
     else this.castReveal();
-    if (!this.spoken.has(spell)) {
-      this.spoken.add(spell);
-      const lines = GWEN_CAST_LINES[spell];
-      this.shout(lines[Math.floor(Math.random() * lines.length)], GWEN.spells[spell].color);
-    }
     EventBus.emit('gwen:cast', { spell });
-    this.opts.onCast?.(spell);
     this.stateIn = 0;
   }
 

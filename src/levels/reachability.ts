@@ -38,6 +38,8 @@ const MAX_FALL = 24;
 
 export function blockedCells(level: LevelData, caps: Capabilities): Set<string> {
   const blocked = new Set<string>();
+  // Chapter 6: past the lesson where Gwen learns REVEAL, her circle opens hidden doors for anyone.
+  const revealFrom = level.story?.magic?.lessons.find((l) => l.spell === 'reveal')?.x ?? Infinity;
   for (const e of level.entities) {
     if (e.type === 'barricade' && !caps.canBurn) {
       for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
@@ -45,7 +47,7 @@ export function blockedCells(level: LevelData, caps: Capabilities): Set<string> 
     if (e.type === 'crackedWall' && !caps.canSmash) {
       for (let y = e.y; y < e.y + e.h; y++) blocked.add(`${e.x},${y}`);
     }
-    if (e.type === 'hiddenDoor' && !caps.canSense) {
+    if (e.type === 'hiddenDoor' && !caps.canSense && e.x < revealFrom) {
       for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
     }
     if (e.type === 'vines' && !caps.canBurn) {
@@ -88,6 +90,9 @@ export function openedCells(level: LevelData, caps: Capabilities): Set<string> {
   for (const e of level.entities) if (e.type === 'dynamite' && e.breaks && caps.canBurn) open(e.breaks);
   const wall = level.story?.bounty?.hunters.wall;
   if (wall) open(wall);
+  // Chapter 6: the Rustbucket knocks the palace gate in.
+  const gate = level.story?.magic?.gate;
+  if (gate) open({ x: gate.gateX, y: gate.top, w: 2, h: gate.floor - gate.top });
   return opened;
 }
 
@@ -114,6 +119,9 @@ function rides(level: LevelData, caps: Capabilities): Array<{ from: (p: Pos) => 
   // THE DEEP DIVE: the runaway cart from the station at the end of the tunnels down to the crystal cavern (anyone).
   const dive = level.story?.bounty?.dive;
   if (dive) out.push({ from: (p) => p.x >= dive.triggerX && p.x <= dive.cartX + 2 && p.y === dive.floor - 1, to: { x: dive.landX, y: dive.landY - 1 } });
+  // THE TOWER WRAP: out of the clock room's door and up the outside of the tower to its top (anyone).
+  const tower = level.story?.magic?.tower;
+  if (tower) out.push({ from: (p) => p.x >= tower.x && p.x <= tower.x + 1 && p.y === tower.floor - 1, to: { x: tower.endX, y: tower.endY - 1 } });
   if (!caps.canMerge) return out;
   for (const e of level.entities) {
     if (e.type === 'lift') {

@@ -51,6 +51,13 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch5-card-loop', number: 36, name: 'LOOP-DE-LOOP ROKU', flavour: 'ROLLS INTO THE RING. ROLLS OUT OF IT. NEVER STOPS ROLLING.', color: 0xd8c83a, holo: true },
   { id: 'ch3-card-vault', number: 37, name: 'EXHIBIT A AKIRA', flavour: 'SEALED IN A MUSEUM VAULT IN 1952. STILL UNDEFEATED. STILL IN THE VAULT.', color: 0xb8c8ff, holo: true },
   { id: 'ch1-card-beam', number: 38, name: 'BEAM BREAKER BEN-JI', flavour: 'BOUNCED A SPACESHIP SIGNAL OFF HIS OWN FOREHEAD. ON PURPOSE.', color: 0xff4a5a, holo: true },
+  { id: 'ch6-card-camel', number: 39, name: 'CAMEL RIDE KAMRAN', flavour: 'RODE A CAMEL INTO THE RING. THE CAMEL WON THE MATCH.', color: 0xe8323e },
+  { id: 'ch6-card-bus', number: 40, name: 'TRUCK ART TARIQ', flavour: 'PAINTED HIS OWN NAME ON SIX BUSES. AND ONE CAMEL.', color: 0x2a8ae8 },
+  { id: 'ch6-card-chandelier', number: 41, name: 'CHANDELIER CHANGEZ', flavour: 'SWINGS FROM THE LIGHTS BEFORE EVERY MATCH. THE PALACE IS NOT HAPPY.', color: 0xe0b04a },
+  { id: 'ch6-card-shelf', number: 42, name: 'BOOKWORM BILAL', flavour: 'READ EVERY BOOK IN THE LIBRARY. HIS FAVORITE IS STILL THE RULEBOOK.', color: 0x5a2a6a },
+  { id: 'ch6-card-trapdoor', number: 43, name: 'TRAPDOOR TAIMUR', flavour: 'NEVER LOSES. NOBODY CAN FIND THE RING HE WRESTLES IN.', color: 0x8a6a8a },
+  { id: 'ch6-card-vent', number: 44, name: 'VENT VALI', flavour: 'SMALL ENOUGH TO CRAWL THROUGH THE CLOCK. BIG ENOUGH TO STOP IT.', color: 0x9fe870, holo: true },
+  { id: 'ch6-card-cistern', number: 45, name: 'CISTERN SAMEER', flavour: 'TRAINS UNDERWATER IN AN OLD CISTERN. SMELLS LIKE IT TOO.', color: 0x2a6ac8, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {

@@ -154,6 +154,36 @@ export const LEVEL_META: readonly LevelMeta[] = [
       { id: 'cp-hunters-yard', label: 'TETRAX' },
     ],
   },
+  {
+    id: 'ch6',
+    chapter: 6,
+    name: 'MAGIC',
+    theme: 'karachi',
+    parTimeMs: 720_000,
+    actEnd: 2,
+    cards: [
+      { id: 'ch6-card-camel' },
+      { id: 'ch6-card-bus' },
+      { id: 'ch6-card-chandelier' },
+      { id: 'ch6-card-shelf' },
+      { id: 'ch6-card-trapdoor' },
+      { id: 'ch6-card-cistern', requires: 'ripjaws' },
+      { id: 'ch6-card-vent', requires: 'greymatter' },
+    ],
+    checkpoints: [
+      { id: 'cp-fair', label: 'SEA VIEW FAIR' },
+      { id: 'cp-palace', label: 'PALACE GATE' },
+      { id: 'cp-hall', label: 'GREAT HALL' },
+      { id: 'cp-library', label: 'THE LIBRARY' },
+      { id: 'cp-cellar', label: 'THE CELLARS' },
+      { id: 'cp-cage', label: 'THE CAGE' },
+      { id: 'cp-tunnel', label: 'KHARADAR TUNNEL' },
+      { id: 'cp-engine', label: 'SPELL ENGINE' },
+      { id: 'cp-engine-2', label: 'ENGINE: PENDULUM' },
+      { id: 'cp-wrap', label: 'TOWER WRAP' },
+      { id: 'cp-towertop', label: 'TOWER TOP' },
+    ],
+  },
 ];
 
 /** The manifest entry a level's data should produce (the test compares them). */
