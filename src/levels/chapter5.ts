@@ -33,6 +33,8 @@ export const CHAPTER_5: LevelData = {
     { material: 'rock', x: 0, top: 0, w: 2 },
     // The street, from the gate to the mine portal.
     { material: 'ground', x: 2, top: 30, w: 248 },
+    // The saloon's stone stoop, with a mouse hole at its foot (Grey Matter, Chapter 6).
+    { material: 'rock', x: 44, top: 28, w: 4, h: 2 },
     // The jail: roof, the wall over its door, the wall over Ghostfreak's way out (a phase wall under it).
     { material: 'rock', x: 118, top: 20, w: 30, h: 2 },
     { material: 'rock', x: 118, top: 22, w: 2, h: 4 },
@@ -80,6 +82,8 @@ export const CHAPTER_5: LevelData = {
   ],
 
   carves: [
+    // Behind the mouse hole in the saloon's stoop: a crawlspace a tile high.
+    { x: 45, y: 29, w: 3, h: 1 },
     // Under tunnel 3's floor: an alcove the dynamite opens.
     { x: 306, y: 41, w: 4, h: 2 },
     // A loop of track up in tunnel 3's ceiling, sealed (only something round could ride it).
@@ -165,7 +169,7 @@ export const CHAPTER_5: LevelData = {
     // ---- Main Street
     { type: 'decor', kind: 'shopFront', x: 32, y: 30, frame: 0 },
     { type: 'decor', kind: 'saloon', x: 44, y: 30 },
-    { type: 'decor', kind: 'mouseHole', x: 46.5, y: 30 },
+    { type: 'decor', kind: 'mouseHole', x: 47.5, y: 30 },
     { type: 'decor', kind: 'shopFront', x: 56, y: 30, frame: 1 },
     { type: 'decor', kind: 'hitchingPost', x: 37, y: 30 },
     { type: 'decor', kind: 'hitchingPost', x: 50, y: 30 },
@@ -185,7 +189,7 @@ export const CHAPTER_5: LevelData = {
     { type: 'decor', kind: 'crates', x: 103, y: 30 },
     { type: 'decor', kind: 'hitchingPost', x: 110, y: 30 },
     { type: 'decor', kind: 'shopFront', x: 114, y: 30, frame: 2 },
-    { type: 'card', id: 'ch5-card-mouse', x: 46, y: 30, requires: 'greymatter' },
+    { type: 'card', id: 'ch5-card-mouse', x: 45, y: 30, requires: 'greymatter' },
     { type: 'alienHint', id: 'ch5-mouse-hint', alien: 'greymatter', x: 44, y: 27, w: 5, h: 3, line: "A MOUSE HOLE... SOMETHING'S SHINING IN THERE. I'D HAVE TO BE TINY." },
     { type: 'card', id: 'ch5-card-tower', x: 75, y: 22 },
     { type: 'smoothy', x: 35, y: 30 },

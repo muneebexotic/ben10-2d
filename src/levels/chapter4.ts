@@ -77,8 +77,9 @@ export const CHAPTER_4: LevelData = {
   ],
 
   carves: [
-    // The claw machine's sealed prize slot.
+    // The claw machine's prize slot, and the prize flap a tile high at its foot (Grey Matter, Chapter 6).
     { x: 89, y: 28, w: 2, h: 1 },
+    { x: 89, y: 29, w: 3, h: 1 },
     // The crawlspace under the band stage, behind a hidden door.
     { x: 96, y: 28, w: 8, h: 2 },
     // The cracked-wall closet and the sealed room (its left wall is the phase wall).
@@ -183,7 +184,7 @@ export const CHAPTER_4: LevelData = {
     { type: 'smoothy', x: 81, y: 24 },
     { type: 'smoothy', x: 51, y: 30 },
     { type: 'decor', kind: 'clawMachine', x: 89.5, y: 30 },
-    { type: 'card', id: 'ch4-card-claw', x: 89, y: 29, requires: 'greymatter' },
+    { type: 'card', id: 'ch4-card-claw', x: 89, y: 30, requires: 'greymatter' },
     { type: 'alienHint', id: 'ch4-claw-hint', alien: 'greymatter', x: 86, y: 26, w: 6, h: 4, line: "A CARD IN THE CLAW MACHINE... I'D HAVE TO BE TINY TO GET IN THERE." },
     { type: 'decor', kind: 'bandStage', x: 101.5, y: 27 },
     { type: 'hiddenDoor', id: 'ch4-stage-door', x: 96, y: 28, w: 8, h: 2 },

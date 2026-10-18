@@ -58,6 +58,8 @@ export const CHAPTER_6: LevelData = {
     // The old tunnel: its low roof and floor, then the steps up into the clock tower.
     { material: 'rock', x: 369, top: 8, w: 61, h: 28 },
     { material: 'rock', x: 369, top: 40, w: 61 },
+    // Rubble under the vent in the roof: a leg up for Grey Matter.
+    { material: 'rock', x: 381, top: 39, w: 2, h: 1 },
     { material: 'rock', x: 430, top: 38, w: 2 },
     { material: 'rock', x: 432, top: 36, w: 2 },
     { material: 'rock', x: 434, top: 34, w: 2 },
@@ -75,9 +77,9 @@ export const CHAPTER_6: LevelData = {
   carves: [
     // The trapdoor room under the cellar floor (an illusion of floor covers its top).
     { x: 346, y: 40, w: 4, h: 3 },
-    // A vent up through the tunnel's roof, and the crawlspace it leads along (Grey Matter).
-    { x: 382, y: 34, w: 1, h: 2 },
-    { x: 382, y: 33, w: 6, h: 1 },
+    // A vent up through the tunnel's roof, and the crawlspace it leads along (Grey Matter: five tiles up from the floor).
+    { x: 382, y: 35, w: 1, h: 1 },
+    { x: 382, y: 34, w: 6, h: 1 },
   ],
 
   platforms: [
@@ -159,7 +161,7 @@ export const CHAPTER_6: LevelData = {
     outro: [
       { who: 'gwen', text: 'THE CHARMS ARE SAFE. AND THIS ONE... STILL WANTS TO STAY WITH ME.', ms: 2600 },
       { who: 'ben', text: 'MAGIC GWEN. THAT IS GOING TO GET OLD SO FAST.', ms: 2000 },
-      { who: 'max', text: 'YOU TWO WERE SOMETHING TONIGHT. CHAI ON ME. RAUF IS STILL OPEN.', ms: 2600 },
+      { who: 'max', text: 'SHABASH, BACHAY! (WELL DONE, KIDS!) CHAI ON ME. RAUF IS STILL OPEN.', ms: 2800 },
     ],
     actEnd: 2,
   },
@@ -277,7 +279,7 @@ export const CHAPTER_6: LevelData = {
     { type: 'decor', kind: 'tunnelLamp', x: 412, y: 37 },
     { type: 'decor', kind: 'pipesOld', x: 420, y: 40 },
     { type: 'checkpoint', id: 'cp-tunnel', x: 390, y: 40, density: 'normal', label: 'KHARADAR TUNNEL' },
-    { type: 'card', id: 'ch6-card-vent', x: 387, y: 34, requires: 'greymatter' },
+    { type: 'card', id: 'ch6-card-vent', x: 387, y: 35, requires: 'greymatter' },
     { type: 'magic', kind: 'rockling', x: 398, y: 40 },
     { type: 'magic', kind: 'rockling', x: 404, y: 40 },
     { type: 'magic', kind: 'golem', x: 418, y: 40 },

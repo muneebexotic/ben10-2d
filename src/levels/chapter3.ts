@@ -87,8 +87,9 @@ export const CHAPTER_3: LevelData = {
     // The guards' security room off the wing, behind a shutter whose keypad died with the power (Upgrade, Chapter 4).
     { x: 325, y: 21, w: 5, h: 3 },
     { x: 325, y: 6, w: 21, h: 3 },
-    // A nook in the vent's ceiling far too small for anyone yet.
+    // A nook in the vent's ceiling, up a gap a tile wide: only something tiny gets in (Grey Matter, Chapter 6).
     { x: 330, y: 4, w: 1, h: 1 },
+    { x: 331, y: 4, w: 1, h: 2 },
   ],
 
   platforms: [
