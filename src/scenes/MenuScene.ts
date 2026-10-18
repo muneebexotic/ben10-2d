@@ -119,6 +119,7 @@ export class MenuScene extends Phaser.Scene {
     }
     if (summary) items.push({ label: 'EXTRAS', action: () => this.go(SCENES.extras, { slot: summary.slot }), hint: 'ACHIEVEMENTS, THE CARD ALBUM AND EVERY MISFIRE JOKE FOUND' });
     items.push(
+      { label: 'ALIEN FILES', action: () => this.go(SCENES.alienFiles), hint: 'EVERY ALIEN, EVERY MOVE: WATCH IT, THEN TRY IT' },
       { label: 'OMNITRIX TRAINING', action: () => this.startTraining(), hint: 'TRY EVERY ALIEN. SPAWN ANY ENEMY.' },
       { label: 'SETTINGS', action: () => this.openSettings(), hint: summary ? 'DIFFICULTY, ACCESSIBILITY, SOUND AND TOUCH' : 'ACCESSIBILITY, SOUND AND TOUCH CONTROLS' },
       { label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'), action: () => toggleMute(), hint: inputMode.current === 'touch' ? 'SOUND ON OR OFF' : '[M] ALSO WORKS ANYWHERE' },

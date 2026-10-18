@@ -15,6 +15,7 @@ export const SCENES = {
   chapterComplete: 'ChapterComplete',
   actEnd: 'ActEnd',
   extras: 'Extras',
+  alienFiles: 'AlienFiles',
   gallery: 'Gallery',
   settings: 'Settings',
   touch: 'Touch',

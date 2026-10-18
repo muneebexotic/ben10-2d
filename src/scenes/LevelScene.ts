@@ -79,6 +79,8 @@ import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { STORY_BEATS } from '../config/story';
 import { saveSystem } from '../systems/SaveSystem';
 import { CARDS } from '../levels/cards';
+import { ALIEN_DEMOS, type MoveDemo } from '../config/alienFiles';
+import { AlienDemoPilot } from './level/AlienDemo';
 import { session } from '../systems/Session';
 import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
@@ -110,6 +112,10 @@ export interface LevelStartData {
   levelId?: string;
   checkpoint?: string | null;
   stats?: RunStats;
+  /** ALIEN FILES: a bot plays one of this alien's moves on a loop in the Training arena, drawn in `viewport` (screen px) with no HUD. */
+  demo?: { alienId: string; move: number; viewport: { x: number; y: number; w: number; h: number } };
+  /** ALIEN FILES' TRY IT: Training starts as this alien. */
+  tryAlien?: string;
 }
 
 const AMBIENT: Record<AmbientKind, number> = {
@@ -189,6 +195,10 @@ export class LevelScene extends Phaser.Scene {
   private training: TrainingDirector | null = null;
   /** Paused under a card reveal (CardReveal in the HUD). */
   private revealing = false;
+  /** ALIEN FILES' bot, when this level is a move's demo. */
+  private demo: AlienDemoPilot | null = null;
+  private demoAlien = '';
+  private readonly demoEnemies: Drone[] = [];
   private story: StoryDirector | null = null;
   private dialogue!: Dialogue;
   private highway: HighwayBackdrop | null = null;
@@ -285,6 +295,16 @@ export class LevelScene extends Phaser.Scene {
     const extra = this.mode === 'story' ? knownAliens(launchParams().aliens) : [];
     this.checkpointId = data.checkpoint ?? null;
     this.dialAliens = this.resolveAliens(extra);
+    const demo = data.demo && this.mode === 'training' ? data.demo : null;
+    const demoSpec = demo ? ALIEN_DEMOS[demo.alienId]?.[demo.move] : undefined;
+    this.demo = null;
+    this.demoAlien = demo?.alienId ?? '';
+    this.demoEnemies.length = 0;
+    if (demo) {
+      // The demo's alien, plus whoever it swaps from or to.
+      const wanted = [demo.alienId, demoSpec?.dial, demoSpec?.swapFrom];
+      this.dialAliens = allAliens().map((a) => a.id).filter((id) => wanted.includes(id));
+    }
     this.reachableCards = availableCards(this.level, this.dialAliens).length;
     // Starting mid-level (?start=) or with playtest aliens (?aliens=) is practice: no best times or splits.
     const fullRun = this.mode === 'story' && !data.checkpoint && extra.length === 0 && !launchParams().level;
@@ -305,8 +325,8 @@ export class LevelScene extends Phaser.Scene {
     this.perfect.clear();
     this.checkpointId = data.checkpoint ?? null;
 
-    if (!this.scene.isActive(SCENES.ui)) this.scene.launch(SCENES.ui);
-    if (!this.scene.isActive(SCENES.touch)) this.scene.launch(SCENES.touch);
+    if (!demo && !this.scene.isActive(SCENES.ui)) this.scene.launch(SCENES.ui);
+    if (!demo && !this.scene.isActive(SCENES.touch)) this.scene.launch(SCENES.touch);
     quality.reset();
 
     this.world = new LevelWorld(this, this.level);
@@ -315,6 +335,7 @@ export class LevelScene extends Phaser.Scene {
     installReferenceIntegration(this.physics.world);
     this.cameras.main.setBounds(0, 0, this.world.widthPx, this.world.heightPx);
     this.cameras.main.setBackgroundColor(PALETTE.sky0);
+    if (demo) this.cameras.main.setViewport(demo.viewport.x, demo.viewport.y, demo.viewport.w, demo.viewport.h);
     this.vignette = perf.fx ? (this.cameras.main.filters?.external.addVignette(0.5, 0.5, 0.8, 0.3, 0x05070f) ?? null) : null;
     if (!perf.governor) quality.setLevel(0);
     if (quality.lowest) this.onQualityChanged(false);
@@ -408,6 +429,8 @@ export class LevelScene extends Phaser.Scene {
             spawnIntroDrones: () => this.spawnIntroDrones(),
             hasTransformed: () => this.omni.transformations > 0,
             onControlStart: () => undefined,
+            // The same test as createGwen (Chapter 1 has no Gwen of its own).
+            gwenAlong: () => getSettings().gwenInReplays && learnedSpells(session.file).length > 0,
           },
           skip: resuming,
           skipOpening: data.stats !== undefined,
@@ -445,12 +468,19 @@ export class LevelScene extends Phaser.Scene {
     EventBus.on('system:pause', () => {
       if (this.state === 'play' && this.scene.isActive() && !this.cinematic) this.openPause();
     }, this);
-    music.setLayer(null);
-    music.setIntensity(0);
-    music.play(this.levelTrack());
-    bindAudioUnlock(this);
-    bindMuteKey(this);
-    if (this.training) this.showTrainingPrompt();
+    if (demo && demoSpec) this.startDemo(demoSpec);
+    else {
+      music.setLayer(null);
+      music.setIntensity(0);
+      music.play(this.levelTrack());
+    }
+    if (data.tryAlien && this.mode === 'training' && this.dialAliens.includes(data.tryAlien)) this.omni.forceInto(data.tryAlien);
+    // The demo's menu owns the mute key (two bindings would toggle twice).
+    if (!demo) {
+      bindAudioUnlock(this);
+      bindMuteKey(this);
+    }
+    if (this.training && !demo) this.showTrainingPrompt();
 
     this.events.on(Phaser.Scenes.Events.RESUME, this.onResume);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -1010,7 +1040,7 @@ export class LevelScene extends Phaser.Scene {
     if (perf.governor && quality.sample(delta)) this.onQualityChanged();
     const realDt = Math.min(delta, PHYSICS.maxFrameMs);
     setFrameLength(realDt);
-    const controls = this.inputMap.read();
+    const controls = this.demo ? this.demo.read(realDt) : this.inputMap.read();
 
     // During cinematics the pause button skips instead.
     if (controls.pause && this.state === 'play' && !this.cinematic) {
@@ -1556,6 +1586,40 @@ export class LevelScene extends Phaser.Scene {
   }
 
   /** Cards this file has, counting the ones picked up this run. */
+  // ------------------------------------------------------------ ALIEN FILES' demo
+
+  /** The bot takes over: Ben can't be hurt, the watch never runs out, the enemies hold off unless the move needs them. */
+  private startDemo(spec: MoveDemo): void {
+    this.player.setInvulnerable(1e9);
+    const o = this.omni.omnitrix;
+    o.setTimerFrozen(true);
+    o.setConfig({ ...o.settings, cooldownMs: 0, wrongTransformChance: 0 });
+    this.droneWorld.aggressive = spec.enemy !== undefined;
+    this.demo = new AlienDemoPilot(spec, (d) => this.restartDemo(d));
+    this.restartDemo(spec);
+  }
+
+  /** Every loop of a demo starts the same: Ben at the start as the alien (or the one he swaps from), the move's enemy in front. */
+  private restartDemo(spec: MoveDemo): void {
+    for (const d of this.demoEnemies) if (d.alive) d.vanish();
+    this.demoEnemies.length = 0;
+    const x = spec.x * TILE + TILE / 2;
+    const ground = this.world.groundBelow(x, 0);
+    this.benchTeleport(x, ground);
+    this.player.setVelocity(0, 0);
+    const first = spec.swapFrom ?? this.demoAlien;
+    if (this.player.form.id !== first) this.omni.forceInto(first);
+    if (spec.swapFrom) this.omni.omnitrix.select(this.demoAlien);
+    else if (spec.dial) this.omni.omnitrix.select(spec.dial);
+    this.omni.recharge();
+    if (this.player.isAlien) this.player.formHp = this.player.form.maxFormHealth;
+    if (spec.enemy) {
+      const ex = x + spec.enemy.dx * TILE;
+      const k = spec.enemy.kind;
+      this.demoEnemies.push(this.spawnTrainingDrone(k, ex, this.world.groundBelow(ex, 0) - (k === 'armored' ? 52 : k === 'striker' ? 110 : 76)));
+    }
+  }
+
   /** A find can stop the game: in play, not mid-cinematic, not in Training, nothing else already open. */
   private canReveal(): boolean {
     return this.state === 'play' && !this.cinematic && this.mode !== 'training' && !this.revealing && !this.player.dead;
@@ -1654,6 +1718,8 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private openPause(): void {
+    // ALIEN FILES' demo has no pause menu: the screen around it is the menu.
+    if (this.demo) return;
     this.flushPlayTime();
     audio.setLoopsMuted(true);
     this.scene.pause();

@@ -26,5 +26,6 @@ export const CH6_BEATS = {
   /** Max in the tunnel: the ambush, his foam, his answer. */
   max: { runMs: 700, sprayEveryMs: 1500, sprayRange: 90, sprayStunMs: 1800 },
   /** The Spell Engine: Grey Matter crawls into the vent. */
-  engine: { crawlMs: 700, jamMs: 1600 },
+  /** The Spell Engine: the crawl in, the jam, and how long stuck before a hint (shorter on Easy). */
+  engine: { crawlMs: 700, jamMs: 1600, hintAfterMs: 25_000, hintAfterEasyMs: 14_000 },
 } as const;

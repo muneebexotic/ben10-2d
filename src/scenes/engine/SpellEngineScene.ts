@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { CH6_BEATS } from '../../config/chapter6';
 import { GAME_HEIGHT, GAME_WIDTH } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { GREYMATTER_TEX } from '../../aliens/greymatter/art';
@@ -37,8 +38,6 @@ export interface SpellEngineData {
 
 const STAGES = ['MANA PIPES', 'THE GEAR TRAIN', 'THE PENDULUM'] as const;
 /** Stuck this long on a stage (no progress), a hint shows (sooner on Easy). */
-const HINT_AFTER_MS = 25_000;
-const HINT_AFTER_EASY_MS = 14_000;
 const TILE = 40;
 
 const INSTRUCTIONS: ReadonlyArray<{ keys: string; touch: string }> = [
@@ -463,7 +462,7 @@ export class SpellEngineScene extends Phaser.Scene {
     this.time0 += delta;
     this.cooldown = Math.max(0, this.cooldown - delta);
     this.stuckMs += delta;
-    const hintAfter = activeDifficultyId() === 'easy' ? HINT_AFTER_EASY_MS : HINT_AFTER_MS;
+    const hintAfter = activeDifficultyId() === 'easy' ? CH6_BEATS.engine.hintAfterEasyMs : CH6_BEATS.engine.hintAfterMs;
     if (!this.hintShown && this.stuckMs >= hintAfter) this.showHint();
     if (this.stage === 0 && this.hintShown && this.board && this.hintBox) {
       const i = pipeHint(this.board);

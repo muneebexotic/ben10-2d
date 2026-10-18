@@ -113,6 +113,7 @@ describe('string lint', () => {
       'src/scenes/DifficultyScene.ts',
       'src/scenes/FileSelectScene.ts',
       'src/scenes/ExtrasScene.ts',
+      'src/scenes/AlienFilesScene.ts',
       'src/scenes/SettingsScene.ts',
       'src/scenes/ActEndScene.ts',
       'src/scenes/MenuScene.ts',
