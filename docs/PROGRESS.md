@@ -106,7 +106,7 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **THE TOWER WRAP and the Spell Engine need a human feel pass** (headless runs at about a third of real speed): the climb's run and jump, the gusts, and the pendulum's windows on a phone (`config/tower.ts`, `PENDULUM` in `scenes/engine/rules.ts`).
 - **The romanised Urdu was written carefully but not checked by a native speaker;** every word and its gloss is in `config/urdu.ts`.
 - **ALIEN FILES' demos are scripted inputs**, so a demo can look clumsy after an alien is retuned (`config/alienFiles.ts`); the window shows the real game.
-- **Cards and first drinks pause the game** to show themselves (once per card per file); speedrunners may want an option to skip it (not built).
+- **Cards and first drinks pause the game** to show themselves (once per card per file). Settings: NEW FINDS: QUICK turns that into a banner (for speedruns; the benchmarks run with it).
 
 ## How to test the latest chapter
 

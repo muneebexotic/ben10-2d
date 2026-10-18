@@ -143,7 +143,8 @@ function saveFixture() {
   return {
     version: 4,
     muted: false,
-    settings: { reduceFlashing: false, shake: 1, touchControls: device === 'phone' ? 'on' : 'off', ghost: false },
+    // Finds that stop the game would differ between builds: benchmarks measure play (`finds: false`).
+    settings: { reduceFlashing: false, shake: 1, touchControls: device === 'phone' ? 'on' : 'off', ghost: false, finds: false },
     lastSlot: 0,
     slots: [
       {

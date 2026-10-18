@@ -83,6 +83,8 @@ export interface SettingsData {
   ghost: boolean;
   /** Gwen (and the spells she's learned) comes along when replaying Chapters 1-5. */
   gwenInReplays: boolean;
+  /** A new card or a file's first drink stops the game to show itself (off: a banner, for speedruns and benchmarks). */
+  finds: boolean;
 }
 
 export interface SaveData {
@@ -120,7 +122,7 @@ export interface RecordOutcome {
 }
 
 export function createDefaultSettings(): SettingsData {
-  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true, gwenInReplays: false };
+  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true, gwenInReplays: false, finds: true };
 }
 
 export function createDefaultSave(): SaveData {
@@ -266,6 +268,7 @@ function migrateSettings(raw: unknown): SettingsData {
   if (s.touchControls === 'on' || s.touchControls === 'off' || s.touchControls === 'auto') settings.touchControls = s.touchControls;
   if (typeof s.ghost === 'boolean') settings.ghost = s.ghost;
   if (typeof s.gwenInReplays === 'boolean') settings.gwenInReplays = s.gwenInReplays;
+  if (typeof s.finds === 'boolean') settings.finds = s.finds;
   return settings;
 }
 

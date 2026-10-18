@@ -10,7 +10,7 @@ export function autobenchSave(now: number = Date.now()): SaveData {
   return {
     version: 4,
     muted: false,
-    settings: { reduceFlashing: false, shake: 1, touchControls: 'auto', ghost: false, gwenInReplays: false },
+    settings: { reduceFlashing: false, shake: 1, touchControls: 'auto', ghost: false, gwenInReplays: false, finds: false },
     lastSlot: 0,
     slots: [
       {

@@ -99,6 +99,12 @@ export class SettingsScene extends Phaser.Scene {
         adjust: () => this.toggleGwen(),
         hint: 'ONCE GWEN LEARNS SPELLS IN CHAPTER 6, SHE AND HER SPELLS JOIN YOUR REPLAYS. FROM THE NEXT START.',
       },
+      {
+        label: () => `NEW FINDS: ${getSettings().finds ? 'SHOW' : 'QUICK'}`,
+        action: () => this.toggleFinds(),
+        adjust: () => this.toggleFinds(),
+        hint: 'SHOW: A NEW CARD OR YOUR FIRST DRINK STOPS THE GAME TO SHOW ITSELF. QUICK: A BANNER, NO STOP (SPEEDRUNS).',
+      },
     );
     if (this.scale.fullscreen.available) {
       items.push({
@@ -140,6 +146,11 @@ export class SettingsScene extends Phaser.Scene {
     kb.on('keydown-P', () => this.back());
     bindMuteKey(this);
     this.events.on(Phaser.Scenes.Events.UPDATE, () => this.drawBar());
+  }
+
+  private toggleFinds(): void {
+    updateSettings({ finds: !getSettings().finds });
+    playSfx('uiConfirm', 0.6);
   }
 
   private toggleGwen(): void {

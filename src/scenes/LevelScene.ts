@@ -1622,7 +1622,7 @@ export class LevelScene extends Phaser.Scene {
 
   /** A find can stop the game: in play, not mid-cinematic, not in Training, nothing else already open. */
   private canReveal(): boolean {
-    return this.state === 'play' && !this.cinematic && this.mode !== 'training' && !this.revealing && !this.player.dead;
+    return getSettings().finds && this.state === 'play' && !this.cinematic && this.mode !== 'training' && !this.revealing && !this.player.dead;
   }
 
   /** Pauses the level under a full-screen card; the HUD sends `reveal:done` when the player closes it. */
