@@ -48,7 +48,8 @@ export const ALIEN_DEMOS: Readonly<Record<string, readonly MoveDemo[]>> = {
   fourarms: [
     { x: 38, steps: [...tap('attack', 240), ...tap('attack', 240), ...tap('attack', 700), s(['up', 'attack'], 90), wait(900)] },
     { x: 37, steps: [...tap('special', 1000), ...tap('jump', 260), ...tap('special', 1200)] },
-    { x: 38, enemy: { kind: 'scout', dx: 3 }, steps: [...tap('attack', 220), ...tap('attack', 220), ...tap('attack', 600), ...tap('attack', 400), s(['right'], 300), ...tap('attack', 1000)] },
+    // The dummy is the readiest thing to lift (a downed drone or a boulder works the same).
+    { x: 39, steps: [...tap('attack', 600), s(['right'], 300), ...tap('attack', 1300)] },
   ],
   xlr8: [
     { x: 39, steps: [s(['attack'], 1600), wait(500)] },
