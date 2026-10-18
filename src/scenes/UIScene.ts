@@ -28,6 +28,7 @@ import { achievementById } from '../systems/Achievements';
 import { GwenHud } from '../ui/GwenHud';
 import { Whisper } from '../ui/Whisper';
 import { whisper as whisperSound } from '../aliens/ghostfreak/audio';
+import { CardReveal } from '../ui/CardReveal';
 
 /** HUD overlay. Knows nothing about the Level; everything arrives through the EventBus. */
 export class UIScene extends Phaser.Scene {
@@ -45,6 +46,7 @@ export class UIScene extends Phaser.Scene {
   private unlockCard!: UnlockCard;
   private whisper!: Whisper;
   private gwen!: GwenHud;
+  private reveal!: CardReveal;
   private vignette!: Phaser.GameObjects.Image;
   private readonly pops: (Phaser.GameObjects.BitmapText | null)[] = [];
   private hp: number = PLAYER.maxHealth;
@@ -75,6 +77,7 @@ export class UIScene extends Phaser.Scene {
     this.unlockCard = new UnlockCard(this);
     this.whisper = new Whisper(this);
     this.gwen = new GwenHud(this);
+    this.reveal = new CardReveal(this);
     const toast = new AchievementToast(this, 104);
     // The HUD is laid out on the 640 frame; on wide screens its corners follow the real screen edges.
     frame.onResize((w) => {
@@ -167,6 +170,7 @@ export class UIScene extends Phaser.Scene {
       this.alien = false;
       this.prompts.clearAll();
       this.prompts.setMuted(false);
+      this.reveal.close(false);
       this.dialog.clear();
       this.combo.hide();
       this.comic.hide();
@@ -183,6 +187,9 @@ export class UIScene extends Phaser.Scene {
     on('combo:drop', (p) => this.combo.drop(p.count), this);
     on('stats:update', (p) => this.stats.set(p.timeMs, p.enemiesDefeated, p.cards, p.totalCards, p.reachableCards), this);
     on('card:collected', (p) => this.stats.cardPop(p.found - 1), this);
+    const revealed = () => EventBus.emit('reveal:done');
+    on('card:reveal', (p) => this.reveal.showCard(p.id, { found: p.album, total: p.albumTotal }, { found: p.found, total: p.total }, revealed), this);
+    on('drink:reveal', (p) => this.reveal.showDrink(p.look, p.heal, revealed), this);
     on('hud:split', (s) => {
       this.splits.show(s, this.time.now);
       this.stats.setPace(s.deltaMs === null ? null : s.ahead);

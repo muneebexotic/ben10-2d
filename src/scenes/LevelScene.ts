@@ -78,6 +78,7 @@ import { PerfectWindow } from '../systems/PerfectTransform';
 import { compareSplit, FINISH_SPLIT } from '../systems/Splits';
 import { STORY_BEATS } from '../config/story';
 import { saveSystem } from '../systems/SaveSystem';
+import { CARDS } from '../levels/cards';
 import { session } from '../systems/Session';
 import { activeDifficulty, activeDifficultyId } from '../systems/Difficulty';
 import type { CrackedWall, WallBreaker } from '../entities/props/CrackedWall';
@@ -186,6 +187,8 @@ export class LevelScene extends Phaser.Scene {
   private tutorial!: Tutorial;
   private arena: BossArena | null = null;
   private training: TrainingDirector | null = null;
+  /** Paused under a card reveal (CardReveal in the HUD). */
+  private revealing = false;
   private story: StoryDirector | null = null;
   private dialogue!: Dialogue;
   private highway: HighwayBackdrop | null = null;
@@ -425,6 +428,7 @@ export class LevelScene extends Phaser.Scene {
     this.syncHud();
     // The HUD scene may be created after this scene (first launch); it asks for state when ready.
     EventBus.on('hud:ready', () => this.syncHud(), this);
+    EventBus.on('reveal:done', () => this.closeReveal(), this);
     EventBus.on('difficulty:changed', () => this.onDifficultyChanged(), this);
     EventBus.on('level:quit', () => this.onQuit(), this);
     EventBus.on('alien:misfire', (e) => this.onJoke(e.gotId, e.line), this);
@@ -1151,19 +1155,30 @@ export class LevelScene extends Phaser.Scene {
         this.floatText(pk.x, pk.baseY - 10, healed > 0 ? `+${healed} HP` : 'BRAIN FREEZE!', 0xff8fc8);
         if (p.isAlien) p.formHp = Math.min(p.form.maxFormHealth, p.formHp + 2);
         this.emitHealth(healed);
+        // A file's first drink of each kind: what it is and what it does.
+        const slot = session.slot;
+        if (this.canReveal() && slot !== null && saveSystem.markSeen(slot, `drink-${pk.look}`)) {
+          this.openReveal(() => EventBus.emit('drink:reveal', { look: pk.look, heal: activeDifficulty().smoothyHeal }));
+        }
       } else {
         this.stats.cardsFound.push(pk.id);
-        this.achievements.reach('cards', this.fileCardCount());
+        const album = this.fileCardCount();
+        this.achievements.reach('cards', album);
         playSfx('card');
-        this.time2.slowMo(0.4, 350, 250);
         EventBus.emit('card:collected', { id: pk.id, found: this.stats.cardsFound.length, total: this.stats.totalCards });
-        EventBus.emit('hud:banner', {
-          title: 'SUMO SLAMMERS CARD!',
-          subtitle: `${this.stats.cardsFound.length} / ${this.stats.totalCards} FOUND`,
-          color: PALETTE.gold,
-          durationMs: 1800,
-          style: 'slam',
-        });
+        // The game stops for a new card: it flips over, big, with its stats (a banner instead mid-cinematic).
+        if (this.canReveal()) {
+          this.openReveal(() => EventBus.emit('card:reveal', { id: pk.id, found: this.stats.cardsFound.length, total: this.stats.totalCards, album, albumTotal: CARDS.length }));
+        } else {
+          this.time2.slowMo(0.4, 350, 250);
+          EventBus.emit('hud:banner', {
+            title: 'SUMO SLAMMERS CARD!',
+            subtitle: `${this.stats.cardsFound.length} / ${this.stats.totalCards} FOUND`,
+            color: PALETTE.gold,
+            durationMs: 1800,
+            style: 'slam',
+          });
+        }
       }
     }
 
@@ -1541,6 +1556,26 @@ export class LevelScene extends Phaser.Scene {
   }
 
   /** Cards this file has, counting the ones picked up this run. */
+  /** A find can stop the game: in play, not mid-cinematic, not in Training, nothing else already open. */
+  private canReveal(): boolean {
+    return this.state === 'play' && !this.cinematic && this.mode !== 'training' && !this.revealing && !this.player.dead;
+  }
+
+  /** Pauses the level under a full-screen card; the HUD sends `reveal:done` when the player closes it. */
+  private openReveal(show: () => void): void {
+    this.revealing = true;
+    EventBus.emit('hud:modal', { open: true });
+    show();
+    this.scene.pause();
+  }
+
+  private closeReveal(): void {
+    if (!this.revealing) return;
+    this.revealing = false;
+    EventBus.emit('hud:modal', { open: false });
+    this.scene.resume();
+  }
+
   private fileCardCount(): number {
     const found = new Set(this.stats.cardsFound);
     for (const record of Object.values(session.file?.chapters ?? {})) for (const c of record.cards) found.add(c);

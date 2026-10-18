@@ -1,3 +1,4 @@
+import type { DrinkLook } from '../entities/props/Pickup';
 import type { OmnitrixState, RevertReason } from './Omnitrix';
 import type { TouchMode } from './SaveSystem';
 import type { SplitResult } from './Splits';
@@ -81,6 +82,12 @@ export interface GameEvents {
   /** `reachableCards`: cards that exist this run; the rest of `totalCards` wait behind a later alien. */
   'stats:update': { timeMs: number; enemiesDefeated: number; cards: number; totalCards: number; reachableCards: number };
   'card:collected': { id: string; found: number; total: number };
+  /** The level pauses for a find: a new card (with the album and chapter counts), or a file's first drink of a kind. The HUD answers with `reveal:done`. */
+  'card:reveal': { id: string; found: number; total: number; album: number; albumTotal: number };
+  'drink:reveal': { look: DrinkLook; heal: number };
+  'reveal:done': undefined;
+  /** A full-screen card over the paused level: the touch controls step aside (a tap anywhere closes it). */
+  'hud:modal': { open: boolean };
   /** Gwen's spells for the HUD and the touch button: which she knows, how charged (0-1), whether she's here to cast. */
   'gwen:state': { present: boolean; known: readonly SpellId[]; charge: readonly number[] };
   'gwen:cast': { spell: SpellId };

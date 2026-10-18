@@ -63,3 +63,26 @@ export const CARDS: readonly CardInfo[] = [
 export function cardInfo(id: string): CardInfo | undefined {
   return CARDS.find((c) => c.id === id);
 }
+
+/** A card's numbers on its back: the stats every Sumo Slammers kid argues about (1-10). */
+export interface CardStats {
+  power: number;
+  weight: number;
+  speed: number;
+}
+
+/**
+ * Each card's stats, fixed by its id (the same on every file and every
+ * device). Holo cards are a cut above: their best stat is maxed.
+ */
+export function cardStats(info: CardInfo): CardStats {
+  let h = 2166136261;
+  for (let i = 0; i < info.id.length; i++) h = Math.imul(h ^ info.id.charCodeAt(i), 16777619) >>> 0;
+  const stat = (shift: number) => 3 + ((h >>> shift) % 7);
+  const s: CardStats = { power: stat(0), weight: stat(8), speed: stat(16) };
+  if (info.holo) {
+    const best = (Object.keys(s) as Array<keyof CardStats>).reduce((a, b) => (s[b] > s[a] ? b : a));
+    s[best] = 10;
+  }
+  return s;
+}

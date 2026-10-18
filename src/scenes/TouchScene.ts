@@ -48,6 +48,8 @@ export class TouchScene extends Phaser.Scene {
   private tick: OmnitrixTick | null = null;
   private readonly tracks = new Map<number, Track>();
   private cinematic = false;
+  /** A card over the paused level (a find): the controls step aside, a tap closes it. */
+  private modal = false;
   private hudVisible = true;
   private omnitrixVisible = false;
   private levelRunning = true;
@@ -59,6 +61,7 @@ export class TouchScene extends Phaser.Scene {
   create(): void {
     this.tracks.clear();
     this.cinematic = false;
+    this.modal = false;
     this.hudVisible = true;
     this.omnitrixVisible = false;
     this.levelRunning = true;
@@ -95,6 +98,10 @@ export class TouchScene extends Phaser.Scene {
     on('hud:letterbox', (p) => {
       this.cinematic = p.visible;
       if (p.visible) this.releaseAll();
+    }, this);
+    on('hud:modal', (p) => {
+      this.modal = p.open;
+      if (p.open) this.releaseAll();
     }, this);
     on('hud:visible', (p) => {
       this.hudVisible = p.visible;
@@ -161,7 +168,7 @@ export class TouchScene extends Phaser.Scene {
     if (!this.levelRunning) return;
     // Any touch skips cinematics, wherever it lands.
     pad.tap();
-    if (!this.enabled || !this.hudVisible || this.cinematic) {
+    if (!this.enabled || !this.hudVisible || this.cinematic || this.modal) {
       this.tracks.set(p.id, { kind: 'tap' });
       return;
     }
@@ -323,7 +330,7 @@ export class TouchScene extends Phaser.Scene {
 
   private refreshVisibility(): void {
     // Cinematics hide the controls completely; a tap anywhere skips them.
-    const show = this.enabled && this.levelRunning && this.hudVisible && !this.cinematic;
+    const show = this.enabled && this.levelRunning && this.hudVisible && !this.cinematic && !this.modal;
     this.stick.root.setVisible(show);
     for (const b of Object.values(this.buttons)) b.root.setVisible(show);
     this.dial.root.setVisible(show && this.omnitrixVisible);
