@@ -180,6 +180,49 @@ export const SCENARIOS = [
     play: (page, ms) => brawl(page, ms),
   },
   {
+    id: 'ch6-fair',
+    title: 'Ch6 Sea View fair (Ferris wheel, fair lights, kites, the sea, the lighthouse beam, Gwen)',
+    query: 'level=ch6&start=cp-fair',
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
+    id: 'ch6-wrap',
+    title: 'Ch6 THE TOWER WRAP (the turning tower: 48 stone strips, ledges, skyline, foes)',
+    query: 'level=ch6&start=cp-wrap',
+    setup: async (page) => {
+      // Out of the clock room's door: the climb starts on its own.
+      await page.evaluate(() => window.__level.benchTeleport(470 * 16 + 8, 30 * 16));
+      await page.waitForFunction(() => window.__game.scene.getScene('Tower')?.sys.isActive(), undefined, { timeout: 20000 }).catch(() => undefined);
+    },
+    play: (page, ms) => brawl(page, ms, { swap: false }),
+  },
+  {
+    id: 'ch6-hex',
+    title: 'Ch6 HEX AND CHARMCASTER, phase 3 (illusions, ward threads, cataclysm, Max, rocklings)',
+    query: 'level=ch6&start=cp-towertop',
+    setup: async (page) => {
+      await page.evaluate(() => window.__level.benchTeleport(497 * 16, 12 * 16));
+      await sleep(600);
+      await skipCinematics(page, 4);
+      // Knock the fight to its last phase (both of them, the copies, the wards).
+      for (let i = 0; i < 60; i++) {
+        const phase = await page.evaluate(() => {
+          const lvl = window.__level;
+          const boss = lvl?.arena?.boss;
+          if (!boss || !lvl.arena.fighting || boss.introducing) return -1;
+          if (boss.phase >= 2) return boss.phase;
+          for (const t of boss.extraTargets ?? []) t.takeHit({ damage: boss.maxHp * 0.03, kind: 'smash', x: lvl.player.x, y: lvl.player.centerY, knockback: 0 });
+          return boss.phase;
+        });
+        if (phase >= 2) break;
+        await tap(page, 'Enter');
+        await sleep(250);
+      }
+      await skipCinematics(page, 3);
+    },
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
     id: 'misfire',
     title: 'Training, misfires on CHAOS (transform gag every swap)',
     query: 'training=1',

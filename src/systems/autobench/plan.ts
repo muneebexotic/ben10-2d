@@ -15,7 +15,7 @@ export interface BenchScenario {
   levelId: string | null;
   checkpoint: string | null;
   driver: Driver;
-  setup?: 'kevinArena' | 'misfireChaos' | 'diveRide';
+  setup?: 'kevinArena' | 'misfireChaos' | 'diveRide' | 'towerWrap';
 }
 
 export const BENCH_SCENARIOS: readonly BenchScenario[] = [
@@ -30,6 +30,8 @@ export const BENCH_SCENARIOS: readonly BenchScenario[] = [
   { id: 'ch4-kevin', title: 'Ch4 KEVIN 11', levelId: 'ch4', checkpoint: 'cp-kevin', driver: 'brawl', setup: 'kevinArena' },
   // Chapter 5's heaviest moment: the 3D ride, a ray-traced tunnel under the sprites (the phone's GPU does the work).
   { id: 'ch5-dive', title: 'Ch5 THE DEEP DIVE', levelId: 'ch5', checkpoint: 'cp-dive', driver: 'brawlNoSwap', setup: 'diveRide' },
+  // Chapter 6's heaviest moment: THE TOWER WRAP, a turning tower of 48 stone strips over the skyline.
+  { id: 'ch6-wrap', title: 'Ch6 THE TOWER WRAP', levelId: 'ch6', checkpoint: 'cp-wrap', driver: 'brawlNoSwap', setup: 'towerWrap' },
   { id: 'misfire', title: 'Training, misfires on CHAOS', levelId: 'training', checkpoint: null, driver: 'brawl', setup: 'misfireChaos' },
 ];
 

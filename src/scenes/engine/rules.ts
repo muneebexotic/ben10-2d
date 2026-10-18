@@ -195,10 +195,10 @@ export const PENDULUM = {
   amplitude: 0.7,
   periodMs: 1700,
   /** A pin drops if the bob is within this angle of the middle when Grey Matter pulls the lever. */
-  windowRad: 0.16,
-  /** Each pin locked makes the next window a little tighter and the swing a little quicker. */
-  tighten: 0.82,
-  quicken: 0.9,
+  windowRad: 0.22,
+  /** Each pin locked makes the next window a little tighter and the swing a little quicker (the last still over 0.1 s a pass, for a tap). */
+  tighten: 0.88,
+  quicken: 0.94,
   pins: 3,
   /** The hint: a wider window and a slower swing. */
   hintWindow: 1.6,

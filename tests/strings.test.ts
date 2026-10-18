@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GLYPHS } from '../src/ui/glyphs';
 import { formatControls } from '../src/systems/controlLabels';
+import { URDU } from '../src/config/urdu';
 import { extractStrings, HOLE, isPlayerText, playerStrings } from './support/strings';
 
 /**
@@ -122,5 +123,28 @@ describe('string lint', () => {
     ]);
     const bad = ALL.filter((s) => /\[(?:[A-Z]|ESC|ENTER|SPACE|UP|DOWN|LEFT|RIGHT|ARROWS)\]|\bPRESS [A-Z]\b/.test(s.text) && !keyboardOnly.has(s.file)).map((s) => `${where(s)} ${s.text}`);
     expect(bad).toEqual([]);
+  });
+});
+
+describe("Chapter 6's romanised Urdu", () => {
+  // The glossary's own keys aren't lines.
+  const LINES = ALL.filter((s) => !s.file.endsWith('config/urdu.ts'));
+  const uses = (text: string, word: string) => new RegExp(`(?<![A-Z])${word}(?![A-Z])`).test(text);
+
+  it('uses one house spelling for every word (src/config/urdu.ts)', () => {
+    const bad = LINES.flatMap((s) =>
+      Object.entries(URDU).flatMap(([word, w]) => (w.not ?? []).filter((n) => uses(s.text, n)).map((n) => `${where(s)} ${n} (the game spells it ${word}): ${s.text}`)),
+    );
+    expect(bad).toEqual([]);
+  });
+
+  it("carries the English in brackets wherever a word isn't clear from context", () => {
+    const bad = LINES.filter((s) => Object.entries(URDU).some(([word, w]) => w.gloss && uses(s.text, word)) && !/\([A-Z][^)]*\)/.test(s.text)).map((s) => `${where(s)} ${s.text}`);
+    expect(bad).toEqual([]);
+  });
+
+  it('every word in the glossary is really used (and so really checked)', () => {
+    const unused = Object.keys(URDU).filter((word) => !LINES.some((s) => uses(s.text, word)));
+    expect(unused).toEqual([]);
   });
 });

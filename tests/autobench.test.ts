@@ -49,7 +49,7 @@ describe('autobench plan', () => {
 
   it('covers all four bosses, the convoy, the blackout, the arcade and the misfire gag', () => {
     const ids = BENCH_SCENARIOS.map((s) => s.id);
-    for (const id of ['ch1-boss', 'ch2-boss', 'ch3-frog', 'ch4-kevin', 'ch2-convoy', 'ch3-blackout', 'ch4-arcade', 'misfire']) expect(ids).toContain(id);
+    for (const id of ['ch1-boss', 'ch2-boss', 'ch3-frog', 'ch4-kevin', 'ch2-convoy', 'ch3-blackout', 'ch4-arcade', 'ch5-dive', 'ch6-wrap', 'misfire']) expect(ids).toContain(id);
   });
 
   it('puts context variants on their own pages, after everything else', () => {

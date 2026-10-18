@@ -46,11 +46,11 @@ export const LOCAL_LINES: Record<LocalId, { first: string; again: string; form?:
   rauf: {
     first: 'CAREFUL, BHAI! THE KITES HAVE GONE CRAZY! TAKE A CHAI FOR THE ROAD.',
     again: 'MAX SAHIB TAUGHT ME TO MAKE CHAI THIS STRONG. DO NOT TELL HIM I SAID SO.',
-    form: { heatblast: 'WAH! A FIRE MAN! CAN YOU KEEP MY KETTLE HOT?' },
+    form: { heatblast: 'WAH! A FIRE MAN! CAN YOU KEEP MY KETTLE HOT?', xlr8: 'ACHA, ACHA, YOU ARE IN A HURRY. TAKE IT TO GO!' },
   },
   zain: {
     first: 'BEN BHAI! IS IT REALLY YOU? DO THE FIRE GUY! DO THE FIRE GUY!',
-    again: 'MY FRIENDS WILL NEVER BELIEVE THIS. SMILE, BHAI!',
+    again: 'SHUKRIYA, BEN BHAI! (THANK YOU!) MY FRIENDS WILL NEVER BELIEVE THIS.',
     form: {
       heatblast: 'SHABASH! THE FIRE GUY! YOU ARE EVEN COOLER IN REAL LIFE!',
       fourarms: 'FOUR ARMS! CAN YOU HOLD MY KITE AND MY ICE CREAM AT THE SAME TIME?',
