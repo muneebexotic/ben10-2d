@@ -12,6 +12,9 @@ Proposals for features or changes outside the current milestone. Items move to *
 - **Mobile touch controls** (pulled forward from Milestone 6): stick, buttons, Omnitrix dial button, landscape handling, auto-pause, frame-rate governor.
 - **Dial misfire comedy** (Milestone 3): record scratch, a reaction line for every alien pair, plus a sepia freeze-frame close-up, a double take and a WANTED/GOT card.
 
+- **Gwen and Grandpa Max cameos** in Chapter 1 (Milestone 5, Chapter 6 session): the family at camp during the meteor opening, and the chapter's last word: "GREAT. NOW YOU'RE EVEN MORE ANNOYING."
+- **Ghostfreak's diary** and **THE HUNTERS resume at the stage you died in** (approved, built in the Chapter 6 session).
+
 Built within Milestone 2 (not proposed beforehand, recorded here for reference):
 
 - **Omnitrix swap:** swap aliens mid-transformation for 3 s of alien time; each alien arrives with an entrance attack; perfect swaps.
@@ -78,7 +81,6 @@ Built within Milestone 4, part 4 (Chapter 5, not proposed beforehand, recorded h
 
 | Idea | Target |
 |---|---|
-| **Gwen and Grandpa Max cameos** in the Chapter 1 intro (e.g. Gwen: "Great, now you're even MORE annoying"). | Milestone 5 |
 | **Chapter 1 Hard Remix:** shorter timer, a Gunner wave in the ravine, a boss "overclock" phase 3. | Later (kept deferred at the end of Act 1) |
 | **Auto-clip the transform** (rolling canvas recording, SAVE CLIP after the first transform and the boss kill) and a **share card image** (rank, time, portrait, cards as a PNG). | Milestone 7 (viral layer) |
 | **Gamepad support** through Phaser's gamepad plugin feeding `InputMap`. | Later |
@@ -134,7 +136,18 @@ Built within Milestone 4, part 4 (Chapter 5, not proposed beforehand, recorded h
 - **More 3D moments, one per Act at most:** the same shader-and-billboard trick fits a Rustbucket highway chase seen from behind (Act 3) or Stinkfly's flight through a canyon. Rare on purpose, so each one feels like the game evolving.
 - **Bounty board:** after Chapter 5, WANTED posters in later chapters' towns with bounties Vilgax put on Ben (beat a section without being hit, finish a ride without a scratch) paying cards or Omnitrix face-plate colours.
 - **Tetrax as a sparring partner in Training:** an honourable duel with no damage, teaching tells (each glint), heat combos and guard breaks. He's the game's best-telegraphed fighter.
-- **Ghostfreak's diary:** the whispers he says while out, collected in EXTRAS like JOKES FOUND, with a last locked line that unlocks in Chapter 9 (when he breaks free). Long-term foreshadowing players can follow.
+- ~~**Ghostfreak's diary**~~: built in the Chapter 6 session (see Done).
 - **Phase-wall speedrun skips:** a few walls in older chapters that Ghostfreak can cut through for a faster route (marked only by a faint sigil), so returning players find new lines on the split timer.
-- **THE HUNTERS resume at the stage you died in:** the three hunters fight in three places (chamber, shaft, yard), so a death on Tetrax could restart at the yard with Kraab buried and Sixsix in the tower, instead of replaying all three (two to three minutes). Scripted damage-on runs mostly died in the second and third stages and replayed Kraab every time. Needs a "start at stage" path in `Hunters.ts` (the arena, the ledges, the health bar) and a hidden checkpoint per stage; a proposal, since it changes how every boss retry feels.
+- ~~**THE HUNTERS resume at the stage you died in**~~: built in the Chapter 6 session (see Done).
 - **Dynamite chains:** a missile, a fireball or a burning stink cloud setting off a row of crates in sequence (CHAIN REACTION!), a natural clip.
+
+### From Chapter 6 (Milestone 4 part 5 and Milestone 5)
+
+- **Roman Urdu menus (a language option):** the owner said "later if you want". Every menu and HUD string through one table, with a romanised Urdu column written and checked by a native speaker (the string lint already knows the house spellings). English stays the default. A first step toward other languages.
+- **RICKSHAW RUN:** a short bonus stage on Karachi's streets: Rafiq's rickshaw weaving through traffic (truck-art buses, chingchis, a camel cart) to catch Charmcaster's getaway, three lanes like THE DEEP DIVE but flat and sunny. A replayable score run with a share line.
+- **ALIEN FILES challenges:** under each move's demo, a 20-second challenge in the same arena (five fireballs on five targets, three dummies with one pounce) with a medal; ties into the deferred Training trials.
+- **Card trading between files:** a save code that carries one duplicate-proof card from one file's album to another (or a friend's), so a player missing a card behind an alien can borrow it. Needs the save code idea (Deferred).
+- **Gwen's spell combos:** STUN then a Four Arms throw, SHIELD reflecting into a Diamondhead tilt: named combos with a slow-motion beat, a natural clip.
+- **Hex's rematch in Training:** the four Charms as Training targets, each with its tell, to learn the counters (Stinkfly over the stone wave, Diamondhead against the lightning).
+- **Chai with Rauf:** after the chapter, Rauf's stall in Chapter Select's Karachi window serves a cup that heals one heart at the start of any chapter replay, once per day.
+
