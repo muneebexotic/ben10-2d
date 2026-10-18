@@ -10,12 +10,15 @@ import type { Controls } from '../../systems/InputMap';
 import { playSfx } from '../../systems/audio/Sfx';
 import type { SpeechBubble } from '../../ui/SpeechBubble';
 import { TEX } from '../preload/assetKeys';
+import { GWEN_FRAME, GWEN_FRAMES, MAX_FRAME, MAX_FRAMES } from '../preload/family';
 import { flashCamera } from '../../systems/Accessibility';
 import { chance } from '../../systems/Pacing';
 
 type Phase = 'opening' | 'explore' | 'pod' | 'firstTransform' | 'done';
 
 export interface IntroHooks {
+  /** Gwen is already walking with Ben (Settings: Gwen in replays): no second Gwen at camp. */
+  gwenAlong?(): boolean;
   giveOmnitrix(): void;
   spawnIntroDrones(): void;
   /** True once Ben has transformed for the first time. */
@@ -38,6 +41,8 @@ export class IntroDirector {
   private slowMoLeft = 0;
   private skipped = false;
   private steps = new Set<string>();
+  /** Gwen and Grandpa Max at camp (their cameo): they stay by the fire when Ben wanders off. */
+  private readonly family: { gwen: Phaser.GameObjects.Sprite | null; max: Phaser.GameObjects.Sprite };
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -50,6 +55,7 @@ export class IntroDirector {
     skip: boolean,
     skipOpening = false,
   ) {
+    this.family = this.placeFamily(hooks.gwenAlong?.() ?? false);
     const podSpawn = level.entities.find((e) => e.type === 'pod')!;
     this.pod = scene.add.sprite(podSpawn.x * TILE + TILE / 2, podSpawn.y * TILE + 2, TEX.pod, 0).setOrigin(0.5, 1).setDepth(DEPTH.props);
     if (skip) {
@@ -132,8 +138,31 @@ export class IntroDirector {
       this.fx.light(cam.worldView.right - 40, cam.worldView.y + 200, 260, PALETTE.fire2, 1400);
       this.fx.burst('leaf', this.player.x + 60, this.player.y - 120, 18);
     }
+    if (this.t > 2250 && this.once('point')) {
+      this.family.max.stop().setFrame(MAX_FRAMES.point[0]);
+      this.family.gwen?.stop().setFrame(GWEN_FRAMES.jump[0]);
+    }
     if (this.t > 2450 && this.once('whoa')) this.speech.show('WHOA! DID YOU SEE THAT?!', 1600);
+    if (this.t > 2700 && this.once('gwenLine') && this.family.gwen) {
+      this.fx.popText(this.family.gwen.x, this.family.gwen.y - 34, "DON'T EVEN THINK ABOUT IT, BEN.", PALETTE.gwen);
+    }
+    if (this.t > 3050 && this.once('maxLine')) this.fx.popText(this.family.max.x, this.family.max.y - 40, 'BACK BEFORE THE MARSHMALLOWS BURN!', PALETTE.max);
     if (this.t > 3300) this.endOpening();
+  }
+
+  /** By the campfire and the tent, facing the woods Ben is about to run into. */
+  private placeFamily(gwenAlong: boolean): IntroDirector['family'] {
+    const feet = this.level.playerStart.y * TILE;
+    const max = this.scene.add.sprite(15 * TILE + TILE / 2, feet, TEX.max, 0).setOrigin(0.5, (MAX_FRAME.feetY + 1) / MAX_FRAME.h).setDepth(DEPTH.player - 2);
+    max.play('max-idle');
+    const gwen = gwenAlong ? null : this.scene.add.sprite(8 * TILE + TILE / 2, feet, TEX.gwen, 0).setOrigin(0.5, (GWEN_FRAME.feetY + 1) / GWEN_FRAME.h).setDepth(DEPTH.player - 2);
+    gwen?.play('gwen-idle');
+    return { gwen, max };
+  }
+
+  private endFamilyPoses(): void {
+    this.family.max.play('max-idle');
+    this.family.gwen?.play('gwen-idle');
   }
 
   private launchMeteor(cam: Phaser.Cameras.Scene2D.Camera, color: number, size: number, duration: number): void {
@@ -157,6 +186,7 @@ export class IntroDirector {
 
   private endOpening(): void {
     if (this.phase !== 'opening') return;
+    this.endFamilyPoses();
     this.phase = 'explore';
     this.t = 0;
     this.player.controlsEnabled = true;
@@ -259,5 +289,7 @@ export class IntroDirector {
 
   destroy(): void {
     this.watchItem?.destroy();
+    this.family.max.destroy();
+    this.family.gwen?.destroy();
   }
 }

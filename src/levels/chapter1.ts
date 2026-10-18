@@ -78,6 +78,15 @@ export const CHAPTER_1: LevelData = {
     { kind: 'scout', x: 56, y: 20 },
   ],
 
+  // Gwen and Grandpa Max's last word after the drone (their cameo at camp is in the intro).
+  story: {
+    outro: [
+      { who: 'max', text: 'BEN! THERE YOU ARE. WHAT WAS ALL THAT RACKET OUT HERE?', ms: 2400 },
+      { who: 'ben', text: 'OH, NOTHING. JUST A WATCH THAT TURNS ME INTO ALIENS. NO BIG DEAL.', ms: 2600 },
+      { who: 'gwen', text: "GREAT. NOW YOU'RE EVEN MORE ANNOYING.", ms: 2200 },
+    ],
+  },
+
   entities: [
     { type: 'decor', kind: 'rv', x: 5, y: 26 },
     { type: 'decor', kind: 'tent', x: 10, y: 26 },
