@@ -262,8 +262,9 @@ export class HexBoss implements ArenaBoss {
       this.w.tip('hex-ward', 'CHARMCASTER WARDS HIM: HIT HER TO BREAK IT, THEN FIND THE REAL HEX!', 4000);
       return 'hit';
     }
-    const mult = this.spent > 0 ? H.hex.spentMultiplier : 1;
-    return this.hurt(part, hit, hit.damage * mult);
+    const open = this.spent > 0;
+    if (!open) this.w.tip('hex-spent', 'HEX IS WIDE OPEN RIGHT AFTER A SPELL: HIT HIM THEN!', 4000);
+    return this.hurt(part, hit, hit.damage * (open ? H.hex.spentMultiplier : H.hex.guardMultiplier));
   }
 
   /** An illusion pops at any touch, and comes back a while later. */

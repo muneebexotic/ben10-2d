@@ -29,16 +29,17 @@ export const HEX_BOSS = {
   },
   hex: {
     body: { width: 16, height: 40 },
-    /** He floats this high over the floor and blinks between three spots. */
-    hover: 18,
+    /** He floats this high over the floor (low enough for a punch) and blinks between three spots. */
+    hover: 6,
     /** Each Charm's attack (the staff glows its colour first: the tell). */
     fire: { windupMs: 800, pillars: 5, gapMs: 140, speed: 200, damage: 2 },
     lightning: { windupMs: 700, aimLockMs: 200, bolts: 3, gapMs: 260, speed: 520, damage: 2 },
     stone: { windupMs: 850, speed: 210, damage: 2, radius: 7, lifeMs: 1300 },
     wind: { windupMs: 700, gustMs: 1400, push: 210, debris: 4, debrisDamage: 1 },
-    /** After a spell he's spent for a moment: hits land harder. */
+    /** After a spell he's spent for a moment: hits land harder. Otherwise the staff takes the edge off them. */
     spentMs: 1100,
     spentMultiplier: 1.4,
+    guardMultiplier: 0.6,
   },
   both: {
     /** Hex splits into copies; any hit pops a copy, and they come back after a while. */
