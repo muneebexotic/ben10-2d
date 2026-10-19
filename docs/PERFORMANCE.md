@@ -476,3 +476,22 @@ The first run of the relative gate (`npm run bench`: this build against main d21
 | JavaScript transferred, first visit | 570 KB | 472 KB | -17% |
 
 Without network throttling (`--boot`, seven fresh pages) the medians were within noise (2188 against 2433 ms; longest task 1245 against 1016 ms). Brotli sizes after the split: boot 482 KB (the game 165 KB, shared chunks 34 KB, Phaser 283 KB); each chapter loads on its own (Chapter 1 7 KB, 2 28 KB, 3 16 KB, 4 30 KB, 5 40 KB; Chapter 6, built after: 156 KB raw, 51 KB gzipped). The 600 KB revisit line now applies to boot, not to the whole game.
+
+**The gate** (`npm run bench`, this build against main before the session, d9d8de4, 4x on the emulated wide phone). The first full run, with my own builds and tests running alongside it, flagged five older scenarios; it had also measured something real but unfair: a card or a file's first drink now stops the game to show itself, and the bench's scripted player picked some up, so this build's frames included those pauses (and the first frame of each reveal). Benchmarks now run with Settings' NEW FINDS: QUICK (both `npm run bench` and `?autobench=1`), so both builds play the same. Rerun on a quiet machine, mean CPU ms per frame:
+
+| Scenario | main | this | change |
+|---|---|---|---|
+| ch1-boss (4 rounds) | 5.89 | 5.71 | -3.1% |
+| ch2-boss (4 rounds) | 7.51 | 7.87 | +4.8% |
+| ch4-arcade | 13.55 | 11.75 | -13.3% |
+| ch4-kevin | 14.28 | 12.79 | -10.4% |
+| ch5-street | 12.80 | 12.86 | +0.5% |
+| ch6-fair | - | 10.62 | new (p95 22.6) |
+| ch6-wrap | - | 5.17 | new (p95 12.1) |
+| ch6-hex | - | 8.80 | new (p95 16.6) |
+
+The other scenarios passed in the full run (ch1-forest -6.9%, ch2-convoy -13.5%, ch3-blackout -7.5%, ch3-frog -10.1%, ch4-station -30.5%, ch5-dive -7.4%, ch5-hunters -30.9%, stress -14.4%; misfire +16.6%, inside its slack). **No regression, no leaks:** the leak check was flat over seven chapter cycles (60 EventBus listeners, 412 textures, 7-10 audio sources with none held, heap 15.8 to 17.0 MB). Chapter 6's scenarios are well under main's heaviest (`ch4-kevin`).
+
+- **THE TOWER WRAP is the lightest scene on the CPU after THE DEEP DIVE** (5.2 ms): 48 strips, about a hundred ledge stones and a dozen sprites, all pooled, positioned each frame with no allocation. Its cost on a phone is fill rate (the tower covers half the screen); `?autobench=1` plays it (`ch6-wrap`).
+- **The fair** is the chapter's busiest scene (the Ferris wheel, stalls with their lights, kites, the sea, Gwen).
+- Measured noise this session was large (main's own ch1-boss ranged 5.4 to 12.3 ms between rounds): a lone failure should be rerun alone over four rounds before anything changes, as the budget says.

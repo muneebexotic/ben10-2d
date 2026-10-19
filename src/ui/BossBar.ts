@@ -26,13 +26,16 @@ export class BossBar {
   private copies: ReadonlyArray<{ id: string; level: number }> = [];
   private current: string | null = null;
 
-  constructor(private readonly scene: Phaser.Scene, y: number) {
+  constructor(
+    private readonly scene: Phaser.Scene,
+    private readonly restY: number,
+  ) {
     this.bar = new BakedGraphics(scene, -W / 2 - 2, -1, W + 4, 10);
     const icon = scene.add.image(-W / 2 - 10, 3, TEX.bossIcon);
     this.name = pixelText(scene, -W / 2, -11, '', { color: PALETTE.enemyGlow });
     this.copyPips = new BakedGraphics(scene, -W / 2, -22, W, 20);
     this.copyLabel = pixelText(scene, 0, -11, 'COPIES', { originX: 1, color: PALETTE.kevin }).setVisible(false);
-    this.root = scene.add.container(GAME_WIDTH / 2, y, [this.bar.image, icon, this.name, this.copyPips.image, this.copyLabel]).setVisible(false);
+    this.root = scene.add.container(GAME_WIDTH / 2, restY, [this.bar.image, icon, this.name, this.copyPips.image, this.copyLabel]).setVisible(false);
   }
 
   /**
@@ -83,8 +86,10 @@ export class BossBar {
     this.setCopies([], null);
     this.ratio = 1;
     this.trail = 1;
-    this.root.setVisible(true).setAlpha(0).setY(this.root.y + 20);
-    this.scene.tweens.add({ targets: this.root, alpha: 1, y: this.root.y - 20, duration: 500, ease: 'Cubic.easeOut' });
+    // From its own resting place, so a second show mid-slide (a boss resumed at a later stage) doesn't land lower.
+    this.scene.tweens.killTweensOf(this.root);
+    this.root.setVisible(true).setAlpha(0).setY(this.restY + 20);
+    this.scene.tweens.add({ targets: this.root, alpha: 1, y: this.restY, duration: 500, ease: 'Cubic.easeOut' });
   }
 
   hide(): void {

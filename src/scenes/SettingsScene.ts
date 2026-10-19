@@ -119,8 +119,8 @@ export class SettingsScene extends Phaser.Scene {
     this.hint = pixelText(this, GAME_WIDTH / 2, 300, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim, maxWidth: 560, align: 'center' });
     this.details = withDifficulty ? pixelText(this, GAME_WIDTH / 2, 280, '', { originX: 0.5, originY: 0.5, color: PALETTE.cream }) : null;
     this.bar = this.add.graphics();
-    const spacing = items.length > 8 ? 23 : items.length > 6 ? 25 : 28;
-    this.menu = new MenuList(this, GAME_WIDTH / 2, items.length > 8 ? 76 : items.length > 6 ? 82 : 92, items, {
+    const spacing = items.length > 9 ? 21 : items.length > 8 ? 23 : items.length > 6 ? 25 : 28;
+    this.menu = new MenuList(this, GAME_WIDTH / 2, items.length > 9 ? 70 : items.length > 8 ? 76 : items.length > 6 ? 82 : 92, items, {
       spacing,
       scale: 2,
       rowWidth: 440,
