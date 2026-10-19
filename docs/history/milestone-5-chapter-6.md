@@ -126,7 +126,7 @@ What the runs caught:
 - **A held key after a find** (Hard run): the first drink stopped the game while the bot held right, and the resumed level read right as released (a resumed scene forgets held keys). A real keyboard's auto-repeat presses it again within a few frames; the bot now re-presses it. Kept as is.
 - **The bot's own route problems** (no REVEAL at the cellar's hidden door, staying human Ben until the cage, targeting Hex floating out of reach in phase 1) were fixed in the bot; the level needed nothing.
 
-**`npm run qa -- --fuzz`** (three sizes; Chapters 1-6 and Training): 0 page errors; 64 checkpoints and boss fights fuzzed with 0 failures; every boss knocked through its phases and defeated, HEX AND CHARMCASTER included. Two text checks flagged (BUGS.md C29, C30), both fixed.
+**`npm run qa -- --fuzz`** (three sizes; Chapters 1-6 and Training): 0 page errors; 64 checkpoints and boss fights fuzzed with 0 failures; every boss knocked through its phases and defeated, HEX AND CHARMCASTER included. Two text checks flagged (BUGS.md C29, C30), both fixed; the recheck (`npm run qa -- --levels=ch5,ch6`: every menu, the Act 1 and Act 2 endings and those chapters at three sizes) found 0 text issues and 0 page errors.
 
 ## How to test it
 
