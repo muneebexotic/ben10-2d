@@ -119,6 +119,7 @@ Screenshot-driven checks of every Chapter 5 set piece in headless Chromium (brid
 | C27 | minor | Chapter 6, the Spell Engine (found while building) | The level's alien tip ("[J] BITE [K] ANALYZE...") drew over the puzzle's instructions | Prompts don't know about overlay scenes | fixed: overlays mute the prompt bar while they have the screen |
 | C29 | minor | Chapter 5, THE HUNTERS resumed at the shaft or the yard | The boss bar's name sat 10 px low, touching the bottom of the screen (found by `npm run qa`) | Resuming at a stage shows the bar twice; the second slide-in started from wherever the first had got to | fixed: the bar slides in from its own resting place |
 | C30 | minor | Settings with a file (the title's Continue file) | With the new NEW FINDS row, the last row ran into the difficulty's details line (found by `npm run qa`) | Ten rows at the nine-row spacing | fixed: ten rows sit closer |
+| C31 | major | Chapter 6, HEX AND CHARMCASTER (found by the scripted runs) | Melee forms could barely hurt Hex (Four Arms: under 1.5 damage per 2.5 s of punching) while Heatblast's fireballs took a fifth of his health in the same time | He floated 18 px over the floor, above a punch | fixed: he floats 6 px up; hits outside the moment after a spell do 60% |
 | C28 | minor | Chapter 6, the vent card (found while building) | The tunnel vent's crawlspace was six tiles over the floor; Grey Matter jumps five | Placed by eye | fixed: the crawlspace is a row lower and a rubble step sits under the vent |
 
 ## Needs your decision

@@ -107,11 +107,26 @@ SPELLBOUND (30 of Gwen's spells), BIG BRAIN (10 hits on weak points Grey Matter 
 
 ## Performance
 
-_Filled in below after the runs._
+`npm run bench` gained three Chapter 6 scenarios (`ch6-fair`, `ch6-wrap`, `ch6-hex` in phase 3) and `?autobench=1` plays THE TOWER WRAP (`ch6-wrap`). Against main before the session, on a quiet machine: no regression (older scenarios between -31% and +5%, a lone failure rerun over four rounds as the budget says) and no leaks; Chapter 6's scenarios are well under main's heaviest (fair 10.6 ms, wrap 5.2 ms, Hex 8.8 ms mean CPU per frame at 4x, against KEVIN 11's 14.3). The first full run failed on five older scenes: cards and first drinks now stop the game, the bench's player picked some up, and my own builds ran alongside it. Benchmarks now run with NEW FINDS: QUICK. Details and numbers: `docs/PERFORMANCE.md` ("Chapter 6 check").
 
 ## Scripted playtests and what they caught
 
-_Filled in below after the runs._
+A scripted player (Playwright on a static build; headless Chromium runs the game at about a third of real speed, so times are about three times a person's) walks the route with the intended alien for each obstacle (transforming whenever the watch is ready), casts REVEAL when stuck, solves the Spell Engine with the keyboard (it tries a dead-end gear slot first, like a player), climbs the tower (jumping at risers and gaps, swatting what's close) and brawls the boss, swapping aliens every few seconds and raising Gwen's SHIELD when the cataclysm charges. It never reads tells or dodges.
+
+| Run | Result |
+|---|---|
+| **Easy, god mode, start to finish** | Chapter Complete, 0 deaths, no skips. Spell Engine 11 s, THE TOWER WRAP 20 s, HEX AND CHARMCASTER 48 s (before the boss change below) |
+| **Normal, god mode** | Chapter Complete, 0 deaths, no skips. Engine 12 s, Wrap 22 s, the boss 61 s; after the boss change 116 s |
+| **Hard, god mode** | Chapter Complete, 0 deaths; one skip at the fair (below). Engine 12 s, Wrap 22 s, the boss 95 s |
+| **Normal, damage on** | The route to the boss with 1 death (in the cellars, by the trapdoor), no skips. The boss: not beaten in 7 minutes. Brawling, the bot dies to contact (it stands inside the bodies: about half of the damage it took in one run was contact in the last phase); spaced out at two tiles, it lost one life in 7 minutes but dealt too little to finish. Like KEVIN 11 and THE HUNTERS, play it by hand first |
+
+What the runs caught:
+
+- **Hex was out of a punch's reach** (BUGS.md C31): he floated 18 px up, so Heatblast's fireballs took a fifth of his health in 2.5 s while Four Arms' punches passed under him (a probe: 0.3-1.4 damage per 2.5 s). He floats 6 px up now (Four Arms: 8-11 per 2.5 s), and hits outside the moment after a spell do 60%, so the fight rewards waiting for the opening; the first god-mode Normal fight went from 61 s to 116 s.
+- **A held key after a find** (Hard run): the first drink stopped the game while the bot held right, and the resumed level read right as released (a resumed scene forgets held keys). A real keyboard's auto-repeat presses it again within a few frames; the bot now re-presses it. Kept as is.
+- **The bot's own route problems** (no REVEAL at the cellar's hidden door, staying human Ben until the cage, targeting Hex floating out of reach in phase 1) were fixed in the bot; the level needed nothing.
+
+**`npm run qa -- --fuzz`** (three sizes; Chapters 1-6 and Training): 0 page errors; 64 checkpoints and boss fights fuzzed with 0 failures; every boss knocked through its phases and defeated, HEX AND CHARMCASTER included. Two text checks flagged (BUGS.md C29, C30), both fixed.
 
 ## How to test it
 
