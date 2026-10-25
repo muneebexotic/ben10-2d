@@ -279,6 +279,116 @@ The story, characters, Gwen's arc, Grey Matter, the Spell Engine and the boss ar
 
 **Achievements:** SPELLBOUND (call 30 of Gwen's spells), BIG BRAIN (land 10 weak-point hits after an analyse), THE ENGINE ROOM (solve the Spell Engine without a hint), ACT 2 (finish Act 2, secret).
 
+## Act 3 plan: Secrets
+
+Act 3 is about the secrets the summer has been keeping: Grandpa Max's past (Chapter 7), the thing hiding behind a clown's smile (Chapter 8), and the thing hiding inside the watch (Chapter 9). Act 1 taught the dial, Act 2 attacked the player's habits; Act 3 changes the ground under the player's feet: water that has to be swum, a ball that has to be rolled, and finally an alien that leaves the dial for good. Each chapter ends on a hook into the next: Kevin escapes the Plumber base with a stolen badge and a Magister warns Max of "something stirring on the roads ahead"; Zombozo's last laugh wakes something in the Omnitrix; Ghostfreak's escape sends the family looking for the watch's maker (Act 4).
+
+**Act 3 is the season premiere.** It opens with the game itself changing: halfway down a Plumber elevator under Keamari harbour, the pixel world resolves into an HD cartoon one, and Act 3 stays that way.
+
+### Rules for all of Act 3
+
+Act 2's rules all carry over, unchanged:
+
+- Every new alien gets a discovery moment, unique sounds, colours, music layer and title slam.
+- Every chapter has secrets gated by future aliens, and new aliens open older secrets ("SECRET WAITING!").
+- Misfires blocked during story moments.
+- Every set piece has its own checkpoint on all difficulties.
+- Boss: readable tells, switching rewarded not required, multiple phases.
+- Splits, medals, achievements, card album entries, ghost runs, jokes for every new alien pair, all working for new content.
+- Every chapter must pass the performance budget in docs/PERFORMANCE.md (npm run bench).
+
+New for Act 3:
+
+- **HD cartoon presentation, chapter-scoped.** Every Act 3 chapter is drawn in an HD cartoon style made in code: bold clean outlines, cel shading, rich gradients, dynamic lighting, smooth animation, expressive poses and juicy effects. It covers everything in the chapter: Ben, Gwen, Max, Kevin, every alien, NPCs, enemies, the boss, backgrounds and parallax, props, water, bubbles and light shafts, transformations, explosions, pickups, the HUD and the Omnitrix dial, dialogue, the chapter's pause, game over and results screens. The chapter draws at the screen's own resolution (a render scale of up to 3x the 640x360 game frame; positions, physics and level design stay in game pixels) and uses its own textures and rendering paths, swapped in when the chapter starts and back out when it ends, so **Chapters 1 to 6 keep their exact pixel look and behaviour**. The screens shared by every chapter (title, Chapter Select, Training, ALIEN FILES, EXTRAS) stay pixel art.
+- **Character art rule (Act 3; replaces any earlier rule that kept the pixel sprites or forbade redraws, for Act 3 only).** Ben, Gwen, Max, Kevin and every alien that appears in an Act 3 chapter are redrawn as fully animated HD cartoon characters that keep their established identities from this game: silhouettes, proportions, faces, outfits, colours and Omnitrix details. Pixel sprites are never reused, upscaled, smoothed, traced or outlined in an Act 3 chapter. Characters are articulated rigs (parts painted with vector shapes, posed by a skeleton, animated every frame), with every animation their gameplay needs (idle, movement, jumping, falling, landing, swimming, attacks, abilities, damage, defeat, transformations) plus expressive story poses for dialogue and cinematics. Each character has one manifest in `src/config/cartoon/`; an optional replacement sprite sheet in `public/assets/licensed/<character>/` is used instead, without code changes, when present. The game always ships with complete cartoon art; `docs/ART_COVERAGE.md` lists every animation and any gap.
+- **A new way to move per chapter.** Chapter 7 swims, Chapter 8 rolls and bounces, Chapter 9 loses an alien and has to manage without it.
+
+### Chapter 7: The Plumbers
+
+**Setting.** One night under the Arabian Sea off Karachi. Keamari harbour (the Act 2 ending's quay, still pixel art), a hidden Plumber elevator under an old navy jetty, the descent through the sea (where the game turns HD), and **PLUMBER BASE ARABIAN DEEP**: a sealed Plumber outpost on the sea floor, built in the 1970s, mothballed for twenty years, and woken by the signal at the end of Act 2. Its docking ring, the flooded maintenance ring, the reactor, the open sea around its hull, the pump hall, the containment block, and the moon pool where its submarines used to dock. Ambient light: the base's emergency blues and reds, its lamps waking section by section, bioluminescence and light shafts from far above. Music: `deep` (the base: sonar pings, a pulsing synth bass, glassy arpeggios), `opensea` (outside the hull: airy pads and slow whale calls), `deepmaw` (the boss), and an Act 3 title sting.
+
+**Why there.** Act 2 ended with a call for Max ("THIS IS TENNYSON. ...MAGISTER, I'M RETIRED.") and a sealed base powering up under the sea with his name on its screen. The base woke because its prisoner did: its containment is failing. It called the last Plumber on its roster within a thousand miles.
+
+**Story beats.**
+1. **The jetty (pixel).** Midnight at Keamari. Max walks Ben and Gwen down an old navy jetty to the water ("STAY CLOSE. AND DON'T TOUCH ANYTHING."). He presses his gold badge to a rusted bollard; a green scan line reads it (TENNYSON, MAX / MAGISTER, RETIRED), the jetty's deck slides apart and a glass elevator rises out of the sea, dripping. Gwen: "THAT IS NOT NAVY STUFF."
+2. **The descent (the transition, one continuous shot).** The capsule sinks; the camera rides down with it past the waterline into the dark pixel sea. Below, the base's beacon pings. Each ping is a ring of green light, and where it passes, the world resolves: blocky water breaks into squares that scatter, and smooth gradients, light shafts, fish and kelp flood in behind them. The family resolves too: Ben's, Gwen's and Max's pixel bodies break apart into squares, the squares are pulled into clean drawn shapes, ink lines draw on and colour floods in. They react (Ben stares at his hands: "WHOA. DO YOU GUYS FEEL... SHARPER?" / Gwen: "EVERYTHING LOOKS... DIFFERENT." / Max: "THAT'S THE BASE'S SCANNER. FIRST TIME'S ALWAYS A LITTLE WEIRD."). The camera pushes in as the base below lights up lamp by lamp, its dome, towers and docking arms emerging from the dark, fish scattering. On the capsule's roof, for one beat, a figure in silhouette grins (Kevin, stowed away).
+3. **ACT 3: SECRETS** slams in (a season premiere title: ACT 3 stamps, SECRETS ripples in like water, CHAPTER 7: THE PLUMBERS under it), then the capsule docks.
+4. **The docking ring (HD from here).** The base wakes as the family walks in: lights thud on section by section, holograms boot. Max's reveal: "THE PLUMBERS. INTERSTELLAR LAW ENFORCEMENT. I WAS ONE OF THEM FOR THIRTY YEARS." / Ben: "MY GRANDPA'S A SPACE COP?!" / Gwen: "THE NAVY. RIGHT." Max finds his old locker (his Plumber blaster; his armour "SHRANK"). The base's sentries don't recognise him ("INTRUDER." / "TENNYSON, MAX. CODE SEVEN SEVEN ALPHA!" / "CODE EXPIRED."): the first fight. Gwen walks with Ben through the ring.
+5. **The split.** At the control hub Max and Gwen stay to bring the base's systems back ("GWEN, WITH ME. BEN, FIND THE REACTOR. AND DON'T TOUCH ANYTHING."). From here they talk to Ben over the intercom, and the systems they wake (lights, doors, pumps) light up around him.
+6. **The flooded ring.** Half the maintenance ring is under water. Human Ben swims (with a breath meter, air bubbles from vents and air pockets under the ceiling), currents from burst pipes push him around, pressure doors only open when the water on both sides is level, jelly mines drift, zapper eels coil in the dark water and Deepmaw's escaped crew (fishbowl grunts) guard the dry rooms. A shadow on the far side of a window: Kevin, heading for the reactor.
+7. **The reactor (set piece).** Kevin, at the base's reactor, drinking it in: "ALL THIS ALIEN TECH... AND NOBODY USING IT." He takes everything; the base goes dark, red emergency lights come on, the intercom shouts CONTAINMENT FAILURE, and Kevin blasts a bulkhead and runs for the escape pods ("THANKS FOR THE RIDE, TENNYSON!"). The sea pours in, the chamber seals, and Ben is trapped in a room filling with water.
+8. **Ripjaws (the discovery).** Human Ben, out of air in the dark: the breath meter empties, the picture narrows, bubbles stop. The Omnitrix lights the water green (NEW DNA DETECTED, from the base's xenobiology archive next door), and **Ripjaws** tears out of the transformation like a torpedo, smashing through the chamber's glass into the open sea. His name forms out of water and splashes apart.
+9. **The open sea.** Ripjaws' showcase outside the hull: the base lit up behind him, coral and kelp, a whale-sized shadow passing above, intake vents that suck, gnasher swarms, a card in a coral cave. He swims back in through the moon pool's intake into the pump hall.
+10. **The pump hall (the base's systems).** With Max and Gwen on the intercom, Ben brings the pumps back one by one: each console drains one room and floods another, changing the hall's whole layout. Ripjaws rules the flooded rooms but drains fast on land; the dry rooms want legs. Switching is the fast way through.
+11. **The containment block.** Open cells (cameo silhouettes of old prisoners), the crew and the sentries, and Max catching up with his blaster. Cell 7 is empty: "DEEPMAW." / "WHO'S DEEPMAW?" / "A PIRATE. HE SANK FOURTEEN STARSHIPS IN THE ANDROMEDA SPRAWL. IT TOOK SIX PLUMBERS AND A VERY BIG NET TO PUT HIM IN THERE. I WAS ONE OF THE SIX."
+12. **Boss: DEEPMAW** in the moon pool.
+13. **Ending.** Max drops the moon pool's containment field and Deepmaw is back in stasis. A Magister calls by hologram (MAGISTER KORR): "THE ARABIAN DEEP IS SECURE, TENNYSON?" / "IT IS NOW." / "AND THE BOY WITH THE OMNITRIX?" / "...HE'S WITH ME." / "THEN KEEP HIM SAFE. SOMETHING IS STIRRING ON THE ROADS AHEAD." The base's camera shows an escape pod surfacing far above, and Kevin waving a stolen Plumber badge. Ben: "SO. GRANDPA'S A SPACE COP." Gwen: "AND YOU'RE STILL A DORK." Max: "WHO WANTS A SMOOTHIE? THE BASE HAS A MACHINE."
+
+**Level sections** (about 500 x 76 tiles; the jetty and the descent at the far left, the base along the sea floor):
+
+| Section | What happens | Checkpoint (densities) |
+|---|---|---|
+| Keamari jetty and the descent (0-34) | The opening: the jetty, the elevator, the transition, ACT 3: SECRETS, docking | none |
+| Docking ring (34-96) | The base wakes, Max's reveal and locker (card), the sentries' lockdown, Gwen with Ben, the split | DOCKING RING (all) |
+| Flooded ring (96-176) | Swimming with breath, air pockets, burst-pipe currents, pressure doors, jelly mines, zapper eels, grunts; Kevin glimpsed; a card behind a current | FLOODED RING (Easy, Normal) |
+| The reactor (176-206) | Kevin drains the reactor, the blackout, the flood; the sealed chamber; Ripjaws' discovery | THE REACTOR (all) |
+| The open sea (206-290) | Ripjaws outside the hull: currents, intake vents, gnashers, the coral cave card, the Cannonbolt secret | THE OPEN SEA (Easy, Normal) |
+| Pump hall (290-372) | Three pump consoles that drain and flood the hall's rooms, pressure doors, a card in a drained tank, the Wildvine secret | PUMP HALL (all), PUMP HALL: TANK 3 (Easy) |
+| Containment block (372-444) | Cells, the crew, sentries, Max with his blaster, Cell 7 | CONTAINMENT (Easy, Normal) |
+| The moon pool (444-500) | DEEPMAW in three stages (each a hidden checkpoint: retries start at the stage you died in) | THE MOON POOL (all), DRY DOCK, THE MAELSTROM (hidden) |
+
+**Swimming and the base's water (the chapter's new movement).**
+- Water in the base is a set of **tanks**: room-sized bodies of water whose level can change (pumps drain and flood them, a breach fills one). Below a tank's surface everything swims; at the surface Ben can jump out.
+- **Swimming:** left/right and up/down swim (the stick on touch), JUMP is a stroke upward and a jump out at the surface, and doing nothing drifts down slowly. Every form swims in its own way (`config/swim.ts`): Ripjaws is a torpedo; XLR8 is quick and still runs on the surface; Wildmutt dog-paddles; Stinkfly's wings are soaked; Four Arms and Diamondhead sink and stride along the bottom (high, floaty jumps); Upgrade sinks slowly; Ghostfreak drifts as if the water weren't there; Grey Matter is small and slow. Heatblast hates it: he swims slowly in a cloud of steam and his fire comes out as weak steam bolts.
+- **Breath:** human Ben has about 10 s of air (more on Easy); aliens with lungs a little more; Ripjaws, Ghostfreak, Upgrade and Diamondhead don't need any. A ring of bubbles shows what's left; air pockets under ceilings and bubble vents refill it. Out of air, he loses a heart every couple of seconds until he surfaces or breathes. Ripjaws' unlock happens at the end of a breath.
+- **Currents:** jets from burst pipes and intake vents push swimmers (shown with streaks and bubbles); heavy walkers on the bottom barely feel them, Ripjaws can swim against them.
+- **Pressure doors:** a door between two tanks opens only when the water on both sides is level (a gauge on the door shows the difference); a pump console or a valve wheel (Four Arms turns it, Upgrade powers it) levels them.
+- **The base's systems:** consoles that wake a section (lights, doors, pumps). Any attack hits a console's big button; Upgrade merges into one to run it at once. Max and Gwen wake the rest from the control hub as the story goes.
+- **Ripjaws' timer drains faster on land** (x2.5), shown by a water drop on the dial that empties; any water stops the fast drain at once.
+- Older chapters' water stays deadly for everyone else; there Ripjaws can swim in water and mutagen, which opens the three cards waiting since Chapters 3, 5 and 6.
+
+**Enemies.**
+
+| Enemy | Behaviour | Best answer |
+|---|---|---|
+| Plumber sentry | The base's security drone in lockdown: its scan light sweeps and turns red on Ben (the tell), then a stun beam. Flies in air and water | Upgrade takes it over; anything wrecks it |
+| Fishbowl grunt | Deepmaw's crew: a fish in a diving suit with a water-filled fishbowl helmet. Winds up a harpoon throw (the tell). Break the helmet and it flops helplessly until it crawls back into water | Anything; a smash or fire cracks the bowl |
+| Zapper eel | Coiled in the water; it glows and crackles (the tell), then a shock ring through the water around it | Hit it out of water, Ripjaws' bite, Diamondhead's shield |
+| Jelly mine | Drifts in the water and pulses; touch it and it stings, hit it and it pops (a chain of them pops together) | Shots from range |
+| Gnasher swarm | A school of little fish that circles, then darts at Ben in a line (the tell: the school bunches up and turns) | Ripjaws, area attacks |
+
+**Alien unlock: Ripjaws** ("KING OF THE DEEP. A FISH OUT OF WATER."). A pale grey fish-man with a huge jaw of fangs, a lure on his head, fins and gills, a black and white wetsuit with the Omnitrix on his chest, and a powerful tail for legs.
+- **J: bite.** Hold to chomp; every third is a lunging CHOMP. In water the lunge carries him forward.
+- **K: tail whip.** A spinning slap that hits all round him and knocks shots away; in water it fires him off as a torpedo (RIP DASH) that bites through a line of enemies.
+- **In water:** the fastest thing in the game, in any direction, with momentum. **On land:** he hops on his tail, slower and floppier, and the Omnitrix drains x2.5 (gasping: "NEED... WATER..."). Any water, even a puddle-deep tank, fixes it.
+- **Swap-in:** a burst of water out of nowhere that knocks everything around him back.
+- Discovery: the flooded chamber at the end of Ben's breath (never a misfire), NEW DNA DETECTED, a title slam made of water, an underwater sound set and a deep, rolling music layer.
+
+**Boss: DEEPMAW** (an original villain). A giant alien anglerfish of a pirate: a huge round body, a cavern of a mouth, a glowing lure on a stalk, a captain's coat in rags and the broken stasis collar of Cell 7. He talks ("THIRTY YEARS IN A FISHBOWL, TENNYSON! THE FOOD WAS TERRIBLE!"). Max holds the moon pool's pump console in the booth above the arena and drains or floods it between stages; Gwen is with him and can still SHIELD Ben from the booth.
+- **Stage 1: LIGHTS OUT** (the moon pool flooded and dark). Only his lure glows: dynamic light in the dark. He drifts the lure as bait, then the lure flares and freezes (the tell) and the jaws lunge out of the dark along a red line; he also spits lure flashes (a bright pulse that stuns; Reduce Flashing softens it). Hitting the lure stuns him and opens his mouth to damage. Ripjaws is the natural fit; Diamondhead's shield reflects the flash; Four Arms on the bottom can grab him as he passes.
+- **Stage 2: HIGH AND DRY** (Max drains the moon pool). Deepmaw flops onto the deck and fights on his fins: tail slams with shockwaves, a rolling chomp across the floor, belly flops (a shadow marks where). On land he's slower and his lure dims; land aliens shine and Ripjaws drains fast. Every so often he dives for the drain grate and the water surges back (FLOOD WARNING).
+- **Stage 3: THE MAELSTROM.** He rips the moon pool's hatch open: the sea pours in as a whirlpool. The current pulls everything toward his mouth in the middle while the water rises and falls; debris spins past; he swallows what the current brings and spits it back. Swimming against it (Ripjaws), walking the bottom (Four Arms, Diamondhead) or hitting him from range all work.
+- Retrying starts at the stage you died in. Tells are the same length on every difficulty; rests and punish windows follow the difficulty. Any alien can win; switching is faster.
+- Defeat: RECAPTURED!, then the ending.
+
+**Secrets** (7 cards: 5 reachable in Chapter 7, 2 for later aliens). Reachable now: Max's locker in the docking ring, behind a burst-pipe current in the flooded ring, the reactor's catwalk, the coral cave outside the hull, the drained tank in the pump hall. For later aliens: a rolling chute only a ball survives (Cannonbolt: "IF ONLY I COULD ROLL THROUGH THERE..."), a grapple point high in the pump hall's shaft (Wildvine: "WAY UP THERE... I'D NEED A VINE"). **Ripjaws opens older secrets:** Chapter 3's mutagen vat, Chapter 5's flooded lower shaft and Chapter 6's cistern (each card already waiting there).
+
+**Achievements:** FISH OUT OF WATER (KO 5 enemies as Ripjaws on dry land), ALL SYSTEMS GO (wake every console in the base), DEEP BREATH (cross the flooded ring as Ben without running out of air), BAIT AND SWITCH (stun Deepmaw by hitting his lure as three different forms in one fight).
+
+### Chapter 8: Zombozo (plan only)
+
+**Setting.** The Plumbers fly the Rustbucket home in a transport and drop the family at a seaside boardwalk town on the US coast, where ZOMBOZO'S CIRCUS OF FEARS has pitched its tent for one night only. The midway, the big top, the funhouse and its mirror maze, the trapeze rig high above the ring. Night, coloured bulbs, fog off the sea. Music: `midway` (a wonky calliope in a minor key), `bigtop`, `zombozo` (boss).
+
+**Story beats.** Zombozo, a clown who feeds on fear, and his freak-show acts (an acid-spitting strongman, a contortionist, a rubber-limbed acrobat) drain the town's crowd one scare at a time. Gwen is taken into the mirror maze; Max is caught by the strongman. Cannonbolt unlocks when Ben is trapped in the funhouse's spinning barrel: the watch rolls him up into an armoured ball that smashes out. The funhouse mirror maze is the set piece: mirrors show reflections that lie (a reflection that moves differently is a hole, a mirror that lights up is a door), and Cannonbolt bouncing off the angled mirrors is how the maze's heart is reached. Zombozo's last laugh, as he falls, makes the Omnitrix flicker to Ghostfreak on its own.
+
+**Movement:** Cannonbolt rolls (momentum, ramps, loops, bounces off walls and angled mirrors). **Alien unlock: Cannonbolt** (J: a shell bash, K: curl and roll; roll into a jump for a big bounce; swap-in: a rolling charge). **Boss: ZOMBOZO** in the big top: fear gas and jack-in-the-box traps (phase 1), his acts joining in on the trapeze rig (phase 2), and a giant inflatable clown head that has to be popped from inside while it fills the ring (phase 3). Secrets for later aliens (Wildvine's grapple over the big top, Way Big never, a fair game only Upgrade can rig), and Cannonbolt opens the older secrets: Chapter 5's mine-cart loop and Chapter 6's corridor of heavy doors.
+
+### Chapter 9: Ghostfreak Out (plan only)
+
+**Setting.** The Rustbucket breaks down by an abandoned observatory in the hills during a thunderstorm. The observatory, its dome and telescope, the old caretaker's house, the woods and a cave under the hill. Music: `storm`, `observatory`, `ghostfreak` (boss).
+
+**Story beats.** Lightning hits the Omnitrix while Ben is Ghostfreak, and Ghostfreak tears himself free: the dial's Ghostfreak slot goes dark for good (DNA LOST), and the alien who whispered for two acts finally speaks in full ("THANK YOU, BEN. I'LL TAKE IT FROM HERE."). He possesses the observatory, then Max. A chapter of managing without the alien that walked through walls: phase walls become puzzles solved another way, invisible enemies need Wildmutt's senses or Gwen's reveal. The set piece is the telescope: Ghostfreak can't stand sunlight, so the dome has to be cranked open at dawn and the telescope's mirror turned on him (Diamondhead reflects the first light, Upgrade drives the dome's motor). **Boss: GHOSTFREAK**, the alien you used to be: every one of his attacks is a move the player used as him (the tentacle lash, the phase, the scream, invisibility), now aimed at Ben; phase 1 in the observatory, phase 2 possessing objects in the caretaker's house, phase 3 in the dawn light under the dome. He escapes at the end (Act 4 carries the thread), and Ghostfreak's diary gets its last, locked line. **Act 3 ending:** ACT 3 COMPLETE as an event like Act 2's, and the hook into Act 4: the Omnitrix has started counting something down.
+
 ## Difficulty
 
 | Setting | Easy | Normal | Hard |
