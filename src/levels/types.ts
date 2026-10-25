@@ -334,7 +334,8 @@ export type AmbientKind =
   | 'camp' | 'forest' | 'ravine' | 'crash' | 'sim' | 'sunset' | 'dusk' | 'night' | 'neon' | 'street' | 'museum' | 'gallery' | 'blackout' | 'atrium' | 'lab'
   | 'downtown' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation'
   | 'ghosttown' | 'saloon' | 'jail' | 'hotel' | 'minehead' | 'mine' | 'cavern' | 'shaft'
-  | 'seafront' | 'palace' | 'library' | 'cellar' | 'oldTunnel' | 'clockwork' | 'towerTop';
+  | 'seafront' | 'palace' | 'library' | 'cellar' | 'oldTunnel' | 'clockwork' | 'towerTop'
+  | 'jetty' | 'descent' | 'docking' | 'flooded' | 'reactor' | 'blackout7' | 'opensea' | 'pumphall' | 'containment' | 'moonpool';
 
 export interface AmbientZone {
   x: number;
@@ -344,9 +345,9 @@ export interface AmbientZone {
 }
 
 /** Visual set: the night forest, the Omnitrix's training simulation, the desert highway at sundown, the museum at night, downtown and under it, or a ghost town and its mine. */
-export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western' | 'karachi';
+export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western' | 'karachi' | 'plumber';
 
-export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters' | 'hex';
+export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters' | 'hex' | 'deepmaw';
 
 /** Interior back walls (museum halls and lab; the arcade, the laser tag arena, the subway, its tunnels and the substation; Silver Spur's saloon, jail and hotel, the mine, its crystal cavern and shafts). */
 export type InteriorWall =
@@ -494,6 +495,8 @@ export interface LevelData {
   chapter: number;
   name: string;
   theme?: LevelTheme;
+  /** Drawn in the HD cartoon look (Act 3) instead of pixel art. */
+  look?: 'hd';
   /** Par time for the score (default: SCORING.parTimeMs). */
   parTimeMs?: number;
   width: number;

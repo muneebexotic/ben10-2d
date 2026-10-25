@@ -16,6 +16,8 @@ export interface LevelMeta {
   parTimeMs?: number;
   /** The chapter closes this act (the act ending plays after its first clear). */
   actEnd?: number;
+  /** Drawn in the HD cartoon look (Act 3). */
+  look?: 'hd';
   cards: ReadonlyArray<Pick<CardSpawn, 'id' | 'requires' | 'reward'>>;
   checkpoints: ReadonlyArray<{ id: string; label: string }>;
 }
@@ -184,6 +186,16 @@ export const LEVEL_META: readonly LevelMeta[] = [
       { id: 'cp-towertop', label: 'TOWER TOP' },
     ],
   },
+  {
+    id: 'ch7',
+    chapter: 7,
+    name: 'THE PLUMBERS',
+    theme: 'plumber',
+    parTimeMs: 720_000,
+    look: 'hd',
+    cards: [],
+    checkpoints: [{ id: 'cp-docking', label: 'DOCKING RING' }],
+  },
 ];
 
 /** The manifest entry a level's data should produce (the test compares them). */
@@ -195,6 +207,7 @@ export function metaOf(level: LevelData): LevelMeta {
     theme: level.theme ?? 'forest',
     ...(level.parTimeMs !== undefined ? { parTimeMs: level.parTimeMs } : {}),
     ...(level.story?.actEnd !== undefined ? { actEnd: level.story.actEnd } : {}),
+    ...(level.look !== undefined ? { look: level.look } : {}),
     cards: level.entities
       .filter((e): e is CardSpawn => e.type === 'card')
       .map((c) => ({ id: c.id, ...(c.requires ? { requires: c.requires } : {}), ...(c.reward ? { reward: c.reward } : {}) })),

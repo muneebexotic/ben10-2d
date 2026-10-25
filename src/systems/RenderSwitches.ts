@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { perf } from './PerfSwitches';
+import { hdScale, installHdRendering, setHdScale } from './HdRender';
 
 interface BufferWrapper {
   renderer: Phaser.Renderer.WebGL.WebGLRenderer;
@@ -59,6 +60,8 @@ export function installRenderSwitches(game: Phaser.Game): void {
     update.call(this, bytes, offset);
   };
 
+  installHdRendering();
+
   const renderer = game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
   renderer.on?.(Phaser.Renderer.Events.RESIZE, () => applyRenderScale(game));
   applyRenderSwitches(game);
@@ -68,7 +71,7 @@ export function installRenderSwitches(game: Phaser.Game): void {
 export function applyRenderSwitches(game: Phaser.Game): void {
   applyRenderScale(game);
   const canvas = game.canvas;
-  if (canvas) canvas.style.imageRendering = perf.smoothCss ? 'auto' : '';
+  if (canvas) canvas.style.imageRendering = perf.smoothCss || hdScale() !== 1 ? 'auto' : '';
 }
 
 /**
@@ -76,12 +79,16 @@ export function applyRenderSwitches(game: Phaser.Game): void {
  * while the projection stays at game size, so the whole frame is drawn smaller
  * and the browser scales the canvas back up. Render targets (camera filters,
  * the lightmap) keep their own sizes.
+ *
+ * An HD chapter (systems/HdRender.ts) grows the drawing buffer the same way,
+ * and there the scissor boxes follow too (a camera's box is in game pixels).
  */
 function applyRenderScale(game: Phaser.Game): void {
   const renderer = game.renderer as Phaser.Renderer.WebGL.WebGLRenderer | null;
   const canvas = game.canvas;
   if (!renderer || !canvas || !('gl' in renderer)) return;
-  const factor = perf.scale;
+  const hd = hdScale();
+  const factor = perf.scale * hd;
   const w = renderer.width;
   const h = renderer.height;
   const bw = Math.max(1, Math.round(w * factor));
@@ -90,7 +97,18 @@ function applyRenderScale(game: Phaser.Game): void {
   appliedScale = factor;
   if (canvas.width !== bw) canvas.width = bw;
   if (canvas.height !== bh) canvas.height = bh;
-  const base = (renderer as unknown as { baseDrawingContext: { state: { viewport: number[] } } }).baseDrawingContext;
+  const base = (renderer as unknown as { baseDrawingContext: { state: { viewport: number[]; scissor: { box: number[] } }; __rs?: number } }).baseDrawingContext;
   base.state.viewport = [0, 0, bw, bh];
+  if (hd !== 1 || (base.__rs ?? 1) !== 1) {
+    base.__rs = factor;
+    base.state.scissor.box = [0, 0, bw, bh];
+  }
   (renderer as unknown as { drawingBufferHeight: number }).drawingBufferHeight = renderer.gl.drawingBufferHeight;
+  // Smooth scaling by the browser in HD (the buffer is already at screen resolution); pixel-crisp otherwise.
+  canvas.style.imageRendering = perf.smoothCss || hd !== 1 ? 'auto' : '';
+}
+
+/** Sets the HD scale for the cartoon chapters (1 everywhere else); the canvas follows at once. */
+export function applyHdScale(game: Phaser.Game, value: number): void {
+  setHdScale(game, value, applyRenderScale);
 }

@@ -57,6 +57,8 @@ import { TransformSequence } from './level/TransformSequence';
 import { MisfireBeat } from './level/MisfireBeat';
 import { misfireAllowed } from '../systems/MisfireRules';
 import { ensureArt } from './preload/generate';
+import { usePresentation } from '../systems/hd/Presentation';
+import { cameraZoom } from '../systems/CameraZoom';
 import { chapterModule } from '../chapters/registry';
 import type { Backdrop, ChapterModule } from '../chapters/types';
 import { usesBountyGear } from '../levels/bountyGear';
@@ -155,6 +157,16 @@ const AMBIENT: Record<AmbientKind, number> = {
   oldTunnel: LIGHTING.ambientOldTunnel,
   clockwork: LIGHTING.ambientClockwork,
   towerTop: LIGHTING.ambientTowerTop,
+  jetty: LIGHTING.ambientJetty,
+  descent: LIGHTING.ambientDescent,
+  docking: LIGHTING.ambientDocking,
+  flooded: LIGHTING.ambientFlooded,
+  reactor: LIGHTING.ambientReactor,
+  blackout7: LIGHTING.ambientBlackout7,
+  opensea: LIGHTING.ambientOpenSea,
+  pumphall: LIGHTING.ambientPumpHall,
+  containment: LIGHTING.ambientContainment,
+  moonpool: LIGHTING.ambientMoonPool,
 };
 
 
@@ -291,6 +303,10 @@ export class LevelScene extends Phaser.Scene {
     // Chapter art is made on demand: this level's own, and the mine's gear wherever an older chapter uses it.
     for (const art of this.chapter.art ?? []) ensureArt(this, art);
     if (usesBountyGear(this.level)) ensureArt(this, 'gear');
+    // An HD chapter (Act 3) sets up its look before anything is made; every other level is pixel art.
+    cameraZoom.base = 1;
+    if (this.chapter.enter) this.chapter.enter(this);
+    else usePresentation(this, false);
     this.mode = this.level.chapter === 0 ? 'training' : 'story';
     const extra = this.mode === 'story' ? knownAliens(launchParams().aliens) : [];
     this.checkpointId = data.checkpoint ?? null;

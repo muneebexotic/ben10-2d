@@ -25,7 +25,7 @@ import { EventBus } from './systems/EventBus';
 import { inputMode } from './systems/InputMode';
 import { audio } from './systems/audio/AudioEngine';
 import { contextVariant } from './systems/PerfSwitches';
-import { installRenderSwitches } from './systems/RenderSwitches';
+import { applyHdScale, installRenderSwitches } from './systems/RenderSwitches';
 import { prepareLevel } from './chapters/start';
 
 applySavedSettings();
@@ -60,5 +60,5 @@ installDeviceGuards(game);
 
 if (DEV_TOOLS) {
   // __prepare: tools that start a level directly load its chapter's chunk first.
-  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus, __inputMode: inputMode, __audio: audio, __prepare: (id: string) => prepareLevel(game, id) });
+  Object.assign(window, { __game: game, __trainingOptions: trainingOptions, __bus: EventBus, __inputMode: inputMode, __audio: audio, __prepare: (id: string) => prepareLevel(game, id), __hd: (r: number) => applyHdScale(game, r) });
 }

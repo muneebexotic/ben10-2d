@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { cameraZoom } from '../../systems/CameraZoom';
 import { DEPTH, FX } from '../../config/constants';
 import { MISFIRE } from '../../config/omnitrix';
 import { PALETTE } from '../../config/palette';
@@ -56,7 +57,7 @@ export class MisfireBeat {
     this.cancel();
     this.t = 0;
     this.holdMs = swap ? MISFIRE.swapFreezeMs : MISFIRE.freezeMs;
-    this.zoomTo = swap ? MISFIRE.swapZoom : MISFIRE.zoom;
+    this.zoomTo = (swap ? MISFIRE.swapZoom : MISFIRE.zoom) * cameraZoom.base;
     this.zoomFrom = scene.cameras.main.zoom;
     this.facing = player.facing;
     this.flips = 0;
@@ -105,7 +106,7 @@ export class MisfireBeat {
     } else {
       const k = easeInOut(Math.min(1, (this.t - hold) / MISFIRE.releaseMs));
       w = 1 - k;
-      zoom = this.zoomTo + 0.06 + (1 - this.zoomTo - 0.06) * k;
+      zoom = this.zoomTo + 0.06 + (cameraZoom.base - this.zoomTo - 0.06) * k;
       if (!player.controlsEnabled && !player.dead) player.controlsEnabled = true;
     }
     camera.setFocus(player.x, headY, w);
@@ -148,7 +149,7 @@ export class MisfireBeat {
     camera.setFocus(0, 0, 0);
     // On a level exit the cameras are already gone (Phaser shuts them down before the level's own handler).
     const cam = scene.cameras?.main;
-    cam?.setZoom(1).setRotation(0);
+    cam?.setZoom(cameraZoom.base).setRotation(0);
     if (this.sepia) cam?.filters?.internal.remove(this.sepia);
     this.sepia = null;
     if (!player.dead) player.controlsEnabled = true;

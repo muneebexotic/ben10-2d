@@ -62,6 +62,11 @@ export interface ChapterArt {
  */
 export interface ChapterModule {
   level: LevelData;
+  /**
+   * An HD chapter's look (Act 3): called first thing in the level's create, before anything is
+   * made (render scale, HD textures, rigs). Chapters without it are pixel art.
+   */
+  enter?(scene: Phaser.Scene): void;
   /** Generated the first time the chapter loads (its own art, plus any shared art only it draws). */
   art?: readonly ChapterArt[];
   /** The part of its art Chapter Select's window shows (made when the window opens, not the whole chapter). */

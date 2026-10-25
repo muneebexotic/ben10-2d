@@ -9,7 +9,7 @@ import { CH6_TEX } from '../preload/karachi/keys';
 import type { Rect } from '../../entities/types';
 import { BakedGraphics } from '../../ui/BakedGraphics';
 
-const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity, western: CH5_TEX.tiles, karachi: CH6_TEX.tiles } as const;
+const TILESETS = { forest: TEX.tiles, sim: TEX.tilesSim, highway: TEX.tilesDesert, museum: TEX.tilesMuseum, city: TEX.tilesCity, western: CH5_TEX.tiles, karachi: CH6_TEX.tiles, plumber: TEX.tilesSim } as const;
 
 /** How each liquid looks: its surface texture and the colour it fades to when deeper than one texture. */
 const LIQUIDS = {

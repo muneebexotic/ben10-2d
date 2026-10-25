@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { cameraZoom } from '../../systems/CameraZoom';
 import { CAMERA, FX } from '../../config/constants';
 import { PALETTE } from '../../config/palette';
 import { PLAYER } from '../../config/player';
@@ -83,7 +84,7 @@ export class TransformSequence {
     fx.burst('green', x, y, opts.first ? 30 : 16);
     fx.ring(x, y, PALETTE.omnitrix, 18, windupMs);
     fx.light(x, y, 160, PALETTE.omnitrix, windupMs + 300, 1);
-    this.zoomTo(CAMERA.transformZoom, windupMs * 0.6, 'Quad.easeOut');
+    this.zoomTo(CAMERA.transformZoom * cameraZoom.base, windupMs * 0.6, 'Quad.easeOut');
     this.busyUntil = scene.time.now + windupMs + 200;
 
     scene.time.delayedCall(windupMs, () => {
@@ -123,7 +124,7 @@ export class TransformSequence {
         this.startMisfire(alien, misfire, false);
         return;
       }
-      this.zoomTo(1, CAMERA.transformZoomMs, 'Back.easeOut');
+      this.zoomTo(cameraZoom.base, CAMERA.transformZoomMs, 'Back.easeOut');
       const line = opts.first
           ? alien.quips.first ?? pick(alien.quips.transform)
           : opts.perfect
@@ -156,7 +157,7 @@ export class TransformSequence {
       this.concealUntilGag = false;
       if (this.d.player.dead || this.d.player.form.id !== alien.id) {
         // No gag after all (Ben went down, or was already swapped out): just give the camera back.
-        this.zoomTo(1, CAMERA.transformZoomMs, 'Quad.easeOut');
+        this.zoomTo(cameraZoom.base, CAMERA.transformZoomMs, 'Quad.easeOut');
         return;
       }
       this.d.misfire.start(misfire.line, swap);

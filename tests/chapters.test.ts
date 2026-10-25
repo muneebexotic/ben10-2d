@@ -28,7 +28,7 @@ describe('chapter catalogue', () => {
 });
 
 describe('chapter unlocks', () => {
-  it('Chapter 1 is always open; Road Trip, Dr. Animo, Kevin 11, Bounty Hunters and Magic open in turn; unbuilt chapters are coming soon', () => {
+  it('Chapter 1 is always open; Road Trip, Dr. Animo, Kevin 11, Bounty Hunters, Magic and The Plumbers open in turn; unbuilt chapters are coming soon', () => {
     expect(chapterState(CHAPTERS[0], [])).toBe('open');
     expect(chapterState(CHAPTERS[1], [])).toBe('locked');
     expect(chapterState(CHAPTERS[1], ['ch1'])).toBe('open');
@@ -40,7 +40,9 @@ describe('chapter unlocks', () => {
     expect(chapterState(CHAPTERS[4], ['ch1', 'ch2', 'ch3', 'ch4'])).toBe('open');
     expect(chapterState(CHAPTERS[5], ['ch1', 'ch2', 'ch3', 'ch4'])).toBe('locked');
     expect(chapterState(CHAPTERS[5], ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'])).toBe('open');
-    expect(chapterState(CHAPTERS[6], ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'])).toBe('soon');
+    expect(chapterState(CHAPTERS[6], ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'])).toBe('locked');
+    expect(chapterState(CHAPTERS[6], ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'])).toBe('open');
+    expect(chapterState(CHAPTERS[7], ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7'])).toBe('soon');
   });
 
   it('a built chapter opens once the one before it is done', () => {
@@ -63,6 +65,7 @@ describe('chapter unlocks', () => {
     expect(defaultChapterIndex(['ch1', 'ch2', 'ch3'])).toBe(3);
     expect(defaultChapterIndex(['ch1', 'ch2', 'ch3', 'ch4'])).toBe(4);
     expect(defaultChapterIndex(['ch1', 'ch2', 'ch3', 'ch4', 'ch5'])).toBe(5);
-    expect(defaultChapterIndex(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'])).toBe(5);
+    expect(defaultChapterIndex(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'])).toBe(6);
+    expect(defaultChapterIndex(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7'])).toBe(6);
   });
 });

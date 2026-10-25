@@ -117,6 +117,17 @@ export const LIGHTING = {
   ambientOldTunnel: 0x343040,
   ambientClockwork: 0x5a4a50,
   ambientTowerTop: 0x7a76b4,
+  // The Plumber base (Chapter 7, HD): the harbour at night, the dark descent, the base's halls by section, the red blackout, the open sea, the moon pool.
+  ambientJetty: 0x7a76b4,
+  ambientDescent: 0x5a78b0,
+  ambientDocking: 0x9aa8c8,
+  ambientFlooded: 0x6a86a8,
+  ambientReactor: 0x8a90b8,
+  ambientBlackout7: 0x6a3a4a,
+  ambientOpenSea: 0x7aa0c8,
+  ambientPumpHall: 0x8a9ab8,
+  ambientContainment: 0x7a86a8,
+  ambientMoonPool: 0x5a7298,
   ambientBlendMs: 900,
 } as const;
 
