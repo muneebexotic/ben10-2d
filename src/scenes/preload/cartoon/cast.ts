@@ -1,10 +1,20 @@
 import type Phaser from 'phaser';
 import type { CartoonManifest } from '../../../config/cartoon/types';
 import { BEN_CARTOON } from '../../../config/cartoon/ben';
+import { GWEN_CARTOON } from '../../../config/cartoon/gwen';
+import { MAX_CARTOON } from '../../../config/cartoon/max';
+import { KEVIN_CARTOON } from '../../../config/cartoon/kevin';
+import { HEATBLAST_CARTOON } from '../../../config/cartoon/heatblast';
+import { FOURARMS_CARTOON } from '../../../config/cartoon/fourarms';
 import type { AnimDef } from '../assetTypes';
 import { makeHdTexture } from './hdTexture';
 import { rigFrames, rigTextureKey, type RigDef } from './rig';
 import { benRig } from './characters/ben';
+import { gwenRig } from './characters/gwen';
+import { maxRig } from './characters/max';
+import { kevinRig } from './characters/kevin';
+import { heatblastRig } from './characters/heatblast';
+import { fourarmsRig } from './characters/fourarms';
 import { mirrorSpec, type MirrorSpec } from '../../../systems/hd/HdMirror';
 
 /** A character the HD chapters can draw: its manifest and its rig. */
@@ -14,7 +24,14 @@ export interface CastRig {
 }
 
 /** Every rigged character, by manifest id. */
-export const CARTOON_CAST: readonly CastRig[] = [{ manifest: BEN_CARTOON, rig: benRig }];
+export const CARTOON_CAST: readonly CastRig[] = [
+  { manifest: BEN_CARTOON, rig: benRig },
+  { manifest: GWEN_CARTOON, rig: gwenRig },
+  { manifest: MAX_CARTOON, rig: maxRig },
+  { manifest: KEVIN_CARTOON, rig: kevinRig },
+  { manifest: HEATBLAST_CARTOON, rig: heatblastRig },
+  { manifest: FOURARMS_CARTOON, rig: fourarmsRig },
+];
 
 const built = new Map<string, RigDef>();
 

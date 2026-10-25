@@ -19,6 +19,8 @@ export interface EyesLook {
   browWeight?: number;
   /** Iris size within the eye (default 0.62). */
   irisScale?: number;
+  /** How far the lids rest closed when the eyes are just open (a sly or sleepy look; default 0). */
+  restLid?: number;
 }
 
 /**
@@ -52,7 +54,7 @@ export function cartoonEyes(p: Paint, variant: string, look: EyesLook): void {
       p.fill(p.circle(ix - ir * 0.38, iy - ir * 0.45, ir * 0.32), 0xffffff, 0.95);
       p.fill(p.circle(ix + ir * 0.35, iy + ir * 0.4, ir * 0.14), 0xffffff, 0.7);
       if (lid > 0) {
-        const top = e.y - ry - 0.2 + lid * ry * 1.4;
+        const top = e.y - ry + lid * ry * 2;
         p.fill(p.rrect(e.x - rx - 1, e.y - ry * 2.5, rx * 2 + 2, top - (e.y - ry * 2.5), 0), skin);
         p.line([e.x - rx - 0.2, top, e.x + rx + 0.2, top - 0.2], LINE * 0.75, INK);
       }
@@ -108,8 +110,8 @@ export function cartoonEyes(p: Paint, variant: string, look: EyesLook): void {
       brow(far, 0.4, -1.6, 0.75);
       return;
     default:
-      eye(near, 0.6, 0.05, 0);
-      eye(far, 0.6, 0.05, 0);
+      eye(near, 0.6, 0.05, look.restLid ?? 0);
+      eye(far, 0.6, 0.05, look.restLid ?? 0);
       brow(near, 0.1, 0.3);
       brow(far, 0.2, 0, 0.75);
   }

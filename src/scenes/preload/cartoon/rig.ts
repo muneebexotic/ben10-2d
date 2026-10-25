@@ -147,11 +147,8 @@ export function compilePose(info: RigInfo, data: PoseData): CompiledPose {
     c.y[i] = key.y ?? 0;
     c.sx[i] = key.sx ?? 1;
     c.sy[i] = key.sy ?? 1;
-    if (key.v !== undefined) {
-      const vi = info.variantIndex[i].get(key.v);
-      if (vi === undefined) throw new Error(`${info.def.id}: bone ${id} has no variant ${key.v}`);
-      c.v[i] = vi;
-    }
+    // A look this part doesn't have (a shared clip asking an alien's face for a grin) leaves the part as it is.
+    if (key.v !== undefined) c.v[i] = info.variantIndex[i].get(key.v) ?? -1;
     if (key.hide !== undefined) c.hide[i] = key.hide ? 1 : 0;
     if (key.z !== undefined) c.z[i] = key.z;
   }

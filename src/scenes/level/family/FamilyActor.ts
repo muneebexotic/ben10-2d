@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { presentationIsHd } from '../../../systems/hd/Presentation';
 
 /** Who is moving the actor right now: nobody (hidden), a set piece, or the companion AI. */
 export type ActorMode = 'hidden' | 'scripted' | 'buddy';
@@ -168,7 +169,9 @@ export class FamilyActor {
   }
 
   private sync(): void {
-    this.sprite.setPosition(Math.round(this.x), Math.round(this.feetY));
+    // Whole pixels keep pixel art crisp; an HD chapter draws the actor smoothly in between.
+    if (presentationIsHd()) this.sprite.setPosition(this.x, this.feetY);
+    else this.sprite.setPosition(Math.round(this.x), Math.round(this.feetY));
     this.sprite.setFlipX(this.facing < 0);
   }
 

@@ -57,6 +57,8 @@ export class HdMirror {
   private readonly specs = new Map<string, MirrorSpec>();
   private readonly entries = new Map<Mirrored, Entry>();
   private readonly tracked = new Set<Mirrored>();
+  /** Clips a set piece asked for, over whatever the sprite plays (story poses). */
+  private readonly overrides = new Map<Mirrored, string>();
   private readonly onAdded = (go: Phaser.GameObjects.GameObject) => this.consider(go);
   private readonly onRender = () => this.sync();
 
@@ -73,6 +75,12 @@ export class HdMirror {
 
   has(texture: string): boolean {
     return this.specs.has(texture);
+  }
+
+  /** Plays a rig clip on an object regardless of its own animation (a story pose: talk, point, surprise); null hands it back. */
+  override(obj: Mirrored, clip: string | null): void {
+    if (clip === null) this.overrides.delete(obj);
+    else this.overrides.set(obj, clip);
   }
 
   /** The rig drawing an object right now (to hang effects on its bones), if any. */
@@ -100,6 +108,7 @@ export class HdMirror {
 
   private forget(go: Mirrored): void {
     this.tracked.delete(go);
+    this.overrides.delete(go);
     const e = this.entries.get(go);
     if (e) e.actor.destroy();
     this.entries.delete(go);
@@ -140,7 +149,10 @@ export class HdMirror {
     let ext: number | null = null;
     const anims = go instanceof Phaser.GameObjects.Sprite ? go.anims : null;
     const cur = anims?.currentAnim ?? null;
-    if (anims && cur && anims.currentFrame && anims.currentFrame.frame === go.frame) {
+    const forced = this.overrides.get(go);
+    if (forced !== undefined) {
+      clip = forced;
+    } else if (anims && cur && anims.currentFrame && anims.currentFrame.frame === go.frame) {
       clip = suffix(cur.key);
       const def = spec.rig.clips[actor.resolve(clip)];
       const n = cur.frames.length;
@@ -193,5 +205,6 @@ export class HdMirror {
     for (const e of this.entries.values()) e.actor.destroy();
     this.entries.clear();
     this.tracked.clear();
+    this.overrides.clear();
   }
 }
