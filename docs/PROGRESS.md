@@ -8,7 +8,9 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 **This session:** the approved fixes (chapter cards before the first line, THE HUNTERS resumes at the stage you died in, Ghostfreak's diary in EXTRAS), each chapter's code in its own chunk (boot 28% faster on Slow 4G), then Chapter 6: the Sea View fair, the pink palace, the library, the cellars and Charmcaster's cage, the tunnel to Kharadar, the Spell Engine (Grey Matter's puzzle), **THE TOWER WRAP** (a climb around a turning 3D clock tower) and HEX AND CHARMCASTER on the tower top; the Act 2 ending at Keamari harbour and ACT 2 COMPLETE with a share line. Also: Gwen in Chapters 1-5 replays (Settings, off by default), the Chapter 1 cameo, Grey Matter's secrets in Chapters 3-5, cards and first drinks that stop the game to show themselves, and **ALIEN FILES** (every move with a live bot demo, and TRY IT).
 
-Next, when asked: Act 3 (Milestone 7 holds DEEP DIVE ATTACK). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
+**In progress: Chapter 7, The Plumbers (Act 3, HD cartoon look).** Built so far: the HD presentation and cartoon rigs for the whole cast, Ripjaws and swimming for every form, the Plumber base (terrain, backdrop, water tanks, pumps, valve, pressure doors, consoles, lamps), the five new enemies and Deepmaw's rig. Still to do: the Deepmaw fight, the story set pieces (the jetty and the pixel-to-HD descent, the reactor and Ripjaws' unlock, the ending), HD versions of the HUD and shared art, music, tests and the full check. Release builds show Chapter 7 as COMING SOON until it's done; dev builds play it with `?level=ch7`. The handoff with the remaining steps is [ch7-wip.md](ch7-wip.md).
+
+Next, when asked: finish Chapter 7 (Milestone 7 holds DEEP DIVE ATTACK). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
 
 ## How to run
 

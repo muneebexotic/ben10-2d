@@ -25,6 +25,12 @@ export const ACTS: Record<number, string> = {
   4: 'THE OMNITRIX',
 };
 
+/**
+ * Chapter 7 is still being built (docs/ch7-wip.md): dev and bench builds can
+ * play it, release builds show it as coming soon until it's finished.
+ */
+const CH7_BUILT = import.meta.env.DEV || import.meta.env.MODE === 'bench';
+
 export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 1, act: 1, title: 'CAMP CRASH', levelId: 'ch1', tease: 'A METEOR. A WATCH. A VERY WEIRD SUMMER.', cast: ['heatblast'] },
   { number: 2, act: 1, title: 'ROAD TRIP', levelId: 'ch2', tease: 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', cast: ['fourarms', 'xlr8'] },
@@ -32,7 +38,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 4, act: 2, title: 'KEVIN 11', levelId: 'ch4', tease: 'NEW FRIEND AT THE ARCADE. WHAT COULD GO WRONG?', cast: ['kevin', 'upgrade'] },
   { number: 5, act: 2, title: 'BOUNTY HUNTERS', levelId: 'ch5', tease: 'THREE HUNTERS. ONE BOUNTY. GUESS WHO.', cast: ['diamondhead', 'ghostfreak'] },
   { number: 6, act: 2, title: 'MAGIC', levelId: 'ch6', tease: "MAGIC ISN'T REAL. RIGHT, GWEN?", cast: ['greymatter'] },
-  { number: 7, act: 3, title: 'THE PLUMBERS', levelId: 'ch7', tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },
+  { number: 7, act: 3, title: 'THE PLUMBERS', levelId: CH7_BUILT ? 'ch7' : null, tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },
   { number: 8, act: 3, title: 'ZOMBOZO', levelId: null, tease: 'NEVER TRUST A CLOWN WHO LAUGHS LAST.', cast: ['cannonbolt'] },
   { number: 9, act: 3, title: 'GHOSTFREAK OUT', levelId: null, tease: 'SOMETHING IN THE WATCH WANTS OUT.', cast: ['ghostfreak'] },
   { number: 10, act: 4, title: 'FOREVER KNIGHTS', levelId: null, tease: 'KNIGHTS. CASTLES. VERY SHARP THINGS.', cast: ['wildvine'] },

@@ -19,6 +19,7 @@ import { GRUNT_CARTOON } from '../../../config/cartoon/grunt';
 import { EEL_CARTOON } from '../../../config/cartoon/eel';
 import { JELLY_CARTOON } from '../../../config/cartoon/jelly';
 import { GNASHER_CARTOON } from '../../../config/cartoon/gnasher';
+import { DEEPMAW_CARTOON } from '../../../config/cartoon/deepmaw';
 import type { AnimDef } from '../assetTypes';
 import { makeHdTexture } from './hdTexture';
 import { rigFrames, rigTextureKey, type RigDef } from './rig';
@@ -41,6 +42,7 @@ import { gruntRig } from './characters/deep/grunt';
 import { eelRig } from './characters/deep/eel';
 import { jellyRig } from './characters/deep/jelly';
 import { gnasherRig } from './characters/deep/gnasher';
+import { deepmawRig } from './characters/deepmaw';
 import { mirrorSpec, type MirrorSpec } from '../../../systems/hd/HdMirror';
 
 /** A character the HD chapters can draw: its manifest and its rig. */
@@ -71,6 +73,8 @@ export const CARTOON_CAST: readonly CastRig[] = [
   { manifest: EEL_CARTOON, rig: eelRig },
   { manifest: JELLY_CARTOON, rig: jellyRig },
   { manifest: GNASHER_CARTOON, rig: gnasherRig },
+  // Chapter 7's boss (drawn by its own actor, not over a game sheet).
+  { manifest: DEEPMAW_CARTOON, rig: deepmawRig },
 ];
 
 const built = new Map<string, RigDef>();
