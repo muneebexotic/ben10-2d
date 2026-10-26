@@ -6,6 +6,11 @@ import { MAX_CARTOON } from '../../../config/cartoon/max';
 import { KEVIN_CARTOON } from '../../../config/cartoon/kevin';
 import { HEATBLAST_CARTOON } from '../../../config/cartoon/heatblast';
 import { FOURARMS_CARTOON } from '../../../config/cartoon/fourarms';
+import { XLR8_CARTOON } from '../../../config/cartoon/xlr8';
+import { WILDMUTT_CARTOON } from '../../../config/cartoon/wildmutt';
+import { STINKFLY_CARTOON } from '../../../config/cartoon/stinkfly';
+import { UPGRADE_CARTOON } from '../../../config/cartoon/upgrade';
+import { DIAMONDHEAD_CARTOON } from '../../../config/cartoon/diamondhead';
 import type { AnimDef } from '../assetTypes';
 import { makeHdTexture } from './hdTexture';
 import { rigFrames, rigTextureKey, type RigDef } from './rig';
@@ -15,6 +20,11 @@ import { maxRig } from './characters/max';
 import { kevinRig } from './characters/kevin';
 import { heatblastRig } from './characters/heatblast';
 import { fourarmsRig } from './characters/fourarms';
+import { xlr8Rig } from './characters/xlr8';
+import { wildmuttRig } from './characters/wildmutt';
+import { stinkflyRig } from './characters/stinkfly';
+import { upgradeRig } from './characters/upgrade';
+import { diamondheadRig } from './characters/diamondhead';
 import { mirrorSpec, type MirrorSpec } from '../../../systems/hd/HdMirror';
 
 /** A character the HD chapters can draw: its manifest and its rig. */
@@ -31,6 +41,11 @@ export const CARTOON_CAST: readonly CastRig[] = [
   { manifest: KEVIN_CARTOON, rig: kevinRig },
   { manifest: HEATBLAST_CARTOON, rig: heatblastRig },
   { manifest: FOURARMS_CARTOON, rig: fourarmsRig },
+  { manifest: XLR8_CARTOON, rig: xlr8Rig },
+  { manifest: WILDMUTT_CARTOON, rig: wildmuttRig },
+  { manifest: STINKFLY_CARTOON, rig: stinkflyRig },
+  { manifest: UPGRADE_CARTOON, rig: upgradeRig },
+  { manifest: DIAMONDHEAD_CARTOON, rig: diamondheadRig },
 ];
 
 const built = new Map<string, RigDef>();
