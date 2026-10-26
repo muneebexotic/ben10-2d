@@ -11,6 +11,9 @@ import { WILDMUTT_CARTOON } from '../../../config/cartoon/wildmutt';
 import { STINKFLY_CARTOON } from '../../../config/cartoon/stinkfly';
 import { UPGRADE_CARTOON } from '../../../config/cartoon/upgrade';
 import { DIAMONDHEAD_CARTOON } from '../../../config/cartoon/diamondhead';
+import { GHOSTFREAK_CARTOON } from '../../../config/cartoon/ghostfreak';
+import { GREYMATTER_CARTOON } from '../../../config/cartoon/greymatter';
+import { RIPJAWS_CARTOON } from '../../../config/cartoon/ripjaws';
 import type { AnimDef } from '../assetTypes';
 import { makeHdTexture } from './hdTexture';
 import { rigFrames, rigTextureKey, type RigDef } from './rig';
@@ -25,6 +28,9 @@ import { wildmuttRig } from './characters/wildmutt';
 import { stinkflyRig } from './characters/stinkfly';
 import { upgradeRig } from './characters/upgrade';
 import { diamondheadRig } from './characters/diamondhead';
+import { ghostfreakRig } from './characters/ghostfreak';
+import { greymatterRig } from './characters/greymatter';
+import { ripjawsRig } from './characters/ripjaws';
 import { mirrorSpec, type MirrorSpec } from '../../../systems/hd/HdMirror';
 
 /** A character the HD chapters can draw: its manifest and its rig. */
@@ -46,6 +52,9 @@ export const CARTOON_CAST: readonly CastRig[] = [
   { manifest: STINKFLY_CARTOON, rig: stinkflyRig },
   { manifest: UPGRADE_CARTOON, rig: upgradeRig },
   { manifest: DIAMONDHEAD_CARTOON, rig: diamondheadRig },
+  { manifest: GHOSTFREAK_CARTOON, rig: ghostfreakRig },
+  { manifest: GREYMATTER_CARTOON, rig: greymatterRig },
+  { manifest: RIPJAWS_CARTOON, rig: ripjawsRig },
 ];
 
 const built = new Map<string, RigDef>();
