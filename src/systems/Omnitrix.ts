@@ -83,6 +83,8 @@ export class Omnitrix {
   private lastWarningSecond = -1;
   private sinceChangeMs = 0;
   private frozen = false;
+  /** The timer runs this many times faster (Ripjaws on dry land). */
+  private drainRate = 1;
   private fixOwed = false;
   private misfire: MisfireState | null = null;
   /** Holding on past the timeout (ms left), or 0. */
@@ -185,6 +187,15 @@ export class Omnitrix {
   /** Training: the alien timer stops draining (and swaps are free). */
   setTimerFrozen(frozen: boolean): void {
     this.frozen = frozen;
+  }
+
+  /** The active timer runs `rate` times faster (1: normal). Ripjaws out of water drains it fast. */
+  setDrainRate(rate: number): void {
+    this.drainRate = Math.max(0, rate);
+  }
+
+  get timerDrainRate(): number {
+    return this._state === 'active' ? this.drainRate : 1;
   }
 
   get timerFrozen(): boolean {
@@ -401,7 +412,7 @@ export class Omnitrix {
         if (this.holdLeftMs <= 0) events.push(...this.timeoutOrWait(0));
         return events;
       }
-      this.remainingMs -= dtMs;
+      this.remainingMs -= dtMs * this.drainRate;
       if (this.remainingMs <= 0) {
         const overflow = -this.remainingMs;
         if (this.config.cramped?.()) {

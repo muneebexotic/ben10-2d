@@ -21,9 +21,10 @@ export type LifetimeCounter =
   | 'reflected'
   | 'frightened'
   | 'spells'
-  | 'weakHits';
+  | 'weakHits'
+  | 'dryKOs';
 
-export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'greymatter' | 'ben' | 'gwen' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
+export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'greymatter' | 'ripjaws' | 'ben' | 'gwen' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
 
 export interface AchievementDef {
   id: string;
@@ -69,6 +70,10 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'big-brain', title: 'BIG BRAIN', text: 'LAND 10 HITS ON WEAK POINTS GREY MATTER FOUND', icon: 'greymatter', counter: 'weakHits', goal: 10 },
   { id: 'engine-room', title: 'THE ENGINE ROOM', text: 'SOLVE THE SPELL ENGINE WITHOUT A HINT', icon: 'star' },
   { id: 'act-2', title: 'RIVALS AND HUNTERS', text: 'FINISH ACT 2', icon: 'omnitrix', secret: true },
+  { id: 'fish-out-of-water', title: 'FISH OUT OF WATER', text: 'KO 5 ENEMIES AS RIPJAWS ON DRY LAND', icon: 'ripjaws', counter: 'dryKOs', goal: 5 },
+  { id: 'all-systems-go', title: 'ALL SYSTEMS GO', text: 'WAKE EVERY CONSOLE IN THE PLUMBER BASE', icon: 'omnitrix' },
+  { id: 'deep-breath', title: 'DEEP BREATH', text: 'SWIM THE FLOODED RING AS BEN, NEVER OUT OF AIR', icon: 'ben' },
+  { id: 'bait-and-switch', title: 'BAIT AND SWITCH', text: "STUN DEEPMAW'S LURE AS 3 FORMS IN ONE FIGHT", icon: 'boss' },
 ];
 
 /** Thrown enemies that bowl over this many in one throw: STEE-RIKE! */

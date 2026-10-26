@@ -149,7 +149,8 @@ export class HdMirror {
     let ext: number | null = null;
     const anims = go instanceof Phaser.GameObjects.Sprite ? go.anims : null;
     const cur = anims?.currentAnim ?? null;
-    const forced = this.overrides.get(go);
+    // A set piece's pose first, then a clip the game asked for over this animation (a swim, Act 3 only).
+    const forced = this.overrides.get(go) ?? ((go.getData('hdClip') as string | null | undefined) || undefined);
     if (forced !== undefined) {
       clip = forced;
     } else if (anims && cur && anims.currentFrame && anims.currentFrame.frame === go.frame) {

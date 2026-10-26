@@ -168,6 +168,10 @@ export const PALETTE = {
   greymatter: 0x9fe870,
   greymatterGlow: 0xe0ffc8,
   greymatterDark: 0x3e6a2a,
+  // Ripjaws: deep-sea teal, his lure's glow.
+  ripjaws: 0x5ae0d0,
+  ripjawsGlow: 0xd8fff8,
+  ripjawsDark: 0x1a5a68,
   mana: 0xff7ad8,
   manaGlow: 0xffd2f2,
   manaDark: 0x8a2a78,

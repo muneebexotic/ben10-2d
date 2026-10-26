@@ -79,6 +79,7 @@ export class Banner {
     else if (opts.style === 'shatter') this.shatterSlam(text, color, scale, hold, y);
     else if (opts.style === 'haunt') this.hauntSlam(text, color, scale, hold, y);
     else if (opts.style === 'equation') this.equationSlam(text, color, scale, hold, y);
+    else if (opts.style === 'splash') this.splashSlam(text, color, scale, hold, y);
     else this.blazeSlam(text, color, scale, hold, y, opts.first);
   }
 
@@ -501,6 +502,60 @@ export class Banner {
       delay: hold + 300,
       duration: 340,
       ease: 'Sine.easeIn',
+      onComplete: () => this.finish(c),
+    });
+  }
+
+  /**
+   * The name surges up out of water (Ripjaws): a wave line sweeps across, the
+   * letters burst up through it one after another and bob like they're
+   * floating, spray flies off them, then it all sinks back under.
+   */
+  private splashSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const measure = pixelText(scene, 0, 0, text, { scale });
+    const total = measure.width;
+    const h = measure.height;
+    measure.destroy();
+    const letters: Phaser.GameObjects.BitmapText[] = [];
+    const items: Phaser.GameObjects.GameObject[] = [];
+    // The water line, with a lighter crest.
+    const sea = scene.add.rectangle(0, h * 0.42, total + 60, 5, color, 0.55).setScale(0, 1);
+    const crest = scene.add.rectangle(0, h * 0.42 - 2, total + 60, 1, PALETTE.white, 0.85).setScale(0, 1);
+    items.push(sea, crest);
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === ' ') continue;
+      const before = i === 0 ? 0 : pixelText(scene, 0, 0, text.slice(0, i), { scale });
+      const x = (before === 0 ? 0 : before.width) - total / 2;
+      if (before !== 0) before.destroy();
+      const t = pixelText(scene, x, 0, ch, { scale, originX: 0, originY: 0.5, color: PALETTE.white });
+      t.setTint(PALETTE.white, PALETTE.white, color, color);
+      letters.push(t);
+    }
+    // Spray: little drops that fly up off the letters and fall back.
+    const drops = Array.from({ length: 14 }, (_, i) => scene.add.rectangle((i / 13 - 0.5) * total, h * 0.4, 2, 2, i % 3 === 0 ? PALETTE.white : color).setAlpha(0));
+    items.push(...letters, ...drops);
+    const c = scene.add.container(GAME_WIDTH / 2, y, items).setDepth(450);
+    this.current = c;
+    scene.tweens.add({ targets: [sea, crest], scaleX: 1, duration: 220, ease: 'Quad.easeOut' });
+    letters.forEach((t, i) => {
+      t.setY(h * 0.9).setAlpha(0);
+      scene.tweens.add({ targets: t, y: 0, alpha: 1, delay: 120 + i * 40, duration: 260, ease: 'Back.easeOut' });
+      // Bobbing on the swell while it holds.
+      scene.tweens.add({ targets: t, y: -2, delay: 420 + i * 40, duration: 380, yoyo: true, repeat: Math.max(1, Math.floor(hold / 760)), ease: 'Sine.easeInOut' });
+    });
+    drops.forEach((d, i) => {
+      scene.tweens.add({ targets: d, alpha: 1, y: -h * (0.6 + (i % 4) * 0.25), x: d.x + (i % 2 ? 6 : -6), delay: 160 + i * 34, duration: 260, ease: 'Quad.easeOut', yoyo: true, hold: 40, onComplete: () => d.setAlpha(0) });
+    });
+    // Back under the water.
+    scene.tweens.add({ targets: letters, y: h * 0.9, alpha: 0, delay: hold + 380, duration: 320, ease: 'Quad.easeIn' });
+    scene.tweens.add({
+      targets: [sea, crest],
+      scaleX: 0,
+      alpha: 0,
+      delay: hold + 600,
+      duration: 260,
       onComplete: () => this.finish(c),
     });
   }

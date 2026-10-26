@@ -7,6 +7,7 @@ import type { Hit, HitKind, Rect } from '../entities/types';
 import type { ProjectileKind } from '../entities/Projectiles';
 import type { AnimDef, AssetDef } from '../scenes/preload/assetTypes';
 import type { Capabilities } from '../levels/reachability';
+import type { SwimStats } from '../config/swim';
 
 /**
  * What an ability can see and do. Abilities never touch Phaser directly, so a
@@ -23,6 +24,10 @@ export interface PlayerHandle {
   readonly grounded: boolean;
   /** Standing on a water surface (only possible while the form can run on water). */
   readonly onWater: boolean;
+  /** In the water and swimming (Act 3's tanks; Ripjaws in any water). */
+  readonly swimming: boolean;
+  /** Body under water at all (swimming, or a heavy form walking the bottom). */
+  readonly submerged: boolean;
   setVelocity(vx: number, vy: number): void;
   setVelocityX(vx: number): void;
   setVelocityY(vy: number): void;
@@ -298,7 +303,7 @@ export interface FormFeel {
 }
 
 /** How the alien's name slams onto the screen when it transforms. */
-export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'equation' | 'plain';
+export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'equation' | 'splash' | 'plain';
 
 export interface FormTheme {
   /** Main colour: name slam, transform ring, shield bar, dial while active. */
@@ -412,6 +417,10 @@ export interface FormDefinition {
   whispers?: FormWhispers;
   /** How the form rides a mine cart in THE DEEP DIVE (missing: a plain shot in its colour, no special). */
   ride?: FormRide;
+  /** How it swims (missing: like human Ben). */
+  swim?: SwimStats;
+  /** Out of water the Omnitrix runs down this many times faster (Ripjaws). Missing: 1. */
+  landDrain?: number;
   createAbilities(): FormAbilities;
 }
 

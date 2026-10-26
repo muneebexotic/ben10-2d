@@ -35,7 +35,7 @@ export const RIPJAWS_CARTOON: CartoonManifest = {
   clips: {
     idle: 'on dry land: balanced on his tail, gills flaring, jaw working', run: 'hopping along on his tail, big springy bounds', jump: 'a tail-spring push off', fall: 'tail curling, arms out', land: 'squashing down on his tail',
     swim: 'swimming flat out: body level, tail beating, arms swept back', tread: 'hanging in the water, tail waving, hands sculling', dash: 'RIP DASH: a torpedo, jaws first, tail a blur',
-    biteA: 'a snapping chomp', biteB: 'the lunging CHOMP, jaws as wide as they go', whip: 'the tail whip: a full spin, tail out', gasp: 'out of water: gasping, a hand at his gills',
+    biteA: 'a snapping chomp', biteB: 'the lunging CHOMP, jaws as wide as they go', swimBite: 'a bite on the move in the water', whip: 'the tail whip: a full spin, tail out', gasp: 'out of water: gasping, a hand at his gills',
     hurt: 'knocked back, jaw open', defeat: 'down, flopping', drown: 'thrashing',
     roar: 'the discovery: arms flung wide, jaws wide open, lure blazing', talk: 'talking through a mouthful of fangs', cheer: 'fists up, grinning fangs', point: 'pointing', surprise: 'eyes wide',
   },

@@ -21,6 +21,7 @@ import type { OmnitrixController } from '../OmnitrixController';
 import type { Tutorial } from '../Tutorial';
 import type { Dialogue } from './Dialogue';
 import type { GwenCompanion } from '../family/GwenCompanion';
+import type { WaterProvider } from '../Swimming';
 
 /**
  * A chapter's scripted moment (the opening drive, an alien unlocking, the
@@ -101,6 +102,8 @@ export interface StoryKit {
   nearestEnemy(x: number, y: number, range: number): { x: number; y: number } | null;
   /** Missiles, blasts, rockfalls (Chapter 5's hunters use them). */
   hazards: HazardSystem | null;
+  /** A chapter's own water (Act 3's tanks): every form swims in it (null: none). */
+  setWater(provider: WaterProvider | null): void;
   /** A chapter achievement a set piece decides (CLUTCH MISFIRE). */
   achievement(id: string): void;
   /** A set piece's own thing to hit (a hunter, a net generator): Combat knows about it from now on, and hurts Ben with it if it's a hazard. */

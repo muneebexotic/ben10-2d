@@ -1,4 +1,5 @@
 import { GREYMATTER, GREYMATTER_FEEL, GREYMATTER_MOTOR } from '../../config/aliens/greymatter';
+import { SWIM } from '../../config/swim';
 import { PALETTE } from '../../config/palette';
 import type { FormDefinition } from '../types';
 import { GreyMatterAbilities } from './abilities';
@@ -47,6 +48,7 @@ export const GREYMATTER_FORM: FormDefinition = {
         upgrade: ['I WANTED TO BE THE COMPUTER, NOT THE NERD.', 'TECHNICALLY STILL SMART.'],
         diamondhead: ['ROCK SOLID? MORE LIKE POCKET SIZED.', 'I WANTED A SHIELD. I GOT A THEORY.'],
         ghostfreak: ['NOT SPOOKY. JUST SMALL.', 'I CAN EXPLAIN GHOSTS. I CANNOT BE ONE.'],
+        ripjaws: ['I WANTED JAWS. I GOT A GOLDFISH.', 'TINY, WET AND VERY SMART.'],
       },
       any: ['WELL, AT LEAST I KNOW WHY THIS HAPPENED.'],
     },
@@ -70,5 +72,6 @@ export const GREYMATTER_FORM: FormDefinition = {
   copy: { style: 'pounce', tell: 'scan', attack: 'biteB', cheer: "YOUR BRAIN'S BIGGER THAN YOUR WHOLE BODY. THAT'S SO WEIRD. TEACH ME." },
   damageScale: GREYMATTER.damageScale,
   ride: { attack: 'strike', special: 'senses', back: GREYMATTER_TEX.back, color: PALETTE.greymatter },
+  swim: SWIM.greymatter,
   createAbilities: () => new GreyMatterAbilities(),
 };

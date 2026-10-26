@@ -436,6 +436,17 @@ function ripClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, 
     dash,
     biteA: bite(false),
     biteB: bite(true),
+    swimBite: {
+      ms: 220,
+      loop: false,
+      pose: (t, p) => {
+        // A bite on the move: level in the water, jaws wide, then shut.
+        swim.pose(t, p);
+        p.set('jaw', t < 0.45 ? 48 : Math.max(0, 48 - (t - 0.45) * 200));
+        p.add('head', t < 0.45 ? -8 : 4).show('eyes', 'angry');
+        finish(p, true);
+      },
+    },
     whip,
     gasp,
     hurt: {

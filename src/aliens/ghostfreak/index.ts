@@ -1,4 +1,5 @@
 import { GHOSTFREAK, GHOSTFREAK_FEEL, GHOSTFREAK_MOTOR } from '../../config/aliens/ghostfreak';
+import { SWIM } from '../../config/swim';
 import { PALETTE } from '../../config/palette';
 import type { FormDefinition } from '../types';
 import { GhostfreakAbilities } from './abilities';
@@ -47,6 +48,7 @@ export const GHOSTFREAK_FORM: FormDefinition = {
         upgrade: ["I WANTED IN THE MACHINE, NOT IN THE WALL!", 'HAUNTING IS NOT HACKING.'],
         diamondhead: ['I WANTED SOLID. THIS IS THE OPPOSITE.', 'TOO SEE-THROUGH TO BLOCK ANYTHING!'],
         greymatter: ['WANTED BRAINS. GOT CREEPY.', 'SMALL? NO. SPOOKY? YES.'],
+        ripjaws: ['WANTED A FISH. GOT A GHOST.', 'NO GILLS... NO LUNGS EITHER?'],
       },
       any: ['DID THE WATCH... PICK THIS ONE ON PURPOSE?'],
     },
@@ -76,5 +78,6 @@ export const GHOSTFREAK_FORM: FormDefinition = {
     everyMs: GHOSTFREAK.whisperEveryMs,
   },
   ride: { attack: 'strike', special: 'phase', back: GHOSTFREAK_TEX.back, color: PALETTE.ghostfreak },
+  swim: SWIM.ghostfreak,
   createAbilities: () => new GhostfreakAbilities(),
 };

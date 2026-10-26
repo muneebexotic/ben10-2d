@@ -1,4 +1,5 @@
 import { UPGRADE, UPGRADE_FEEL, UPGRADE_MOTOR } from '../../config/aliens/upgrade';
+import { SWIM } from '../../config/swim';
 import { PALETTE } from '../../config/palette';
 import type { FormDefinition } from '../types';
 import { UpgradeAbilities } from './abilities';
@@ -46,6 +47,7 @@ export const UPGRADE_FORM: FormDefinition = {
         diamondhead: ['WANTED CRYSTAL. GOT CIRCUITS.', 'NOT DIAMONDS. JUST DIODES.'],
         ghostfreak: ['ERROR: GHOST.EXE NOT FOUND.', 'I CAN HAUNT A COMPUTER. KIND OF.'],
         greymatter: ['SMART MACHINE, WRONG KIND OF SMART.', 'I WANTED A BRAIN. GOT A HARD DRIVE.'],
+        ripjaws: ['WANTED GILLS. GOT A SHORT CIRCUIT.', 'IS LIQUID METAL WATERPROOF?'],
       },
       any: ['ERROR 404: RIGHT ALIEN NOT FOUND.'],
     },
@@ -62,5 +64,6 @@ export const UPGRADE_FORM: FormDefinition = {
   reach: { jumpUp: 4, jumpAcross: 5, canBurn: false, canSmash: false, canRunWater: false, canMerge: true },
   copy: { style: 'beam', tell: 'laser', attack: 'laser', cheer: 'YOU WENT INSIDE THE MACHINE. HOW?!' },
   ride: { attack: 'shot', special: 'merge', back: UPGRADE_TEX.back, color: PALETTE.upgrade },
+  swim: SWIM.upgrade,
   createAbilities: () => new UpgradeAbilities(),
 };

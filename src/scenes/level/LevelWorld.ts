@@ -208,6 +208,19 @@ export class LevelWorld {
     return this.data.water.some((w) => x >= w.x * TILE && x < (w.x + w.w) * TILE && Math.abs(feetY - w.surface * TILE) <= 3);
   }
 
+  private readonly swimWater = { surface: 0, currentX: 0, currentY: 0 };
+
+  /** Water or mutagen at (x, y) a form that swims anywhere can swim in (Ripjaws), or null. Reused object: read it now. */
+  swimWaterAt(x: number, y: number): { surface: number; currentX: number; currentY: number } | null {
+    for (const w of this.data.water) {
+      if (w.kind === 'tar' || w.kind === 'rail') continue;
+      if (x < w.x * TILE || x >= (w.x + w.w) * TILE || y < w.surface * TILE - 12 || y > (w.surface + w.depth) * TILE + 8) continue;
+      this.swimWater.surface = w.surface * TILE;
+      return this.swimWater;
+    }
+    return null;
+  }
+
   /** The liquid under (x, feetY), if any (mutagen glows, tar is black). */
   liquidAt(x: number, feetY: number): LiquidKind | null {
     const w = this.data.water.find((s) => x >= s.x * TILE && x < (s.x + s.w) * TILE && feetY > s.surface * TILE - 2);

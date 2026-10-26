@@ -150,6 +150,9 @@ export class OmnitrixController {
   }
 
   update(dtMs: number): void {
+    // Ripjaws out of water: the watch runs down faster (any water fixes it).
+    const p = this.player;
+    this.omnitrix.setDrainRate(p.isAlien && !p.submerged ? (p.form.landDrain ?? 1) : 1);
     this.handle(this.omnitrix.update(dtMs));
     this.player.visual.setWarning(this.omnitrix.isWarning);
     const o = this.omnitrix;
@@ -170,6 +173,7 @@ export class OmnitrixController {
       frozen: o.timerFrozen,
       fixOwed: !hide && o.fixSwapOwed,
       blocked: o.blockedAliens,
+      drain: o.timerDrainRate,
     });
   }
 

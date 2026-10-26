@@ -1,4 +1,5 @@
 import { FOURARMS, FOURARMS_FEEL, FOURARMS_MOTOR } from '../../config/aliens/fourarms';
+import { SWIM } from '../../config/swim';
 import type { FormDefinition } from '../types';
 import { FourArmsAbilities } from './abilities';
 import { FOURARMS_ANIMS, FOURARMS_ASSETS, FOURARMS_COLORS, FOURARMS_FRAME, FOURARMS_TEX } from './art';
@@ -40,6 +41,7 @@ export const FOURARMS_FORM: FormDefinition = {
         diamondhead: ['NO CRYSTALS. JUST KNUCKLES.', 'WANTED SHINY. GOT BEEFY.'],
         ghostfreak: ['TOO SOLID TO GO THROUGH WALLS!', 'GHOSTS DO NOT HAVE BICEPS.'],
         greymatter: ['I WANTED SMART. I GOT FOUR FISTS.', 'BIG MUSCLES, SMALL VENTS. PROBLEM.'],
+        ripjaws: ['I WANTED FINS, NOT FOUR FISTS!', 'TOO HEAVY TO SWIM. WAY TOO HEAVY.'],
       },
       any: ['WRONG ALIEN! BIG, BUT WRONG!'],
     },
@@ -55,5 +57,6 @@ export const FOURARMS_FORM: FormDefinition = {
   reach: { jumpUp: 4, jumpAcross: 5, canBurn: false, canSmash: true, canRunWater: false },
   copy: { style: 'slam', tell: 'slamUp', attack: 'slam', cheer: 'FOUR ARMS?! YOU COULD BENCH A BUS!' },
   ride: { attack: 'smash', special: 'brace', back: FOURARMS_TEX.back, color: 0xd9483a },
+  swim: SWIM.fourarms,
   createAbilities: () => new FourArmsAbilities(),
 };

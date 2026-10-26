@@ -29,6 +29,13 @@ export function drawSpark(pc: PixelCanvas): void {
   pc.rect(1, 0, 1, 3, P.white).rect(0, 1, 3, 1, P.white);
 }
 
+/** A bubble: a bright ring with a glint. */
+export function drawBubble(pc: PixelCanvas): void {
+  pc.rect(1, 0, 3, 1, P.white).rect(1, 4, 3, 1, P.white).rect(0, 1, 1, 3, P.white).rect(4, 1, 1, 3, P.white);
+  pc.px(1, 1, P.white);
+  pc.rect(1, 1, 3, 3, P.white, 0.18);
+}
+
 export function drawEmber(pc: PixelCanvas): void {
   pc.rect(1, 0, 1, 3, P.white).rect(0, 1, 3, 1, P.white);
   pc.px(1, 1, P.white);

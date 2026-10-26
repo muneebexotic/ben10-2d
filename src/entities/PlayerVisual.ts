@@ -95,9 +95,36 @@ export class PlayerVisual {
 
   play(suffix: string): void {
     const key = `${this.prefix}-${suffix}`;
+    if (this.hdClip !== null) this.setHdClip(null);
     if (key === this.currentAnim) return;
     this.currentAnim = key;
     this.sprite.play(key, true);
+  }
+
+  /**
+   * Plays the form's own `suffix` animation when its sheet has one (Ripjaws swims in the pixel
+   * chapters too); otherwise `fallback`, and an HD chapter's rig shows the `suffix` clip over it.
+   */
+  playClip(suffix: string, fallback: string): void {
+    const key = `${this.prefix}-${suffix}`;
+    if (this.scene.anims.exists(key)) {
+      this.play(suffix);
+      return;
+    }
+    const fb = `${this.prefix}-${fallback}`;
+    if (fb !== this.currentAnim) {
+      this.currentAnim = fb;
+      this.sprite.play(fb, true);
+    }
+    if (this.hdClip !== suffix) this.setHdClip(suffix);
+  }
+
+  private hdClip: string | null = null;
+
+  /** The rig clip an HD chapter draws over this sprite's own animation (read by HdMirror), or null. */
+  private setHdClip(clip: string | null): void {
+    this.hdClip = clip;
+    this.sprite.setData('hdClip', clip);
   }
 
   squash(x: number, y: number): void {

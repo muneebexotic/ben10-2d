@@ -1,4 +1,5 @@
 import { HEATBLAST, HEATBLAST_FEEL, HEATBLAST_MOTOR } from '../../config/aliens/heatblast';
+import { SWIM } from '../../config/swim';
 import { PALETTE } from '../../config/palette';
 import type { FormDefinition } from '../types';
 import { HeatblastAbilities } from './abilities';
@@ -42,6 +43,7 @@ export const HEATBLAST_FORM: FormDefinition = {
         diamondhead: ['I WANTED DIAMONDS, NOT A BONFIRE!', 'CRYSTAL? NOPE. JUST A HOT HEAD.'],
         ghostfreak: ['NOT SPOOKY. JUST SPICY.', 'WANTED A GHOST. GOT A TORCH.'],
         greymatter: ['I WANTED A BRAIN, NOT A BONFIRE.', 'TOO HOT TO THINK!'],
+        ripjaws: ['WANTED GILLS. GOT A FLAMETHROWER.', 'FIRE AND WATER? THIS WILL GO GREAT.'],
       },
       any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
     },
@@ -57,5 +59,6 @@ export const HEATBLAST_FORM: FormDefinition = {
   reach: { jumpUp: 9, jumpAcross: 9, canBurn: true, canSmash: false, canRunWater: false },
   copy: { style: 'fire', tell: 'charge', attack: 'shoot', cheer: 'THE FIRE GUY! DO THE FIRE GUY AGAIN!' },
   ride: { attack: 'shot', special: 'rocket', back: HEATBLAST_TEX.back, color: PALETTE.fire1 },
+  swim: SWIM.heatblast,
   createAbilities: () => new HeatblastAbilities(),
 };

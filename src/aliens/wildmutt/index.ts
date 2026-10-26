@@ -1,4 +1,5 @@
 import { WILDMUTT, WILDMUTT_FEEL, WILDMUTT_MOTOR } from '../../config/aliens/wildmutt';
+import { SWIM } from '../../config/swim';
 import type { FormDefinition } from '../types';
 import { WildmuttAbilities } from './abilities';
 import { WILDMUTT_ANIMS, WILDMUTT_ASSETS, WILDMUTT_COLORS, WILDMUTT_FRAME, WILDMUTT_TEX } from './art';
@@ -44,6 +45,7 @@ export const WILDMUTT_FORM: FormDefinition = {
         diamondhead: ['GRR! (THIS IS NOT A CRYSTAL!)', 'RUFF? (WHERE DID MY DIAMONDS GO?)'],
         ghostfreak: ['ARF! (WANTED THE SCARY ONE!)', 'GRRR... (I SMELL GHOSTS. NOT BE ONE.)'],
         greymatter: ['*GROWL* (THIS IS NOT A GENIUS.)', '*SNIFF* (SMELLS LIKE THE WRONG ALIEN.)'],
+        ripjaws: ['WANTED A SHARK. GOT A WET DOG.', 'DOG-PADDLE MODE: ACTIVATED.'],
       },
       any: ["GRRR... (WRONG ALIEN, I THINK.)"],
     },
@@ -60,5 +62,6 @@ export const WILDMUTT_FORM: FormDefinition = {
   reach: { jumpUp: 5, jumpAcross: 6, canBurn: false, canSmash: false, canRunWater: false, canClimb: true, canSense: true },
   copy: { style: 'pounce', tell: 'clawA', attack: 'pounce', cheer: 'GROSS! AWESOME! WHERE ARE ITS EYES?!' },
   ride: { attack: 'strike', special: 'senses', back: WILDMUTT_TEX.back, color: 0xffb45a },
+  swim: SWIM.wildmutt,
   createAbilities: () => new WildmuttAbilities(),
 };

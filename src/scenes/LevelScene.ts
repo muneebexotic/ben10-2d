@@ -90,6 +90,7 @@ import { CrystalPlatforms } from '../entities/crystal/CrystalPlatforms';
 import { Haunting } from './level/Haunting';
 import { WeakPoints } from './level/WeakPoints';
 import { weakHit } from '../aliens/greymatter/audio';
+import { Swimming } from './level/Swimming';
 import { HazardSystem } from './level/Hazards';
 import { DIAMONDHEAD } from '../config/aliens/diamondhead';
 import type { ForcedMisfire } from '../systems/MisfireRules';
@@ -203,6 +204,7 @@ export class LevelScene extends Phaser.Scene {
   private camRig!: CameraRig;
   private intro: IntroDirector | null = null;
   private tutorial!: Tutorial;
+  private swimming!: Swimming;
   private arena: BossArena | null = null;
   private training: TrainingDirector | null = null;
   /** Paused under a card reveal (CardReveal in the HUD). */
@@ -405,6 +407,7 @@ export class LevelScene extends Phaser.Scene {
     this.createOmnitrix();
     this.setupGhost(data);
     this.tutorial = new Tutorial(this.level);
+    this.swimming = new Swimming(this.player, this.world, this.tutorial, (o) => this.onPlayerHurt(o), activeDifficultyId() === 'easy');
 
     this.droneWorld = createDroneWorld({
       scene: this,
@@ -598,6 +601,7 @@ export class LevelScene extends Phaser.Scene {
       powerOff: (fromX, toX) => this.decor.powerOff(fromX, toX),
       nearestEnemy: (x, y, range) => this.nearestEnemy(x, y, range),
       hazards: this.hazards,
+      setWater: (provider) => this.swimming.setProvider(provider),
       achievement: (id) => this.achievements.unlock(id),
       addTarget: (t, hazard) => {
         this.combat.addTarget(t);
@@ -1084,6 +1088,7 @@ export class LevelScene extends Phaser.Scene {
     }
     if (dt > 0) this.stepPhysics(time, dt);
     this.player.syncVisual(realDt * visual, this.gameNow);
+    this.swimming.update();
 
     // The Vilgax hologram holds the world (and the alien timer) still while he talks.
     const worldDt = this.arena?.cinematic ? 0 : dt;
@@ -1235,7 +1240,7 @@ export class LevelScene extends Phaser.Scene {
     // are no tile faces, so he would fall out of the level. Back up onto the surface instead.
     if (this.world.inGround(p.x, p.y - 4)) this.unbury(p);
 
-    if (this.world.inWater(p.x, p.y) || p.y > this.world.heightPx + 40) {
+    if ((this.world.inWater(p.x, p.y) && !this.swimming.swimsAt(p.x, p.y)) || p.y > this.world.heightPx + 40) {
       this.fx.burst('splash', p.x, Math.min(p.y, this.world.heightPx), 18);
       playSfx('splash');
       const outcome = p.pitRespawn();
@@ -1385,6 +1390,8 @@ export class LevelScene extends Phaser.Scene {
     this.perfect.cancel(d);
     if (this.arena?.started && d.homeX >= 0 && !this.arena.fighting) return;
     if (d.lastHitKind && isFlame(d.lastHitKind)) this.achievements.count('fireKOs');
+    // A form that drains out of water (Ripjaws) scoring on dry land: FISH OUT OF WATER.
+    if (this.player.isAlien && this.player.form.landDrain !== undefined && !this.player.submerged) this.achievements.count('dryKOs');
     this.creditKill();
   }
 

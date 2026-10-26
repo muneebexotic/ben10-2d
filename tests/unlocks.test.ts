@@ -22,7 +22,7 @@ describe('story dial', () => {
   });
 
   it('unknown ids are ignored', () => {
-    expect(knownAliens(['xlr8', 'ripjaws', 'fourarms'])).toEqual(['xlr8', 'fourarms']);
+    expect(knownAliens(['xlr8', 'cannonbolt', 'fourarms'])).toEqual(['xlr8', 'fourarms']);
   });
 });
 

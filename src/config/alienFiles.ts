@@ -97,6 +97,15 @@ export const ALIEN_DEMOS: Readonly<Record<string, readonly MoveDemo[]>> = {
     { x: 33, steps: [s(['right'], 1400), s(['jump', 'right'], 500), wait(500)] },
     { x: 38, swapFrom: 'fourarms', enemy: { kind: 'scout', dx: 4 }, steps: [wait(500), ...tap('transform', 1800)] },
   ],
+  ripjaws: [
+    { x: 39, steps: [s(['attack'], 1500), wait(500)] },
+    { x: 38, enemy: { kind: 'gunner', dx: 6 }, steps: [...tap('special', 900), ...tap('special', 1100)] },
+    // In the arena's pool: a torpedo one way, then back along the stick.
+    { x: 8, steps: [wait(700), s(['right', 'special'], 90), wait(700), s(['left', 'special'], 90), wait(800)] },
+    { x: 7, steps: [wait(500), s(['right'], 700), s(['right', 'down'], 500), s(['left', 'up'], 800), wait(300)] },
+    { x: 26, steps: [s(['right'], 1500), wait(900)] },
+    { x: 38, swapFrom: 'fourarms', enemy: { kind: 'scout', dx: 4 }, steps: [wait(500), ...tap('transform', 1800)] },
+  ],
 };
 
 /** Where a demo is in its loop at `t` ms: the keys held now (pure, for tests). */

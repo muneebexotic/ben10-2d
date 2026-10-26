@@ -1,4 +1,5 @@
 import { STINKFLY, STINKFLY_FEEL, STINKFLY_MOTOR } from '../../config/aliens/stinkfly';
+import { SWIM } from '../../config/swim';
 import type { FormDefinition } from '../types';
 import { StinkflyAbilities } from './abilities';
 import { STINKFLY_ANIMS, STINKFLY_ASSETS, STINKFLY_COLORS, STINKFLY_FRAME, STINKFLY_TEX } from './art';
@@ -40,6 +41,7 @@ export const STINKFLY_FORM: FormDefinition = {
         diamondhead: ['A BUG IS NOT A GEM. TRUST ME.', 'WANTED ROCK HARD. GOT BUG SOFT.'],
         ghostfreak: ['SPOOKY? NO. JUST STINKY.', 'GHOST? MORE LIKE GROSS.'],
         greymatter: ['TINY AND SMART? GOT TINY AND SMELLY.', 'WRONG BUG BRAIN!'],
+        ripjaws: ['WANTED TO SWIM. GOT SOGGY WINGS.', 'BUGS AND WATER DO NOT MIX!'],
       },
       any: ['A BUG?! I WANTED A HERO, NOT A PEST!'],
     },
@@ -56,5 +58,6 @@ export const STINKFLY_FORM: FormDefinition = {
   reach: { jumpUp: 11, jumpAcross: 13, canBurn: false, canSmash: false, canRunWater: false },
   copy: { style: 'flyer', tell: 'spit', attack: 'spit', air: 'fly', cheer: 'A GIANT BUG! ...IT SMELLS LIKE MY GYM BAG.' },
   ride: { attack: 'shot', special: 'fly', back: STINKFLY_TEX.back, color: 0xd4e83a },
+  swim: SWIM.stinkfly,
   createAbilities: () => new StinkflyAbilities(),
 };

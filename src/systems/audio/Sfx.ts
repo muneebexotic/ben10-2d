@@ -242,6 +242,21 @@ const RECIPES = {
     A.noise({ duration: 0.06, volume: 0.2 * v, filter: 'highpass', freq: 4000 });
   },
   splash: (v) => A.noise({ duration: 0.4, volume: 0.3 * v, filter: 'bandpass', freq: 1200, freqEnd: 400, q: 0.7 }),
+  /** A stroke under water: a muffled whoosh and a bubble blip. */
+  swimStroke: (v, p) => {
+    A.noise({ duration: 0.22, volume: 0.12 * v, filter: 'lowpass', freq: 900 * p, freqEnd: 300 });
+    A.tone({ type: 'sine', freq: 520 * p, freqEnd: 900 * p, duration: 0.06, volume: 0.05 * v, when: A.now + 0.05 });
+  },
+  /** Air running low: a muffled heartbeat thump. */
+  breathLow: (v) => {
+    A.tone({ type: 'sine', freq: 70, freqEnd: 45, duration: 0.14, volume: 0.35 * v });
+    A.tone({ type: 'sine', freq: 66, freqEnd: 42, duration: 0.14, volume: 0.28 * v, when: A.now + 0.22 });
+  },
+  /** A gulp of air at the surface. */
+  gasp: (v, p) => {
+    A.noise({ duration: 0.18, volume: 0.16 * v, filter: 'bandpass', freq: 1800 * p, freqEnd: 900, q: 1.2 });
+    A.tone({ type: 'triangle', freq: 330 * p, freqEnd: 520 * p, duration: 0.12, volume: 0.05 * v });
+  },
   burn: (v) => A.noise({ duration: 0.9, volume: 0.3 * v, filter: 'bandpass', freq: 800, freqEnd: 2400, q: 0.6 }),
   gateDown: (v) => {
     A.tone({ type: 'sawtooth', freq: 800, freqEnd: 60, duration: 0.8, volume: 0.15 * v });

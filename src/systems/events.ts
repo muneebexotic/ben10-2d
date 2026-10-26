@@ -28,6 +28,15 @@ export interface OmnitrixTick {
   fixOwed: boolean;
   /** Aliens on the dial whose DNA was stolen (unusable for now). */
   blocked: readonly string[];
+  /** The alien timer runs this many times faster right now (Ripjaws on dry land), 1 normally. */
+  drain: number;
+}
+
+/** Breath under water (Act 3): what's left, 0..1, while the head is under or refilling; null when there's nothing to show. */
+export interface BreathTick {
+  ratio: number;
+  /** Under water right now (the ring drains), or refilling at the surface. */
+  under: boolean;
 }
 
 export interface BannerPayload {
@@ -45,6 +54,7 @@ export interface GameEvents {
   'player:died': undefined;
   'omnitrix:acquired': undefined;
   'omnitrix:tick': OmnitrixTick;
+  'swim:breath': BreathTick | null;
   'omnitrix:dial': { selectedId: string; index: number; count: number; direction: 1 | -1 };
   'omnitrix:warning': { secondsLeft: number };
   'omnitrix:ready': undefined;

@@ -1,4 +1,5 @@
 import { XLR8, XLR8_FEEL, XLR8_MOTOR } from '../../config/aliens/xlr8';
+import { SWIM } from '../../config/swim';
 import type { FormDefinition } from '../types';
 import { Xlr8Abilities } from './abilities';
 import { XLR8_ANIMS, XLR8_ASSETS, XLR8_COLORS, XLR8_FRAME, XLR8_TEX } from './art';
@@ -40,6 +41,7 @@ export const XLR8_FORM: FormDefinition = {
         diamondhead: ['FAST GLASS? NOPE. JUST FAST.', 'WANTED A SHIELD. GOT SNEAKERS.'],
         ghostfreak: ["CAN'T PHASE. CAN SPRINT. SO...", 'NOT GHOSTLY. JUST GONE QUICKLY.'],
         greymatter: ['FAST, BUT NOT SMART FAST.', 'I WANTED TO THINK, NOT RUN.'],
+        ripjaws: ['WANTED A FISH. GOT A SPEEDBOAT.', 'NO GILLS, BUT I CAN RUN ON IT.'],
       },
       any: ['WRONG GUY! ...AT LEAST I GOT HERE FAST.'],
     },
@@ -56,5 +58,6 @@ export const XLR8_FORM: FormDefinition = {
   reach: { jumpUp: 3, jumpAcross: 11, canBurn: false, canSmash: false, canRunWater: true },
   copy: { style: 'dash', tell: 'strikeA', attack: 'dash', cheer: 'WHOA, SPEEDY! I BLINKED AND MISSED IT!' },
   ride: { attack: 'strike', special: 'boost', back: XLR8_TEX.back, color: 0x52a4ff },
+  swim: SWIM.xlr8,
   createAbilities: () => new Xlr8Abilities(),
 };

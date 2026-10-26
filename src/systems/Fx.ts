@@ -38,7 +38,8 @@ export type BurstKind =
   | 'ghost'
   | 'scan'
   | 'mana'
-  | 'stone';
+  | 'stone'
+  | 'bubble';
 
 type EmitterConfig = Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
 
@@ -152,6 +153,11 @@ const PRESETS: Record<BurstKind, { texture: string; config: EmitterConfig; depth
     config: { lifespan: { min: 180, max: 420 }, speed: { min: 70, max: 220 }, scale: { start: 1.2, end: 0.4 }, color: [P.white, P.greymatterGlow, P.greymatter, P.greymatterDark], blendMode: 'ADD' },
   },
   // Gwen's magic (and Hex's): pink motes of mana that swirl up and fade.
+  // Bubbles under water: they wobble up and fade.
+  bubble: {
+    texture: TEX.bubble,
+    config: { lifespan: { min: 500, max: 1100 }, speedX: { min: -14, max: 14 }, speedY: { min: -50, max: -20 }, gravityY: -70, scale: { start: 0.7, end: 1.1 }, alpha: { start: 0.85, end: 0 }, tint: 0xd8f4ff },
+  },
   mana: {
     texture: TEX.spark,
     config: { lifespan: { min: 300, max: 760 }, speed: { min: 30, max: 140 }, scale: { start: 1.3, end: 0 }, gravityY: -60, color: [P.white, P.manaGlow, P.mana, P.manaDark], blendMode: 'ADD' },

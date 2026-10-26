@@ -23,6 +23,8 @@ export interface Capabilities {
   canReflect?: boolean;
   /** One tile tall (Grey Matter): vents and gaps a tile high are open to him. */
   tiny?: boolean;
+  /** Swims in water and mutagen (Ripjaws): anywhere in it is somewhere he can be. */
+  canSwim?: boolean;
 }
 
 /** Each alien declares its own envelope in its definition (`reach`). */
@@ -137,6 +139,11 @@ function isWater(level: LevelData, x: number, y: number): boolean {
   return level.water.some((w) => x >= w.x && x < w.x + w.w && y >= w.surface);
 }
 
+/** Water a swimmer can be anywhere in (tar is too sticky, a live rail too deadly). */
+function isSwimWater(level: LevelData, x: number, y: number): boolean {
+  return level.water.some((w) => x >= w.x && x < w.x + w.w && y >= w.surface && w.kind !== 'tar' && w.kind !== 'rail');
+}
+
 /** The top row of a water span counts as a floor for forms that can run on water (tar is too sticky, a live rail too deadly). */
 function isWaterSurface(level: LevelData, x: number, y: number): boolean {
   return level.water.some((w) => x >= w.x && x < w.x + w.w && y === w.surface && w.kind !== 'tar' && w.kind !== 'rail');
@@ -151,7 +158,7 @@ function isOpen(grid: TileGrid, blocked: Set<string>, x: number, y: number): boo
 export function isStandable(level: LevelData, grid: TileGrid, blocked: Set<string>, x: number, y: number, caps?: Capabilities): boolean {
   if (!isOpen(grid, blocked, x, y) || (!caps?.tiny && !isOpen(grid, blocked, x, y - 1))) return false;
   if (cellAt(grid, x, y) === CELL.PLATFORM) return false;
-  if (isWater(level, x, y)) return false;
+  if (isWater(level, x, y)) return caps?.canSwim === true && isSwimWater(level, x, y);
   if (caps?.canRunWater && isWaterSurface(level, x, y + 1)) return true;
   const below = cellAt(grid, x, y + 1);
   return isSolidCell(below) || below === CELL.PLATFORM || blocked.has(`${x},${y + 1}`);
@@ -197,6 +204,16 @@ export function reachableFrom(level: LevelData, baseGrid: TileGrid, start: Pos, 
           visit({ x, y: cy });
           if (!solidAt(x + d, cy - 1) && isStandable(level, grid, blocked, x + d, cy - 1, caps)) visit({ x: x + d, y: cy - 1 });
         }
+      }
+    }
+    // A swimmer can drop any distance into water: falling in is safe for him.
+    if (caps.canSwim) {
+      for (let dx = -(caps.jumpAcross + 1); dx <= caps.jumpAcross + 1; dx++) {
+        const nx = x + dx;
+        if (!pathClear(grid, blocked, x, y, nx, y, 0, caps.tiny)) continue;
+        let ny = y;
+        while (ny < grid.height - 1 && isOpen(grid, blocked, nx, ny + 1) && !isSwimWater(level, nx, ny + 1)) ny++;
+        if (isSwimWater(level, nx, ny + 1) && isOpen(grid, blocked, nx, ny + 1)) visit({ x: nx, y: ny + 1 });
       }
     }
     for (let dy = -caps.jumpUp; dy <= MAX_FALL; dy++) {

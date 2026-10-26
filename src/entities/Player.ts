@@ -23,6 +23,9 @@ import {
   type MotorState,
 } from '../systems/PlatformerMotor';
 import { playSfx, type SfxName, type SoundRecipe } from '../systems/audio/Sfx';
+import { BREATH, SWIM_BEN, SWIM_FEEL, type SwimStats } from '../config/swim';
+import { createSwimState, enterWater, stepSwim, type SwimWater } from '../systems/swim/SwimMotor';
+import { Breath, type BreathEvent } from '../systems/swim/Breath';
 import { PlayerVisual } from './PlayerVisual';
 import type { Rect } from './types';
 
@@ -42,6 +45,7 @@ export interface DamageOutcome {
 }
 
 const NO_DAMAGE: DamageOutcome = { applied: false, amount: 0, formBroken: false, died: false };
+const BREATH_DAMAGE = BREATH.damage;
 const GRAVITY_TUNING = {
   fallMultiplier: PLAYER.fallGravityMultiplier,
   apexMultiplier: PLAYER.apexGravityMultiplier,
@@ -86,6 +90,14 @@ export class Player implements PlayerHandle {
   private safeTimer = 0;
   private stepTimer = 0;
   private onWaterLast = false;
+  /** In the water at all, and swimming in it (a heavy form walks the bottom instead). */
+  private inWater = false;
+  private swimmingNow = false;
+  private headUnder = false;
+  private readonly swimState = createSwimState();
+  private bubbleTimer = 0;
+  /** Air under water (only forms with lungs run out). */
+  readonly breath = new Breath(SWIM_BEN.breathMs);
   private controls: Controls = emptyControls();
   private readonly idleControls = emptyControls();
   private readonly ctx: AbilityContext;
@@ -155,6 +167,24 @@ export class Player implements PlayerHandle {
 
   get onWater(): boolean {
     return this.grounded && this.isWaterSurface?.(this.x, this.y) === true;
+  }
+
+  get swimming(): boolean {
+    return this.swimmingNow && !this.dead;
+  }
+
+  get submerged(): boolean {
+    return this.inWater && !this.dead;
+  }
+
+  /** Head under the surface (breath runs down). */
+  get underwater(): boolean {
+    return this.inWater && this.headUnder && !this.dead;
+  }
+
+  /** How this form swims. */
+  get swimStats(): SwimStats {
+    return this.form.swim ?? SWIM_BEN;
   }
 
   setFacing(dir: 1 | -1): void {
@@ -278,6 +308,9 @@ export class Player implements PlayerHandle {
     this.resizeBody(form.body ?? PLAYER.body);
     this.abilities = form.createAbilities();
     this.formHp = Math.max(form.maxFormHealth > 0 ? 0.5 : 0, Math.round(form.maxFormHealth * shieldRatio * 2) / 2);
+    this.breath.setMax(this.swimStats.breathMs * this.breathScale);
+    // A form that walks the bottom (or one that swims) takes over mid-dive with the body's speed.
+    if (this.inWater) enterWater(this.swimState, this.body.velocity.x, this.body.velocity.y, 1);
     this.visual.applyForm(form, this.animPrefix());
     this.abilities.onEnter?.(this.ctx);
   }
@@ -358,26 +391,61 @@ export class Player implements PlayerHandle {
       this.body.setVelocityY(40);
     }
 
-    if (!(this.abilities.locksMovement?.() ?? false)) {
-      const res = stepMotor(
-        this.motor,
-        { moveX, jumpPressed: c.jumpPressed && !dropping, jumpHeld: c.jumpHeld },
-        this.form.motor,
-        { vx: this.body.velocity.x, vy: this.body.velocity.y, grounded },
-        dtMs,
-        this.abilities.speedMultiplier?.() ?? 1,
-      );
-      this.body.setVelocity(res.vx, res.vy);
-      if (res.jumped) this.onJump();
-      if (res.airJumpRequested && this.abilities.tryAirJump?.(this.ctx)) consumeJumpBuffer(this.motor);
-      if (moveX !== 0) this.facing = moveX;
-    }
+    const swim = this.swimStats;
+    const water = this.updateWater(dtMs, swim);
+    const heavy = this.inWater ? swim.heavy : undefined;
+    const locked = this.abilities.locksMovement?.() ?? false;
 
-    const custom = this.abilities.gravityScale?.(this.ctx) ?? null;
-    const scale = custom ?? gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale;
-    this.body.setGravityY(PHYSICS.gravity * (scale - 1));
-    const maxFall = this.abilities.maxFallSpeed?.(this.ctx) ?? PLAYER.maxFallSpeed;
-    if (this.body.velocity.y > maxFall) this.body.setVelocityY(maxFall);
+    if (this.swimmingNow && water) {
+      if (!locked) {
+        const moveY: -1 | 0 | 1 = c.up === c.down ? 0 : c.up ? -1 : 1;
+        const res = stepSwim(
+          this.swimState,
+          { moveX, moveY, jumpPressed: c.jumpPressed },
+          swim,
+          { top: this.body.top, height: this.body.height },
+          water,
+          dtMs,
+          SWIM_FEEL.floatAbove,
+          this.abilities.speedMultiplier?.() ?? 1,
+        );
+        this.body.setVelocity(res.vx, res.vy);
+        if (res.jumpedOut) {
+          markLaunched(this.motor, true);
+          this.onJump();
+        } else if (res.stroked) {
+          this.services.fx.burst('bubble', this.x, this.centerY, 3);
+          playSfx('swimStroke', 0.5, 0.9 + Math.random() * 0.2);
+        }
+        if (moveX !== 0) this.facing = moveX;
+      } else {
+        // An ability is steering (a dash): its speed carries on as momentum after.
+        this.swimState.vx = this.body.velocity.x;
+        this.swimState.vy = this.body.velocity.y;
+      }
+      this.body.setGravityY(0);
+    } else {
+      if (!locked) {
+        const res = stepMotor(
+          this.motor,
+          { moveX, jumpPressed: c.jumpPressed && !dropping, jumpHeld: c.jumpHeld },
+          this.form.motor,
+          { vx: this.body.velocity.x, vy: this.body.velocity.y, grounded },
+          dtMs,
+          (this.abilities.speedMultiplier?.() ?? 1) * (heavy?.runScale ?? 1),
+        );
+        this.body.setVelocity(res.vx, res.vy);
+        if (res.jumped) this.onJump();
+        if (res.airJumpRequested && this.abilities.tryAirJump?.(this.ctx)) consumeJumpBuffer(this.motor);
+        if (moveX !== 0) this.facing = moveX;
+      }
+
+      const custom = this.abilities.gravityScale?.(this.ctx) ?? null;
+      const scale = (custom ?? gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale) * (heavy?.gravityScale ?? 1);
+      this.body.setGravityY(PHYSICS.gravity * (scale - 1));
+      const maxFall = heavy?.maxFall ?? this.abilities.maxFallSpeed?.(this.ctx) ?? PLAYER.maxFallSpeed;
+      if (this.body.velocity.y > maxFall) this.body.setVelocityY(maxFall);
+    }
 
     this.trackSafeGround(dtMs, grounded);
     this.footsteps(dtMs, grounded, moveX);
@@ -397,6 +465,72 @@ export class Player implements PlayerHandle {
 
   /** Set by the Level: true when feet at (x, feetY) rest on a water surface. */
   isWaterSurface: ((x: number, feetY: number) => boolean) | null = null;
+
+  /**
+   * Set by the Level: the water this form can swim in at (x, y), or null. `anyWater`: the form
+   * swims the older chapters' water too (everyone swims Act 3's tanks).
+   */
+  waterAt: ((x: number, y: number, anyWater: boolean) => SwimWater | null) | null = null;
+
+  /** Set by the Level: an air pocket or a bubble vent at (x, y) (breath refills there under water). */
+  airAt: ((x: number, y: number) => boolean) | null = null;
+
+  /** Set by the Level: breath news (running low, out of air, a choking hit). */
+  onBreath: ((event: Exclude<BreathEvent, null | 'refilled'>) => void) | null = null;
+
+  /** Easy's bigger lungs (set by the Level). */
+  breathScale = 1;
+
+  /** In or out of the water this frame, breath, bubbles. Returns the water swum in, or null. */
+  private updateWater(dtMs: number, swim: SwimStats): SwimWater | null {
+    const water = this.dead ? null : (this.waterAt?.(this.x, this.centerY, swim.anyWater === true) ?? null);
+    const was = this.inWater;
+    const inside = water !== null && (was ? this.centerY > water.surface - SWIM_FEEL.exitAbove : this.centerY > water.surface + SWIM_FEEL.enterDepth);
+    if (inside !== was) {
+      this.inWater = inside;
+      if (inside) {
+        enterWater(this.swimState, this.body.velocity.x, this.body.velocity.y, SWIM_FEEL.entryKeep);
+        if (water) this.services.fx.burst('splash', this.x, water.surface, 10);
+        playSfx('splash', 0.6);
+      } else if (water || was) {
+        this.services.fx.burst('splash', this.x, this.y, 6);
+      }
+    }
+    const swimming = this.inWater && !swim.heavy;
+    // Only on the change: set pieces pin the body in the air the same way (and must keep it).
+    if (swimming !== this.swimmingNow) this.body.setAllowGravity(!swimming);
+    this.swimmingNow = swimming;
+    this.headUnder = this.inWater && water !== null && this.body.top > water.surface + 1;
+    const breathing = !this.headUnder || (this.airAt?.(this.x, this.body.top + 2) ?? false);
+    const ev = this.breath.update(dtMs, !breathing);
+    if (ev && ev !== 'refilled') this.onBreath?.(ev);
+    if (this.headUnder) {
+      this.bubbleTimer -= dtMs;
+      if (this.bubbleTimer <= 0) {
+        this.bubbleTimer = SWIM_FEEL.bubbleEveryMs * (0.7 + Math.random() * 0.6);
+        this.services.fx.burst('bubble', this.x + this.facing * 3, this.body.top + 3, 1);
+      }
+    }
+    return this.inWater ? water : null;
+  }
+
+  /** Out of air: a hit with no knockback (the Level hears about it like any other). */
+  choke(): DamageOutcome {
+    if (this.dead || !this.controlsEnabled) return NO_DAMAGE;
+    const dmg = Math.max(0.5, BREATH_DAMAGE * this.services.damageMultiplier);
+    this.visual.flash(PALETTE.enemy, 140);
+    playSfx('hurt', 0.7, 0.8);
+    if (this.isAlien) {
+      this.formHp = Math.max(0, this.formHp - dmg);
+      return { applied: true, amount: dmg, formBroken: this.formHp <= 0, died: false };
+    }
+    this.hp = Math.max(0, this.hp - dmg);
+    if (this.hp <= 0) {
+      this.die();
+      return { applied: true, amount: dmg, formBroken: false, died: true };
+    }
+    return { applied: true, amount: dmg, formBroken: false, died: false };
+  }
 
   /** After physics: move the sprite to the body and pick an animation. */
   syncVisual(dtMs: number, visualNow: number): void {
@@ -419,6 +553,11 @@ export class Player implements PlayerHandle {
     }
     if (this.now < this.stunUntil) {
       this.visual.play('hurt');
+      return;
+    }
+    if (this.swimmingNow) {
+      const moving = Math.abs(this.body.velocity.x) + Math.abs(this.body.velocity.y) > 30;
+      this.visual.playClip(this.breath.empty ? 'drown' : moving ? 'swim' : 'tread', 'fall');
       return;
     }
     if (!this.grounded) {
@@ -548,6 +687,9 @@ export class Player implements PlayerHandle {
 
   private die(): void {
     this.dead = true;
+    this.inWater = false;
+    this.swimmingNow = false;
+    this.headUnder = false;
     this.abilities.onExit?.(this.ctx);
     this.visual.setHidden(false);
     this.body.setVelocity(0, 0);
@@ -569,6 +711,7 @@ export class Player implements PlayerHandle {
     this.setForm(HUMAN_FORM);
     this.teleport(x, feetY);
     this.body.setVelocity(0, 0);
+    this.breath.fill();
     this.invulnUntil = this.now + 1200;
   }
 }

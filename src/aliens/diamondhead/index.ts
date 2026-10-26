@@ -1,4 +1,5 @@
 import { DIAMONDHEAD, DIAMONDHEAD_FEEL, DIAMONDHEAD_MOTOR } from '../../config/aliens/diamondhead';
+import { SWIM } from '../../config/swim';
 import { PALETTE } from '../../config/palette';
 import type { FormDefinition } from '../types';
 import { DiamondheadAbilities } from './abilities';
@@ -46,6 +47,7 @@ export const DIAMONDHEAD_FORM: FormDefinition = {
         upgrade: ["I CAN'T MERGE WITH A ROCK. I AM A ROCK.", 'WANTED TECH. GOT GEOLOGY.'],
         ghostfreak: ["CAN'T PHASE THROUGH WALLS. I AM ONE.", 'TOO SOLID FOR GHOST STUFF.'],
         greymatter: ['TOO BIG FOR THE VENT. WAY TOO BIG.', 'WANTED A BRAIN. GOT A ROCK.'],
+        ripjaws: ['I WANTED TO SWIM. I SINK LIKE A ROCK.', 'NO GILLS. VERY SHINY, THOUGH.'],
       },
       any: ["WELL, AT LEAST I'M PRETTY."],
     },
@@ -69,5 +71,6 @@ export const DIAMONDHEAD_FORM: FormDefinition = {
   copy: { style: 'fire', tell: 'shoot', attack: 'shoot', cheer: "YOU'RE MADE OF DIAMONDS?! DO YOU KNOW WHAT THOSE SELL FOR?!" },
   damageScale: DIAMONDHEAD.damageScale,
   ride: { attack: 'shot', special: 'shield', back: DIAMONDHEAD_TEX.back, color: PALETTE.diamondhead },
+  swim: SWIM.diamondhead,
   createAbilities: () => new DiamondheadAbilities(),
 };
