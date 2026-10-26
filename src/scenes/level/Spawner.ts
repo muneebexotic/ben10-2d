@@ -82,6 +82,14 @@ export function spawnEntities(scene: Phaser.Scene, level: LevelData, droneWorld:
         out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, y, brain));
         break;
       }
+      case 'deep': {
+        if (behind(e.x)) break;
+        // Walkers stand on row y; swimmers and flyers hang in row y.
+        const brain = createBrain(e.kind);
+        const y = brain.walker ? e.y * TILE - brain.body.height / 2 : e.y * TILE + TILE / 2;
+        out.drones.push(new Drone(scene, droneWorld, e.x * TILE + TILE / 2, y, brain));
+        break;
+      }
       case 'barricade':
         if (behind(e.x + e.w)) break;
         out.barricades.push(new Barricade(scene, e.id, e.x, e.y, e.w, e.h, fx));

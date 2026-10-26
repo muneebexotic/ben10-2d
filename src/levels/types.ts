@@ -187,8 +187,8 @@ export type EntitySpawn =
   /** The Plumber base's creatures and machines: walkers stand on row `y`, swimmers and sentries are in it. */
   | { type: 'deep'; kind: DeepKind; x: number; y: number };
 
-/** Chapter 7's enemies: the base's security sentries, Deepmaw's fishbowl crew, zapper eels, jelly mines, gnasher swarms. */
-export type DeepKind = 'sentry' | 'grunt' | 'eel' | 'jelly' | 'gnasher';
+/** Chapter 7's enemies: the base's security sentries (wardens), Deepmaw's fishbowl crew, zapper eels, jelly mines, gnasher swarms. */
+export type DeepKind = 'warden' | 'grunt' | 'eel' | 'jelly' | 'gnasher';
 
 export type DecorKind =
   | 'rv'

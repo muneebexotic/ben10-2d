@@ -7,6 +7,7 @@ import type { Controls } from '../../../../systems/InputMap';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import { PLUMBER_ART } from '../../../preload/cartoon/plumber/baseArt';
 import type { SetPiece, StoryKit } from '../../story/StoryKit';
+import { deepEnv } from '../../../../entities/enemies/deep/kit';
 import { Doors } from './Doors';
 import { Machines } from './Machines';
 import { Tanks } from './Tanks';
@@ -63,6 +64,8 @@ export class BaseSystems implements SetPiece {
   ) {
     this.tanks = new Tanks(kit.scene, kit.level, kit.fx, (tx, ty) => !kit.world.isSolid(tx * TILE + 1, ty * TILE + 1));
     kit.setWater(this.tanks);
+    deepEnv.water = this.tanks;
+    deepEnv.jellies.clear();
     this.doors = new Doors(kit, this.tanks);
     this.machines = new Machines(kit, this.tanks);
     for (const d of PLUMBER_DECOR) {
@@ -167,6 +170,8 @@ export class BaseSystems implements SetPiece {
 
   destroy(): void {
     this.kit.setWater(null);
+    deepEnv.water = null;
+    deepEnv.jellies.clear();
     this.doors.destroy();
     this.machines.destroy();
     this.tanks.destroy();

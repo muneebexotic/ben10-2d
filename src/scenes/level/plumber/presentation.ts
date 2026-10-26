@@ -7,6 +7,7 @@ import { registerHdSkin, usePresentation } from '../../../systems/hd/Presentatio
 import { ALL_ANIMS } from '../../preload/catalog';
 import { castMirrorSpecs, makeCastArt } from '../../preload/cartoon/cast';
 import { makeHdFont } from '../../preload/cartoon/font';
+import { DEEP_ANIMS } from '../../preload/cartoon/plumber/deepSheets';
 
 let artRes = 0;
 
@@ -31,6 +32,6 @@ export function enterPlumberBase(scene: Phaser.Scene): HdMirror {
   cameraZoom.base = CH7_HD.zoom;
   scene.cameras.main.setZoom(CH7_HD.zoom);
   const mirror = new HdMirror(scene);
-  for (const { texture, spec } of castMirrorSpecs(ALL_ANIMS)) mirror.register(texture, spec);
+  for (const { texture, spec } of castMirrorSpecs([...ALL_ANIMS, ...DEEP_ANIMS])) mirror.register(texture, spec);
   return mirror;
 }

@@ -24,6 +24,9 @@ export const TELL = {
   /** Chapter 6: Hex's violet and Charmcaster's magenta. */
   hex: { core: PALETTE.enemy, edge: PALETTE.hex },
   charmcaster: { core: PALETTE.enemy, edge: PALETTE.charmcaster },
+  /** Chapter 7: the base's sentries in lockdown, and Deepmaw (his crew and the sea's things fight for him). */
+  plumber: { core: PALETTE.enemy, edge: PALETTE.plumber },
+  deepmaw: { core: PALETTE.enemy, edge: PALETTE.deepmaw },
 } as const satisfies Record<string, Tell>;
 
 /** A villain's tell for an effect colour (Kevin's purple, Animo's violet...), or plain danger red. */

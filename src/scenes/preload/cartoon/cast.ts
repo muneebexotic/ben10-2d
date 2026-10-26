@@ -14,6 +14,11 @@ import { DIAMONDHEAD_CARTOON } from '../../../config/cartoon/diamondhead';
 import { GHOSTFREAK_CARTOON } from '../../../config/cartoon/ghostfreak';
 import { GREYMATTER_CARTOON } from '../../../config/cartoon/greymatter';
 import { RIPJAWS_CARTOON } from '../../../config/cartoon/ripjaws';
+import { WARDEN_CARTOON } from '../../../config/cartoon/warden';
+import { GRUNT_CARTOON } from '../../../config/cartoon/grunt';
+import { EEL_CARTOON } from '../../../config/cartoon/eel';
+import { JELLY_CARTOON } from '../../../config/cartoon/jelly';
+import { GNASHER_CARTOON } from '../../../config/cartoon/gnasher';
 import type { AnimDef } from '../assetTypes';
 import { makeHdTexture } from './hdTexture';
 import { rigFrames, rigTextureKey, type RigDef } from './rig';
@@ -31,6 +36,11 @@ import { diamondheadRig } from './characters/diamondhead';
 import { ghostfreakRig } from './characters/ghostfreak';
 import { greymatterRig } from './characters/greymatter';
 import { ripjawsRig } from './characters/ripjaws';
+import { wardenRig } from './characters/deep/warden';
+import { gruntRig } from './characters/deep/grunt';
+import { eelRig } from './characters/deep/eel';
+import { jellyRig } from './characters/deep/jelly';
+import { gnasherRig } from './characters/deep/gnasher';
 import { mirrorSpec, type MirrorSpec } from '../../../systems/hd/HdMirror';
 
 /** A character the HD chapters can draw: its manifest and its rig. */
@@ -55,6 +65,12 @@ export const CARTOON_CAST: readonly CastRig[] = [
   { manifest: GHOSTFREAK_CARTOON, rig: ghostfreakRig },
   { manifest: GREYMATTER_CARTOON, rig: greymatterRig },
   { manifest: RIPJAWS_CARTOON, rig: ripjawsRig },
+  // Chapter 7's enemies.
+  { manifest: WARDEN_CARTOON, rig: wardenRig },
+  { manifest: GRUNT_CARTOON, rig: gruntRig },
+  { manifest: EEL_CARTOON, rig: eelRig },
+  { manifest: JELLY_CARTOON, rig: jellyRig },
+  { manifest: GNASHER_CARTOON, rig: gnasherRig },
 ];
 
 const built = new Map<string, RigDef>();

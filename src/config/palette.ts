@@ -169,6 +169,9 @@ export const PALETTE = {
   greymatterGlow: 0xe0ffc8,
   greymatterDark: 0x3e6a2a,
   // Ripjaws: deep-sea teal, his lure's glow.
+  /** Chapter 7's villains: the base's lockdown (Plumber green) and Deepmaw's crew (his lure's sickly yellow). */
+  plumber: 0x7dffb0,
+  deepmaw: 0xd8ff4a,
   ripjaws: 0x5ae0d0,
   ripjawsGlow: 0xd8fff8,
   ripjawsDark: 0x1a5a68,

@@ -164,9 +164,9 @@ const entities: EntitySpawn[] = [
   { type: 'checkpoint', id: 'cp-docking', x: 26, y: 40, density: 'sparse', label: 'DOCKING RING' },
   { type: 'baseConsole', id: 'c-ring', x: 28, y: 40, wakes: 'ring' },
   { type: 'card', id: 'ch7-card-locker', x: 33, y: 36 },
-  { type: 'deep', kind: 'sentry', x: 44, y: 34 },
-  { type: 'deep', kind: 'sentry', x: 54, y: 33 },
-  { type: 'deep', kind: 'sentry', x: 49, y: 37 },
+  { type: 'deep', kind: 'warden', x: 44, y: 34 },
+  { type: 'deep', kind: 'warden', x: 54, y: 33 },
+  { type: 'deep', kind: 'warden', x: 49, y: 37 },
   { type: 'smoothy', x: 47, y: 40 },
   { type: 'baseConsole', id: 'c-hub', x: 62, y: 37, wakes: 'hub' },
   { type: 'hatch', id: 'h-hub', x: 66, y: 30, h: 10 },
@@ -196,7 +196,7 @@ const entities: EntitySpawn[] = [
   { type: 'checkpoint', id: 'cp-reactor', x: 152, y: 40, density: 'sparse', label: 'THE REACTOR' },
   { type: 'tank', id: 't-reactor', x: 151, w: 31, top: 20, bottom: 40, level: 40 },
   { type: 'card', id: 'ch7-card-catwalk', x: 165, y: 28 },
-  { type: 'deep', kind: 'sentry', x: 158, y: 30 },
+  { type: 'deep', kind: 'warden', x: 158, y: 30 },
 
   // ---- Open sea
   { type: 'checkpoint', id: 'cp-sea', x: 186, y: 42, density: 'normal', label: 'THE OPEN SEA' },
@@ -240,10 +240,10 @@ const entities: EntitySpawn[] = [
   // ---- Containment
   { type: 'checkpoint', id: 'cp-containment', x: 343, y: 40, density: 'normal', label: 'CONTAINMENT' },
   { type: 'deep', kind: 'grunt', x: 356, y: 40 },
-  { type: 'deep', kind: 'sentry', x: 362, y: 33 },
+  { type: 'deep', kind: 'warden', x: 362, y: 33 },
   { type: 'deep', kind: 'grunt', x: 370, y: 40 },
   { type: 'deep', kind: 'grunt', x: 386, y: 40 },
-  { type: 'deep', kind: 'sentry', x: 394, y: 32 },
+  { type: 'deep', kind: 'warden', x: 394, y: 32 },
   { type: 'smoothy', x: 375, y: 34 },
   { type: 'deep', kind: 'grunt', x: 402, y: 40 },
 
