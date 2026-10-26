@@ -54,7 +54,7 @@ export type GearKind = 'crabbot' | 'sentry';
  * the palace's enchanted armor, Hex's illusions (ground), stone gargoyles and bewitched kites (flying).
  */
 export type MagicKind = 'rockling' | 'golem' | 'armor' | 'illusion' | 'gargoyle' | 'kite';
-export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind | MagicKind;
+export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind | MagicKind | DeepKind;
 export type Density = 'sparse' | 'normal' | 'frequent';
 export type FormFilter = 'any' | 'human' | 'alien';
 
@@ -157,7 +157,38 @@ export type EntitySpawn =
   | { type: 'illusion'; id: string; x: number; y: number; w: number; h: number; look: 'wall' | 'floor' }
   /** A local (Chapter 6) who says a line or two when Ben comes close: Rauf the chai-wala, Rafiq, Zain. */
   | { type: 'local'; who: LocalId; x: number; y: number; flip?: boolean }
-  | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean; frame?: number };
+  | { type: 'decor'; kind: DecorKind; x: number; y: number; flip?: boolean; frame?: number }
+  // ---- Act 3 (Chapter 7): the Plumber base's water and systems.
+  /**
+   * A body of water filling tiles `x`..`x+w`, rows `top`..`bottom` (exclusive), its surface at row
+   * `level` (fractions allowed). Every form swims in it. Pumps, valves and story beats move the level.
+   * `sea`: the open sea outside the hull (drawn lighter, with no surface in sight).
+   */
+  | { type: 'tank'; id: string; x: number; w: number; top: number; bottom: number; level: number; sea?: boolean }
+  /** A jet of water (a burst pipe) in tiles x..x+w, rows y..y+h, pushing swimmers at (vx, vy) px/s while it's under water. `intake`: it sucks, and its grate at the far end bites. */
+  | { type: 'current'; id: string; x: number; y: number; w: number; h: number; vx: number; vy: number; intake?: boolean; pulse?: { onMs: number; offMs: number } }
+  /** Air trapped under the ceiling, tiles x..x+w, rows y..y+h: breath refills there. */
+  | { type: 'airPocket'; x: number; y: number; w: number; h: number }
+  /** A vent on the floor (feet on row `y`) streaming bubbles up its column: breath refills in the stream. */
+  | { type: 'bubbleVent'; x: number; y: number }
+  /**
+   * A pump console standing on row `y`. Any hit (or Upgrade merging) runs it: every tank goes to the
+   * next set of levels in `sets` (it cycles). `label` names it on its screen.
+   */
+  | { type: 'pump'; id: string; x: number; y: number; label: string; sets: ReadonlyArray<ReadonlyArray<{ tank: string; level: number }>> }
+  /** A pressure door filling column `x`, rows `y`..`y+h`: open only while the tanks either side are level (within a tile). Its gauge shows the difference. */
+  | { type: 'pressureDoor'; id: string; x: number; y: number; h: number; left: string; right: string }
+  /** A valve wheel standing on row `y`: turned (any hit), tanks `a` and `b` share their water until they're level. */
+  | { type: 'valve'; id: string; x: number; y: number; a: string; b: string }
+  /** A base hatch filling column `x`, rows `y`..`y+h`: solid while shut. The story opens and shuts it (`open`: it starts open). */
+  | { type: 'hatch'; id: string; x: number; y: number; h: number; open?: boolean }
+  /** A dead base console standing on row `y`: hitting it wakes `wakes` (a section's lights and doors). */
+  | { type: 'baseConsole'; id: string; x: number; y: number; wakes: string }
+  /** The Plumber base's creatures and machines: walkers stand on row `y`, swimmers and sentries are in it. */
+  | { type: 'deep'; kind: DeepKind; x: number; y: number };
+
+/** Chapter 7's enemies: the base's security sentries, Deepmaw's fishbowl crew, zapper eels, jelly mines, gnasher swarms. */
+export type DeepKind = 'sentry' | 'grunt' | 'eel' | 'jelly' | 'gnasher';
 
 export type DecorKind =
   | 'rv'
@@ -435,6 +466,29 @@ export interface StoryPlan {
   bounty?: BountyPlan;
   /** Chapter 6: Karachi's set pieces. */
   magic?: MagicPlan;
+  /** Chapter 7: the Plumber base's set pieces. */
+  plumber?: PlumberPlan;
+}
+
+/** Chapter 7's set pieces, in the order they play. Positions are tiles. */
+export interface PlumberPlan {
+  /** The capsule docks at `capsuleX` on row `floor`: the descent hands over to play there. `hatch` keeps the bay shut until the base wakes. */
+  dock: { capsuleX: number; floor: number; hatch: string };
+  /** The docking ring: Max's reveal past `revealX`, his locker at `lockerX`, the sentries' lockdown past `lockdownX`, the split at the hub (`hubX`, its hatch `hubHatch`). */
+  ring: { revealX: number; lockerX: number; lockdownX: number; hubX: number; hubHatch: string; floor: number };
+  /** Kevin glimpsed through a porthole at `windowX` as Ben passes `triggerX`. */
+  glimpse: { triggerX: number; windowX: number; floor: number };
+  /**
+   * The reactor: Kevin drains it once Ben passes `triggerX` (he stands at `kevinX`), the hatches seal,
+   * tank `tank` floods to row `floodTo`, Ben runs out of air, and `alien` smashes the glass (`glass`, tiles) into the open sea.
+   */
+  reactor: { triggerX: number; kevinX: number; floor: number; hatches: readonly string[]; tank: string; floodTo: number; glass: { x: number; y: number; w: number; h: number }; alien: string };
+  /** The pump hall's consoles, in order, and the tanks they leave level for its doors. */
+  pumps: readonly string[];
+  /** Containment: Max catches up at `maxX`; Cell 7 (empty) at `cellX`. */
+  containment: { maxX: number; cellX: number; floor: number };
+  /** The moon pool's tank and its level at each of Deepmaw's stages. */
+  moonPool: { tank: string; levels: readonly [number, number, number]; boothX: number };
 }
 
 /** Chapter 6's set pieces, in the order they play. Positions are tiles. */

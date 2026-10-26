@@ -711,7 +711,10 @@ export class LevelScene extends Phaser.Scene {
     if (this.checkpointId?.startsWith('@')) {
       const tx = Number(this.checkpointId.slice(1));
       const x = tx * TILE + TILE / 2;
-      return { x, y: this.world.groundBelow(x, 0) };
+      // Under a ceiling (a level carved out of solid), start from the first open row.
+      let top = 0;
+      while (top < this.world.heightPx && this.world.isSolid(x, top)) top += TILE;
+      return { x, y: this.world.groundBelow(x, top) };
     }
     if (this.checkpointId) {
       const cp = checkpointsFor(this.level).find((c) => c.id === this.checkpointId) ?? this.level.entities.find((e) => e.type === 'checkpoint' && e.id === this.checkpointId);

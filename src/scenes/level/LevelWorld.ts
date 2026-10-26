@@ -35,6 +35,11 @@ export class LevelWorld {
    * Drones, shots and ground checks treat them like terrain.
    */
   private readonly extraSolids: Rect[] = [];
+  /** Act 3: the terrain drawn with an HD tileset (the pixel layer stays for collision, hidden). */
+  private hdLayer: Phaser.Tilemaps.TilemapLayer | null = null;
+  private hdFrame: ((frame: number, x: number, y: number) => number) | null = null;
+  /** The dark back walls of carved tunnels (pixel art: an HD level draws its own). */
+  private readonly carveWalls: Phaser.GameObjects.Image[] = [];
 
   constructor(
     scene: Phaser.Scene,
@@ -69,6 +74,7 @@ export class LevelWorld {
         for (let x = left; x < left + w; x += 12) g.fillRect(x - left + ((x / 12) % 2) * 5, 2, 3, h - 4);
       });
       wall.image.setPosition(left, c.y * TILE).setDepth(DEPTH.decorBack - 1);
+      this.carveWalls.push(wall.image);
     }
 
     // Asphalt laid over the ground where the highway runs.
@@ -106,6 +112,35 @@ export class LevelWorld {
     for (const w of this.waterSprites) w.sprite.tilePositionX += dtMs * w.drift;
   }
 
+  /**
+   * Act 3: draws the terrain with an HD tileset instead (tiles `res` times the size, in padded
+   * cells, `perRow` to a row), shown scaled down over the pixel layer, which stays for collision
+   * but no longer draws. `frameAt` maps a tile's frame to the HD set's (a region's own look).
+   */
+  useHdTiles(scene: Phaser.Scene, key: string, res: number, pad: number, frameAt: (frame: number, x: number, y: number) => number): void {
+    const frames = autotile(this.grid).map((row, y) => row.map((f, x) => (f < 0 ? -1 : frameAt(f, x, y))));
+    const size = TILE * res;
+    const map = scene.make.tilemap({ data: frames, tileWidth: size, tileHeight: size });
+    const tileset = map.addTilesetImage(key, key, size, size, pad, pad * 2)!;
+    this.hdLayer = (map.createLayer(0, tileset, 0, 0) as Phaser.Tilemaps.TilemapLayer).setScale(1 / res).setDepth(DEPTH.terrain);
+    this.hdFrame = frameAt;
+    this.layer.setVisible(false);
+    for (const w of this.carveWalls) w.setVisible(false);
+  }
+
+  /** Stops the HD layer drawing these cells (tiles): something draws itself there (a door in a wall). */
+  hideHdCells(rect: { x: number; y: number; w: number; h: number }): void {
+    if (!this.hdLayer) return;
+    for (let y = rect.y; y < rect.y + rect.h; y++) for (let x = rect.x; x < rect.x + rect.w; x++) this.hdLayer.removeTileAt(x, y);
+  }
+
+  /** Keeps the HD layer's look in step with a tile the pixel layer just changed. */
+  private syncHd(x: number, y: number, frame: number): void {
+    if (!this.hdLayer || !this.hdFrame) return;
+    if (frame < 0) this.hdLayer.removeTileAt(x, y);
+    else this.hdLayer.putTileAt(this.hdFrame(frame, x, y), x, y);
+  }
+
   /** Inside a ground or rock tile (the level's own terrain, never a phase wall, gate or lift). */
   inGround(x: number, y: number): boolean {
     const c = cellAt(this.grid, Math.floor(x / TILE), Math.floor(y / TILE));
@@ -126,6 +161,7 @@ export class LevelWorld {
         if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width) continue;
         this.grid.cells[y][x] = CELL.EMPTY;
         this.layer.removeTileAt(x, y);
+        this.syncHd(x, y, -1);
       }
     }
     const frames = autotile(this.grid);
@@ -135,12 +171,13 @@ export class LevelWorld {
         const tile = this.layer.putTileAt(frames[y][x], x, y);
         if (ONE_WAY_FRAMES.includes(tile.index)) tile.setCollision(false, false, true, false);
         else tile.setCollision(true);
+        this.syncHd(x, y, frames[y][x]);
       }
     }
   }
 
   /** Empty cells in this rect (tiles) become solid rock for good (bars slamming down). Neighbours re-tile. */
-  fillCells(rect: { x: number; y: number; w: number; h: number }): void {
+  fillCells(rect: { x: number; y: number; w: number; h: number }, drawn = true): void {
     for (let y = rect.y; y < rect.y + rect.h; y++) {
       for (let x = rect.x; x < rect.x + rect.w; x++) {
         if (y < 0 || y >= this.grid.height || x < 0 || x >= this.grid.width) continue;
@@ -154,6 +191,9 @@ export class LevelWorld {
         const tile = this.layer.putTileAt(frames[y][x], x, y);
         if (ONE_WAY_FRAMES.includes(tile.index)) tile.setCollision(false, false, true, false);
         else tile.setCollision(true);
+        // A door or a gate draws itself: its own cells stay undrawn in the HD look.
+        const inside = x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h;
+        this.syncHd(x, y, !drawn && inside ? -1 : frames[y][x]);
       }
     }
   }

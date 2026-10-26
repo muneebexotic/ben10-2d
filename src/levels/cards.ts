@@ -58,6 +58,13 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch6-card-trapdoor', number: 43, name: 'TRAPDOOR TAIMUR', flavour: 'NEVER LOSES. NOBODY CAN FIND THE RING HE WRESTLES IN.', color: 0x8a6a8a },
   { id: 'ch6-card-vent', number: 44, name: 'VENT VALI', flavour: 'SMALL ENOUGH TO CRAWL THROUGH THE CLOCK. BIG ENOUGH TO STOP IT.', color: 0x9fe870, holo: true },
   { id: 'ch6-card-cistern', number: 45, name: 'CISTERN SAMEER', flavour: 'TRAINS UNDERWATER IN AN OLD CISTERN. SMELLS LIKE IT TOO.', color: 0x2a6ac8, holo: true },
+  { id: 'ch7-card-locker', number: 46, name: 'MAGISTER MAX', flavour: 'THIRTY YEARS A SPACE COP. STILL CANNOT WORK THE TV REMOTE.', color: 0x2a9a6a, holo: true },
+  { id: 'ch7-card-pipe', number: 47, name: 'PIPE BURST PERVAIZ', flavour: 'WRESTLES IN A FLOODED RING. HIS OPPONENTS MOSTLY DROWN OUT.', color: 0x3a8ad8 },
+  { id: 'ch7-card-catwalk', number: 48, name: 'REACTOR RIZWAN', flavour: 'GLOWS IN THE DARK. THE REFEREE ASKED HIM NOT TO.', color: 0x7dffb0 },
+  { id: 'ch7-card-cave', number: 49, name: 'CORAL KHALID', flavour: 'TRAINED BY A REEF SHARK. THE SHARK RETIRED.', color: 0xff7a5a },
+  { id: 'ch7-card-vine', number: 50, name: 'GRAPPLE GHAZALA', flavour: 'NEVER TOUCHES THE MAT. SHE SWINGS OVER IT.', color: 0x4ab84a, holo: true },
+  { id: 'ch7-card-tank', number: 51, name: 'DRAINED DANISH', flavour: 'WON A MATCH BY PULLING THE PLUG ON THE POOL.', color: 0x5a6c88 },
+  { id: 'ch7-card-chute', number: 52, name: 'BOWLING BALL BABAR', flavour: 'ROLLS INTO THE RING. ROLLS OUT WITH THE BELT.', color: 0xd8a03a, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {

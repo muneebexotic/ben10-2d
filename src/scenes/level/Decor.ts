@@ -339,8 +339,8 @@ export class Decor {
       this.sprinkleDesert(scene, level, world);
       return;
     }
-    // The museum, downtown, Silver Spur and Karachi are dressed by hand.
-    if (level.theme === 'museum' || level.theme === 'city' || level.theme === 'western' || level.theme === 'karachi') return;
+    // The museum, downtown, Silver Spur, Karachi and the Plumber base are dressed by hand.
+    if (level.theme === 'museum' || level.theme === 'city' || level.theme === 'western' || level.theme === 'karachi' || level.theme === 'plumber') return;
     this.sprinkle(scene, level, world);
 
     this.fireflies = scene.add.particles(0, 0, TEX.soft, {
