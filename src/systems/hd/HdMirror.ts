@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { CH7_HD } from '../../config/chapter7';
 import type { AnimDef } from '../../scenes/preload/assetTypes';
 import { RigInfo, type RigDef } from '../../scenes/preload/cartoon/rig';
 import { RigActor } from './RigActor';
@@ -187,9 +188,12 @@ export class HdMirror {
     c.scaleY = go.scaleY;
     c.rotation = go.rotation;
     if (c.depth !== go.depth) c.setDepth(go.depth);
-    c.alpha = go.alpha;
+    // A hit flicker's faint frame is a pale silhouette, not see-through parts.
+    const faint = go.getData('blinkFaint') === true;
+    c.alpha = faint ? 1 : go.alpha;
     if (c.scrollFactorX !== go.scrollFactorX || c.scrollFactorY !== go.scrollFactorY) c.setScrollFactor(go.scrollFactorX, go.scrollFactorY);
-    actor.setTint(go.isTinted ? go.tintTopLeft : -1, go.tintMode);
+    if (faint) actor.setTint(CH7_HD.blinkTint, Phaser.TintModes.FILL);
+    else actor.setTint(go.isTinted ? go.tintTopLeft : -1, go.tintMode);
     actor.setBlend(go.blendMode as number);
   }
 

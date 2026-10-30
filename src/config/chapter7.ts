@@ -12,6 +12,11 @@ export const CH7_HD = {
   /** The world camera's zoom in the base (characters read bigger in HD); the boss arena frames wider. */
   zoom: 1.25,
   arenaZoom: 1,
+  /**
+   * A rig can't be see-through as a whole (each part would show the parts behind it), so the
+   * hit flicker's faint frames show a pale silhouette instead.
+   */
+  blinkTint: 0xc8e2ff,
 } as const;
 
 /** The base's water (Chapter 7): how fast levels move, and how it looks. */

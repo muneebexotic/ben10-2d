@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { applyFace, makeWorld, partFrame, Pose, RigInfo, solve, type BoneWorld, type RigDef } from '../../scenes/preload/cartoon/rig';
+import { bendSkin, buildSkin, restWorld, type SkinGeom } from '../../scenes/preload/cartoon/skin';
 
 /** How long a change of clip blends from the old pose (ms). */
 const BLEND_MS = 90;
@@ -16,6 +17,8 @@ export class RigActor {
   readonly container: Phaser.GameObjects.Container;
   readonly info: RigInfo;
   private readonly images: Phaser.GameObjects.Image[] = [];
+  /** Parts drawn as bending meshes (a whole leg, a whole arm). */
+  private readonly skins: Array<{ geom: SkinGeom; mesh: Phaser.GameObjects.Mesh2D }> = [];
   /** Frame name per bone per variant (built once: no strings made per frame). */
   private readonly frames: string[][];
   private readonly shownVariant: Int16Array;
@@ -66,6 +69,36 @@ export class RigActor {
       if (b.blink && this.info.variantIndex[i].has('blink')) this.blinkBones.push(i);
       if (b.cycle) this.cycleBones.push({ i, variants: b.cycle.variants.map((v) => this.info.variantIndex[i].get(v) ?? 0), fps: b.cycle.fps });
     });
+    if (rig.skins && rig.skins.length > 0) {
+      const rest = restWorld(this.info);
+      for (const spec of rig.skins) {
+        const part = parts.get(spec.part);
+        if (!part) continue;
+        const geom = buildSkin(this.info, spec, part, rest);
+        const first = part.variants?.[0] ?? '';
+        const frame = scene.textures.getFrame(atlas, partFrame(part.id, first, first));
+        if (!frame) continue;
+        const src = frame.source;
+        const res = src.resolution || 1;
+        const count = geom.u.length;
+        const vertices: number[] = new Array(count * 4).fill(0);
+        for (let k = 0; k < count; k++) {
+          vertices[k * 4 + 2] = (frame.cutX + geom.u[k] * part.w * res) / src.width;
+          vertices[k * 4 + 3] = (frame.cutY + geom.v[k] * part.h * res) / src.height;
+        }
+        // Each grid cell is two triangles sharing the diagonal.
+        const indices: number[] = [];
+        const q = geom.quads;
+        for (let o = 0; o < q.length; o += 4) indices.push(q[o], q[o + 1], q[o + 2], 0, q[o + 1], q[o + 3], q[o + 2], 0);
+        // The texture coordinates are top-down, as the atlas was painted; GL reads them bottom-up.
+        const mesh = new Phaser.GameObjects.Mesh2D(scene, 0, 0, atlas, vertices, indices, true);
+        // As triangles: the quad path leaves pinholes in a bent mesh's thin rows at play size.
+        mesh.setRenderAsTriangles(true);
+        mesh.setData('rigBone', geom.bone);
+        this.skins.push({ geom, mesh });
+        children.push(mesh as unknown as Phaser.GameObjects.Image);
+      }
+    }
     this.container = scene.add.container(0, 0, children);
     this.blinkIn = rand(BLINK_EVERY_MS);
     this.play(rig.fallback);
@@ -155,7 +188,13 @@ export class RigActor {
   private applyPose(): void {
     const { pose, world, info } = this;
     solve(info, pose, world);
+    for (const { geom, mesh } of this.skins) {
+      const hide = pose.hide[geom.bone] === 1;
+      if (mesh.visible === hide) mesh.setVisible(!hide);
+      if (!hide) bendSkin(geom, world, mesh.vertices, 4, 0);
+    }
     let zKey = 0;
+    for (let i = 0; i < pose.z.length; i++) zKey = (zKey * 31 + Math.round(pose.z[i] * 8)) | 0;
     for (let i = 0; i < this.images.length; i++) {
       const img = this.images[i];
       const frames = this.frames[i];
@@ -173,7 +212,6 @@ export class RigActor {
       img.rotation = world.r[i];
       img.scaleX = pose.sx[i];
       img.scaleY = pose.sy[i];
-      zKey = (zKey * 31 + Math.round(pose.z[i] * 8)) | 0;
     }
     if (zKey !== this.zKey) {
       this.zKey = zKey;
@@ -195,12 +233,19 @@ export class RigActor {
       if (color < 0) img.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
       else img.setTint(color).setTintMode(mode);
     }
+    for (const { mesh } of this.skins) {
+      // Mesh2D tints like an image, but Phaser's typings leave it out.
+      const m = mesh as unknown as { tint: number; tintMode: number };
+      m.tint = color < 0 ? 0xffffff : color;
+      m.tintMode = color < 0 ? Phaser.TintModes.MULTIPLY : mode;
+    }
   }
 
   setBlend(mode: number): void {
     if (mode === this.blend) return;
     this.blend = mode;
     for (const img of this.images) img.setBlendMode(mode);
+    for (const { mesh } of this.skins) mesh.setBlendMode(mode);
   }
 
   /** Where a bone is right now (game px, in the actor's own space before flip and scale): attach effects to hands, heads. */

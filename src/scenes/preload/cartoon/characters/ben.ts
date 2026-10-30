@@ -1,7 +1,7 @@
 import { BEN_CARTOON } from '../../../../config/cartoon/ben';
 import { BEN_STYLE, EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
-import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo, type SkinSpec } from '../rig';
 import { cutoutDims, cutoutImage, cutoutPart, emptyPart } from '../cutout/cutout';
 import { BEN_CUT } from '../cutout/ben';
 import { SHOW_FRONT, showHumanClips } from '../showClips';
@@ -185,9 +185,22 @@ const FRONT = SHOW_FRONT;
 export function benRig(): RigDef {
   const img = cutoutImage('ben');
   if (!img) return humanRig({ id: 'ben', dims: BEN_DIMS, parts: parts(), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, clips: benClips });
-  const rig = humanRig({ id: 'ben', dims: cutoutDims(BEN_CUT), parts: cutParts(img), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, clips: benClips });
+  // The seat of his pants sits behind both legs, so no gap opens at the crotch as they swing.
+  const seat = { id: 'seat', parent: 'hip', x: 0, y: 0, part: 'seat', z: 11, dir: 1 } as const;
+  const rig = humanRig({ id: 'ben', dims: cutoutDims(BEN_CUT), parts: cutParts(img), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, extraBones: [seat], clips: benClips });
   // The head goes behind the shirt, so its neck tucks into the collar when he turns his head.
-  return { ...rig, bones: rig.bones.map((b) => (b.id === 'head' ? { ...b, z: CUT_HEAD_Z } : b)), face: { head: 'head', eyes: 'eyes', mouth: 'mouth', pick: benFace } };
+  return { ...rig, bones: rig.bones.map((b) => (b.id === 'head' ? { ...b, z: CUT_HEAD_Z } : b)), face: { head: 'head', eyes: 'eyes', mouth: 'mouth', pick: benFace }, skins: cutSkins() };
+}
+
+/** His legs bend at the hip and knee and his arms at the elbow, each one piece (the pants and sleeves fold, they don't hinge). */
+function cutSkins(): SkinSpec[] {
+  const b = BEN_CUT.bends;
+  return [
+    { part: 'legF', bone: 'thighF', chain: ['hip', 'thighF', 'shinF'], blend: b.legF, cols: 3, rows: 28 },
+    { part: 'legB', bone: 'thighB', chain: ['hip', 'thighB', 'shinB'], blend: b.legB, cols: 3, rows: 28 },
+    { part: 'armF', bone: 'armUF', chain: ['armUF', 'armLF'], blend: b.armF, cols: 2, rows: 22, lowerOnTop: true },
+    { part: 'armB', bone: 'armUB', chain: ['armUB', 'armLB'], blend: b.armB, cols: 2, rows: 22 },
+  ];
 }
 
 const BOUNDS = { left: -12, right: 14, top: -34, bottom: 2 };
@@ -198,7 +211,8 @@ const CUT_HEADS = ['neutral', 'neutral-blink', 'open', 'open-blink', 'grin', 'sh
 function cutParts(img: HTMLImageElement): PartSpec[] {
   const part = (id: string, variants?: readonly string[]) => cutoutPart(BEN_CUT, img, id, variants);
   return [
-    ...['torso', 'pelvis', 'thighF', 'thighB', 'shinF', 'shinB', 'footF', 'footB', 'armUF', 'armUB', 'armLF', 'armLB'].map((id) => part(id)),
+    // The limbs aren't on bones: their skins draw them.
+    ...['torso', 'pelvis', 'seat', 'legF', 'legB', 'footF', 'footB', 'armF', 'armB'].map((id) => part(id)),
     part('handF', ['fist', 'open', 'point']),
     part('handB', ['fist', 'open', 'point']),
     part('head', CUT_HEADS),

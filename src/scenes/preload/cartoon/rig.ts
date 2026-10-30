@@ -73,6 +73,23 @@ export interface RigDef {
    * variants. The eyes and mouth bones are hidden.
    */
   face?: { head: string; eyes: string; mouth: string; pick(eyes: string, mouth: string): string };
+  /** Parts drawn as meshes that bend with their bones (`skin.ts`): a whole leg, a whole arm. */
+  skins?: readonly SkinSpec[];
+}
+
+/** A part drawn as a mesh bent by a chain of bones (see `skin.ts`). */
+export interface SkinSpec {
+  /** The part (painted straight, as at rest) and the bone its pivot sits on, whose draw order and visibility it follows. */
+  part: string;
+  bone: string;
+  /** The bones it bends with, top to bottom, and how far each joint's bend spreads either side of it (game px). */
+  chain: readonly string[];
+  blend: readonly number[];
+  /** The mesh's grid. */
+  cols: number;
+  rows: number;
+  /** Where a fold overlaps, the lower bone's side draws on top (a near forearm over its upper arm). */
+  lowerOnTop?: boolean;
 }
 
 /** Bone lookup and order, built once per rig. */

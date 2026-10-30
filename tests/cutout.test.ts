@@ -3,7 +3,8 @@ import { BEN_CUT } from '../src/scenes/preload/cartoon/cutout/ben';
 import { cutoutDims, cutoutPart } from '../src/scenes/preload/cartoon/cutout/cutout';
 import { benFace } from '../src/scenes/preload/cartoon/characters/ben';
 import { EYES, MOUTHS } from '../src/scenes/preload/cartoon/humanoid';
-import { applyFace, Pose, RigInfo, type RigDef } from '../src/scenes/preload/cartoon/rig';
+import { applyFace, makeWorld, Pose, RigInfo, solve, type RigDef } from '../src/scenes/preload/cartoon/rig';
+import { bendSkin, buildSkin, restWorld } from '../src/scenes/preload/cartoon/skin';
 
 describe('characters cut from their model sheets', () => {
   it("Ben's skeleton stands on the floor and is about as tall as before", () => {
@@ -21,7 +22,7 @@ describe('characters cut from their model sheets', () => {
       expect(f.x + f.w).toBeLessThanOrEqual(BEN_CUT.width);
       expect(f.y + f.h).toBeLessThanOrEqual(BEN_CUT.height);
     }
-    for (const id of ['torso', 'pelvis', 'thighF', 'thighB', 'shinF', 'shinB', 'footF', 'footB', 'armUF', 'armUB', 'armLF', 'armLB', 'handF', 'handB', 'head:neutral', 'head:neutral-blink', 'head:open']) {
+    for (const id of ['torso', 'pelvis', 'seat', 'legF', 'legB', 'footF', 'footB', 'armF', 'armB', 'handF', 'handB', 'head:neutral', 'head:neutral-blink', 'head:open']) {
       expect(BEN_CUT.frames[id], id).toBeDefined();
     }
   });
@@ -68,5 +69,63 @@ describe('characters cut from their model sheets', () => {
     pose.show('mouth', 'open');
     applyFace(info, pose);
     expect(pose.v[0]).toBe(1);
+  });
+});
+
+describe('skins: limbs that bend with their bones', () => {
+  const leg = (): RigDef => ({
+    id: 'leg',
+    parts: [{ id: 'leg', w: 4, h: 12, px: 2, py: 2, draw: () => undefined }],
+    bones: [
+      { id: 'hip', x: 0, y: -12, z: 0, dir: 1 },
+      { id: 'thigh', parent: 'hip', x: 0, y: 0, z: 1, dir: -1 },
+      { id: 'shin', parent: 'thigh', x: 0, y: 5, z: 1, dir: -1 },
+    ],
+    clips: {},
+    fallback: 'idle',
+    bounds: { left: 0, right: 0, top: 0, bottom: 0 },
+    skins: [{ part: 'leg', bone: 'thigh', chain: ['hip', 'thigh', 'shin'], blend: [1, 1.5], cols: 2, rows: 24 }],
+  });
+
+  it('at rest the mesh lies exactly where the straight part is drawn', () => {
+    const rig = leg();
+    const info = new RigInfo(rig);
+    const g = buildSkin(info, rig.skins![0], rig.parts[0]);
+    const pos = new Float32Array(g.u.length * 2);
+    bendSkin(g, restWorld(info), pos);
+    for (let k = 0; k < g.u.length; k++) {
+      expect(pos[k * 2]).toBeCloseTo(g.restX[k], 5);
+      expect(pos[k * 2 + 1]).toBeCloseTo(g.restY[k], 5);
+    }
+  });
+
+  it('a bent knee turns the shin rigidly about the knee, keeps the hip end still, and blends in between', () => {
+    const rig = leg();
+    const info = new RigInfo(rig);
+    const g = buildSkin(info, rig.skins![0], rig.parts[0]);
+    const pose = new Pose(info);
+    pose.set('shin', -90);
+    const world = makeWorld(info);
+    solve(info, pose, world);
+    const pos = new Float32Array(g.u.length * 2);
+    bendSkin(g, world, pos);
+    const knee = { x: world.x[2], y: world.y[2] };
+    const last = g.u.length - 1;
+    // The foot end: as far from the knee as at rest (angle blending keeps lengths), turned a quarter turn.
+    const rest = Math.hypot(g.restX[last] - knee.x, g.restY[last] - knee.y);
+    expect(Math.hypot(pos[last * 2] - knee.x, pos[last * 2 + 1] - knee.y)).toBeCloseTo(rest, 4);
+    // The top row (above the hip's blend) doesn't move.
+    expect(pos[0]).toBeCloseTo(g.restX[0], 5);
+    expect(pos[1]).toBeCloseTo(g.restY[0], 5);
+    // Every row's weight runs from the upper bone to the lower one without a jump.
+    for (let j = 1; j < g.rowW.length; j++) if (g.rowJoint[j] === g.rowJoint[j - 1]) expect(g.rowW[j]).toBeGreaterThanOrEqual(g.rowW[j - 1]);
+  });
+
+  it("Ben's limbs are skins on his own bones", () => {
+    const parts = new Set(Object.keys(BEN_CUT.frames));
+    for (const id of ['legF', 'legB', 'armF', 'armB']) {
+      expect(parts.has(id), id).toBe(true);
+      expect(BEN_CUT.bends[id]?.length).toBeGreaterThan(0);
+    }
   });
 });

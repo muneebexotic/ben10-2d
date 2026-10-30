@@ -116,6 +116,10 @@ def cut_part(fig, box, part, sheet_rgb):
         source = own & (lum > part.get('fillMinLum', 70))
         rgb = nearest_fill(rgb, source, hidden)
     a = np.where(hidden, take, a)
+    # Colours that belong to what's behind (the pants under a fist): dropped, the outline between kept.
+    for colour, tol in part.get('drop', []):
+        near = np.linalg.norm(rgb - np.array(colour, np.float32), axis=2) < tol
+        a = np.where(near & ~hidden, 0.0, a)
     out = np.dstack([rgb * a[..., None], a])
     out = np.dstack([out[..., :3] / np.maximum(out[..., 3:], 1e-6), out[..., 3]])
     out = stroke(out, part.get('ink', []), (x0, y0), part.get('inkWidth', 5))
@@ -162,6 +166,60 @@ def angle_to(pivot, aim, up):
     if up:
         vx, vy = -vx, -vy
     return math.degrees(math.atan2(vx, vy))
+
+
+def smoothstep(t):
+    t = np.clip(t, 0.0, 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def bone_angle(a, b):
+    """The rig's rotation (radians) that turns a bone hanging straight down to point from a to b."""
+    return -math.atan2(b[0] - a[0], b[1] - a[1])
+
+
+def unbend(rgba, origin, bend, scale):
+    """
+    A limb straightened along its bones (the runtime bends it back): the
+    output pixel at d below the top joint comes from the art by the same
+    angle-blended bend the rig uses (RigActor's skins), so the rig posed like
+    the sheet shows the sheet exactly. `bend`: 'pivot' (the limb's top joint),
+    'bones' (each a pair of points, or None for an upright bone above the
+    first joint), 'joints' (between bones), 'blend' (half-widths, sheet px).
+    """
+    pivot = np.array(bend['pivot'], np.float64)
+    joints = [np.array(j, np.float64) for j in bend['joints']]
+    angles = [0.0 if b is None else bone_angle(*b) for b in bend['bones']]
+    # Joints along the straight limb: the first bone that hangs from the pivot sets the offsets.
+    straight = []
+    for k, j in enumerate(joints):
+        if k == 0:
+            straight.append(np.linalg.norm(j - pivot) * (1 if j[1] >= pivot[1] else -1))
+        else:
+            straight.append(straight[-1] + np.linalg.norm(j - joints[k - 1]))
+    h, w = rgba.shape[:2]
+    reach = math.hypot(max(pivot[0] - origin[0], origin[0] + w - pivot[0]), max(pivot[1] - origin[1], origin[1] + h - pivot[1])) + 4
+    R = int(math.ceil(reach))
+    ys, xs = np.mgrid[-R:R + 1, -R:R + 1].astype(np.float64)
+    # Nearest joint by height; the weight toward the bone below it.
+    dist = np.stack([np.abs(ys - sy) for sy in straight])
+    k = np.argmin(dist, axis=0)
+    sy = np.array(straight)[k]
+    b = np.array(bend['blend'], np.float64)[k]
+    wgt = smoothstep((ys - (sy - b)) / (2 * b))
+    a0 = np.array(angles)[k]
+    a1 = np.array(angles)[k + 1]
+    alpha = a0 + wgt * (a1 - a0)
+    jx = np.array([j[0] for j in joints])[k]
+    jy = np.array([j[1] for j in joints])[k]
+    dx, dy = xs, ys - sy
+    c, s_ = np.cos(alpha), np.sin(alpha)
+    srcx = jx + c * dx - s_ * dy - origin[0]
+    srcy = jy + s_ * dx + c * dy - origin[1]
+    out = cv2.remap(rgba, srcx.astype(np.float32), srcy.astype(np.float32), cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    out = np.clip(out, 0, None)
+    out[..., :3] = np.minimum(out[..., :3], out[..., 3:] * 255)
+    return out, (R, R)
 
 
 def eye_blink(rgba, eyes, offset, skin, lid_width):
@@ -240,14 +298,24 @@ def main():
     texel = S.TEXEL / S.SCALE
     box = S.BODY_BOX
     fig = figure_rgba(sheet, box)
-    images, pivots = {}, {}
+    images, pivots, bends = {}, {}, {}
 
     for name, part in S.PARTS.items():
         rgba = cut_part(fig, box, part, sheet)
         if part.get('far'):
             rgba = shade_far(rgba, S.FAR_SHADE)
+        if 'bend' in part:
+            bend = dict(part['bend'], blend=[b * S.SCALE for b in part['bend']['blend']])
+            straight, pv0 = unbend(rgba, (box[0], box[1]), bend, 1.0)
+            img, pv = place(straight, (0, 0), pv0, 0.0, texel)
+            images[name] = img
+            pivots[name] = pv
+            bends[name] = list(part['bend']['blend'])
+            continue
         turn = 0.0
-        if 'aim' in part:
+        if 'turnFrom' in part:
+            turn = angle_to(*part['turnFrom'], False)
+        elif 'aim' in part:
             turn = angle_to(part['pivot'], part['aim'], part.get('up', False))
         elif 'turnLike' in part:
             p2 = S.PARTS[part['turnLike']]
@@ -294,6 +362,7 @@ def main():
         'height': atlas.shape[0],
         'joints': joints,
         'frames': dict(sorted(frames.items())),
+        'bends': bends,
     }
     out_ts = os.path.join(ROOT, 'src', 'scenes', 'preload', 'cartoon', 'cutout', S.ID + '.ts')
     os.makedirs(os.path.dirname(out_ts), exist_ok=True)
@@ -304,7 +373,7 @@ def main():
         f.write('export const ' + const + ': CutoutMeta = {\n')
         for key in ('id', 'image', 'texel', 'scale', 'headScale', 'width', 'height'):
             f.write('  ' + key + ': ' + json.dumps(meta[key]) + ',\n')
-        for key in ('joints', 'frames'):
+        for key in ('joints', 'frames', 'bends'):
             f.write('  ' + key + ': {\n')
             for name, v in meta[key].items():
                 f.write('    ' + json.dumps(name) + ': ' + json.dumps(v, separators=(', ', ': ')) + ',\n')

@@ -18,6 +18,7 @@ export class PlayerVisual {
   private glowAmount = 0;
   private warning = false;
   private blink = false;
+  private faint = false;
   private currentAnim = '';
   private spin = 0;
   private readonly ghosts: Phaser.GameObjects.Image[] = [];
@@ -181,7 +182,13 @@ export class PlayerVisual {
     } else {
       s.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     }
-    s.setAlpha((this.blink && blinkOn(now, 70) ? 0.35 : 1) * this.fade);
+    const faint = this.blink && blinkOn(now, 70);
+    s.setAlpha((faint ? 0.35 : 1) * this.fade);
+    // The HD look draws the faint frames as a silhouette (HdMirror).
+    if (faint !== this.faint) {
+      this.faint = faint;
+      s.setData('blinkFaint', faint);
+    }
     this.drawMeter(x, feetY, facing, dtMs);
   }
 

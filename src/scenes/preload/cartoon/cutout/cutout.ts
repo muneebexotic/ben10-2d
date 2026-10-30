@@ -31,6 +31,8 @@ export interface CutoutMeta {
   height: number;
   joints: Readonly<Record<string, readonly [number, number]>>;
   frames: Readonly<Record<string, CutoutFrame>>;
+  /** The limbs cut straight, and how far each of their bends spreads either side of its joint (game px). */
+  bends: Readonly<Record<string, readonly number[]>>;
 }
 
 const images = new Map<string, HTMLImageElement>();
