@@ -8,12 +8,16 @@ import { ALL_ANIMS } from '../../preload/catalog';
 import { castMirrorSpecs, makeCastArt } from '../../preload/cartoon/cast';
 import { makeHdFont } from '../../preload/cartoon/font';
 import { DEEP_ANIMS } from '../../preload/cartoon/plumber/deepSheets';
+import { DEV_TOOLS } from '../../../systems/LaunchParams';
 
 let artRes = 0;
 
 /** Texels per game pixel for Chapter 7's art on this screen: the render scale times the camera's zoom, in whole steps. */
 export function plumberArtRes(game: Phaser.Game): number {
   if (artRes > 0) return artRes;
+  // Dev tool: `?artres=12` paints the art sharper for close review (the rig viewer at a high zoom).
+  const asked = DEV_TOOLS ? Number(new URLSearchParams(location.search).get('artres')) : 0;
+  if (asked > 0) return (artRes = Math.min(16, asked));
   artRes = Math.max(2, Math.min(CH7_HD.maxArtRes, Math.round(wantedHdScale(game, CH7_HD.maxRenderScale) * CH7_HD.zoom)));
   return artRes;
 }

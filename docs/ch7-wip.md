@@ -16,6 +16,8 @@ Uncommitted at handoff time: nothing (the Deepmaw rig and manifest were committe
 
 ## Still to do, in order
 
+0. **Redraw the cast on-model from the owner's model sheets** (DECISIONS.md, Act 3): the owner makes each sheet in ChatGPT from the prompt pack (https://claude.ai/artifact/1REy5FrqDPRy3mCHZZdy5H, 33 prompts) and uploads it; save it in `docs/art-refs/`, then redraw that rig with `scenes/preload/cartoon/show.ts`, matching the sheet (trace the close-up's hair, face and features into game units; check against the sheet with a clean render, see "How to look at it"). Done: **Ben** (`characters/ben.ts`). Waiting for sheets: Gwen, Max, Kevin, the nine older aliens, Ripjaws, the enemies, Deepmaw, Magister Korr; portraits, backgrounds and story stills come from the same pack (used directly).
+
 1. **DEEPMAW, the boss** (`entities/bosses/deepmaw/DeepmawBoss.ts` implementing `ArenaBoss`, tuning in a new `config/deepmaw.ts`, registered as `bosses.deepmaw` in `chapters/ch7.ts`; then remove the `// TEMP until Deepmaw lands` boss filter there). Plan:
    - **Moon pool geometry first** (`levels/chapter7.ts`): containment `room(340, 71, 30, 40)`; moon pool `room(411, 41, 26, 40)` (decks on row 40); pool `carve(416, 40, 30, 6)` + `ledge(416, 46, 30, 4)`; no booth wall (the booth is background decor at x 431, bottom row 31); `W = 454`; tank `t-moonpool` x 411 w 41 top 26 bottom 46 level 30; boss spawn `x 431, arenaFrom 411, arenaTo 451, triggerX 413, floor 44`; `cp-moonpool` at (406, 40); hidden `cp-drydock` (412, 40), `cp-maelstrom` (413, 40); `moonPool.levels = [30, 46, 32]`, `boothX 431`; move the moon pool decor (booth, lamps 412-450 on row 26). Update the manifest checkpoints.
    - The boss sets `cameraZoom.base = CH7_HD.arenaZoom` (1) for the fight and back after; the arena is 40 tiles (640 px).
@@ -35,7 +37,7 @@ Uncommitted at handoff time: nothing (the Deepmaw rig and manifest were committe
 
 - `?level=ch7&mute=1&god&at=<tile x>`: play from any tile (e.g. 40 the sentries, 74 the flooded ring, 120 the valve, 160 the reactor, 200 the open sea, 276 the pump hall, 360 containment, 420 the moon pool).
 - `?level=ch7&start=cp-sea` etc.: start at a checkpoint (the base resumes in the right state).
-- `?level=ch7&rigview=ben,ripjaws&zoom=4&cols=6&cellh=46`: the rig viewer. Known quirk: with `clips=` it sometimes leaves actors in the rest pose; posing actors by hand in a page script (create `RigActor`s, `play`, `update`) shows every clip reliably.
+- `?level=ch7&rigview=ben,ripjaws&zoom=4&cols=6&cellh=46&artres=10`: the rig viewer (`artres` paints the art sharper for close review; dev builds only). The level's lighting tints it: for true colours, render the rig's parts straight to a canvas (import `cast.ts`, `rig.ts` and `paint.ts` through the dev server, pose with `Pose`, `solve` and draw each part at its bone). Known quirk: with `clips=` it sometimes leaves actors in the rest pose; posing actors by hand in a page script (create `RigActor`s, `play`, `update`) shows every clip reliably.
 
 ## Gotchas
 
