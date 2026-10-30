@@ -1,8 +1,9 @@
 import { BEN_CARTOON } from '../../../../config/cartoon/ben';
 import { BEN_STYLE, EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
-import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo, type SkinSpec } from '../rig';
-import { cutoutDims, cutoutImage, cutoutPart, emptyPart } from '../cutout/cutout';
+import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { cutoutImage } from '../cutout/cutout';
+import { cutHumanRig } from '../cutout/cutRig';
 import { BEN_CUT } from '../cutout/ben';
 import { SHOW_FRONT, showHumanClips } from '../showClips';
 import { cel, celLimb, hardShadow, shifted, showEyes, showHand, showMouth, showOmnitrix, showShade, showSneaker, SHOW_DETAIL } from '../show';
@@ -184,54 +185,12 @@ const FRONT = SHOW_FRONT;
  */
 export function benRig(): RigDef {
   const img = cutoutImage('ben');
-  if (!img) return humanRig({ id: 'ben', dims: BEN_DIMS, parts: parts(), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, clips: benClips });
-  // The seat of his pants sits behind both legs, so no gap opens at the crotch as they swing.
-  const seat = { id: 'seat', parent: 'hip', x: 0, y: 0, part: 'seat', z: 11, dir: 1 } as const;
-  const rig = humanRig({ id: 'ben', dims: cutoutDims(BEN_CUT), parts: cutParts(img), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, extraBones: [seat], clips: benClips });
-  // The head goes behind the shirt, so its neck tucks into the collar when he turns his head.
-  return { ...rig, bones: rig.bones.map((b) => (b.id === 'head' ? { ...b, z: CUT_HEAD_Z } : b)), face: { head: 'head', eyes: 'eyes', mouth: 'mouth', pick: benFace }, skins: cutSkins() };
-}
-
-/** His legs bend at the hip and knee and his arms at the elbow, each one piece (the pants and sleeves fold, they don't hinge). */
-function cutSkins(): SkinSpec[] {
-  const b = BEN_CUT.bends;
-  return [
-    { part: 'legF', bone: 'thighF', chain: ['hip', 'thighF', 'shinF'], blend: b.legF, cols: 3, rows: 28 },
-    { part: 'legB', bone: 'thighB', chain: ['hip', 'thighB', 'shinB'], blend: b.legB, cols: 3, rows: 28 },
-    { part: 'armF', bone: 'armUF', chain: ['armUF', 'armLF'], blend: b.armF, cols: 2, rows: 22, lowerOnTop: true },
-    { part: 'armB', bone: 'armUB', chain: ['armUB', 'armLB'], blend: b.armB, cols: 2, rows: 22 },
-  ];
+  const style = BEN_CARTOON.style ?? BEN_STYLE;
+  if (!img) return humanRig({ id: 'ben', dims: BEN_DIMS, parts: parts(), style, bounds: BOUNDS, clips: benClips });
+  return cutHumanRig({ id: 'ben', meta: BEN_CUT, img, style, bounds: BOUNDS, clips: benClips });
 }
 
 const BOUNDS = { left: -12, right: 14, top: -34, bottom: 2 };
-const CUT_HEAD_Z = 45;
-/** The heads cut from the sheet: the six close-ups, the neutral one blinking, talking, and both. */
-const CUT_HEADS = ['neutral', 'neutral-blink', 'open', 'open-blink', 'grin', 'shout', 'wide', 'pain', 'talk'] as const;
-
-function cutParts(img: HTMLImageElement): PartSpec[] {
-  const part = (id: string, variants?: readonly string[]) => cutoutPart(BEN_CUT, img, id, variants);
-  return [
-    // The limbs aren't on bones: their skins draw them.
-    ...['torso', 'pelvis', 'seat', 'legF', 'legB', 'footF', 'footB', 'armF', 'armB'].map((id) => part(id)),
-    part('handF', ['fist', 'open', 'point']),
-    part('handB', ['fist', 'open', 'point']),
-    part('head', CUT_HEADS),
-    emptyPart('eyes', EYES),
-    emptyPart('mouth', MOUTHS),
-  ];
-}
-
-/** Which of the sheet's heads shows for the eyes and mouth a clip asks for. */
-export function benFace(eyes: string, mouth: string): string {
-  if (eyes === 'hurt' || eyes === 'shut' || mouth === 'grit') return 'pain';
-  if (mouth === 'shout') return 'shout';
-  if (eyes === 'wide' || mouth === 'o') return 'wide';
-  if (eyes === 'happy' || mouth === 'grin') return 'grin';
-  if (eyes === 'side') return 'talk';
-  const open = mouth === 'open';
-  if (eyes === 'blink') return open ? 'open-blink' : 'neutral-blink';
-  return open ? 'open' : 'neutral';
-}
 
 /** His own clips on top of the shared ones: punch, roll, watch, transform slam, listen. */
 function benClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, ClipDef> {

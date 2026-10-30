@@ -44,8 +44,13 @@ def poly_mask(shape, polys, offset=(0, 0)):
     return m.astype(np.float32) / 255.0
 
 
-def figure_rgba(img, box, white=232):
-    """The figures in `box` cut from the white page: premultiplied RGBA floats, the outline's soft edge kept."""
+def figure_rgba(img, box, white=232, holes=()):
+    """
+    The figures in `box` cut from the white page: premultiplied RGBA floats,
+    the outline's soft edge kept. `holes` mark gaps the page shows through
+    that are closed all round (between an arm and the body): the white inside
+    each is page too.
+    """
     x0, y0, x1, y1 = box
     crop = img[y0:y1, x0:x1].astype(np.float32)
     lo = crop.min(axis=2)
@@ -53,6 +58,12 @@ def figure_rgba(img, box, white=232):
     n, lab = cv2.connectedComponents(near_white, connectivity=4)
     edge_labels = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
     bg = np.isin(lab, list(edge_labels)) & (near_white > 0)
+    if holes:
+        gap = (lo >= 238).astype(np.uint8)
+        _, glab = cv2.connectedComponents(gap, connectivity=4)
+        inside = poly_mask(crop.shape, holes, (x0, y0)) > 0.5
+        ids = set(np.unique(glab[inside & (gap > 0)])) - {0}
+        bg |= np.isin(glab, list(ids))
     alpha = np.where(bg, 0.0, 1.0).astype(np.float32)
     # The outline's outer pixels fade into the page: there the colour is ink and the darkness is the cover.
     band = (cv2.dilate(bg.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0) & ~bg
@@ -297,7 +308,8 @@ def main():
     sheet = cv2.cvtColor(cv2.imread(os.path.join(ROOT, S.SHEET), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
     texel = S.TEXEL / S.SCALE
     box = S.BODY_BOX
-    fig = figure_rgba(sheet, box)
+    white = getattr(S, 'WHITE', 232)
+    fig = figure_rgba(sheet, box, white, getattr(S, 'HOLES', ()))
     images, pivots, bends = {}, {}, {}
 
     for name, part in S.PARTS.items():
@@ -327,7 +339,7 @@ def main():
 
     for name, head in S.HEADS.items():
         hb = head['box']
-        hf = figure_rgba(sheet, hb)
+        hf = figure_rgba(sheet, hb, white)
         take = poly_mask(hf.shape, [head['poly']], (hb[0], hb[1]))
         rgba = hf * take[..., None]
         if 'mouth' in head:

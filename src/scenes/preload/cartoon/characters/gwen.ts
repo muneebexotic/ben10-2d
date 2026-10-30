@@ -1,7 +1,10 @@
 import { GWEN_CARTOON } from '../../../../config/cartoon/gwen';
 import { EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
-import { wave, type PartSpec, type RigDef } from '../rig';
+import { wave, type BoneSpec, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { cutoutImage } from '../cutout/cutout';
+import { cutHumanRig } from '../cutout/cutRig';
+import { GWEN_CUT } from '../cutout/gwen';
 import { cel, celLimb, hardShadow, shifted, showEyes, showHand, showMouth, showShade, showSneaker, SHOW_DETAIL } from '../show';
 import { showHumanClips } from '../showClips';
 
@@ -187,37 +190,40 @@ function parts(): PartSpec[] {
 
 /** Gwen's HD rig: the show-look clips she shares with Ben, her cast (a glow of mana between her hands) and an unimpressed fold of the arms. */
 export function gwenRig(): RigDef {
-  return humanRig({
-    id: 'gwen',
-    dims: GWEN_DIMS,
-    parts: parts(),
-    style: GWEN_CARTOON.style!,
-    extraBones: [{ id: 'mana', parent: 'handF', x: 0.6, y: 1.4, part: 'mana', z: 90, dir: -1 }],
-    bounds: { left: -12, right: 14, top: -32, bottom: 2 },
-    clips: (info, base) => {
-      const castKeys = keyframes(info, [
-        [0, { torso: -4, head: -4, armUF: 30, armLF: 40, armUB: 20, armLB: 40, mana: { hide: true }, eyes: { v: 'angry' } }],
-        [0.4, { hip: { x: 0.6 }, torso: 10, head: -6, armUF: 88, armLF: 4, handF: { v: 'open' }, armUB: 84, armLB: 10, handB: { v: 'open' }, thighF: 18, shinF: -14, thighB: -18, shinB: -8, mana: { v: 'b', hide: false }, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
-        [1, { hip: { x: 0.4 }, torso: 8, head: -5, armUF: 84, armLF: 8, handF: { v: 'open' }, armUB: 80, armLB: 12, handB: { v: 'open' }, thighF: 16, shinF: -12, thighB: -16, shinB: -8, mana: { v: 'a', hide: false }, eyes: { v: 'angry' }, mouth: { v: 'open' } }],
-      ]);
-      const hideMana = (clip: (typeof base)[string]) => ({ ...clip, pose: (t: number, p: Parameters<typeof clip.pose>[1]) => { clip.pose(t, p); p.hidden('mana'); } });
-      const out: typeof base = {};
-      for (const [name, clip] of Object.entries({ ...base, ...showHumanClips(info, base) })) out[name] = hideMana(clip);
-      return {
-        ...out,
-        cast: { ms: 300, loop: true, pose: (t, p) => { p.keys(castKeys, Math.min(1, t * 2.5)); p.size('mana', 1 + wave(t * 2) * 0.12); } },
-        folded: hideMana({
-          ms: 1800,
-          loop: true,
-          pose: (t, p) => {
-            p.move('hip', 0, 0.2 + wave(t) * 0.2);
-            p.set('torso', -2).set('head', -6 + wave(t, 0.2) * 1.5);
-            p.set('armUF', 50).set('armLF', -120).set('armUB', 40).set('armLB', -115);
-            p.set('thighF', 6).set('shinF', -2).set('thighB', -8).set('shinB', -4).set('footB', 10);
-            p.show('eyes', 'side').show('mouth', 'flat');
-          },
-        }),
-      };
-    },
-  });
+  const style = GWEN_CARTOON.style!;
+  const img = cutoutImage('gwen');
+  if (!img) return humanRig({ id: 'gwen', dims: GWEN_DIMS, parts: parts(), style, extraBones: [MANA], bounds: BOUNDS, clips: gwenClips });
+  // Cut from her model sheet; the spell's glow stays painted.
+  const mana = parts().find((p) => p.id === 'mana')!;
+  return cutHumanRig({ id: 'gwen', meta: GWEN_CUT, img, style, bounds: BOUNDS, clips: gwenClips, extraParts: [mana], extraBones: [MANA] });
+}
+
+const BOUNDS = { left: -12, right: 14, top: -32, bottom: 2 };
+const MANA: BoneSpec = { id: 'mana', parent: 'handF', x: 0.6, y: 1.4, part: 'mana', z: 90, dir: -1 };
+
+/** Her own clips on top of the shared ones: the cast and arms folded (the spell's glow shows only in the cast). */
+function gwenClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, ClipDef> {
+  const castKeys = keyframes(info, [
+    [0, { torso: -4, head: -4, armUF: 30, armLF: 40, armUB: 20, armLB: 40, mana: { hide: true }, eyes: { v: 'angry' } }],
+    [0.4, { hip: { x: 0.6 }, torso: 10, head: -6, armUF: 88, armLF: 4, handF: { v: 'open' }, armUB: 84, armLB: 10, handB: { v: 'open' }, thighF: 18, shinF: -14, thighB: -18, shinB: -8, mana: { v: 'b', hide: false }, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
+    [1, { hip: { x: 0.4 }, torso: 8, head: -5, armUF: 84, armLF: 8, handF: { v: 'open' }, armUB: 80, armLB: 12, handB: { v: 'open' }, thighF: 16, shinF: -12, thighB: -16, shinB: -8, mana: { v: 'a', hide: false }, eyes: { v: 'angry' }, mouth: { v: 'open' } }],
+  ]);
+  const hideMana = (clip: (typeof base)[string]) => ({ ...clip, pose: (t: number, p: Parameters<typeof clip.pose>[1]) => { clip.pose(t, p); p.hidden('mana'); } });
+  const out: typeof base = {};
+  for (const [name, clip] of Object.entries({ ...base, ...showHumanClips(info, base) })) out[name] = hideMana(clip);
+  return {
+    ...out,
+    cast: { ms: 300, loop: true, pose: (t, p) => { p.keys(castKeys, Math.min(1, t * 2.5)); p.size('mana', 1 + wave(t * 2) * 0.12); } },
+    folded: hideMana({
+      ms: 1800,
+      loop: true,
+      pose: (t, p) => {
+        p.move('hip', 0, 0.2 + wave(t) * 0.2);
+        p.set('torso', -2).set('head', -6 + wave(t, 0.2) * 1.5);
+        p.set('armUF', 50).set('armLF', -120).set('armUB', 40).set('armLB', -115);
+        p.set('thighF', 6).set('shinF', -2).set('thighB', -8).set('shinB', -4).set('footB', 10);
+        p.show('eyes', 'side').show('mouth', 'flat');
+      },
+    }),
+  };
 }

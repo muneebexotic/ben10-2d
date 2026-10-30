@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { BEN_CUT } from '../src/scenes/preload/cartoon/cutout/ben';
+import { GWEN_CUT } from '../src/scenes/preload/cartoon/cutout/gwen';
+import { MAX_CUT } from '../src/scenes/preload/cartoon/cutout/max';
+import { KEVIN_CUT } from '../src/scenes/preload/cartoon/cutout/kevin';
 import { cutoutDims, cutoutPart } from '../src/scenes/preload/cartoon/cutout/cutout';
-import { benFace } from '../src/scenes/preload/cartoon/characters/ben';
+import { SHEET_HEADS, sheetFace as benFace } from '../src/scenes/preload/cartoon/cutout/cutRig';
 import { EYES, MOUTHS } from '../src/scenes/preload/cartoon/humanoid';
 import { applyFace, makeWorld, Pose, RigInfo, solve, type RigDef } from '../src/scenes/preload/cartoon/rig';
 import { bendSkin, buildSkin, restWorld } from '../src/scenes/preload/cartoon/skin';
@@ -17,13 +20,34 @@ describe('characters cut from their model sheets', () => {
     expect(d.shoulderF.x).toBeLessThan(d.shoulderB.x);
   });
 
-  it('every frame lies inside the image, and every rig part has a frame', () => {
-    for (const f of Object.values(BEN_CUT.frames)) {
-      expect(f.x + f.w).toBeLessThanOrEqual(BEN_CUT.width);
-      expect(f.y + f.h).toBeLessThanOrEqual(BEN_CUT.height);
+  const CAST = [BEN_CUT, GWEN_CUT, MAX_CUT, KEVIN_CUT];
+
+  it('every frame lies inside its image, and every rig part and sheet head has a frame', () => {
+    for (const m of CAST) {
+      for (const f of Object.values(m.frames)) {
+        expect(f.x + f.w, m.id).toBeLessThanOrEqual(m.width);
+        expect(f.y + f.h, m.id).toBeLessThanOrEqual(m.height);
+      }
+      for (const id of ['torso', 'pelvis', 'seat', 'legF', 'legB', 'footF', 'footB', 'armF', 'armB', 'handF', 'handB', ...SHEET_HEADS.map((h) => `head:${h}`)]) {
+        expect(m.frames[id], `${m.id} ${id}`).toBeDefined();
+      }
+      for (const id of ['legF', 'legB', 'armF', 'armB']) expect(m.bends[id]?.length, `${m.id} ${id}`).toBeGreaterThan(0);
     }
-    for (const id of ['torso', 'pelvis', 'seat', 'legF', 'legB', 'footF', 'footB', 'armF', 'armB', 'handF', 'handB', 'head:neutral', 'head:neutral-blink', 'head:open']) {
-      expect(BEN_CUT.frames[id], id).toBeDefined();
+  });
+
+  it('everyone stands on the floor at a believable height (Max tallest, then Kevin, Ben and Gwen)', () => {
+    const neck = (m: (typeof CAST)[number]) => {
+      const d = cutoutDims(m);
+      expect(d.hip).toBeCloseTo(d.thigh + d.shin + d.ankle, 6);
+      return d.hip + 0.4 - d.neck.y;
+    };
+    const [ben, gwen, max, kevin] = CAST.map(neck);
+    expect(max).toBeGreaterThan(kevin);
+    expect(kevin).toBeGreaterThan(gwen);
+    expect(ben).toBeGreaterThan(gwen - 1);
+    for (const h of [ben, gwen, max, kevin]) {
+      expect(h).toBeGreaterThan(20);
+      expect(h).toBeLessThan(32);
     }
   });
 
@@ -121,11 +145,4 @@ describe('skins: limbs that bend with their bones', () => {
     for (let j = 1; j < g.rowW.length; j++) if (g.rowJoint[j] === g.rowJoint[j - 1]) expect(g.rowW[j]).toBeGreaterThanOrEqual(g.rowW[j - 1]);
   });
 
-  it("Ben's limbs are skins on his own bones", () => {
-    const parts = new Set(Object.keys(BEN_CUT.frames));
-    for (const id of ['legF', 'legB', 'armF', 'armB']) {
-      expect(parts.has(id), id).toBe(true);
-      expect(BEN_CUT.bends[id]?.length).toBeGreaterThan(0);
-    }
-  });
 });

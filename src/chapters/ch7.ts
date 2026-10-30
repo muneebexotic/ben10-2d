@@ -16,13 +16,16 @@ import { HD_SEA_OFFSET, HD_TILE_PAD, HD_TILES_KEY, makePlumberTiles } from '../s
 import { DEV_TOOLS } from '../systems/LaunchParams';
 import { loadCutouts } from '../scenes/preload/cartoon/cutout/cutout';
 import { BEN_CUT } from '../scenes/preload/cartoon/cutout/ben';
+import { GWEN_CUT } from '../scenes/preload/cartoon/cutout/gwen';
+import { MAX_CUT } from '../scenes/preload/cartoon/cutout/max';
+import { KEVIN_CUT } from '../scenes/preload/cartoon/cutout/kevin';
 import type { ChapterModule } from './types';
 
 /** Chapter 7, The Plumbers: the descent under Keamari harbour and the Plumber base on the floor of the Arabian Sea (HD). */
 export const CHAPTER: ChapterModule = {
   level: CHAPTER_7,
   // The cast drawn from their model sheets (cut-out parts, scripts/cutout).
-  prepare: () => loadCutouts([BEN_CUT]),
+  prepare: () => loadCutouts([BEN_CUT, GWEN_CUT, MAX_CUT, KEVIN_CUT]),
   enter: (scene) => {
     enterPlumberBase(scene);
     const query = new URLSearchParams(window.location.search);

@@ -1,7 +1,10 @@
 import { MAX_CARTOON } from '../../../../config/cartoon/max';
 import { EYES, handPart, humanRig, keyframes, limb, MOUTHS, shoePart, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
-import { wave, type PartSpec, type RigDef } from '../rig';
+import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { cutoutImage, cutoutPart } from '../cutout/cutout';
+import { cutHumanRig } from '../cutout/cutRig';
+import { MAX_CUT } from '../cutout/max';
 import { cartoonEyes, cartoonMouth } from './face';
 
 const C = MAX_CARTOON.colors;
@@ -166,48 +169,84 @@ function parts(): PartSpec[] {
 
 /** Grandpa Max's HD rig: heavy, warm, a little stiff; his blaster, his badge, a salute, a console. */
 export function maxRig(): RigDef {
-  return humanRig({
+  const style = MAX_CARTOON.style!;
+  const img = cutoutImage('max');
+  if (!img) return humanRig({ id: 'max', dims: MAX_DIMS, parts: parts(), style, bounds: BOUNDS, clips: maxClips });
+  // Cut from his model sheet: the holster rides on his belt; the blaster and badge are painted into his near hand.
+  return cutHumanRig({
     id: 'max',
-    dims: MAX_DIMS,
-    parts: parts(),
-    style: MAX_CARTOON.style!,
-    bounds: { left: -14, right: 16, top: -38, bottom: 2 },
-    clips: (info, base) => {
-      const blastKeys = keyframes(info, [
-        [0, { torso: 4, head: -2, armUF: 86, armLF: 0, handF: { v: 'blaster' }, armUB: 60, armLB: 30, thighF: 14, shinF: -10, thighB: -14, shinB: -6, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
-        [0.2, { hip: { x: -0.6 }, torso: -4, head: -6, armUF: 100, armLF: -6, handF: { v: 'blaster' }, armUB: 66, armLB: 24, thighF: 14, shinF: -10, thighB: -14, shinB: -6, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
-        [1, { torso: 4, head: -2, armUF: 86, armLF: 0, handF: { v: 'blaster' }, armUB: 60, armLB: 30, thighF: 14, shinF: -10, thighB: -14, shinB: -6, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
-      ]);
-      const held = (data: Parameters<typeof keyframes>[1][number][1], life = 1) => {
-        const k = keyframes(info, [[0, data]]);
-        return {
-          ms: 2000,
-          loop: true,
-          pose: (t: number, p: Parameters<typeof base.idle.pose>[1]) => {
-            p.keys(k, 0);
-            p.move('hip', 0, wave(t) * 0.25 * life);
-            p.add('head', wave(t, 0.2) * 1.2 * life);
-          },
-        };
-      };
-      return {
-        spray: { ms: 220, loop: true, pose: (t, p) => p.keys(blastKeys, t) },
-        blast: { ms: 260, loop: false, pose: (t, p) => p.keys(blastKeys, t) },
-        badge: held({ torso: 2, head: -4, armUF: 96, armLF: -30, handF: { v: 'badge' }, armUB: 8, armLB: 14, mouth: { v: 'smirk' } }),
-        salute: held({ torso: -2, head: -4, armUF: 140, armLF: -150, handF: { v: 'open' }, armUB: 2, armLB: 6, mouth: { v: 'flat' } }, 0.4),
-        console: {
-          ms: 900,
-          loop: true,
-          pose: (t, p) => {
-            p.set('torso', 14).set('head', 10);
-            p.set('armUF', 60 + wave(t * 2) * 8).set('armLF', -30 + wave(t * 2, 0.3) * 10).show('handF', 'open');
-            p.set('armUB', 50 - wave(t * 2) * 8).set('armLB', -20).show('handB', 'open');
-            p.set('thighF', 6).set('shinF', -4).set('thighB', -6);
-            p.show('eyes', 'angry').show('mouth', 'flat');
-          },
-        },
-        cheer: { ...base.cheer, pose: (t, p) => { base.cheer.pose(t, p); p.set('armUB', 10).set('armLB', 20); } },
-      };
+    meta: MAX_CUT,
+    img,
+    style,
+    bounds: BOUNDS,
+    clips: maxClips,
+    handVariants: HAND_LOOKS,
+    hands: (p, v, far) => {
+      if (far) return;
+      if (v === 'blaster') heldBlaster(p);
+      else if (v === 'badge') heldBadge(p);
     },
+    extraParts: [cutoutPart(MAX_CUT, img, 'holster')],
+    extraBones: [{ id: 'holster', parent: 'hip', x: 0, y: 0, part: 'holster', z: 52, dir: 1 }],
   });
+}
+
+const BOUNDS = { left: -14, right: 16, top: -38, bottom: 2 };
+const HAND_LOOKS = ['fist', 'open', 'point', 'blaster', 'badge'] as const;
+
+/** His blaster in the fist, pointing along the forearm. */
+function heldBlaster(p: Paint): void {
+  p.ctx.save();
+  p.ctx.translate(0.2, 1.4);
+  p.ctx.rotate(Math.PI / 2);
+  blaster(p);
+  p.ctx.restore();
+}
+
+/** His Plumber badge held up in the fist. */
+function heldBadge(p: Paint): void {
+  const badge = p.circle(0.4, 2.4, 1.8);
+  p.shape(badge, { fill: { radial: [-0.2, 1.8, 0.2, 0.4, 2.4, 1.8], stops: [[0, 0xfff2a0], [1, C.badge]] }, shade: shadeOf(C.badge, 0.4), shadeDepth: 0.5 });
+  p.fill(p.circle(0.4, 2.4, 0.9), 0x1a1a22);
+  p.fill(p.circle(0.4, 2.4, 0.35), C.plumber);
+  p.glow(0.4, 2.4, 2.6, C.plumber, 0.45);
+}
+
+/** His own clips: the blaster, the badge, a salute, the pump console. */
+function maxClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, ClipDef> {
+  const blastKeys = keyframes(info, [
+    [0, { torso: 4, head: -2, armUF: 86, armLF: 0, handF: { v: 'blaster' }, armUB: -20, armLB: 45, thighF: 14, shinF: -10, thighB: -14, shinB: -6, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
+    [0.2, { hip: { x: -0.6 }, torso: -4, head: -6, armUF: 100, armLF: -6, handF: { v: 'blaster' }, armUB: -26, armLB: 50, thighF: 14, shinF: -10, thighB: -14, shinB: -6, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
+    [1, { torso: 4, head: -2, armUF: 86, armLF: 0, handF: { v: 'blaster' }, armUB: -20, armLB: 45, thighF: 14, shinF: -10, thighB: -14, shinB: -6, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
+  ]);
+  const held = (data: Parameters<typeof keyframes>[1][number][1], life = 1) => {
+    const k = keyframes(info, [[0, data]]);
+    return {
+      ms: 2000,
+      loop: true,
+      pose: (t: number, p: Parameters<typeof base.idle.pose>[1]) => {
+        p.keys(k, 0);
+        p.move('hip', 0, wave(t) * 0.25 * life);
+        p.add('head', wave(t, 0.2) * 1.2 * life);
+      },
+    };
+  };
+  return {
+    spray: { ms: 220, loop: true, pose: (t, p) => p.keys(blastKeys, t) },
+    blast: { ms: 260, loop: false, pose: (t, p) => p.keys(blastKeys, t) },
+    badge: held({ torso: 2, head: -4, armUF: 96, armLF: -30, handF: { v: 'badge' }, armUB: 8, armLB: 14, mouth: { v: 'smirk' } }),
+    salute: held({ torso: -2, head: -4, armUF: 140, armLF: -150, handF: { v: 'open' }, armUB: 2, armLB: 6, mouth: { v: 'flat' } }, 0.4),
+    console: {
+      ms: 900,
+      loop: true,
+      pose: (t, p) => {
+        p.set('torso', 14).set('head', 10);
+        p.set('armUF', 60 + wave(t * 2) * 8).set('armLF', -30 + wave(t * 2, 0.3) * 10).show('handF', 'open');
+        p.set('armUB', 50 - wave(t * 2) * 8).set('armLB', -20).show('handB', 'open');
+        p.set('thighF', 6).set('shinF', -4).set('thighB', -6);
+        p.show('eyes', 'angry').show('mouth', 'flat');
+      },
+    },
+    cheer: { ...base.cheer, pose: (t, p) => { base.cheer.pose(t, p); p.set('armUB', 10).set('armLB', 20); } },
+  };
 }

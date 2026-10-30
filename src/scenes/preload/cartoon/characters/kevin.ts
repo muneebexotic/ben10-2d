@@ -1,7 +1,11 @@
 import { KEVIN_CARTOON } from '../../../../config/cartoon/kevin';
 import { EYES, handPart, humanRig, keyframes, limb, MOUTHS, shoePart, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
-import { wave, type PartSpec, type RigDef } from '../rig';
+import { wave, type BoneSpec, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { cutoutImage } from '../cutout/cutout';
+import { cutHumanRig } from '../cutout/cutRig';
+import { KEVIN_CUT } from '../cutout/kevin';
+import { showHumanClips } from '../showClips';
 import { cartoonEyes, cartoonMouth } from './face';
 
 const C = KEVIN_CARTOON.colors;
@@ -127,54 +131,58 @@ function parts(): PartSpec[] {
 
 /** Kevin's HD rig: slouching, smirking; his absorb, wind-up, throw, lunge and laugh. */
 export function kevinRig(): RigDef {
-  return humanRig({
-    id: 'kevin',
-    dims: KEVIN_DIMS,
-    parts: parts(),
-    style: KEVIN_CARTOON.style!,
-    extraBones: [{ id: 'power', parent: 'handF', x: 0.5, y: 1.5, part: 'power', z: 90, dir: -1 }],
-    bounds: { left: -12, right: 14, top: -40, bottom: 2 },
-    clips: (info, base) => {
-      const noPower = (clip: (typeof base)[string]) => ({ ...clip, pose: (t: number, p: Parameters<typeof clip.pose>[1]) => { clip.pose(t, p); p.hidden('power'); } });
-      const out: typeof base = {};
-      for (const [name, clip] of Object.entries(base)) out[name] = noPower(clip);
-      const absorbKeys = keyframes(info, [[0, { hip: { y: 0.6 }, torso: 6, head: -4, armUF: 80, armLF: -20, handF: { v: 'open' }, armUB: 70, armLB: -10, handB: { v: 'open' }, thighF: 14, shinF: -14, thighB: -16, shinB: -10, eyes: { v: 'glow' }, mouth: { v: 'grin' }, power: { v: 'b' } }]]);
-      const windKeys = keyframes(info, [[0, { torso: -8, head: -2, armUF: -50, armLF: 90, armUB: 30, armLB: 40, thighF: 10, shinF: -8, thighB: -14, eyes: { v: 'glow' }, mouth: { v: 'smirk' }, power: { v: 'a' } }]]);
-      const throwKeys = keyframes(info, [
-        [0, { torso: -8, head: -2, armUF: -50, armLF: 90, armUB: 30, armLB: 40, eyes: { v: 'glow' }, power: { v: 'a' } }],
-        [0.5, { hip: { x: 1 }, torso: 16, head: -8, armUF: 110, armLF: 0, handF: { v: 'open' }, armUB: -40, armLB: 60, thighF: 26, shinF: -20, thighB: -24, shinB: -12, eyes: { v: 'glow' }, mouth: { v: 'shout' }, power: { hide: true } }],
-        [1, { hip: { x: 0.8 }, torso: 12, head: -6, armUF: 96, armLF: 6, handF: { v: 'open' }, armUB: -30, armLB: 50, thighF: 22, shinF: -18, thighB: -20, shinB: -10, eyes: { v: 'angry' }, mouth: { v: 'grin' }, power: { hide: true } }],
-      ]);
-      const lungeKeys = keyframes(info, [[0, { hip: { x: 1.5, y: 1 }, torso: 30, head: -18, armUF: 110, armLF: -10, handF: { v: 'open' }, armUB: 100, armLB: -6, handB: { v: 'open' }, thighF: 40, shinF: -40, thighB: -30, shinB: -20, footB: 20, eyes: { v: 'angry' }, mouth: { v: 'grit' }, power: { hide: true } }]]);
-      return {
-        ...out,
-        absorb: { ms: 260, loop: true, pose: (t, p) => { p.keys(absorbKeys, 0); p.add('torso', wave(t) * 2).size('power', 1 + wave(t) * 0.15); } },
-        windup: { ms: 300, loop: false, pose: (t, p) => { p.keys(windKeys, 0); p.size('power', 0.5 + t * 0.6); } },
-        throw: { ms: 240, loop: false, pose: (t, p) => p.keys(throwKeys, t) },
-        lunge: noPower({ ms: 200, loop: false, pose: (_t, p) => p.keys(lungeKeys, 0) }),
-        laugh: noPower({
-          ms: 500,
-          loop: true,
-          pose: (t, p) => {
-            p.move('hip', 0, Math.abs(wave(t)) * -0.5);
-            p.set('torso', -10 + wave(t * 2) * 3).set('head', -18 + wave(t * 2) * 4);
-            p.set('armUF', 30).set('armLF', -100).set('armUB', 20).set('armLB', -90);
-            p.show('eyes', 'happy').show('mouth', 'grin');
-          },
-        }),
-        smirk: noPower({
-          ms: 2000,
-          loop: true,
-          pose: (t, p) => {
-            p.move('hip', 0, wave(t) * 0.2);
-            p.set('torso', -4).set('head', -6 + wave(t, 0.3) * 1.5);
-            p.set('armUF', -12).set('armLF', 30).set('armUB', 10).set('armLB', 24);
-            p.set('thighF', 8).set('shinF', -2).set('thighB', -6).set('shinB', -4).set('footB', 12);
-            p.show('eyes', 'side').show('mouth', 'smirk');
-          },
-        }),
-        idle: noPower({ ...base.idle, pose: (t, p) => { base.idle.pose(t, p); p.add('torso', -5).add('head', -2).show('mouth', 'smirk'); } }),
-      };
-    },
-  });
+  const style = KEVIN_CARTOON.style!;
+  const img = cutoutImage('kevin');
+  if (!img) return humanRig({ id: 'kevin', dims: KEVIN_DIMS, parts: parts(), style, extraBones: [POWER], bounds: BOUNDS, clips: kevinClips });
+  // Cut from his model sheet; the absorbed energy stays painted.
+  const power = parts().find((p) => p.id === 'power')!;
+  return cutHumanRig({ id: 'kevin', meta: KEVIN_CUT, img, style, bounds: BOUNDS, clips: kevinClips, extraParts: [power], extraBones: [POWER] });
+}
+
+const BOUNDS = { left: -12, right: 14, top: -40, bottom: 2 };
+const POWER: BoneSpec = { id: 'power', parent: 'handF', x: 0.5, y: 1.5, part: 'power', z: 90, dir: -1 };
+
+/** His own clips: absorbing, the wind-up and throw, the lunge, the laugh and the smirk (the energy shows only while he holds it). */
+function kevinClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, ClipDef> {
+  const noPower = (clip: (typeof base)[string]) => ({ ...clip, pose: (t: number, p: Parameters<typeof clip.pose>[1]) => { clip.pose(t, p); p.hidden('power'); } });
+  const out: typeof base = {};
+  // The show-look clips keep raised arms off his face.
+  for (const [name, clip] of Object.entries({ ...base, ...showHumanClips(info, base) })) out[name] = noPower(clip);
+  const absorbKeys = keyframes(info, [[0, { hip: { y: 0.6 }, torso: 6, head: -4, armUF: 80, armLF: -20, handF: { v: 'open' }, armUB: 70, armLB: -10, handB: { v: 'open' }, thighF: 14, shinF: -14, thighB: -16, shinB: -10, eyes: { v: 'glow' }, mouth: { v: 'grin' }, power: { v: 'b' } }]]);
+  const windKeys = keyframes(info, [[0, { torso: -8, head: -2, armUF: -50, armLF: 90, armUB: 30, armLB: 40, thighF: 10, shinF: -8, thighB: -14, eyes: { v: 'glow' }, mouth: { v: 'smirk' }, power: { v: 'a' } }]]);
+  const throwKeys = keyframes(info, [
+    [0, { torso: -8, head: -2, armUF: -50, armLF: 90, armUB: 30, armLB: 40, eyes: { v: 'glow' }, power: { v: 'a' } }],
+    [0.5, { hip: { x: 1 }, torso: 16, head: -8, armUF: 110, armLF: 0, handF: { v: 'open' }, armUB: -40, armLB: 60, thighF: 26, shinF: -20, thighB: -24, shinB: -12, eyes: { v: 'glow' }, mouth: { v: 'shout' }, power: { hide: true } }],
+    [1, { hip: { x: 0.8 }, torso: 12, head: -6, armUF: 96, armLF: 6, handF: { v: 'open' }, armUB: -30, armLB: 50, thighF: 22, shinF: -18, thighB: -20, shinB: -10, eyes: { v: 'angry' }, mouth: { v: 'grin' }, power: { hide: true } }],
+  ]);
+  const lungeKeys = keyframes(info, [[0, { hip: { x: 1.5, y: 1 }, torso: 30, head: -18, armUF: 110, armLF: -10, handF: { v: 'open' }, armUB: 100, armLB: -6, handB: { v: 'open' }, thighF: 40, shinF: -40, thighB: -30, shinB: -20, footB: 20, eyes: { v: 'angry' }, mouth: { v: 'grit' }, power: { hide: true } }]]);
+  return {
+    ...out,
+    absorb: { ms: 260, loop: true, pose: (t, p) => { p.keys(absorbKeys, 0); p.add('torso', wave(t) * 2).size('power', 1 + wave(t) * 0.15); } },
+    windup: { ms: 300, loop: false, pose: (t, p) => { p.keys(windKeys, 0); p.size('power', 0.5 + t * 0.6); } },
+    throw: { ms: 240, loop: false, pose: (t, p) => p.keys(throwKeys, t) },
+    lunge: noPower({ ms: 200, loop: false, pose: (_t, p) => p.keys(lungeKeys, 0) }),
+    laugh: noPower({
+      ms: 500,
+      loop: true,
+      pose: (t, p) => {
+        p.move('hip', 0, Math.abs(wave(t)) * -0.5);
+        p.set('torso', -10 + wave(t * 2) * 3).set('head', -18 + wave(t * 2) * 4);
+        p.set('armUF', 30).set('armLF', -100).set('armUB', 20).set('armLB', -90);
+        p.show('eyes', 'happy').show('mouth', 'grin');
+      },
+    }),
+    smirk: noPower({
+      ms: 2000,
+      loop: true,
+      pose: (t, p) => {
+        p.move('hip', 0, wave(t) * 0.2);
+        p.set('torso', -4).set('head', -6 + wave(t, 0.3) * 1.5);
+        p.set('armUF', -12).set('armLF', 30).set('armUB', 10).set('armLB', 24);
+        p.set('thighF', 8).set('shinF', -2).set('thighB', -6).set('shinB', -4).set('footB', 12);
+        p.show('eyes', 'side').show('mouth', 'smirk');
+      },
+    }),
+    idle: noPower({ ...base.idle, pose: (t, p) => { base.idle.pose(t, p); p.add('torso', -5).add('head', -2).show('mouth', 'smirk'); } }),
+  };
 }
