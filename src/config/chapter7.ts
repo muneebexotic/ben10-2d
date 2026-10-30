@@ -16,6 +16,9 @@ export const CH7_HD = {
 
 /** The base's water (Chapter 7): how fast levels move, and how it looks. */
 export const PLUMBER_WATER = {
+  /** A whirlpool (Deepmaw's maelstrom): full pull within this distance of its middle (px), and how much it swirls round (sideways share of the pull). */
+  vortexReach: 300,
+  vortexSwirl: 0.35,
   /** A pump filling or draining a tank (px/s). */
   fillSpeed: 34,
   /** A valve letting two tanks share their water (px/s). */

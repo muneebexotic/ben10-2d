@@ -66,6 +66,8 @@ export class Tanks implements WaterProvider {
   private readonly pockets: Rect[] = [];
   private readonly vents: Array<{ x: number; y: number; top: number }> = [];
   private readonly water: SwimWater = { surface: 0, currentX: 0, currentY: 0 };
+  /** A whirlpool in one tank (Deepmaw's maelstrom): a pull toward a point, swirling round it. */
+  private readonly vortex = { tank: null as Tank | null, x: 0, y: 0, strength: 0 };
   private readonly front: Phaser.GameObjects.Graphics;
   private readonly back: Phaser.GameObjects.Graphics;
   private t = 0;
@@ -190,6 +192,15 @@ export class Tanks implements WaterProvider {
     return tb.level - ta.level;
   }
 
+  /** Pulls everything in tank `id` toward (x, y) at `strength` px/s (with a swirl); strength 0 or no id stops it. Called every frame while it moves. */
+  setVortex(id: string | null, x = 0, y = 0, strength = 0): void {
+    const v = this.vortex;
+    v.tank = id !== null && strength > 0 ? (this.byId.get(id) ?? null) : null;
+    v.x = x;
+    v.y = y;
+    v.strength = strength;
+  }
+
   setCurrent(id: string, on: boolean): void {
     for (const c of this.currents) if (c.id === id) c.on = on;
   }
@@ -212,6 +223,16 @@ export class Tanks implements WaterProvider {
         if (!this.flowing(c) || x < c.x0 || x >= c.x1 || y < c.y0 || y >= c.y1 || y < t.level) continue;
         this.water.currentX += c.vx;
         this.water.currentY += c.vy;
+      }
+      const v = this.vortex;
+      if (v.tank === t && y >= t.level) {
+        const dx = v.x - x;
+        const dy = v.y - y;
+        const d = Math.hypot(dx, dy) || 1;
+        // Full strength within reach of the middle, weaker far out, easing off right at the centre.
+        const k = v.strength * Math.min(1, PLUMBER_WATER.vortexReach / d) * Math.min(1, d / TILE);
+        this.water.currentX += (dx / d) * k - (dy / d) * k * PLUMBER_WATER.vortexSwirl;
+        this.water.currentY += (dy / d) * k + (dx / d) * k * PLUMBER_WATER.vortexSwirl;
       }
       return this.water;
     }

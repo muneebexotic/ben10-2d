@@ -1,13 +1,23 @@
 import { DEEP_SHARED } from '../../../config/plumber';
 import type { WaterProvider } from '../../../scenes/level/Swimming';
+import type { StoryKit } from '../../../scenes/level/story/StoryKit';
+import type { Tanks } from '../../../scenes/level/plumber/water/Tanks';
 import type { Drone, DroneWorld } from '../Drone';
+
+/** The base's working parts, for the boss and set pieces that move them: the tanks, the lamp circuits, the level's kit. */
+export interface DeepBase {
+  readonly tanks: Tanks;
+  readonly kit: StoryKit;
+  setLamps(id: string, state: 'off' | 'on' | 'emergency', thud?: boolean): void;
+}
 
 /**
  * What Chapter 7's enemies know about the base beyond the drone world: its
- * water (the tanks, which come and go as the pumps run) and the jelly mines
- * that pop together. The base's systems fill it in and clear it.
+ * water (the tanks, which come and go as the pumps run), the jelly mines
+ * that pop together, and the base itself (Deepmaw drains and floods the moon
+ * pool through it). The base's systems fill it in and clear it.
  */
-export const deepEnv: { water: WaterProvider | null; readonly jellies: Set<Drone> } = { water: null, jellies: new Set() };
+export const deepEnv: { water: WaterProvider | null; base: DeepBase | null; readonly jellies: Set<Drone> } = { water: null, base: null, jellies: new Set() };
 
 /** The surface (px) of the water at (x, y), or null when (x, y) is dry. */
 export function surfaceAt(x: number, y: number): number | null {

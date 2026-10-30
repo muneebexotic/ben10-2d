@@ -1,3 +1,4 @@
+import { DeepmawBoss } from '../entities/bosses/deepmaw/DeepmawBoss';
 import { EelBrain } from '../entities/enemies/deep/eel';
 import { GnasherBrain } from '../entities/enemies/deep/gnasher';
 import { GruntBrain } from '../entities/enemies/deep/grunt';
@@ -17,7 +18,7 @@ import type { ChapterModule } from './types';
 
 /** Chapter 7, The Plumbers: the descent under Keamari harbour and the Plumber base on the floor of the Arabian Sea (HD). */
 export const CHAPTER: ChapterModule = {
-  level: { ...CHAPTER_7, entities: CHAPTER_7.entities.filter((e) => e.type !== 'boss') }, // TEMP until Deepmaw lands
+  level: CHAPTER_7,
   enter: (scene) => {
     enterPlumberBase(scene);
     const query = new URLSearchParams(window.location.search);
@@ -33,6 +34,8 @@ export const CHAPTER: ChapterModule = {
   },
   story: buildPlumberStory,
   art: [{ assets: DEEP_ASSETS, anims: DEEP_ANIMS }],
+  // The music is the shared boss theme until Chapter 7's own tracks land.
+  bosses: { deepmaw: { music: 'boss', hologram: [], create: (scene, world, x) => new DeepmawBoss(scene, world, x) } },
   brains: {
     warden: () => new WardenBrain(),
     grunt: () => new GruntBrain(),

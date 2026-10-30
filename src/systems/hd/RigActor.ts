@@ -208,6 +208,12 @@ export class RigActor {
     return { x: this.world.x[i], y: this.world.y[i], r: this.world.r[i] };
   }
 
+  /** `bonePoint` without allocating (every frame): writes into `out`. */
+  boneInto(bone: number, out: { x: number; y: number }): void {
+    out.x = this.world.x[bone];
+    out.y = this.world.y[bone];
+  }
+
   destroy(): void {
     this.container.destroy(true);
   }

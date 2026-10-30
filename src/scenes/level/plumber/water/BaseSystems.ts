@@ -30,8 +30,8 @@ export const LAMP_SECTIONS: readonly LampSection[] = [
   { id: 'flooded', from: 67, to: 150 },
   { id: 'reactor', from: 150, to: 183 },
   { id: 'pumphall', from: 263, to: 342 },
-  { id: 'containment', from: 342, to: 410 },
-  { id: 'moonpool', from: 410, to: 472 },
+  { id: 'containment', from: 342, to: 411 },
+  { id: 'moonpool', from: 411, to: 454 },
 ];
 
 interface Lamp {
@@ -59,12 +59,13 @@ export class BaseSystems implements SetPiece {
   private t = 0;
 
   constructor(
-    private readonly kit: StoryKit,
+    readonly kit: StoryKit,
     resumeX: number,
   ) {
     this.tanks = new Tanks(kit.scene, kit.level, kit.fx, (tx, ty) => !kit.world.isSolid(tx * TILE + 1, ty * TILE + 1));
     kit.setWater(this.tanks);
     deepEnv.water = this.tanks;
+    deepEnv.base = this;
     deepEnv.jellies.clear();
     this.doors = new Doors(kit, this.tanks);
     this.machines = new Machines(kit, this.tanks);
@@ -171,6 +172,7 @@ export class BaseSystems implements SetPiece {
   destroy(): void {
     this.kit.setWater(null);
     deepEnv.water = null;
+    deepEnv.base = null;
     deepEnv.jellies.clear();
     this.doors.destroy();
     this.machines.destroy();

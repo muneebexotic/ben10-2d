@@ -15,11 +15,11 @@ import type { EntitySpawn, LevelData, PlatformSpan, SolidRect } from './types';
  *   150-182 the reactor (Kevin; the flood; Ripjaws)
  *   183-262 the open sea outside the hull
  *   263-341 the pump hall: three tanks, three consoles, two pressure doors
- *   342-410 the containment block
- *   410-472 the moon pool (DEEPMAW)
+ *   342-411 the containment block
+ *   411-452 the moon pool (DEEPMAW): decks either side of a pool, Max's booth over it
  */
 
-const W = 472;
+const W = 454;
 const H = 50;
 
 /**
@@ -147,16 +147,14 @@ carve(325, 26, 8, 2);
 carve(286, 17, 3, 5);
 
 // ---- Containment
-room(340, 70, 30, 40);
+room(340, 71, 30, 40);
 platforms.push({ x: 352, y: 35, w: 6 }, { x: 372, y: 34, w: 6 }, { x: 392, y: 35, w: 5 });
 
-// ---- The moon pool
-room(410, 60, 14, 38);
-// The pool itself, deeper than the decks either side.
-carve(419, 38, 42, 8);
-ledge(419, 46, 42, 4);
-// Max's booth over the arena (a ledge Ben can't reach; its window is the backdrop's).
-wall(436, 14, 9, 5);
+// ---- The moon pool: one screen wide (40 tiles), decks on row 40 either side of the
+// pool, six rows deep. Max's booth over it is background art.
+room(411, 41, 26, 40);
+carve(416, 40, 30, 6);
+ledge(416, 46, 30, 4);
 
 const entities: EntitySpawn[] = [
   // ---- Docking bay
@@ -248,11 +246,11 @@ const entities: EntitySpawn[] = [
   { type: 'deep', kind: 'grunt', x: 402, y: 40 },
 
   // ---- The moon pool
-  { type: 'checkpoint', id: 'cp-moonpool', x: 412, y: 38, density: 'sparse', label: 'THE MOON POOL' },
-  { type: 'tank', id: 't-moonpool', x: 410, w: 60, top: 14, bottom: 46, level: 46 },
-  { type: 'boss', kind: 'deepmaw', x: 448, y: 30, arenaFrom: 410, arenaTo: 470, triggerX: 416, floor: 38, stages: ['cp-drydock', 'cp-maelstrom'] },
-  { type: 'checkpoint', id: 'cp-drydock', x: 414, y: 38, density: 'sparse', label: 'DRY DOCK', hidden: true },
-  { type: 'checkpoint', id: 'cp-maelstrom', x: 415, y: 38, density: 'sparse', label: 'THE MAELSTROM', hidden: true },
+  { type: 'checkpoint', id: 'cp-moonpool', x: 406, y: 40, density: 'sparse', label: 'THE MOON POOL' },
+  { type: 'tank', id: 't-moonpool', x: 411, w: 41, top: 26, bottom: 46, level: 32 },
+  { type: 'boss', kind: 'deepmaw', x: 431, y: 36, arenaFrom: 411, arenaTo: 451, triggerX: 413, floor: 45, stages: ['cp-drydock', 'cp-maelstrom'] },
+  { type: 'checkpoint', id: 'cp-drydock', x: 412, y: 40, density: 'sparse', label: 'DRY DOCK', hidden: true },
+  { type: 'checkpoint', id: 'cp-maelstrom', x: 413, y: 40, density: 'sparse', label: 'THE MAELSTROM', hidden: true },
 ];
 
 export const CHAPTER_7: LevelData = {
@@ -283,7 +281,7 @@ export const CHAPTER_7: LevelData = {
     { x: 183, ambient: 'opensea' },
     { x: 263, ambient: 'pumphall' },
     { x: 340, ambient: 'containment' },
-    { x: 410, ambient: 'moonpool' },
+    { x: 411, ambient: 'moonpool' },
   ],
   introSpawns: [],
   story: {
@@ -295,7 +293,7 @@ export const CHAPTER_7: LevelData = {
       reactor: { triggerX: 160, kevinX: 168, floor: 40, hatches: ['h-reactor-in'], tank: 't-reactor', floodTo: 21, glass: { x: 182, y: 30, w: 1, h: 10 }, alien: 'ripjaws' },
       pumps: ['p-1', 'p-2', 'p-3'],
       containment: { maxX: 378, cellX: 400, floor: 40 },
-      moonPool: { tank: 't-moonpool', levels: [18, 46, 24], boothX: 440 },
+      moonPool: { tank: 't-moonpool', levels: [32, 46, 34], boothX: 431 },
     },
     outro: [],
   },

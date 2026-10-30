@@ -1,3 +1,4 @@
+import { DEEPMAW } from '../config/deepmaw';
 import { PLUMBER_ART, type PropFrame } from '../scenes/preload/cartoon/plumber/baseArt';
 
 /**
@@ -108,9 +109,9 @@ export const PLUMBER_DECOR: readonly PlumberDecor[] = [
   prop('console', 370, 40),
   prop('sign', 400, 29),
   ...lamps(344, 408, 30, 8),
-  // ---- The moon pool: Max's booth over the arena.
-  { key: P.booth, x: 440, y: 19 },
-  prop('warning', 414, 32),
-  prop('warning', 466, 32),
-  ...lamps(412, 468, 14, 8),
+  // ---- The moon pool: Max's booth over the middle of the pool, lamps either side of it.
+  { key: P.booth, x: 431, y: DEEPMAW.boothRow },
+  prop('warning', 413, 35),
+  prop('warning', 449, 35),
+  ...[413, 420, 442, 449].map((x) => prop('lamp', x, 26, { hang: true })),
 ];

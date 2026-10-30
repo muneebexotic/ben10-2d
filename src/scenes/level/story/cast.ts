@@ -4,10 +4,12 @@ import { WILDMUTT_TEX } from '../../../aliens/wildmutt/art';
 import { GHOSTFREAK_TEX } from '../../../aliens/ghostfreak/art';
 import { CH5_TEX } from '../../preload/bounty/keys';
 import { CH6_TEX } from '../../preload/karachi/keys';
+import { HD_PORTRAITS } from '../../preload/cartoon/portraitKeys';
 
 export type CastId =
   | 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak'
-  | 'hex' | 'charmcaster' | 'rauf' | 'rafiq' | 'zain';
+  | 'hex' | 'charmcaster' | 'rauf' | 'rafiq' | 'zain'
+  | 'deepmaw';
 
 export interface CastMember {
   name: string;
@@ -41,6 +43,8 @@ export const CAST: Record<CastId, CastMember> = {
   rauf: { name: 'RAUF', color: 0xffc070, portrait: CH6_TEX.portraitRauf, voicePitch: 0.8 },
   rafiq: { name: 'RAFIQ', color: 0x6ab8f0, portrait: CH6_TEX.portraitRafiq, voicePitch: 0.9 },
   zain: { name: 'ZAIN', color: PALETTE.omnitrix, portrait: CH6_TEX.portraitZain, voicePitch: 1.6 },
+  // Chapter 7 (the Plumber base): portraits painted from their rigs.
+  deepmaw: { name: 'DEEPMAW', color: PALETTE.deepmaw, portrait: HD_PORTRAITS.deepmaw, voicePitch: 0.5 },
 };
 
 export function isCastId(id: string): id is CastId {
