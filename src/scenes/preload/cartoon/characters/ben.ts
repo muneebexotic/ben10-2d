@@ -195,12 +195,15 @@ export function benRig(): RigDef {
   return cutHumanRig({ id: 'ben', meta: BEN_CUT, img, style, bounds: BOUNDS, clips: benClips });
 }
 
+/** Where the middle of his shirt sits while he swims (game px above the game sprite's feet). */
+const SWIM_Y = -13;
+
 const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
 
 /**
- * Which of his drawings each animation plays (docs/art-refs: the run cycle,
- * idle/run and action sheets). Poses without a drawing of their own borrow
- * the nearest one until their sheet arrives.
+ * Which of his drawings each animation plays (docs/art-refs: the run and swim
+ * cycles, the idle/run, action and story-pose sheets). The rare poses without
+ * a drawing of their own borrow the nearest one.
  */
 export const BEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['idle0', 'idle1', 'idle2', 'idle3'], fps: 2.5, loop: true },
@@ -217,20 +220,21 @@ export const BEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   roll: { frames: ['jump'], ms: 320, loop: true, motion: (t, p, h) => spinAboutMiddle(p, t * 360, h) },
   watch: { frames: ['slam'], ms: 260, loop: false },
   slam: { frames: ['slam'], ms: 340, loop: false },
-  swim: { frames: ['swim'], ms: 900, loop: true, motion: (t, p) => p.set('body', wave(t) * 3).move('body', 0, -5 + wave(t, 0.25) * 0.6) },
+  // Breaststroke: glide, the arms sweep out and pull in, the legs bend and kick; the glide (first and last) holds twice as long.
+  swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5'], fps: 8, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
   tread: { frames: ['idle0'], ms: 900, loop: true, motion: bob(0.6) },
   drown: { frames: ['hurt'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 6) },
-  talk: { frames: ['idle0', 'idle1'], fps: 3, loop: true },
+  talk: { frames: ['talk'], ms: 1300, loop: true, motion: bob(0.25) },
   listen: { frames: ['idle0', 'idle1', 'idle2', 'idle3'], fps: 2, loop: true },
-  point: { frames: ['punch'], ms: 1800, loop: true },
-  shrug: { frames: ['idle2'], ms: 1800, loop: true },
-  surprise: { frames: ['fall'], ms: 1800, loop: true },
-  cheer: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.5) },
-  think: { frames: ['idle3'], ms: 1800, loop: true },
+  point: { frames: ['point'], ms: 1800, loop: true, motion: bob(0.2) },
+  shrug: { frames: ['shrug'], ms: 1800, loop: true, motion: bob(0.2) },
+  surprise: { frames: ['surprise'], ms: 1800, loop: true },
+  cheer: { frames: ['cheer'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 1.2) },
+  think: { frames: ['think'], ms: 1800, loop: true, motion: bob(0.2) },
   angry: { frames: ['stand'], ms: 1800, loop: true },
   sad: { frames: ['idle0'], ms: 1800, loop: true },
-  lookHands: { frames: ['stand'], ms: 1800, loop: true },
-  wave: { frames: ['stand'], ms: 1800, loop: true },
+  lookHands: { frames: ['hands'], ms: 1800, loop: true, motion: bob(0.2) },
+  wave: { frames: ['wave'], ms: 700, loop: true, motion: (t, p) => p.set('body', wave(t) * 1.5) },
 };
 
 const BOUNDS = { left: -12, right: 14, top: -34, bottom: 2 };

@@ -1,7 +1,7 @@
 # Ben frame by frame: every pose is one of his generated drawings (see frames.py).
 # Sheets: his model sheet (the three-quarter view, for scale and standing), the
-# idle/run sheet (idle), the action sheet (jump, fall, land, punch, hurt, swim,
-# the slam), the run cycle sheet (8 frames).
+# idle/run sheet (idle), the action sheet (jump, fall, land, punch, hurt, the
+# slam), the run cycle (8 frames), the swim cycle (6) and the story poses (8).
 
 ID = 'ben'
 TEXEL = 5
@@ -13,6 +13,8 @@ SHEETS = {
     'idle': ('docs/art-refs/ben-idle-run.webp', 235),
     'act': ('docs/art-refs/ben-action-poses.webp', 235),
     'run': ('docs/art-refs/ben-run-cycle.webp', 235),
+    'swim': ('docs/art-refs/ben-swim-cycle.webp', 235),
+    'story': ('docs/art-refs/ben-story-poses.webp', 235),
 }
 # The model sheet's three-quarter view sets the scale for every sheet.
 REF = ('model', 1)
@@ -25,8 +27,12 @@ FRAMES = {
     'run0': ('run', 0), 'run1': ('run', 1), 'run2': ('run', 2), 'run3': ('run', 3),
     'run4': ('run', 4), 'run5': ('run', 5), 'run6': ('run', 6), 'run7': ('run', 7),
     'dash': ('act', 0), 'jump': ('act', 1), 'fall': ('act', 2), 'land': ('act', 3),
-    'punch': ('act', 4), 'hurt': ('act', 5), 'swim': ('act', 6), 'slam': ('act', 7),
+    'punch': ('act', 4), 'hurt': ('act', 5), 'dive': ('act', 6), 'slam': ('act', 7),
+    'swim0': ('swim', 0), 'swim1': ('swim', 1), 'swim2': ('swim', 2), 'swim3': ('swim', 3), 'swim4': ('swim', 4), 'swim5': ('swim', 5),
+    'talk': ('story', 0), 'point': ('story', 1), 'shrug': ('story', 2), 'surprise': ('story', 3),
+    'cheer': ('story', 4), 'think': ('story', 5), 'wave': ('story', 6), 'hands': ('story', 7),
 }
+CENTRED = {'swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5', 'dive'}
 # The airborne run frames float this far (game px) over the floor.
 LIFT = {'run3': 1.4, 'run7': 1.4}
 
