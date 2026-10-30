@@ -31,7 +31,7 @@ export const BEN_CARTOON: CartoonManifest = {
     mouth: 0x6a2020,
     tongue: 0xd9666e,
   },
-  style: { runMs: 430, stride: 40, armSwing: 48, runLean: 12, bounce: 1, idleMs: 1500, idleSway: 2.5, weight: 0.2, armRest: 14 },
+  style: { runMs: 430, stride: 44, armSwing: 50, runLean: 16, bounce: 1, idleMs: 1500, idleSway: 2.5, weight: 0.2, armRest: 14 },
   clips: {
     idle: 'breathing, a weight shift, blinking',
     run: 'a full run cycle with arm swing and hip bounce',
@@ -45,7 +45,7 @@ export const BEN_CARTOON: CartoonManifest = {
     defeat: 'knocked flat (the level spins him away)',
     watch: 'the Omnitrix raised to his face (transforming, story beats)',
     slam: 'the transform slam: hand raised over the watch',
-    swim: 'front crawl and flutter kick',
+    swim: 'breaststroke: glide, pull, frog kick',
     tread: 'treading water',
     drown: 'out of air, thrashing',
     talk: 'gesturing while he talks',
