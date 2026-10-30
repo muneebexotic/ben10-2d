@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { INK, LINE, Paint } from './paint';
 import { makeHdImage } from './hdTexture';
-import { makeWorld, Pose, RigInfo, solve, type RigDef } from './rig';
+import { applyFace, makeWorld, Pose, RigInfo, solve, type RigDef } from './rig';
 import { PORTRAIT } from '../portraits';
 
 export interface RigPortrait {
@@ -40,6 +40,7 @@ function drawPosed(p: Paint, rig: RigDef, o: RigPortrait): void {
   const info = new RigInfo(rig);
   const pose = new Pose(info);
   (rig.clips[o.clip] ?? rig.clips[rig.fallback]).pose(o.t ?? 0, pose);
+  applyFace(info, pose);
   const world = makeWorld(info);
   solve(info, pose, world);
   const parts = new Map(rig.parts.map((part) => [part.id, part]));

@@ -1,7 +1,9 @@
 import { BEN_CARTOON } from '../../../../config/cartoon/ben';
 import { BEN_STYLE, EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
-import { wave, type PartSpec, type RigDef } from '../rig';
+import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { cutoutDims, cutoutImage, cutoutPart, emptyPart } from '../cutout/cutout';
+import { BEN_CUT } from '../cutout/ben';
 import { SHOW_FRONT, showHumanClips } from '../showClips';
 import { cel, celLimb, hardShadow, shifted, showEyes, showHand, showMouth, showOmnitrix, showShade, showSneaker, SHOW_DETAIL } from '../show';
 
@@ -175,62 +177,95 @@ function parts(): PartSpec[] {
 /** The watch arm (his far, left arm) comes in front of everything while he looks at or slams the Omnitrix. */
 const FRONT = SHOW_FRONT;
 
-/** Ben's HD rig: the humanoid kit with his own parts, plus his punch, roll, watch and transform slam. */
+/**
+ * Ben's HD rig: cut from his model sheet when the sheet's image has loaded
+ * (cutout/ben.ts), else the drawn parts above; the same skeleton and clips
+ * either way.
+ */
 export function benRig(): RigDef {
-  return humanRig({
-    id: 'ben',
-    dims: BEN_DIMS,
-    parts: parts(),
-    style: BEN_CARTOON.style ?? BEN_STYLE,
-    bounds: { left: -12, right: 14, top: -34, bottom: 2 },
-    clips: (info, base) => {
-      // The poses follow his action sheet (docs/art-refs/ben-action-poses.webp).
-      // Punch: the watch arm jabs, the near fist guards his chest, feet wide.
-      const punchKeys = keyframes(info, [
-        [0, { torso: -4, head: -2, armUB: 25, armLB: 105, armUF: -25, armLF: 105, thighF: 18, shinF: -12, footF: -4, thighB: -16, shinB: -6, footB: 12, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
-        [0.45, { hip: { x: 1.2 }, torso: 14, head: -10, armUB: 86, armLB: 2, armUF: -20, armLF: 118, thighF: 26, shinF: -18, footF: 2, thighB: -24, shinB: -10, footB: 18, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
-        [1, { hip: { x: 0.8 }, torso: 11, head: -8, armUB: 80, armLB: 10, armUF: -22, armLF: 112, thighF: 23, shinF: -16, footF: 2, thighB: -21, shinB: -9, footB: 14, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
-      ]);
-      // The far (watch) arm comes up in front of his face.
-      const watchKeys = keyframes(info, [
-        [0, { torso: 4, head: 8, armUB: { a: 40, z: FRONT }, armLB: { a: -60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: 6, armLF: 14 }],
-        [1, { torso: 6, head: 16, armUB: { a: 62, z: FRONT }, armLB: { a: -112, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: 20, armLF: 20, eyes: { v: 'wide' }, mouth: { v: 'o' } }],
-      ]);
-      // Watch arm across his chest, the near hand raised, then slammed down on the dial.
-      const slamKeys = keyframes(info, [
-        [0, { torso: 2, head: 8, armUB: { a: 32, z: FRONT }, armLB: { a: 58, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 120, z: FRONT + 3 }, armLF: { a: 30, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 16, shinF: -10, thighB: -16, shinB: -6, footB: 12, eyes: { v: 'angry' }, mouth: { v: 'smirk' } }],
-        [0.6, { hip: { y: 0.8 }, torso: 12, head: 10, armUB: { a: 30, z: FRONT }, armLB: { a: 60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 76, z: FRONT + 3 }, armLF: { a: 14, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 22, shinF: -26, thighB: -22, shinB: -14, footB: 16, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
-        [1, { hip: { y: 0.6 }, torso: 10, head: 8, armUB: { a: 30, z: FRONT }, armLB: { a: 60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 74, z: FRONT + 3 }, armLF: { a: 16, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 20, shinF: -22, thighB: -20, shinB: -12, footB: 14, eyes: { v: 'angry' }, mouth: { v: 'grin' } }],
-      ]);
-      return {
-        ...showHumanClips(info, base),
-        punch: { ms: 220, loop: false, pose: (t, p) => p.keys(punchKeys, t) },
-        roll: {
-          ms: 320,
-          loop: true,
-          pose: (t, p) => {
-            // Tucked into a ball and spun once round the hips, lower to the ground.
-            p.set('hip', t * 360).move('hip', 0, 3.6);
-            p.set('torso', 40).set('head', 30);
-            p.set('thighF', 110).set('shinF', -150).set('footF', 30);
-            p.set('thighB', 100).set('shinB', -150).set('footB', 30);
-            p.set('armUF', 60).set('armLF', -120).set('armUB', 70).set('armLB', -110);
-            p.show('eyes', 'shut').show('mouth', 'grit');
-          },
-        },
-        watch: { ms: 260, loop: false, pose: (t, p) => p.keys(watchKeys, t) },
-        slam: { ms: 340, loop: false, pose: (t, p) => p.keys(slamKeys, t) },
-        // A bob of the shoulders between lines in a cinematic: idle, but talking.
-        listen: {
-          ms: 1500,
-          loop: true,
-          pose: (t, p) => {
-            p.move('hip', 0, 0.25 + wave(t) * 0.25);
-            p.set('torso', 3).set('head', 4 + wave(t, 0.1) * 2).set('armUF', -4).set('armLF', 14).set('armUB', 8).set('armLB', 16);
-            p.set('thighF', 4).set('shinF', -4).set('thighB', -5).set('shinB', -3).set('footB', 8);
-          },
-        },
-      };
+  const img = cutoutImage('ben');
+  if (!img) return humanRig({ id: 'ben', dims: BEN_DIMS, parts: parts(), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, clips: benClips });
+  const rig = humanRig({ id: 'ben', dims: cutoutDims(BEN_CUT), parts: cutParts(img), style: BEN_CARTOON.style ?? BEN_STYLE, bounds: BOUNDS, clips: benClips });
+  // The head goes behind the shirt, so its neck tucks into the collar when he turns his head.
+  return { ...rig, bones: rig.bones.map((b) => (b.id === 'head' ? { ...b, z: CUT_HEAD_Z } : b)), face: { head: 'head', eyes: 'eyes', mouth: 'mouth', pick: benFace } };
+}
+
+const BOUNDS = { left: -12, right: 14, top: -34, bottom: 2 };
+const CUT_HEAD_Z = 45;
+/** The heads cut from the sheet: the six close-ups, the neutral one blinking, talking, and both. */
+const CUT_HEADS = ['neutral', 'neutral-blink', 'open', 'open-blink', 'grin', 'shout', 'wide', 'pain', 'talk'] as const;
+
+function cutParts(img: HTMLImageElement): PartSpec[] {
+  const part = (id: string, variants?: readonly string[]) => cutoutPart(BEN_CUT, img, id, variants);
+  return [
+    ...['torso', 'pelvis', 'thighF', 'thighB', 'shinF', 'shinB', 'footF', 'footB', 'armUF', 'armUB', 'armLF', 'armLB'].map((id) => part(id)),
+    part('handF', ['fist', 'open', 'point']),
+    part('handB', ['fist', 'open', 'point']),
+    part('head', CUT_HEADS),
+    emptyPart('eyes', EYES),
+    emptyPart('mouth', MOUTHS),
+  ];
+}
+
+/** Which of the sheet's heads shows for the eyes and mouth a clip asks for. */
+export function benFace(eyes: string, mouth: string): string {
+  if (eyes === 'hurt' || eyes === 'shut' || mouth === 'grit') return 'pain';
+  if (mouth === 'shout') return 'shout';
+  if (eyes === 'wide' || mouth === 'o') return 'wide';
+  if (eyes === 'happy' || mouth === 'grin') return 'grin';
+  if (eyes === 'side') return 'talk';
+  const open = mouth === 'open';
+  if (eyes === 'blink') return open ? 'open-blink' : 'neutral-blink';
+  return open ? 'open' : 'neutral';
+}
+
+/** His own clips on top of the shared ones: punch, roll, watch, transform slam, listen. */
+function benClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, ClipDef> {
+  // The poses follow his action sheet (docs/art-refs/ben-action-poses.webp).
+  // Punch: the watch arm jabs, the near fist guards his chest, feet wide.
+  const punchKeys = keyframes(info, [
+    [0, { torso: -4, head: -2, armUB: 25, armLB: 105, armUF: -25, armLF: 105, thighF: 18, shinF: -12, footF: -4, thighB: -16, shinB: -6, footB: 12, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
+    [0.45, { hip: { x: 1.2 }, torso: 14, head: -10, armUB: 86, armLB: 2, armUF: -20, armLF: 118, thighF: 26, shinF: -18, footF: 2, thighB: -24, shinB: -10, footB: 18, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
+    [1, { hip: { x: 0.8 }, torso: 11, head: -8, armUB: 80, armLB: 10, armUF: -22, armLF: 112, thighF: 23, shinF: -16, footF: 2, thighB: -21, shinB: -9, footB: 14, eyes: { v: 'angry' }, mouth: { v: 'grit' } }],
+  ]);
+  // The far (watch) arm comes up in front of his face.
+  const watchKeys = keyframes(info, [
+    [0, { torso: 4, head: 8, armUB: { a: 40, z: FRONT }, armLB: { a: -60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: 6, armLF: 14 }],
+    [1, { torso: 6, head: 16, armUB: { a: 62, z: FRONT }, armLB: { a: -112, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: 20, armLF: 20, eyes: { v: 'wide' }, mouth: { v: 'o' } }],
+  ]);
+  // Watch arm across his chest, the near hand raised, then slammed down on the dial.
+  const slamKeys = keyframes(info, [
+    [0, { torso: 2, head: 8, armUB: { a: 32, z: FRONT }, armLB: { a: 58, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 120, z: FRONT + 3 }, armLF: { a: 30, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 16, shinF: -10, thighB: -16, shinB: -6, footB: 12, eyes: { v: 'angry' }, mouth: { v: 'smirk' } }],
+    [0.6, { hip: { y: 0.8 }, torso: 12, head: 10, armUB: { a: 30, z: FRONT }, armLB: { a: 60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 76, z: FRONT + 3 }, armLF: { a: 14, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 22, shinF: -26, thighB: -22, shinB: -14, footB: 16, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
+    [1, { hip: { y: 0.6 }, torso: 10, head: 8, armUB: { a: 30, z: FRONT }, armLB: { a: 60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 74, z: FRONT + 3 }, armLF: { a: 16, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 20, shinF: -22, thighB: -20, shinB: -12, footB: 14, eyes: { v: 'angry' }, mouth: { v: 'grin' } }],
+  ]);
+  return {
+    ...showHumanClips(info, base),
+    punch: { ms: 220, loop: false, pose: (t, p) => p.keys(punchKeys, t) },
+    roll: {
+      ms: 320,
+      loop: true,
+      pose: (t, p) => {
+        // Tucked into a ball and spun once round the hips, lower to the ground.
+        p.set('hip', t * 360).move('hip', 0, 3.6);
+        p.set('torso', 40).set('head', 30);
+        p.set('thighF', 110).set('shinF', -150).set('footF', 30);
+        p.set('thighB', 100).set('shinB', -150).set('footB', 30);
+        p.set('armUF', 60).set('armLF', -120).set('armUB', 70).set('armLB', -110);
+        p.show('eyes', 'shut').show('mouth', 'grit');
+      },
     },
-  });
+    watch: { ms: 260, loop: false, pose: (t, p) => p.keys(watchKeys, t) },
+    slam: { ms: 340, loop: false, pose: (t, p) => p.keys(slamKeys, t) },
+    // A bob of the shoulders between lines in a cinematic: idle, but talking.
+    listen: {
+      ms: 1500,
+      loop: true,
+      pose: (t, p) => {
+        p.move('hip', 0, 0.25 + wave(t) * 0.25);
+        p.set('torso', 3).set('head', 4 + wave(t, 0.1) * 2).set('armUF', -4).set('armLF', 14).set('armUB', 8).set('armLB', 16);
+        p.set('thighF', 4).set('shinF', -4).set('thighB', -5).set('shinB', -3).set('footB', 8);
+      },
+    },
+  };
 }

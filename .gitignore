@@ -12,3 +12,4 @@ bench-results
 # npm run qa: its build and screenshots
 .qa-dist*
 qa-results
+__pycache__/

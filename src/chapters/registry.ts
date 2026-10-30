@@ -41,6 +41,9 @@ export function loadChapter(id: string): Promise<ChapterModule> {
   let p = pending.get(id);
   if (!p) {
     p = loader().then(
+      // A chapter's files that fail to load don't stop it: it falls back to art made in code.
+      (m) => (m.prepare ? m.prepare().catch(() => undefined) : Promise.resolve()).then(() => m),
+    ).then(
       (m) => {
         if (m.tracks) registerTracks(m.tracks);
         if (m.brains) registerBrains(m.brains);

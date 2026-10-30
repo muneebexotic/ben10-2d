@@ -67,6 +67,12 @@ export interface RigDef {
   alias?: Readonly<Record<string, string>>;
   /** How far the art reaches around the feet (game px), for culling and snapshots. */
   bounds: { left: number; right: number; top: number; bottom: number };
+  /**
+   * A face drawn whole (heads cut from model sheets): the clips still ask for
+   * eyes and mouth looks, and `pick` turns each pair into one of the head's
+   * variants. The eyes and mouth bones are hidden.
+   */
+  face?: { head: string; eyes: string; mouth: string; pick(eyes: string, mouth: string): string };
 }
 
 /** Bone lookup and order, built once per rig. */
@@ -77,6 +83,8 @@ export class RigInfo {
   readonly parent: Int16Array;
   readonly variantIndex: Array<Map<string, number>>;
   readonly variants: Array<readonly string[]>;
+  /** A whole-head face: the head's variant for every eyes and mouth look (`eyes * mouths + mouth`). */
+  readonly face: { head: number; eyes: number; mouth: number; mouths: number; table: Int16Array } | null = null;
 
   constructor(readonly def: RigDef) {
     def.bones.forEach((b, i) => this.index.set(b.id, i));
@@ -100,6 +108,17 @@ export class RigInfo {
     const parts = new Map(def.parts.map((p) => [p.id, p]));
     this.variants = def.bones.map((b) => (b.part ? (parts.get(b.part)?.variants ?? ['']) : ['']));
     this.variantIndex = this.variants.map((list) => new Map(list.map((v, k) => [v, k])));
+    if (def.face) {
+      const f = def.face;
+      const head = this.bone(f.head);
+      const eyes = this.bone(f.eyes);
+      const mouth = this.bone(f.mouth);
+      const ev = this.variants[eyes];
+      const mv = this.variants[mouth];
+      const table = new Int16Array(ev.length * mv.length);
+      ev.forEach((e, i) => mv.forEach((m, k) => (table[i * mv.length + k] = this.variantIndex[head].get(f.pick(e, m)) ?? 0)));
+      this.face = { head, eyes, mouth, mouths: mv.length, table };
+    }
   }
 
   bone(id: string): number {
@@ -313,6 +332,15 @@ export class Pose {
     this.z[this.info.bone(bone)] = z;
     return this;
   }
+}
+
+/** A whole-head face: picks the head for the eyes and mouth the pose asks for, and hides those two. Allocation-free. */
+export function applyFace(info: RigInfo, pose: Pose): void {
+  const f = info.face;
+  if (!f) return;
+  pose.v[f.head] = f.table[Math.max(0, pose.v[f.eyes]) * f.mouths + Math.max(0, pose.v[f.mouth])];
+  pose.hide[f.eyes] = 1;
+  pose.hide[f.mouth] = 1;
 }
 
 /** Smoothstep: keyframes ease in and out. */

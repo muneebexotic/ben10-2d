@@ -62,6 +62,8 @@ export interface ChapterArt {
  */
 export interface ChapterModule {
   level: LevelData;
+  /** Files the chapter needs before its level starts (the art its characters are cut from), fetched with its code. */
+  prepare?(): Promise<void>;
   /**
    * An HD chapter's look (Act 3): called first thing in the level's create, before anything is
    * made (render scale, HD textures, rigs). Chapters without it are pixel art.

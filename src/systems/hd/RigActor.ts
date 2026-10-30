@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { makeWorld, partFrame, Pose, RigInfo, solve, type BoneWorld, type RigDef } from '../../scenes/preload/cartoon/rig';
+import { applyFace, makeWorld, partFrame, Pose, RigInfo, solve, type BoneWorld, type RigDef } from '../../scenes/preload/cartoon/rig';
 
 /** How long a change of clip blends from the old pose (ms). */
 const BLEND_MS = 90;
@@ -125,6 +125,7 @@ export class RigActor {
       def.pose(t, pose);
     }
     this.autoFace(dtMs);
+    applyFace(this.info, pose);
     this.applyPose();
   }
 
