@@ -2,6 +2,7 @@ import { BEN_CARTOON } from '../../../../config/cartoon/ben';
 import { BEN_STYLE, EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
 import { wave, type PartSpec, type RigDef } from '../rig';
+import { SHOW_FRONT, showHumanClips } from '../showClips';
 import { cel, celLimb, hardShadow, shifted, showEyes, showHand, showMouth, showOmnitrix, showShade, showSneaker, SHOW_DETAIL } from '../show';
 
 const C = BEN_CARTOON.colors;
@@ -124,7 +125,7 @@ function head(p: Paint): void {
   // The fringe casts a hard shadow on his forehead; the jaw a thin one along its edge.
   p.within(face, () => p.fill(shifted(hair, 0.08, 0.28), C.skinShade));
   hardShadow(p, face, C.skinShade, 0.22, { x: -0.3, y: 1 });
-  p.line([3.5, -2.58, 3.78, -2.7], SHOW_DETAIL, INK, false, 0.8);
+  p.line([3.6, -2.62, 3.8, -2.7], SHOW_DETAIL, INK, false, 0.45);
   cel(p, hair, { fill: C.hair, shade: C.hairShade, depth: 0.55, dir: { x: -0.5, y: 0.87 } });
   p.within(hair, () => p.fill(p.poly(HAIR_SHINE), C.hairLight));
   for (const s of [[4.2, -6.2, 3.3, -7.0], [2.75, -5.25, 1.9, -6.2], [0.4, -5.86, -0.2, -6.4], [-3.2, -5.0, -2.9, -6.0], [1.4, -8.6, 2.2, -8.1]]) p.line(s, SHOW_DETAIL, INK, false, 0.6);
@@ -172,7 +173,7 @@ function parts(): PartSpec[] {
 }
 
 /** The watch arm (his far, left arm) comes in front of everything while he looks at or slams the Omnitrix. */
-const FRONT = 85;
+const FRONT = SHOW_FRONT;
 
 /** Ben's HD rig: the humanoid kit with his own parts, plus his punch, roll, watch and transform slam. */
 export function benRig(): RigDef {
@@ -201,102 +202,8 @@ export function benRig(): RigDef {
         [0.6, { hip: { y: 0.8 }, torso: 12, head: 10, armUB: { a: 30, z: FRONT }, armLB: { a: 60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 76, z: FRONT + 3 }, armLF: { a: 14, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 22, shinF: -26, thighB: -22, shinB: -14, footB: 16, eyes: { v: 'angry' }, mouth: { v: 'shout' } }],
         [1, { hip: { y: 0.6 }, torso: 10, head: 8, armUB: { a: 30, z: FRONT }, armLB: { a: 60, z: FRONT + 1 }, handB: { z: FRONT + 2 }, armUF: { a: 74, z: FRONT + 3 }, armLF: { a: 16, z: FRONT + 3 }, handF: { v: 'open', z: FRONT + 4 }, thighF: 20, shinF: -22, thighB: -20, shinB: -12, footB: 14, eyes: { v: 'angry' }, mouth: { v: 'grin' } }],
       ]);
-      // His near arm hangs at his back, so arms flung up go up behind his head
-      // and the watch arm up in front, never across his face.
-      // Jump: the near knee drives up, the far leg tucks under, fists in close.
-      const jumpKeys = keyframes(info, [
-        [0, { hip: { y: 1.8 }, torso: 14, head: -8, thighF: 40, shinF: -70, footF: 20, thighB: -6, shinB: -60, footB: 30, armUF: -45, armLF: 60, armUB: 20, armLB: 70 }],
-        [0.35, { hip: { y: -0.6 }, torso: 4, head: -6, thighF: 78, shinF: -98, footF: 30, thighB: -4, shinB: -112, footB: 40, armUF: -50, armLF: 85, armUB: 48, armLB: 88, mouth: { v: 'open' } }],
-        [1, { torso: 6, head: -4, thighF: 72, shinF: -95, footF: 25, thighB: 0, shinB: -105, footB: 35, armUF: -45, armLF: 80, armUB: 42, armLB: 84, mouth: { v: 'smile' } }],
-      ]);
-      // Landing: a deep crouch, the watch hand down to the floor.
-      const landKeys = keyframes(info, [
-        [0, { hip: { y: 3.6 }, torso: 30, head: -22, thighF: 64, shinF: -112, footF: 44, thighB: 26, shinB: -104, footB: 70, armUB: 14, armLB: -4, handB: { v: 'open' }, armUF: -50, armLF: 80 }],
-        [1, { torso: 2, head: -1, thighF: 13, shinF: -6, footF: -6, thighB: -12, shinB: -1, footB: 12, armUF: -6, armLF: 14, armUB: 7, armLB: 16 }],
-      ]);
-      // Breaststroke: glide, pull, hands in under the chin, then kick and reach.
-      const swimKeys = keyframes(info, [
-        [0, { armUF: 172, armLF: 4, armUB: 176, armLB: 2, handF: { v: 'open' }, handB: { v: 'open' }, thighF: -4, shinF: -8, footF: 40, thighB: 4, shinB: -10, footB: 40 }],
-        [0.35, { armUF: 112, armLF: -40, armUB: 116, armLB: -40, handF: { v: 'open' }, handB: { v: 'open' }, thighF: 30, shinF: -80, footF: 30, thighB: 34, shinB: -86, footB: 30 }],
-        [0.55, { armUF: 130, armLF: -100, armUB: 135, armLB: -100, thighF: 50, shinF: -120, footF: 20, thighB: 52, shinB: -122, footB: 20 }],
-        [0.75, { armUF: 168, armLF: -10, armUB: 172, armLB: -8, handF: { v: 'open' }, handB: { v: 'open' }, thighF: -8, shinF: -6, footF: 45, thighB: -2, shinB: -4, footB: 45 }],
-      ]);
-      // Hit: thrown back, arms flung out, one knee up, face screwed shut.
-      const hurtKeys = keyframes(info, [
-        [0, { hip: { x: -1, y: 0.4 }, torso: -26, head: -20, armUB: 70, armLB: 25, handB: { v: 'open' }, armUF: -35, armLF: 30, handF: { v: 'open' }, thighF: 38, shinF: -45, footF: 20, thighB: -14, shinB: -20, eyes: { v: 'hurt' }, mouth: { v: 'grit' } }],
-        [1, { hip: { x: -0.5 }, torso: -16, head: -12, armUB: 55, armLB: 25, handB: { v: 'open' }, armUF: -30, armLF: 30, handF: { v: 'open' }, thighF: 25, shinF: -32, thighB: -10, shinB: -16, eyes: { v: 'hurt' }, mouth: { v: 'grit' } }],
-      ]);
       return {
-        jump: { ms: base.jump.ms, loop: false, pose: (t, p) => p.keys(jumpKeys, t) },
-        fall: {
-          ms: base.fall.ms,
-          loop: true,
-          pose: (t, p) => {
-            // Both arms up in a V, hands open, legs dangling.
-            base.fall.pose(t, p);
-            const f = wave(t);
-            p.set('armUF', -135 + f * 8).set('armLF', -18 - f * 6).show('handF', 'open');
-            p.set('armUB', 135 - f * 8).set('armLB', 20 + f * 6).show('handB', 'open');
-            p.set('thighF', 10 + f * 4).set('shinF', -12).set('footF', 25);
-            p.set('thighB', -8 - f * 4).set('shinB', -16).set('footB', 30);
-            p.show('eyes', 'wide').show('mouth', 'shout');
-          },
-        },
-        hurt: { ms: base.hurt.ms, loop: false, pose: (t, p) => p.keys(hurtKeys, t) },
-        land: { ms: base.land.ms, loop: false, pose: (t, p) => p.keys(landKeys, t) },
-        swim: {
-          ms: 900,
-          loop: true,
-          pose: (t, p) => {
-            base.swim.pose(t, p);
-            p.keys(swimKeys, t, true);
-          },
-        },
-        defeat: {
-          ms: base.defeat.ms,
-          loop: true,
-          pose: (t, p) => {
-            base.defeat.pose(t, p);
-            p.set('armUF', -140).set('armLF', -20).set('armUB', -120).set('armLB', -10);
-          },
-        },
-        drown: {
-          ms: base.drown.ms,
-          loop: true,
-          pose: (t, p) => {
-            base.drown.pose(t, p);
-            const f = wave(t);
-            p.set('armUF', -130 + f * 30).set('armLF', -30 - f * 20);
-            p.set('armUB', 110 - f * 30).set('armLB', 50 + f * 20);
-          },
-        },
-        cheer: {
-          ms: base.cheer.ms,
-          loop: true,
-          pose: (t, p) => {
-            base.cheer.pose(t, p);
-            p.set('armUF', -160).set('armLF', -10).set('armUB', 140).set('armLB', 30);
-          },
-        },
-        wave: {
-          ms: base.wave.ms,
-          loop: true,
-          pose: (t, p) => {
-            base.idle.pose(t, p);
-            p.set('armUB', 84).front('armUB', FRONT).set('armLB', 80 + wave(t) * 22).front('armLB', FRONT + 1).show('handB', 'open').front('handB', FRONT + 2);
-            p.show('mouth', 'grin').show('eyes', 'happy');
-          },
-        },
-        // The sheet's stance: feet apart, weight back a little.
-        idle: {
-          ms: base.idle.ms,
-          loop: true,
-          pose: (t, p) => {
-            base.idle.pose(t, p);
-            p.set('thighF', 13).set('shinF', -6).set('footF', -6);
-            p.set('thighB', -12).set('shinB', -1).set('footB', 12);
-          },
-        },
+        ...showHumanClips(info, base),
         punch: { ms: 220, loop: false, pose: (t, p) => p.keys(punchKeys, t) },
         roll: {
           ms: 320,

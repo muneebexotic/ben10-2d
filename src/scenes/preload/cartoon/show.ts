@@ -120,6 +120,8 @@ export interface SneakerLook {
   /** Ankle joint to the floor. */
   ankle: number;
   far?: boolean;
+  /** How high the shoe reaches above the ankle (low-cut sneakers less; default 1.3). */
+  top?: number;
 }
 
 /** A chunky sneaker in the show look: dark upper, pale toe cap and side panel, pale sole (the foot points forward from the ankle). */
@@ -127,6 +129,7 @@ export function showSneaker(id: string, o: SneakerLook): PartSpec {
   const L = o.length;
   const B = o.ankle;
   const k = o.far ? 0.18 : 0;
+  const T = o.top ?? 1.3;
   const dim = (c: number) => (k ? showShade(c, k) : c);
   return {
     id,
@@ -135,7 +138,7 @@ export function showSneaker(id: string, o: SneakerLook): PartSpec {
     px: 2.4,
     py: 1.9,
     draw: (p) => {
-      const shoe = p.spiky([-1.8, -1.3, 0.9, -1.35, L * 0.48, B - 1.9, L - 0.6, B - 1.75, L + 0.3, B - 0.9, L + 0.25, B, -2.05, B, -2.25, B - 1.1], [false, false, false, false, false, false, true, false]);
+      const shoe = p.spiky([-1.8, -T, 0.9, -T - 0.05, L * 0.48, B - 1.9, L - 0.6, B - 1.75, L + 0.3, B - 0.9, L + 0.25, B, -2.05, B, -2.25, B - 1.1], [false, false, false, false, false, false, true, false]);
       cel(p, shoe, { fill: dim(o.upper), ink: SHOW_INK });
       p.within(shoe, () => {
         // A white toe cap, the stripe of the side panel and a white sole: the upper stays mostly dark.
@@ -167,6 +170,10 @@ export interface ShowEyesLook {
   browW?: number;
   /** How the brows sit at rest: >0 drawn down toward the nose (determined). */
   browSet?: number;
+  /** Lashes: a flick off each eye's outer corner. */
+  lash?: boolean;
+  /** Space between an eye and its brow (game px, default 0.42). */
+  browGap?: number;
 }
 
 /** The almond eye's outline: an angled upper lid, a softer lower one, sharp corners. */
@@ -175,7 +182,7 @@ function almond(p: Paint, e: ShowEye, open = 1): Path2D {
   const ry = e.ry * open;
   const i = e.inner;
   return p.spiky(
-    [x - rx * i, y - ry * 0.05, x - rx * 0.35 * i, y - ry * 1.0, x + rx * 0.45 * i, y - ry * 0.85, x + rx * i, y - ry * 0.15, x + rx * 0.3 * i, y + ry * 0.75, x - rx * 0.45 * i, y + ry * 0.7],
+    [x - rx * i, y, x - rx * 0.4 * i, y - ry * 1.02, x + rx * 0.35 * i, y - ry * 0.98, x + rx * i, y - ry * 0.05, x + rx * 0.35 * i, y + ry * 0.82, x - rx * 0.4 * i, y + ry * 0.78],
     [true, false, false, true, false, false],
   );
 }
@@ -193,13 +200,13 @@ export function showEyes(p: Paint, variant: string, look: ShowEyesLook): void {
   const brow = (e: ShowEye, lift: number, down: number) => {
     const outer = e.x - e.rx * 1.15 * e.inner;
     const inner = e.x + e.rx * 1.05 * e.inner;
-    const y = e.y - e.ry - 0.42 - lift;
+    const y = e.y - e.ry - (look.browGap ?? 0.42) - lift;
     const yi = y + down * 0.55;
     const yo = y - down * 0.2;
     const w = bw * (e === look.far ? 0.8 : 1);
     p.fill(p.poly([outer, yo - w * 0.35, (outer + inner) / 2, Math.min(yo, yi) - w * 0.75, inner, yi - w * 0.5, inner, yi + w * 0.45, (outer + inner) / 2, (yo + yi) / 2 + w * 0.25, outer, yo + w * 0.3]), look.brow);
   };
-  const eye = (e: ShowEye, lx: number, ly: number, open = 1, irisK = 0.92) => {
+  const eye = (e: ShowEye, lx: number, ly: number, open = 1, irisK = 1) => {
     const shape = almond(p, e, open);
     p.fill(shape, 0xf6f4ee);
     p.within(shape, () => {
@@ -207,7 +214,7 @@ export function showEyes(p: Paint, variant: string, look: ShowEyesLook): void {
       const ix = e.x + lx * e.rx * 0.45;
       const iy = e.y + ly * e.ry * 0.3;
       p.fill(p.ellipse(ix, iy, ir * Math.min(1, e.rx / e.ry), ir), look.iris);
-      p.fill(p.ellipse(ix, iy - ir * 0.62, ir * Math.min(1, e.rx / e.ry), ir * 0.42), showShade(look.iris, 0.22));
+      p.fill(p.ellipse(ix, iy - ir * 0.72, ir * Math.min(1, e.rx / e.ry), ir * 0.34), showShade(look.iris, 0.2));
       p.fill(p.ellipse(ix + lx * 0.05, iy + ir * 0.05, ir * 0.46 * Math.min(1, e.rx / e.ry), ir * 0.5), INK);
       p.fill(p.circle(ix - ir * 0.3, iy - ir * 0.32, ir * 0.27), 0xffffff);
     });
@@ -215,12 +222,14 @@ export function showEyes(p: Paint, variant: string, look: ShowEyesLook): void {
     const lid = new Path2D();
     const i = e.inner;
     const ry = e.ry * open;
-    lid.moveTo(e.x - e.rx * i, e.y - ry * 0.05);
-    lid.lineTo(e.x - e.rx * 0.35 * i, e.y - ry * 1.0);
-    lid.lineTo(e.x + e.rx * 0.45 * i, e.y - ry * 0.85);
-    lid.lineTo(e.x + e.rx * i, e.y - ry * 0.15);
-    p.stroke(lid, INK, SHOW_INK * 1.35);
-    p.stroke(shape, INK, SHOW_DETAIL * 0.75);
+    lid.moveTo(e.x - e.rx * i, e.y);
+    lid.quadraticCurveTo(e.x - e.rx * 0.2 * i, e.y - ry * 1.32, e.x + e.rx * i, e.y - ry * 0.05);
+    p.stroke(lid, INK, SHOW_INK * 1.05);
+    p.stroke(shape, INK, SHOW_DETAIL * 0.7);
+    if (look.lash) {
+      const ox = e.x - e.rx * i;
+      p.fill(p.poly([ox + 0.12 * i, e.y - 0.2, ox - e.rx * 0.38 * i, e.y - ry * 0.6, ox - 0.02 * i, e.y + 0.06]), INK);
+    }
   };
   const { near, far } = look;
   switch (variant) {
