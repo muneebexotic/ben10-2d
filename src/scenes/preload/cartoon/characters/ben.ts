@@ -1,7 +1,9 @@
 import { BEN_CARTOON } from '../../../../config/cartoon/ben';
 import { BEN_STYLE, EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
-import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { wave, type ClipDef, type PartSpec, type Pose, type RigDef, type RigInfo } from '../rig';
+import { frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
+import { BEN_FRAMES } from '../cutout/benFrames';
 import { cutoutImage } from '../cutout/cutout';
 import { cutHumanRig } from '../cutout/cutRig';
 import { BEN_CUT } from '../cutout/ben';
@@ -184,11 +186,52 @@ const FRONT = SHOW_FRONT;
  * either way.
  */
 export function benRig(): RigDef {
+  // Frame by frame from his drawings when they've loaded (the chapter loads them), else cut from his model sheet, else drawn.
+  const frames = cutoutImage(BEN_FRAMES.id);
+  if (frames) return frameRig({ id: 'ben', meta: BEN_FRAMES, img: frames, clips: BEN_FRAME_CLIPS, fallback: 'idle' });
   const img = cutoutImage('ben');
   const style = BEN_CARTOON.style ?? BEN_STYLE;
   if (!img) return humanRig({ id: 'ben', dims: BEN_DIMS, parts: parts(), style, bounds: BOUNDS, clips: benClips });
   return cutHumanRig({ id: 'ben', meta: BEN_CUT, img, style, bounds: BOUNDS, clips: benClips });
 }
+
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Which of his drawings each animation plays (docs/art-refs: the run cycle,
+ * idle/run and action sheets). Poses without a drawing of their own borrow
+ * the nearest one until their sheet arrives.
+ */
+export const BEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['idle0', 'idle1', 'idle2', 'idle3'], fps: 2.5, loop: true },
+  // The sheet's fourth drawing repeats the eighth's stride: the third is held instead.
+  run: { frames: ['run0', 'run1', 'run2', 'run2', 'run4', 'run5', 'run6', 'run7'], fps: 15, loop: true },
+  walk: { frames: ['run0', 'run1', 'run2', 'run2', 'run4', 'run5', 'run6', 'run7'], fps: 10, loop: true },
+  // A beat of crouch, then the tuck.
+  jump: { frames: ['land', 'jump', 'jump', 'jump', 'jump', 'jump'], ms: 420, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 170, loop: false },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['hurt'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  punch: { frames: ['punch'], ms: 220, loop: false, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * 1.5, 0) },
+  roll: { frames: ['jump'], ms: 320, loop: true, motion: (t, p, h) => spinAboutMiddle(p, t * 360, h) },
+  watch: { frames: ['slam'], ms: 260, loop: false },
+  slam: { frames: ['slam'], ms: 340, loop: false },
+  swim: { frames: ['swim'], ms: 900, loop: true, motion: (t, p) => p.set('body', wave(t) * 3).move('body', 0, -5 + wave(t, 0.25) * 0.6) },
+  tread: { frames: ['idle0'], ms: 900, loop: true, motion: bob(0.6) },
+  drown: { frames: ['hurt'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 6) },
+  talk: { frames: ['idle0', 'idle1'], fps: 3, loop: true },
+  listen: { frames: ['idle0', 'idle1', 'idle2', 'idle3'], fps: 2, loop: true },
+  point: { frames: ['punch'], ms: 1800, loop: true },
+  shrug: { frames: ['idle2'], ms: 1800, loop: true },
+  surprise: { frames: ['fall'], ms: 1800, loop: true },
+  cheer: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.5) },
+  think: { frames: ['idle3'], ms: 1800, loop: true },
+  angry: { frames: ['stand'], ms: 1800, loop: true },
+  sad: { frames: ['idle0'], ms: 1800, loop: true },
+  lookHands: { frames: ['stand'], ms: 1800, loop: true },
+  wave: { frames: ['stand'], ms: 1800, loop: true },
+};
 
 const BOUNDS = { left: -12, right: 14, top: -34, bottom: 2 };
 

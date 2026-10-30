@@ -3,6 +3,9 @@ import { BEN_CUT } from '../src/scenes/preload/cartoon/cutout/ben';
 import { GWEN_CUT } from '../src/scenes/preload/cartoon/cutout/gwen';
 import { MAX_CUT } from '../src/scenes/preload/cartoon/cutout/max';
 import { KEVIN_CUT } from '../src/scenes/preload/cartoon/cutout/kevin';
+import { BEN_FRAMES } from '../src/scenes/preload/cartoon/cutout/benFrames';
+import { frameNames, frameRig } from '../src/scenes/preload/cartoon/cutout/frameRig';
+import { BEN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/ben';
 import { cutoutDims, cutoutPart } from '../src/scenes/preload/cartoon/cutout/cutout';
 import { SHEET_HEADS, sheetFace as benFace } from '../src/scenes/preload/cartoon/cutout/cutRig';
 import { EYES, MOUTHS } from '../src/scenes/preload/cartoon/humanoid';
@@ -145,4 +148,32 @@ describe('skins: limbs that bend with their bones', () => {
     for (let j = 1; j < g.rowW.length; j++) if (g.rowJoint[j] === g.rowJoint[j - 1]) expect(g.rowW[j]).toBeGreaterThanOrEqual(g.rowW[j - 1]);
   });
 
+});
+
+describe('frame by frame', () => {
+  it("every one of Ben's clips plays drawings he has, and the game's animations all have a clip", () => {
+    const rig = frameRig({ id: 'ben', meta: BEN_FRAMES, img: {} as HTMLImageElement, clips: BEN_FRAME_CLIPS, fallback: 'idle' });
+    for (const name of ['idle', 'run', 'jump', 'fall', 'punch', 'roll', 'hurt', 'watch', 'land', 'swim', 'slam', 'defeat']) expect(rig.clips[name], name).toBeDefined();
+    const names = new Set(frameNames(BEN_FRAMES));
+    for (const c of Object.values(BEN_FRAME_CLIPS)) for (const f of c.frames) expect(names.has(f), f).toBe(true);
+  });
+
+  it('a clip shows its drawings in order, each for the same time', () => {
+    const rig = frameRig({ id: 'ben', meta: BEN_FRAMES, img: {} as HTMLImageElement, clips: BEN_FRAME_CLIPS, fallback: 'idle' });
+    const info = new RigInfo(rig);
+    const seen: string[] = [];
+    for (let k = 0; k < 8; k++) {
+      const pose = new Pose(info);
+      rig.clips.run.pose((k + 0.5) / 8, pose);
+      seen.push(info.variants[0][pose.v[0]]);
+    }
+    expect(seen).toEqual([...BEN_FRAME_CLIPS.run.frames]);
+  });
+
+  it('the airborne drawings float, the others stand on the floor', () => {
+    const f = BEN_FRAMES.frames;
+    const T = BEN_FRAMES.texel;
+    for (const n of ['run0', 'run1', 'run2', 'run4', 'run5', 'run6']) expect(Math.abs(f[`body:${n}`].h - f[`body:${n}`].py) / T, n).toBeLessThan(0.5);
+    for (const n of ['run3', 'run7']) expect((f[`body:${n}`].h - f[`body:${n}`].py) / T, n).toBeLessThan(-1);
+  });
 });
