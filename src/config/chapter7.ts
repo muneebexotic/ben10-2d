@@ -55,3 +55,26 @@ export const PLUMBER_SYSTEMS = {
   emergencyLight: { radius: 60, color: 0xff3a2a, intensity: 0.6, pulse: 0.004 },
   screenLight: { radius: 40, color: 0x7dffb0, intensity: 0.4 },
 } as const;
+
+/** Chapter 7's story beats: the docking ring and the split at the hub. */
+export const CH7_BEATS = {
+  ring: {
+    /** Max's walk and hurry (his walk at twice its gait: his sheet has no run), Gwen's run (px/s): near their drawings' own gaits (config/cartoon/gait.ts), so their feet stay planted. */
+    maxWalk: 36,
+    maxHurry: 72,
+    gwenRun: 63,
+    /** Gwen at Ben's side (px/s): as fast as her run cycle can play (twice its gait); she pops back in when left far behind. */
+    gwenFollow: 126,
+    /** Where Max and Gwen stand at the capsule, and where they stop at the hatch, the locker and the hub (px). */
+    maxStart: 34,
+    gwenStart: -26,
+    hatchGap: 18,
+    lockerGap: 10,
+    hubMax: -10,
+    hubGwen: -34,
+    /** The badge scan opening the bay's hatch (ms). */
+    scanMs: 900,
+    /** Ben this far past the hub's hatch (tiles): Max and Gwen are out of sight, back at their consoles. */
+    leaveTiles: 24,
+  },
+} as const;

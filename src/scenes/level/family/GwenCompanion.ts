@@ -30,6 +30,8 @@ export interface GwenOptions {
   onCast?: (spell: SpellId) => void;
   /** She learned a spell (the file saves it). */
   onLearn?: (spell: SpellId) => void;
+  /** Her running speed (px/s) when a chapter sets its own (drawn frame by frame, her feet keep pace up to this); she pops back in when far behind. */
+  runSpeed?: number;
 }
 
 const STATE_EVERY_MS = 100;
@@ -87,10 +89,10 @@ export class GwenCompanion {
     return this.actor.mode === 'buddy';
   }
 
-  /** Gwen joins Ben now, a step behind him. */
-  join(withSparkle: boolean): void {
+  /** Gwen joins Ben now, a step behind him (or where she already stands: `atX`). */
+  join(withSparkle: boolean, atX?: number): void {
     const p = this.kit.player;
-    const x = p.x - p.facing * 24;
+    const x = atX ?? p.x - p.facing * 24;
     const y = this.kit.world.groundBelow(x, p.y - 8);
     this.trail.length = 0;
     this.actor.place(x, y, 'buddy');
@@ -192,7 +194,8 @@ export class GwenCompanion {
       return;
     }
     const lag = this.trail.length > 30 ? 1.6 : 1;
-    const step = Math.sign(dx) * Math.min(Math.abs(dx), F.runSpeed * lag * (dtMs / 1000));
+    const speed = this.opts.runSpeed ?? F.runSpeed * lag;
+    const step = Math.sign(dx) * Math.min(Math.abs(dx), speed * (dtMs / 1000));
     a.x += step;
     a.feetY = next.y;
     a.face(dx < 0 ? -1 : 1);

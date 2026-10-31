@@ -69,6 +69,10 @@ export class BaseSystems implements SetPiece {
     deepEnv.jellies.clear();
     this.doors = new Doors(kit, this.tanks);
     this.machines = new Machines(kit, this.tanks);
+    // A section's console wakes its lamps.
+    this.machines.onRun((_id, kind, wakes) => {
+      if (kind === 'console' && wakes) this.setLamps(wakes, 'on');
+    });
     for (const d of PLUMBER_DECOR) {
       if (d.key !== PLUMBER_ART.props || d.frame !== 'lamp') continue;
       const section = LAMP_SECTIONS.findIndex((s) => d.x >= s.from && d.x < s.to);
@@ -90,6 +94,12 @@ export class BaseSystems implements SetPiece {
     if (i < 0 || this.lampState[i] === state) return;
     this.lampState[i] = state;
     if (thud && state === 'on') playSfx(lightsThud, 1);
+  }
+
+  /** The story wakes a section's console itself (Max at the hub): its screen, its lamps. */
+  wakeConsole(id: string, wakes: string): void {
+    this.machines.wakeConsole(id);
+    this.setLamps(wakes, 'on');
   }
 
   lampsOf(id: string): LampState {

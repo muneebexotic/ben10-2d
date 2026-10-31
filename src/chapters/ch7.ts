@@ -19,6 +19,8 @@ import { BEN_FRAMES } from '../scenes/preload/cartoon/cutout/benFrames';
 import { GWEN_FRAMES } from '../scenes/preload/cartoon/cutout/gwenFrames';
 import { MAX_FRAMES } from '../scenes/preload/cartoon/cutout/maxFrames';
 import { KEVIN_FRAMES } from '../scenes/preload/cartoon/cutout/kevinFrames';
+import { CH7_BEATS } from '../config/chapter7';
+import { CH7_GWEN_CHATTER } from '../scenes/level/plumber/story/lines';
 import type { ChapterModule } from './types';
 
 /** Chapter 7, The Plumbers: the descent under Keamari harbour and the Plumber base on the floor of the Arabian Sea (HD). */
@@ -40,6 +42,8 @@ export const CHAPTER: ChapterModule = {
     return new PlumberBackdrop(scene, level, world);
   },
   story: buildPlumberStory,
+  // Gwen walks with Ben through the docking ring (the story joins her, and takes her at the hub).
+  gwen: { chatter: CH7_GWEN_CHATTER, runSpeed: CH7_BEATS.ring.gwenFollow },
   art: [{ assets: DEEP_ASSETS, anims: DEEP_ANIMS }],
   // The music is the shared boss theme until Chapter 7's own tracks land.
   bosses: { deepmaw: { music: 'boss', hologram: [], create: (scene, world, x) => new DeepmawBoss(scene, world, x) } },

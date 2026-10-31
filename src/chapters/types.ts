@@ -86,7 +86,7 @@ export interface ChapterModule {
   /** Level hooks this chapter's boss needs beyond the arena (THE HUNTERS move through the level). */
   arena?(kit: StoryKit): Pick<ArenaDeps, 'hunt'>;
   /** Gwen walks with Ben in this chapter (the story says when she joins): her own banter. */
-  gwen?: { chatter?: readonly string[] };
+  gwen?: { chatter?: readonly string[]; runSpeed?: number };
   /** The act's closing scene, when this chapter ends an act (after its results, on the first clear). */
   cliffhanger?(scene: Phaser.Scene): Cliffhanger;
   /** Scenes only this chapter uses (the SUMO SLAMMERS cabinet, THE DEEP DIVE). */

@@ -629,6 +629,7 @@ export class LevelScene extends Phaser.Scene {
     return new GwenCompanion(kit, {
       known,
       chatter: own?.chatter,
+      runSpeed: own?.runSpeed,
       onCast: () => this.achievements.count('spells'),
       onLearn: (id) => {
         if (slot !== null) saveSystem.markSeen(slot, spellSeenId(id));
