@@ -5,6 +5,8 @@
 //     node scripts/cutout/capture.cjs <outDir> "level=ch7&mute=1&at=14&artres=8" 2.4
 //   ffmpeg -framerate 30 -i <outDir>/f%04d.png -c:v libx264 -pix_fmt yuv420p out.mp4
 // PLAN: [step, "down"|"up", key] (keys as Playwright names them); the last argument is the camera zoom.
+// SETUP=<file.js>: an async function body run in the page once the level is up (`scene` is the level,
+// `step` the frame count so far as `window.__frame`), e.g. to place Gwen and Max and walk them about.
 const { chromium } = require('playwright');
 const fs = require('fs');
 const [outDir, query, zoomArg] = process.argv.slice(2);
@@ -22,18 +24,30 @@ const [outDir, query, zoomArg] = process.argv.slice(2);
     const s = g.scene.getScenes(true).find((x) => x.arena !== undefined);
     if (zoom > 0) { s.cameras.main.setZoom(zoom); s.events.on('postupdate', () => s.cameras.main.setZoom(zoom)); }
     g.loop.sleep();
+    // Tweens keep time by the wall clock (Date.now): pin them to the stepped 60 Hz, or a tween-driven walk races ahead.
+    for (const sc of g.scene.getScenes(false)) {
+      sc.tweens.maxLag = 0;
+      sc.tweens.lagSkip = 1000 / 60;
+    }
     window.__t = performance.now();
     window.__step = (n) => { for (let i = 0; i < n; i++) { window.__t += 1000 / 60; g.step(window.__t, 1000 / 60); } };
   }, Number(zoomArg ?? 0));
   // Let the spawn flicker finish first.
   await p.evaluate(() => window.__step(Number(120)));
+  if (process.env.SETUP) {
+    const body = fs.readFileSync(process.env.SETUP, 'utf8');
+    await p.evaluate(async (src) => {
+      const scene = window.__game.scene.getScenes(true).find((x) => x.arena !== undefined);
+      await new Function('scene', `return (async () => { ${src} })();`)(scene);
+    }, body);
+  }
   // [frame, action, key]
   const plan = process.env.PLAN ? JSON.parse(process.env.PLAN) : [];
   const total = Number(process.env.FRAMES ?? 430);
   let shot = 0;
   for (let f = 0; f < total; f++) {
     for (const [at, act, key] of plan) if (at === f) await p.keyboard[act](key);
-    await p.evaluate(() => window.__step(1));
+    await p.evaluate((n) => { window.__frame = n; window.__step(1); }, f);
     if (f % 2 === 0) await p.screenshot({ path: `${outDir}/f${String(shot++).padStart(4, '0')}.png` });
   }
   console.log('zoom', await p.evaluate(() => window.__game.scene.getScenes(true).find((x) => x.arena !== undefined).cameras.main.zoom));
