@@ -5,6 +5,8 @@ import { wave, type BoneSpec, type ClipDef, type PartSpec, type RigDef, type Rig
 import { cutoutImage } from '../cutout/cutout';
 import { cutHumanRig } from '../cutout/cutRig';
 import { KEVIN_CUT } from '../cutout/kevin';
+import { breathe, frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
+import { KEVIN_FRAMES } from '../cutout/kevinFrames';
 import { showHumanClips } from '../showClips';
 import { cartoonEyes, cartoonMouth } from './face';
 
@@ -131,6 +133,9 @@ function parts(): PartSpec[] {
 
 /** Kevin's HD rig: slouching, smirking; his absorb, wind-up, throw, lunge and laugh. */
 export function kevinRig(): RigDef {
+  // Frame by frame from his drawings when they've loaded (the chapter loads them), else cut from his model sheet, else drawn.
+  const frames = cutoutImage(KEVIN_FRAMES.id);
+  if (frames) return frameRig({ id: 'kevin', meta: KEVIN_FRAMES, img: frames, clips: KEVIN_FRAME_CLIPS, fallback: 'idle' });
   const style = KEVIN_CARTOON.style!;
   const img = cutoutImage('kevin');
   if (!img) return humanRig({ id: 'kevin', dims: KEVIN_DIMS, parts: parts(), style, extraBones: [POWER], bounds: BOUNDS, clips: kevinClips });
@@ -138,6 +143,29 @@ export function kevinRig(): RigDef {
   const power = parts().find((p) => p.id === 'power')!;
   return cutHumanRig({ id: 'kevin', meta: KEVIN_CUT, img, style, bounds: BOUNDS, clips: kevinClips, extraParts: [power], extraBones: [POWER] });
 }
+
+/**
+ * Which of his drawings each animation plays (docs/art-refs: his model sheet,
+ * whose absorbing pose glows purple in the drawing, and his run cycle). Until
+ * his action sheet arrives, the poses without a drawing of their own (a laugh,
+ * a point) are his standing smirk, breathing; unlisted clips fall back to it.
+ */
+export const KEVIN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['stand'], ms: 2400, loop: true, motion: breathe() },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 16, loop: true },
+  walk: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 10, loop: true },
+  jump: { frames: ['run1', 'run3', 'run3', 'run3', 'run3', 'run3'], ms: 420, loop: false },
+  fall: { frames: ['run7'], ms: 700, loop: true },
+  land: { frames: ['run5'], ms: 170, loop: false },
+  // Drinking in power: the drawing's own purple, breathing fast.
+  absorb: { frames: ['absorb'], ms: 520, loop: true, motion: breathe(0.008) },
+  windup: { frames: ['absorb'], ms: 300, loop: false },
+  throw: { frames: ['absorb'], ms: 240, loop: false },
+  // The run's flight drawing: a leap at you.
+  lunge: { frames: ['run3'], ms: 200, loop: false },
+  hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+};
 
 const BOUNDS = { left: -12, right: 14, top: -40, bottom: 2 };
 const POWER: BoneSpec = { id: 'power', parent: 'handF', x: 0.5, y: 1.5, part: 'power', z: 90, dir: -1 };

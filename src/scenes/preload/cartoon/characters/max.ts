@@ -5,6 +5,8 @@ import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '..
 import { cutoutImage, cutoutPart } from '../cutout/cutout';
 import { cutHumanRig } from '../cutout/cutRig';
 import { MAX_CUT } from '../cutout/max';
+import { breathe, frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
+import { MAX_FRAMES } from '../cutout/maxFrames';
 import { cartoonEyes, cartoonMouth } from './face';
 
 const C = MAX_CARTOON.colors;
@@ -169,6 +171,9 @@ function parts(): PartSpec[] {
 
 /** Grandpa Max's HD rig: heavy, warm, a little stiff; his blaster, his badge, a salute, a console. */
 export function maxRig(): RigDef {
+  // Frame by frame from his drawings when they've loaded (the chapter loads them), else cut from his model sheet, else drawn.
+  const frames = cutoutImage(MAX_FRAMES.id);
+  if (frames) return frameRig({ id: 'max', meta: MAX_FRAMES, img: frames, clips: MAX_FRAME_CLIPS, fallback: 'idle' });
   const style = MAX_CARTOON.style!;
   const img = cutoutImage('max');
   if (!img) return humanRig({ id: 'max', dims: MAX_DIMS, parts: parts(), style, bounds: BOUNDS, clips: maxClips });
@@ -190,6 +195,23 @@ export function maxRig(): RigDef {
     extraBones: [{ id: 'holster', parent: 'hip', x: 0, y: 0, part: 'holster', z: 52, dir: 1 }],
   });
 }
+
+/**
+ * Which of his drawings each animation plays (docs/art-refs: his model sheet
+ * and walk cycle). Until his action and story-pose sheets arrive, every pose
+ * without a drawing of its own (the blaster, the badge, a salute) is his
+ * standing drawing, breathing; the clips that aren't listed fall back to it.
+ */
+export const MAX_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['stand'], ms: 3000, loop: true, motion: breathe(0.005) },
+  walk: { frames: ['walk0', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7'], fps: 10, loop: true },
+  // A hurried walk: he doesn't run.
+  run: { frames: ['walk0', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7'], fps: 15, loop: true },
+  // Turned side-on to the console (his model sheet's side view).
+  console: { frames: ['side'], ms: 3000, loop: true, motion: breathe(0.005) },
+  hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1 * (1 - t), 0) },
+  defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+};
 
 const BOUNDS = { left: -14, right: 16, top: -38, bottom: 2 };
 const HAND_LOOKS = ['fist', 'open', 'point', 'blaster', 'badge'] as const;

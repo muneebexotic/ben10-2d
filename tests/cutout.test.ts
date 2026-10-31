@@ -6,6 +6,13 @@ import { KEVIN_CUT } from '../src/scenes/preload/cartoon/cutout/kevin';
 import { BEN_FRAMES } from '../src/scenes/preload/cartoon/cutout/benFrames';
 import { frameNames, frameRig } from '../src/scenes/preload/cartoon/cutout/frameRig';
 import { BEN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/ben';
+import { GWEN_FRAMES } from '../src/scenes/preload/cartoon/cutout/gwenFrames';
+import { MAX_FRAMES } from '../src/scenes/preload/cartoon/cutout/maxFrames';
+import { KEVIN_FRAMES } from '../src/scenes/preload/cartoon/cutout/kevinFrames';
+import { GWEN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/gwen';
+import { MAX_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/max';
+import { KEVIN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/kevin';
+import { GAIT } from '../src/config/cartoon/gait';
 import { cutoutDims, cutoutPart } from '../src/scenes/preload/cartoon/cutout/cutout';
 import { SHEET_HEADS, sheetFace as benFace } from '../src/scenes/preload/cartoon/cutout/cutRig';
 import { EYES, MOUTHS } from '../src/scenes/preload/cartoon/humanoid';
@@ -175,5 +182,56 @@ describe('frame by frame', () => {
     const T = BEN_FRAMES.texel;
     for (const n of ['run0', 'run1', 'run2', 'run4', 'run5', 'run6']) expect(Math.abs(f[`body:${n}`].h - f[`body:${n}`].py) / T, n).toBeLessThan(0.5);
     for (const n of ['run3', 'run7']) expect((f[`body:${n}`].h - f[`body:${n}`].py) / T, n).toBeLessThan(-1);
+  });
+
+  const FAMILY = [
+    { id: 'gwen', meta: GWEN_FRAMES, clips: GWEN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'land', 'hurt', 'cast'], cycle: 'run', air: ['run3', 'run7'] },
+    { id: 'max', meta: MAX_FRAMES, clips: MAX_FRAME_CLIPS, own: ['idle', 'walk', 'run', 'console', 'hurt'], cycle: 'walk', air: [] },
+    { id: 'kevin', meta: KEVIN_FRAMES, clips: KEVIN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'absorb', 'windup', 'throw', 'lunge', 'hurt'], cycle: 'run', air: ['run3', 'run7'] },
+  ] as const;
+
+  it("Gwen, Max and Kevin play only their own drawings, and every animation they're given has a clip", () => {
+    for (const c of FAMILY) {
+      const rig = frameRig({ id: c.id, meta: c.meta, img: {} as HTMLImageElement, clips: c.clips, fallback: 'idle' });
+      for (const name of c.own) expect(rig.clips[name], `${c.id} ${name}`).toBeDefined();
+      const names = new Set(frameNames(c.meta));
+      for (const clip of Object.values(c.clips)) for (const f of clip.frames) expect(names.has(f), `${c.id} ${f}`).toBe(true);
+    }
+  });
+
+  it("their cycles' airborne drawings float and the rest stand on the floor", () => {
+    for (const c of FAMILY) {
+      const T = c.meta.texel;
+      for (const [key, f] of Object.entries(c.meta.frames)) {
+        const name = key.slice(5);
+        const below = (f.h - f.py) / T;
+        if ((c.air as readonly string[]).includes(name)) expect(below, `${c.id} ${name}`).toBeLessThan(-1);
+        else expect(Math.abs(below), `${c.id} ${name}`).toBeLessThan(0.5);
+      }
+    }
+  });
+
+  it('their sheets agree on size: Max tallest, then Kevin, then Gwen, and a cycle no more than a runner\'s crouch below the stand', () => {
+    const tall = (m: typeof GWEN_FRAMES, n: string) => m.frames[`body:${n}`].py / m.texel;
+    expect(tall(MAX_FRAMES, 'stand')).toBeGreaterThan(tall(KEVIN_FRAMES, 'stand'));
+    expect(tall(KEVIN_FRAMES, 'stand')).toBeGreaterThan(tall(GWEN_FRAMES, 'stand'));
+    for (const c of FAMILY) {
+      const stand = tall(c.meta, 'stand');
+      const cycle = c.clips[c.cycle].frames.filter((f) => !(c.air as readonly string[]).includes(f)).map((f) => tall(c.meta, f));
+      const k = cycle.reduce((a, b) => a + b, 0) / cycle.length / stand;
+      // A run crouches about 15% (Ben's own run against his idle); a walk stands nearly tall.
+      expect(k, c.id).toBeGreaterThan(c.cycle === 'walk' ? 0.9 : 0.78);
+      expect(k, c.id).toBeLessThan(c.cycle === 'walk' ? 1.0 : 0.9);
+    }
+  });
+
+  it('every drawn cycle a family actor plays has a gait, so its feet keep pace with the ground', () => {
+    for (const c of FAMILY) {
+      const gait = GAIT[c.id];
+      expect(gait?.[c.cycle], c.id).toBeGreaterThan(20);
+      // Ground per drawing stays the same at every rate the cycle is played (walk and run use the same drawings).
+      const per = (name: string) => gait[name] / (c.clips[name].fps ?? 1);
+      for (const name of Object.keys(gait)) expect(per(name), `${c.id} ${name}`).toBeCloseTo(per(c.cycle), 0);
+    }
   });
 });

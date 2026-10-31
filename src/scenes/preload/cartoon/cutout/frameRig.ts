@@ -1,4 +1,4 @@
-import type { ClipDef, Pose, RigDef } from '../rig';
+import { wave, type ClipDef, type Pose, type RigDef } from '../rig';
 import { cutoutPart, type CutoutMeta } from './cutout';
 
 /**
@@ -79,4 +79,11 @@ export function spinAboutMiddle(p: Pose, deg: number, height: number): void {
   const h = height / 2;
   // The feet go where the turned middle lands back on (0, -h).
   p.set('body', deg).move('body', -Math.sin(a) * h, Math.cos(a) * h - h);
+}
+
+/** Breathing over a held drawing: it swells a hair from the feet up, so they never leave the floor. */
+export function breathe(amount = 0.006): (t: number, p: Pose) => void {
+  return (t, p) => {
+    p.size('body', 1 + wave(t) * amount);
+  };
 }

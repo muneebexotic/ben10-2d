@@ -3,6 +3,8 @@ import { EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
 import { wave, type BoneSpec, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
 import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
+import { GWEN_FRAMES } from '../cutout/gwenFrames';
 import { cutHumanRig } from '../cutout/cutRig';
 import { GWEN_CUT } from '../cutout/gwen';
 import { cel, celLimb, hardShadow, shifted, showEyes, showHand, showMouth, showShade, showSneaker, SHOW_DETAIL } from '../show';
@@ -190,6 +192,9 @@ function parts(): PartSpec[] {
 
 /** Gwen's HD rig: the show-look clips she shares with Ben, her cast (a glow of mana between her hands) and an unimpressed fold of the arms. */
 export function gwenRig(): RigDef {
+  // Frame by frame from her drawings when they've loaded (the chapter loads them), else cut from her model sheet, else drawn.
+  const frames = cutoutImage(GWEN_FRAMES.id);
+  if (frames) return frameRig({ id: 'gwen', meta: GWEN_FRAMES, img: frames, clips: GWEN_FRAME_CLIPS, fallback: 'idle' });
   const style = GWEN_CARTOON.style!;
   const img = cutoutImage('gwen');
   if (!img) return humanRig({ id: 'gwen', dims: GWEN_DIMS, parts: parts(), style, extraBones: [MANA], bounds: BOUNDS, clips: gwenClips });
@@ -197,6 +202,26 @@ export function gwenRig(): RigDef {
   const mana = parts().find((p) => p.id === 'mana')!;
   return cutHumanRig({ id: 'gwen', meta: GWEN_CUT, img, style, bounds: BOUNDS, clips: gwenClips, extraParts: [mana], extraBones: [MANA] });
 }
+
+/**
+ * Which of her drawings each animation plays (docs/art-refs: her model sheet
+ * and run cycle). Until her action and story-pose sheets arrive, every pose
+ * without a drawing of its own (a cast, a point, a talk) is her standing
+ * drawing, breathing; the clips that aren't listed fall back to it too.
+ */
+export const GWEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['stand'], ms: 2600, loop: true, motion: breathe() },
+  // The sheet's second four drawings repeat the first four's stride: with both legs alike it reads as the other leg.
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 16, loop: true },
+  walk: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 10, loop: true },
+  // The run's lowest drawing for the push-off, then its flight.
+  jump: { frames: ['run1', 'run3', 'run3', 'run3', 'run3', 'run3'], ms: 420, loop: false },
+  fall: { frames: ['run7'], ms: 700, loop: true },
+  land: { frames: ['run5'], ms: 170, loop: false },
+  hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  cast: { frames: ['stand'], ms: 300, loop: true },
+};
 
 const BOUNDS = { left: -12, right: 14, top: -32, bottom: 2 };
 const MANA: BoneSpec = { id: 'mana', parent: 'handF', x: 0.6, y: 1.4, part: 'mana', z: 90, dir: -1 };

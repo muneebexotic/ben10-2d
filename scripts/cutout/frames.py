@@ -77,11 +77,28 @@ def hair_width(rgba, hair):
     return float(stats[k][2])
 
 
-def anchor(rgba, shirt):
-    """The middle of the shirt (x, y) and the lowest opaque pixel (y)."""
+def head_box(rgba, skin):
+    """The top of the head and the chin (y): the hair's top row and the bottom of the face, the largest skin blob up there."""
+    a = rgba[..., 3]
+    rgb = np.where(a[..., None] > 0, rgba[..., :3] / np.maximum(a[..., None], 1e-6), 0)
+    top = int(np.nonzero((a > 0.5).any(axis=1))[0].min())
+    near = (np.linalg.norm(rgb - np.array(skin, np.float32), axis=2) < 45) & (a > 0.9)
+    near[int(rgba.shape[0] * 0.4):] = False
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(near.astype(np.uint8))
+    if n < 2:
+        return None
+    k = 1 + int(np.argmax(stats[1:, 4]))
+    return top, int(stats[k][1] + stats[k][3])
+
+
+def anchor(rgba, shirt, band=None):
+    """The middle of the shirt (x, y) and the lowest opaque pixel (y). `band` limits the shirt to those rows (a shirt the colour of the hair)."""
     a = rgba[..., 3]
     rgb = np.where(a[..., None] > 0, rgba[..., :3] / np.maximum(a[..., None], 1e-6), 0)
     near = (np.linalg.norm(rgb - np.array(shirt, np.float32), axis=2) < 40) & (a > 0.9)
+    if band:
+        near[:band[0]] = False
+        near[band[1]:] = False
     ys, xs = np.nonzero(near)
     cx = float(xs.mean()) if len(xs) else rgba.shape[1] / 2
     cy = float(ys.mean()) if len(ys) else rgba.shape[0] / 2
@@ -126,11 +143,30 @@ def main():
             continue
         scale[name] = ref / float(np.median(widths))
         print(f'{name}: hair {np.median(widths):.0f}px, x{scale[name]:.3f}')
+    # Hair width fails when a sheet draws the head turned or bigger: the head's height (hair to chin) is printed
+    # alongside, and SHEET_SCALE sets a sheet's scale by hand (docs/DECISIONS.md, "a size jump").
+    skin = getattr(S, 'SKIN', None)
+    if skin:
+        ref_head = head_box(sheets[S.REF[0]][S.REF[1]], skin)
+        for name, figs in sheets.items():
+            used = sorted({i for sh, i in S.FRAMES.values() if sh == name})
+            heads = [b[1] - b[0] for b in (head_box(figs[i], skin) for i in used) if b]
+            if heads and ref_head:
+                print(f'{name}: head {np.median(heads):.0f}px, x{(ref_head[1] - ref_head[0]) / float(np.median(heads)):.3f}')
+    for name, k in getattr(S, 'SHEET_SCALE', {}).items():
+        scale[name] = k
+        print(f'{name}: set to x{k:.3f}')
     texel = S.TEXEL / S.SCALE
     images, pivots = {}, {}
     for frame, (sheet, index) in S.FRAMES.items():
         rgba = snap_colours(sheets[sheet][index], getattr(S, 'PALETTE', []), getattr(S, 'SNAP', 0.0))
-        cx, cy, floor = anchor(rgba, S.SHIRT)
+        band = None
+        if getattr(S, 'SHIRT_BAND', None) and skin:
+            # The torso: from the chin down a head and a bit.
+            box = head_box(rgba, skin)
+            if box:
+                band = (box[1], int(box[1] + (box[1] - box[0]) * S.SHIRT_BAND))
+        cx, cy, floor = anchor(rgba, S.SHIRT, band)
         # Swimming drawings hang from the middle of the shirt (the clip places it), not from the feet.
         if frame in getattr(S, 'CENTRED', ()):
             floor = cy
