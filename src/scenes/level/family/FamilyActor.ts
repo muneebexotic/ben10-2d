@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { presentationIsHd } from '../../../systems/hd/Presentation';
+import { approach } from '../../../systems/Pacing';
+import { GAIT, GAIT_RATE } from '../../../config/cartoon/gait';
 
 /** Who is moving the actor right now: nobody (hidden), a set piece, or the companion AI. */
 export type ActorMode = 'hidden' | 'scripted' | 'buddy';
@@ -31,6 +33,8 @@ export class FamilyActor {
   private current = '';
   /** A one-shot pose (a cast) holds until this time (ms of the actor's own clock). */
   private holdMs = 0;
+  /** Where the actor was last update (HD: how fast it's moving, for the cycle's rate). */
+  private lastX = 0;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -59,6 +63,7 @@ export class FamilyActor {
   place(x: number, feetY: number, mode: ActorMode = 'scripted'): void {
     this.stopTween();
     this.x = x;
+    this.lastX = x;
     this.feetY = feetY;
     this.mode = mode;
     this.sprite.setVisible(true);
@@ -153,6 +158,21 @@ export class FamilyActor {
       }
     }
     this.sync();
+    if (presentationIsHd()) this.matchGait(dtMs);
+  }
+
+  /** HD: a drawn run or walk plays as fast as the actor really moves, so the planted foot stays put (config/cartoon/gait.ts). */
+  private matchGait(dtMs: number): void {
+    const gait = GAIT[this.look.prefix]?.[this.current];
+    const speed = dtMs > 0 ? (Math.abs(this.x - this.lastX) * 1000) / dtMs : 0;
+    this.lastX = this.x;
+    const anims = this.sprite.anims;
+    if (!gait || speed < 1) {
+      anims.timeScale = 1;
+      return;
+    }
+    const target = Math.min(GAIT_RATE.max, Math.max(GAIT_RATE.min, speed / gait));
+    anims.timeScale = approach(anims.timeScale, target, GAIT_RATE.perFrame);
   }
 
   private show(name: string): void {
