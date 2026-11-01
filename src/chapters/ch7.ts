@@ -7,6 +7,7 @@ import { WardenBrain } from '../entities/enemies/deep/warden';
 import { CHAPTER_7 } from '../levels/chapter7';
 import { PLUMBER_SEA } from '../levels/chapter7Decor';
 import { enterPlumberBase, plumberArtRes } from '../scenes/level/plumber/presentation';
+import { makeKorrPortrait } from '../scenes/preload/cartoon/plumber/korr';
 import { PlumberBackdrop } from '../scenes/level/plumber/PlumberBackdrop';
 import { startRigViewer } from '../scenes/level/plumber/RigViewer';
 import { buildPlumberStory } from '../scenes/level/plumber/story';
@@ -30,6 +31,8 @@ export const CHAPTER: ChapterModule = {
   prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, KEVIN_FRAMES]),
   enter: (scene) => {
     enterPlumberBase(scene);
+    // The ending's hologram speaker.
+    makeKorrPortrait(scene, plumberArtRes(scene.game));
     const query = new URLSearchParams(window.location.search);
     if (DEV_TOOLS && query.has('rigview')) scene.time.delayedCall(50, () => startRigViewer(scene, query));
   },

@@ -9,7 +9,7 @@ import { HD_PORTRAITS } from '../../preload/cartoon/portraitKeys';
 export type CastId =
   | 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak'
   | 'hex' | 'charmcaster' | 'rauf' | 'rafiq' | 'zain'
-  | 'deepmaw';
+  | 'deepmaw' | 'korr';
 
 export interface CastMember {
   name: string;
@@ -45,6 +45,8 @@ export const CAST: Record<CastId, CastMember> = {
   zain: { name: 'ZAIN', color: PALETTE.omnitrix, portrait: CH6_TEX.portraitZain, voicePitch: 1.6 },
   // Chapter 7 (the Plumber base): portraits painted from their rigs.
   deepmaw: { name: 'DEEPMAW', color: PALETTE.deepmaw, portrait: HD_PORTRAITS.deepmaw, voicePitch: 0.5 },
+  // A hologram painted in code until the owner's portrait arrives (cartoon/plumber/korr.ts).
+  korr: { name: 'MAGISTER KORR', color: 0x58d8de, portrait: HD_PORTRAITS.korr, voicePitch: 0.6 },
 };
 
 export function isCastId(id: string): id is CastId {

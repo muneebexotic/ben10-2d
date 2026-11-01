@@ -296,6 +296,19 @@ export const CHAPTER_7: LevelData = {
       containment: { maxX: 378, cellX: 400, floor: 40 },
       moonPool: { tank: 't-moonpool', levels: [32, 46, 34], boothX: 431 },
     },
-    outro: [],
+    // The ending (GAME_DESIGN.md, Chapter 7, beat 13): Deepmaw back in stasis, Magister Korr on the hologram, Kevin's getaway.
+    outro: [
+      { who: 'max', text: 'DEEPMAW\'S BACK IN STASIS. AND THIS TIME THE NET HOLDS.', ms: 2400 },
+      { who: 'korr', text: 'THE ARABIAN DEEP IS SECURE, TENNYSON?', ms: 2200 },
+      { who: 'max', text: 'IT IS NOW, MAGISTER.', ms: 1600 },
+      { who: 'korr', text: 'AND THE BOY WITH THE OMNITRIX?', ms: 2000 },
+      { who: 'max', text: '...HE\'S WITH ME.', ms: 1600 },
+      { who: 'korr', text: 'THEN KEEP HIM SAFE. SOMETHING IS STIRRING ON THE ROADS AHEAD.', ms: 2800 },
+      { who: 'gwen', text: 'UH, GRANDPA? THE SURFACE CAMERA. THERE\'S AN ESCAPE POD UP THERE.', ms: 2600 },
+      { who: 'kevin', text: 'THANKS FOR THE RIDE, TENNYSON! NICE BADGE, BY THE WAY. IT\'S MINE NOW.', ms: 2800 },
+      { who: 'ben', text: 'SO. GRANDPA\'S A SPACE COP.', ms: 1800 },
+      { who: 'gwen', text: 'AND YOU\'RE STILL A DORK.', ms: 1600 },
+      { who: 'max', text: 'WHO WANTS A SMOOTHIE? THE BASE HAS A MACHINE.', ms: 2400 },
+    ],
   },
 };
