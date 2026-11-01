@@ -63,9 +63,9 @@ export const CH7_BEATS = {
     /** Max's walk and hurry (his walk at twice its gait: his sheet has no run), Gwen's run (px/s): near their drawings' own gaits (config/cartoon/gait.ts), so their feet stay planted. */
     maxWalk: 36,
     maxHurry: 72,
-    gwenRun: 63,
+    gwenRun: 62,
     /** Gwen at Ben's side (px/s): as fast as her run cycle can play (twice its gait); she pops back in when left far behind. */
-    gwenFollow: 126,
+    gwenFollow: 124,
     /** Where Max and Gwen stand at the capsule, and where they stop at the hatch, the locker and the hub (px). */
     maxStart: 34,
     gwenStart: -26,

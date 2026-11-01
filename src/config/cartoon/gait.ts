@@ -6,8 +6,8 @@
  * feet don't slide. Keyed by the family sheet's prefix, then the pose.
  */
 export const GAIT: Readonly<Record<string, Readonly<Record<string, number>>>> = {
-  // About 3.95 px a drawing: 16 and 10 drawings a second.
-  gwen: { run: 63, walk: 39.5 },
+  // About 3.1 px a drawing (her second run sheet's shorter stride): 20 and 10 drawings a second.
+  gwen: { run: 62, walk: 31 },
   // About 3.6 px a drawing: 10 and 15 a second.
   max: { walk: 36, run: 54 },
   // About 4.55 px a drawing: 16 and 10 a second.

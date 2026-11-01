@@ -211,8 +211,8 @@ export function gwenRig(): RigDef {
  */
 export const GWEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 2600, loop: true, motion: breathe() },
-  // The sheet's second four drawings repeat the first four's stride: with both legs alike it reads as the other leg.
-  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 16, loop: true },
+  // A short, quick stride (her second run sheet): 20 drawings a second keep her feet planted at Ben's pace.
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 20, loop: true },
   walk: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 10, loop: true },
   // The run's lowest drawing for the push-off, then its flight.
   jump: { frames: ['run1', 'run3', 'run3', 'run3', 'run3', 'run3'], ms: 420, loop: false },
