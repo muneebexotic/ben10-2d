@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEEPMAW as D } from '../src/config/deepmaw';
-import { bodyMultiplier, dryAttack, maelstromLevel, stageFor, stageStartHp, wetAttack, type DeepStage } from '../src/entities/bosses/deepmaw/rules';
+import { bodyMultiplier, dryAttack, maelstromLevel, reflectsFlash, stageFor, stageStartHp, wetAttack, type DeepStage } from '../src/entities/bosses/deepmaw/rules';
 import { CHAPTER_7 } from '../src/levels/chapter7';
 
 const boss = CHAPTER_7.entities.find((e) => e.type === 'boss');
@@ -42,6 +42,17 @@ describe('DEEPMAW', () => {
     const seq = Array.from({ length: 12 }, (_, n) => dryAttack(n));
     seq.forEach((a, n) => expect(a === 'flood').toBe((n + 1) % D.highAndDry.floodEvery === 0));
     for (const a of ['slam', 'roll', 'leap'] as const) expect(seq).toContain(a);
+  });
+
+  it("Diamondhead's shield bounces the flash back only while it faces the bulb and the bulb is near", () => {
+    const R = D.lightsOut.flashRadius * D.lightsOut.reflectReach;
+    // Ben at 100 facing right: his shield's face is in front of him.
+    const shield = { x: 116, y: 200 };
+    expect(reflectsFlash(shield, 100, 180, 170)).toBe(true);
+    expect(reflectsFlash(shield, 100, 40, 170), 'bulb behind him').toBe(false);
+    expect(reflectsFlash(null, 100, 180, 170), 'no shield').toBe(false);
+    expect(reflectsFlash(shield, 100, shield.x + R + 1, shield.y), 'too far').toBe(false);
+    expect(reflectsFlash(shield, 100, shield.x + R - 1, shield.y)).toBe(true);
   });
 
   it('the maelstrom water swings round its level but never climbs into the booth', () => {

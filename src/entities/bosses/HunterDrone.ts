@@ -49,6 +49,8 @@ export interface BossWorld {
   holdPlayer?(on: boolean): void;
   /** Ben's form right now ('ben' when human). */
   playerForm?(): string;
+  /** Diamondhead's raised shield (its face), or null: DEEPMAW's flash bounces off it. */
+  playerMirror?(): { x: number; y: number } | null;
   /** Takes alien time off Ben's watch (Kevin's absorb). */
   drainAlienTime?(ms: number): void;
   /** A machine Upgrade can merge into joins the level (the substation's coils). */

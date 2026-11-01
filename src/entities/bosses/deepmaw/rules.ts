@@ -48,5 +48,15 @@ export function maelstromLevel(ms: number): number {
   return M.level + Math.sin((ms / M.swingMs) * Math.PI * 2) * M.swing;
 }
 
+/**
+ * Diamondhead's crystal shield (its face at `mirror`, in front of Ben at `playerX`) bounces the lure's flash back
+ * when it faces the bulb and the bulb is close enough.
+ */
+export function reflectsFlash(mirror: { x: number; y: number } | null, playerX: number, bulbX: number, bulbY: number): boolean {
+  if (!mirror) return false;
+  if (Math.sign(mirror.x - playerX) !== Math.sign(bulbX - playerX)) return false;
+  return Math.hypot(bulbX - mirror.x, bulbY - mirror.y) <= D.lightsOut.flashRadius * D.lightsOut.reflectReach;
+}
+
 /** BAIT AND SWITCH: the lure stunned by this many different forms in one fight. */
 export const BAIT_FORMS = 3;

@@ -18,17 +18,17 @@ import { chance } from '../../../systems/Pacing';
 import { playSfx } from '../../../systems/audio/Sfx';
 import { RigActor } from '../../../systems/hd/RigActor';
 import { deepEnv, type DeepBase } from '../../enemies/deep/kit';
-import type { Damageable, Hazard, Hit, HitResult, Liftable } from '../../types';
+import type { Damageable, Hazard, Hit, HitResult, Liftable, Rect } from '../../types';
 import type { ArenaBoss } from '../ArenaBoss';
 import { BossHazards } from '../BossHazards';
 import type { BossWorld } from '../HunterDrone';
 import { Booth } from './booth';
 import { DEEPMAW_AGAIN, DEEPMAW_CAUGHT, DEEPMAW_DRAIN, DEEPMAW_INTRO, DEEPMAW_MAELSTROM } from './lines';
 import { Burst, DeepPart } from './parts';
-import { BAIT_FORMS, bodyMultiplier, dryAttack, maelstromLevel, stageFor, stageStartHp, wetAttack, type DeepStage } from './rules';
+import { BAIT_FORMS, bodyMultiplier, dryAttack, maelstromLevel, reflectsFlash, stageFor, stageStartHp, wetAttack, type DeepStage } from './rules';
 import { DEEPMAW_SFX } from './sfx';
 
-type State = 'intro' | 'idle' | 'attack' | 'stunned' | 'transition' | 'dying' | 'dead';
+type State = 'intro' | 'idle' | 'attack' | 'stunned' | 'held' | 'thrown' | 'transition' | 'dying' | 'dead';
 type Attack = 'bait' | 'flash' | 'swallow' | 'slam' | 'roll' | 'leap' | 'flood';
 
 const TANK = 't-moonpool';
@@ -60,7 +60,7 @@ const HOLD_Y = 39 * TILE;
  *
  * Max works the pumps from the booth; Gwen shields Ben once a stage when he's low.
  */
-export class DeepmawBoss implements ArenaBoss {
+export class DeepmawBoss implements ArenaBoss, Liftable {
   readonly name = D.name;
   readonly subtitle = D.subtitle;
   readonly maxHp = D.maxHp;
@@ -69,7 +69,9 @@ export class DeepmawBoss implements ArenaBoss {
   readonly countsAsEnemy = true;
   readonly extraTargets: readonly Damageable[];
   readonly extraHazards: readonly Hazard[];
-  readonly liftables: readonly Liftable[] = [];
+  /** Four Arms can lift him on dry land (HIGH AND DRY) while he's dazed or beached. */
+  readonly liftables: readonly Liftable[] = [this];
+  readonly height = D.body.height;
   hp: number = D.maxHp;
   lastDamage = 0;
   private stage: DeepStage = 0;
@@ -110,6 +112,10 @@ export class DeepmawBoss implements ArenaBoss {
   private clip = 'idle';
   private flash = 0;
   private stunLeft = 0;
+  /** Four Arms threw him already (once a fight: Combat drops a thrown thing from its list). */
+  private grabbed = false;
+  /** Landed from a throw: the daze starts on the next update. */
+  private landed = false;
   private openLeft = 0;
   private bounced = false;
   private shots = 0;
@@ -273,16 +279,17 @@ export class DeepmawBoss implements ArenaBoss {
     return this.hurt(hit, hit.damage * D.guardMultiplier);
   }
 
-  private stun(): void {
+  private stun(label = 'LURE HIT!'): void {
     this.stunLeft = pace.punish(D.stunnedMs);
     this.attack = null;
     this.floodLunge = false;
     this.w.cancelThreat();
     this.set('stunned');
-    this.w.fx.popText(this.bulb.x, this.bulb.y - 18, 'LURE HIT!', PALETTE.deepmaw);
+    this.w.fx.popText(this.bulb.x, this.bulb.y - 18, label, PALETTE.deepmaw);
     this.w.fx.burst('spark', this.bulb.x, this.bulb.y, 14);
     this.w.fx.ring(this.bulb.x, this.bulb.y, PALETTE.deepmaw, 46, 300);
     playSfx('clang', 0.8, 1.3);
+    if (this.stage === 1 && !this.wet) this.grabTip();
     // BAIT AND SWITCH: three different forms stun the lure in one fight.
     this.baitForms.add(this.w.playerForm?.() ?? 'ben');
     if (!this.baitAwarded && this.baitForms.size >= BAIT_FORMS) {
@@ -396,6 +403,13 @@ export class DeepmawBoss implements ArenaBoss {
       case 'stunned':
         this.updateStunned(dtMs);
         break;
+      case 'held':
+        this.clip = 'stunned';
+        break;
+      case 'thrown':
+        this.clip = 'stunned';
+        if (this.landed) this.afterThrow();
+        break;
       case 'transition':
         this.updateTransition(dtMs);
         break;
@@ -487,7 +501,103 @@ export class DeepmawBoss implements ArenaBoss {
     this.stunLeft = Math.max(0, this.stunLeft - dtMs);
     this.clip = this.stage === 1 && !this.wet ? 'flop' : 'stunned';
     if (this.wet) this.moveToward(dtMs, this.x, this.maxY(this.x), 18);
-    if (this.stunLeft <= 0) this.toIdle(200);
+    if (this.stunLeft <= 0) {
+      // Beached on a deck (a throw, or a lure hit during a belly flop): back into the pool first.
+      if (this.stage === 1 && !this.wet && (this.x < this.poolX0 || this.x >= this.poolX1)) this.slideBack();
+      else this.toIdle(200);
+    }
+  }
+
+  private slideBack(): void {
+    this.begin('leap', 'slide');
+    this.fromX = this.x;
+    this.fromY = this.y;
+    this.toX = Phaser.Math.Clamp(this.x, this.poolX0 + HALF_W, this.poolX1 - HALF_W);
+    this.toY = this.poolFloor - HALF_H;
+  }
+
+  // ------------------------------------------------------------ Four Arms' throw (Liftable)
+
+  get liftable(): boolean {
+    if (this.grabbed || this.stage !== 1 || this.wet || this.hp <= 0) return false;
+    return this.state === 'stunned' || (this.attack === 'leap' && this.step === 'deck');
+  }
+
+  get self(): Damageable {
+    return this.body;
+  }
+
+  liftBox(out: Rect): boolean {
+    if (!this.liftable) return false;
+    out.x = this.x - HALF_W;
+    out.y = this.y - HALF_H;
+    out.w = HALF_W * 2;
+    out.h = HALF_H * 2;
+    return true;
+  }
+
+  private grabTip(): void {
+    if (!this.grabbed && this.w.playerForm?.() !== 'fourarms') this.w.tip('deepmaw-grab', "HE'S BEACHED! FOUR ARMS CAN PICK HIM UP: {J} RIGHT NEXT TO HIM!", 4000);
+  }
+
+  lift(): void {
+    this.grabbed = true;
+    this.attack = null;
+    this.stunLeft = 0;
+    this.w.cancelThreat();
+    this.set('held');
+    this.w.fx.shake(FX.shakeHeavy, 400);
+    this.w.time.slowMo(0.35, 500, 300);
+    this.w.fx.popText(this.x, this.y - HALF_H - 12, 'HEAVE!', PALETTE.gold, 1.4);
+    playSfx('grab', 1, 0.5);
+    playSfx(DEEPMAW_SFX.smack, 0.6);
+    this.w.tip('deepmaw-throw', '{J} THROW HIM!', 3000);
+  }
+
+  carry(x: number, bottomY: number, facing: 1 | -1): void {
+    // Belly up over Four Arms' heads.
+    this.x = Phaser.Math.Clamp(x, this.w.arena.left + HALF_W, this.w.arena.right - HALF_W);
+    this.y = bottomY - HALF_H - D.highAndDry.thrown.carryRise;
+    this.rot = Math.PI;
+    this.dir = facing;
+  }
+
+  fly(x: number, y: number, angle: number): void {
+    if (this.state !== 'thrown') {
+      this.set('thrown');
+      playSfx('whoosh', 0.9, 0.6);
+    }
+    this.x = Phaser.Math.Clamp(x, this.w.arena.left + HALF_W, this.w.arena.right - HALF_W);
+    this.y = y;
+    this.rot = Math.PI + angle * 0.5;
+    this.w.fx.stream('splash', this.x, this.y);
+  }
+
+  /** He comes down hard. The daze starts next frame, so the landing blast can't hit him a second time. */
+  shatter(x: number): void {
+    this.x = Phaser.Math.Clamp(x, this.w.arena.left + HALF_W, this.w.arena.right - HALF_W);
+    const floor = this.floorAt(this.x);
+    this.y = floor - HALF_H;
+    this.rot = 0;
+    const { fx } = this.w;
+    fx.shake(FX.shakeHeavy, 500);
+    fx.hitStop(140);
+    fx.burst('splash', this.x, floor - 4, 24);
+    fx.burst('dust', this.x, floor - 2, 16);
+    fx.crack(this.x, floor, 1);
+    fx.popText(this.x, this.y - HALF_H - 14, 'FISH SLAM!', PALETTE.gold, 1.6);
+    playSfx('slam');
+    playSfx(DEEPMAW_SFX.smack, 1, 0.8);
+    this.landed = true;
+  }
+
+  private afterThrow(): void {
+    this.landed = false;
+    this.set('stunned');
+    const T = D.highAndDry.thrown;
+    if (this.hurt({ damage: T.damage, kind: 'smash', x: this.x, y: this.y, knockback: 0, heavy: true }, T.damage) === 'killed') return;
+    if (this.state !== 'stunned') return;
+    this.stunLeft = pace.punish(T.stunMs);
   }
 
   // ------------------------------------------------------------ Idle: where he waits
@@ -665,18 +775,35 @@ export class DeepmawBoss implements ArenaBoss {
       this.w.telegraph.circle(this.bulb.x, this.bulb.y, 20 + t * (L.flashRadius - 20), TELL.deepmaw, 0.3 + t * 0.6);
       if (this.stepT >= L.flashWindupMs) {
         this.to('flash');
-        this.flashZone.x = this.bulb.x;
-        this.flashZone.y = this.bulb.y;
-        this.flashZone.live = 140;
         flashCamera(this.scene.cameras.main, 220, 230, 255, 170);
         this.w.lighting.flash(this.bulb.x, this.bulb.y, L.flashRadius * 2.4, PALETTE.deepmaw, 500);
         this.w.fx.ring(this.bulb.x, this.bulb.y, PALETTE.deepmaw, L.flashRadius, 260);
         this.w.fx.ring(this.bulb.x, this.bulb.y, PALETTE.white, L.flashRadius * 0.7, 200, 0.7);
         playSfx(DEEPMAW_SFX.flash, 1);
+        const mirror = this.w.playerMirror?.() ?? null;
+        if (mirror && reflectsFlash(mirror, this.w.player.x, this.bulb.x, this.bulb.y)) {
+          this.reflectFlash(mirror);
+          return;
+        }
+        this.flashZone.x = this.bulb.x;
+        this.flashZone.y = this.bulb.y;
+        this.flashZone.live = 140;
+        if (this.w.playerForm?.() !== 'diamondhead') this.w.tip('deepmaw-mirror', "DIAMONDHEAD'S CRYSTAL SHIELD ({K}) BOUNCES THAT FLASH RIGHT BACK!", 4500);
       }
       return;
     }
     if (this.stepT >= 420) this.toIdle();
+  }
+
+  /** The flash off Diamondhead's shield and back into his eyes. */
+  private reflectFlash(mirror: { x: number; y: number }): void {
+    this.w.fx.beam(mirror.x, mirror.y, this.bulb.x, this.bulb.y, PALETTE.white, 5, 240);
+    this.w.fx.beam(mirror.x, mirror.y, this.bulb.x, this.bulb.y, PALETTE.deepmaw, 9, 180);
+    this.w.fx.rays(mirror.x, mirror.y, PALETTE.white, 34, 320);
+    this.w.fx.burst('crystal', mirror.x, mirror.y, 10);
+    this.w.fx.hitStop(FX.hitStopHeavyMs);
+    playSfx('clang', 1, 1.6);
+    this.stun('REFLECTED!');
   }
 
   // ------------------------------------------------------------ Stage 2: on the pool's floor
@@ -802,6 +929,7 @@ export class DeepmawBoss implements ArenaBoss {
         this.w.fx.burst('dust', this.x, zoneY - 2, 18);
         playSfx(DEEPMAW_SFX.smack, 1);
         this.to(zoneY === this.deckY ? 'deck' : 'after');
+        if (zoneY === this.deckY) this.grabTip();
       }
       return;
     }

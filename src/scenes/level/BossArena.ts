@@ -55,6 +55,8 @@ export interface ArenaDeps {
   dialogue(lines: ReadonlyArray<{ who: string; text: string; ms: number }>, onDone: () => void): void;
   /** Ben's form right now ('ben' when human). */
   playerForm(): string;
+  /** Diamondhead's raised shield, or null. */
+  playerMirror?(): { x: number; y: number } | null;
   drainAlienTime(ms: number): void;
   addMachine(m: Machine): void;
   copies(list: ReadonlyArray<{ id: string; level: number }>, current: string | null): void;
@@ -222,6 +224,7 @@ export class BossArena {
         if (on) d.player.setVelocityX(0);
       },
       playerForm: () => d.playerForm(),
+      playerMirror: () => d.playerMirror?.() ?? null,
       drainAlienTime: (ms) => d.drainAlienTime(ms),
       addMachine: (m) => d.addMachine(m),
       copies: (list, current) => d.copies(list, current),

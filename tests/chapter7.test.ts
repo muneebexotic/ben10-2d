@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { getAlien } from '../src/aliens/registry';
 import { CH7_BEATS, CH7_LATE, CH7_OPENING, CH7_REACTOR } from '../src/config/chapter7';
 import { buildCells, cellAt } from '../src/levels/buildLevel';
 import { CHAPTER_7 } from '../src/levels/chapter7';
-import { canReach, HUMAN_CAPS, type Capabilities, type Pos } from '../src/levels/reachability';
+import { HUMAN_CAPS, reachableFrom, type Capabilities, type Pos } from '../src/levels/reachability';
 import { CELL } from '../src/levels/tiles';
 import type { LevelData } from '../src/levels/types';
 import { pendingUnlocks } from '../src/systems/Unlocks';
@@ -115,7 +115,12 @@ describe('chapter 7 reachability (every form swims the base\'s tanks)', () => {
   const forms = ['heatblast', 'xlr8', 'fourarms', 'wildmutt', 'stinkfly', 'upgrade', 'diamondhead', 'ghostfreak', 'greymatter', 'ripjaws'].map((id) => getAlien(id).reach);
   const ALL: Capabilities[] = [HUMAN_CAPS, ...forms].map((c) => ({ ...c, canSwim: true }));
   const start: Pos = { x: level.playerStart.x, y: level.playerStart.y - 1 };
-  const reachable = (goal: Pos) => ALL.some((caps) => canReach(swimLevel, swimGrid, start, (p) => p.x === goal.x && Math.abs(p.y - goal.y) <= 1, caps));
+  // One flood fill per form, shared by every goal (the base is big: a fill per goal is slow).
+  let sets: Set<string>[] = [];
+  beforeAll(() => {
+    sets = ALL.map((caps) => reachableFrom(swimLevel, swimGrid, start, caps));
+  }, 60000);
+  const reachable = (goal: Pos) => sets.some((s) => [-1, 0, 1].some((dy) => s.has(`${goal.x},${goal.y + dy}`)));
 
   it('every checkpoint can be reached from the start', () => {
     for (const cp of entity('checkpoint')) expect(reachable({ x: cp.x, y: cp.y - 1 }), cp.id).toBe(true);

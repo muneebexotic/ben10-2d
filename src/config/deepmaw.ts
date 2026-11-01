@@ -54,6 +54,8 @@ export const DEEPMAW = {
     flashWindupMs: 750,
     flashRadius: 100,
     flashDamage: 1,
+    /** A crystal shield facing the bulb within this many flash radii bounces the flash into his eyes: stunned, nobody hurt. */
+    reflectReach: 2.4,
     lureLight: { radius: 120, intensity: 1 },
   },
 
@@ -83,6 +85,9 @@ export const DEEPMAW = {
     floodLevel: 38,
     floodSpeed: 90,
     floodHoldMs: 3200,
+    /** Four Arms lifts him while he's stunned or beached and hurls him (once a fight): the landing's damage, then a daze. */
+    /** carryRise: his drawing reaches past his body box, so he's held this much higher (px) to clear Four Arms' head. */
+    thrown: { damage: 14, stunMs: 1600, carryRise: 18 },
   },
 
   maelstrom: {
