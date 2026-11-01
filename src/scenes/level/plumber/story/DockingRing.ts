@@ -1,15 +1,14 @@
-import { DEPTH, TILE } from '../../../../config/constants';
+import { TILE } from '../../../../config/constants';
 import { CH7_BEATS } from '../../../../config/chapter7';
 import { PALETTE } from '../../../../config/palette';
 import type { EntitySpawn, PlumberPlan } from '../../../../levels/types';
 import type { Controls } from '../../../../systems/InputMap';
 import { playSfx } from '../../../../systems/audio/Sfx';
-import { TEX } from '../../../preload/assetKeys';
-import { MAX_FRAME, MAX_FRAMES } from '../../../preload/family';
-import { FamilyActor } from '../../family/FamilyActor';
+import type { FamilyActor } from '../../family/FamilyActor';
 import type { SetPiece, StoryKit } from '../../story/StoryKit';
 import { consoleBoot } from '../water/sfx';
 import type { BaseSystems } from '../water/BaseSystems';
+import { plumberMax } from './actors';
 import { HUB_UP, LOCKDOWN, LOCKER_LINES, REVEAL_LINES, RING_LINES, SCAN_TEXT, SPLIT_LINES } from './lines';
 
 type Phase = 'bay' | 'reveal' | 'ring' | 'hub' | 'split' | 'done';
@@ -46,8 +45,7 @@ export class DockingRing implements SetPiece {
     private readonly plan: PlumberPlan,
     resumeX: number,
   ) {
-    const look = { texture: TEX.max, prefix: 'max', frameWidth: MAX_FRAME.w, frameHeight: MAX_FRAME.h, feetY: MAX_FRAME.feetY, frames: MAX_FRAMES, handHeight: 18 };
-    this.max = new FamilyActor(kit.scene, look, DEPTH.player - 2);
+    this.max = plumberMax(kit);
     this.floorY = plan.ring.floor * TILE;
     const R = CH7_BEATS.ring;
     const ring = plan.ring;

@@ -55,3 +55,28 @@ export const CH7_GWEN_CHATTER: readonly string[] = [
   'DON\'T TOUCH ANYTHING. THAT MEANS YOU, BEN.',
   'THESE LOCKERS ARE OLDER THAN OUR PARENTS.',
 ];
+
+/** Kevin dashes past the window of the dry room before the reactor. */
+export const GLIMPSE_LINE = 'WAS THAT... KEVIN?';
+
+/** The reactor: Kevin drinking it in. */
+export const REACTOR_LINES: readonly Line[] = [
+  { who: 'kevin', text: 'ALL THIS ALIEN TECH... AND NOBODY USING IT.', ms: 2400 },
+  { who: 'ben', text: 'KEVIN?! HOW DID YOU EVEN GET DOWN HERE?', ms: 2000 },
+  { who: 'kevin', text: 'ON THE ROOF OF YOUR ELEVATOR. THANKS FOR THE RIDE, TENNYSON!', ms: 2600 },
+];
+
+export const CONTAINMENT_FAILURE = 'CONTAINMENT FAILURE';
+
+/** The hatches seal and the sea comes in: Max and Gwen on the intercom. */
+export const FLOOD_LINES: readonly Line[] = [
+  { who: 'max', text: 'BEN! THE REACTOR\'S DOWN AND THE HULL\'S BREACHED! THE HATCHES SEALED THEMSELVES!', ms: 2800 },
+  { who: 'gwen', text: 'GET UP HIGH, BEN! FIND AIR!', ms: 2000 },
+];
+
+/** Ripjaws is out of the glass and into the open sea. */
+export const SEA_LINES: readonly Line[] = [
+  { who: 'gwen', text: 'BEN? BEN! ARE YOU... IS THAT A FISH?', ms: 2200 },
+  { who: 'max', text: 'A PISCCISS VOLANN. THE BASE\'S XENOBIOLOGY ARCHIVE IS NEXT DOOR. THE WATCH MUST HAVE READ IT.', ms: 3200 },
+  { who: 'max', text: 'COME BACK IN THROUGH THE INTAKE UNDER THE PUMP HALL. WATCH THE GRATE!', ms: 2600 },
+];

@@ -78,3 +78,28 @@ export const CH7_BEATS = {
     leaveTiles: 24,
   },
 } as const;
+
+/** Kevin glimpsed on his way to the reactor, then the reactor itself (GAME_DESIGN.md, Chapter 7, beats 6 to 8). */
+export const CH7_REACTOR = {
+  glimpse: {
+    /** His dash past the porthole (px/s: his run at one and a half times its gait), from and to this far either side of it (px). */
+    speed: 110,
+    fromPx: -64,
+    toPx: 80,
+    /** A shadow on the far side of the glass. */
+    tint: 0x18141f,
+  },
+  /** Kevin drinking the reactor in: his purple light. */
+  drainLight: { radius: 130, color: 0xb070ff, intensity: 0.85 },
+  /** His bolt into the ceiling's bulkhead, then he's gone through it (ms after the lines). */
+  blastMs: 450,
+  exitMs: 1200,
+  /** The sea pouring in (px/s), and the bubbles where it breaks through (every ms). */
+  floodSpeed: 24,
+  bubblesEveryMs: 220,
+  /** The Omnitrix answers when Ben's air falls this low, or this long after the room is full (a form that needs no air, an air pocket). */
+  unlockAir: 0.15,
+  unlockAfterFullMs: 7000,
+  /** Ripjaws bursts through the glass this fast (px/s) once he's out of the transformation. */
+  burstSpeed: 360,
+} as const;

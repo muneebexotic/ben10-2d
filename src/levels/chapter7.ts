@@ -192,7 +192,8 @@ const entities: EntitySpawn[] = [
   // ---- Reactor
   { type: 'hatch', id: 'h-reactor-in', x: 150, y: 30, h: 10, open: true },
   { type: 'checkpoint', id: 'cp-reactor', x: 152, y: 40, density: 'sparse', label: 'THE REACTOR' },
-  { type: 'tank', id: 't-reactor', x: 151, w: 31, top: 20, bottom: 40, level: 40 },
+  // One column wider than the room: the glass at 182, so its water joins the sea once Ripjaws smashes through.
+  { type: 'tank', id: 't-reactor', x: 151, w: 32, top: 20, bottom: 40, level: 40 },
   { type: 'card', id: 'ch7-card-catwalk', x: 165, y: 28 },
   { type: 'deep', kind: 'warden', x: 158, y: 30 },
 
