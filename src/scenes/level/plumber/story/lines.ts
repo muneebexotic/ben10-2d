@@ -80,3 +80,38 @@ export const SEA_LINES: readonly Line[] = [
   { who: 'max', text: 'A PISCCISS VOLANN. THE BASE\'S XENOBIOLOGY ARCHIVE IS NEXT DOOR. THE WATCH MUST HAVE READ IT.', ms: 3200 },
   { who: 'max', text: 'COME BACK IN THROUGH THE INTAKE UNDER THE PUMP HALL. WATCH THE GRATE!', ms: 2600 },
 ];
+
+/** Back inside through the intake: the pump hall, Max and Gwen on the intercom. */
+export const PUMP_HALL_LINES: readonly Line[] = [
+  { who: 'max', text: 'YOU\'RE IN THE PUMP HALL. EVERY CONSOLE DRAINS ONE ROOM AND FLOODS ANOTHER.', ms: 3000 },
+  { who: 'gwen', text: 'A SLIDING PUZZLE MADE OF WATER. TRY NOT TO DROWN IN IT.', ms: 2400 },
+];
+
+/** One quip per pump as it runs. */
+export const PUMP_LINES: Readonly<Record<string, readonly Line[]>> = {
+  'p-1': [{ who: 'gwen', text: 'THE FIRST ROOM\'S DRAINING, AND THE NEXT ONE\'S FILLING UP.', ms: 2400 }],
+  'p-2': [{ who: 'max', text: 'GOOD. THAT TALL TANK SHOULD FLOOD UP TO THE CONSOLE NOW.', ms: 2400 }],
+  'p-3': [{ who: 'max', text: 'THAT\'S THE LAST PUMP. CONTAINMENT IS PAST TANK FOUR.', ms: 2400 }],
+};
+
+/** Every console, pump and valve running. */
+export const ALL_SYSTEMS_LINES: readonly Line[] = [{ who: 'gwen', text: 'EVERY LIGHT IN THE BASE IS ON. NICE WORK, BEN.', ms: 2200 }];
+
+/** Containment: Max catches up, blaster in hand. */
+export const MAX_CATCHES_UP: readonly Line[] = [
+  { who: 'max', text: 'BEN! WAIT UP. GWEN\'S GOT THE HUB. I\'VE GOT THIS.', ms: 2200 },
+  { who: 'ben', text: 'IS THAT A LASER?! GRANDPA, YOU HAD A LASER THIS WHOLE TIME?', ms: 2400 },
+  { who: 'max', text: 'A PLUMBER NEVER LEAVES HOME WITHOUT ONE.', ms: 2000 },
+];
+
+/** Cell 7: empty. */
+export const CELL7_LINES: readonly Line[] = [
+  { who: 'max', text: 'CELL 7. EMPTY.', ms: 1600 },
+  { who: 'ben', text: 'WHO WAS IN IT?', ms: 1400 },
+  { who: 'max', text: 'DEEPMAW.', ms: 1400 },
+  { who: 'ben', text: 'WHO\'S DEEPMAW?', ms: 1400 },
+  { who: 'max', text: 'A PIRATE. HE SANK FOURTEEN STARSHIPS IN THE ANDROMEDA SPRAWL.', ms: 2600 },
+  { who: 'max', text: 'IT TOOK SIX PLUMBERS AND A VERY BIG NET TO PUT HIM IN THERE. I WAS ONE OF THE SIX.', ms: 3200 },
+  { who: 'gwen', text: 'GUYS? SOMETHING BIG JUST MOVED IN THE MOON POOL.', ms: 2400 },
+  { who: 'max', text: 'I\'LL TAKE THE BOOTH AND WORK THE PUMPS. GO, BEN!', ms: 2200 },
+];

@@ -103,3 +103,31 @@ export const CH7_REACTOR = {
   /** Ripjaws bursts through the glass this fast (px/s) once he's out of the transformation. */
   burstSpeed: 360,
 } as const;
+
+/** The pump hall's intercom and Max in the containment block. */
+export const CH7_LATE = {
+  /** Ben back inside past this tile: Max and Gwen on the intercom. */
+  pumpHallX: 266,
+  /** DEEP BREATH: the flooded ring from here to the reactor (tiles), as Ben, never out of air. */
+  deepBreath: { fromX: 68, toX: 150 },
+  max: {
+    /** He walks (his walk at twice its gait) to stay this far behind Ben, once Ben is this far ahead (px). */
+    speed: 72,
+    gap: 36,
+    far: 84,
+    /** His blaster: a bolt at the nearest enemy in range, now and then. */
+    blastEveryMs: [1700, 2600] as const,
+    range: 180,
+    damage: 1,
+    shotSpeed: 330,
+    shotLifeMs: 900,
+    handHeight: 20,
+  },
+  /** Ben this close to Cell 7 (tiles): the reveal. */
+  cellNear: 2,
+  /** At most this long waiting there for Max to walk up before he speaks anyway (ms). */
+  cellWaitMs: 4500,
+  /** The reveal waits until no enemy is this close to Ben (px), and is skipped once he's this far past the cell (tiles). */
+  cellClearPx: 220,
+  cellSkip: 6,
+} as const;
