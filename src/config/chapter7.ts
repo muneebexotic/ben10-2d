@@ -131,3 +131,38 @@ export const CH7_LATE = {
   cellClearPx: 220,
   cellSkip: 6,
 } as const;
+
+/** Chapter 7's opening (GAME_DESIGN.md, beats 1 to 3): the jetty, the descent where the world turns HD, ACT 3: SECRETS, docking. Times in ms from the start. */
+export const CH7_OPENING = {
+  fadeInMs: 700,
+  /** The family walks the last stretch of the jetty. */
+  walkFrom: 1000,
+  walkMs: 1800,
+  walkPx: 64,
+  /** Max's badge against the bollard: the scan line, then the car rises out of the sea. */
+  scanAt: 3000,
+  scanMs: 900,
+  riseAt: 3900,
+  riseMs: 1500,
+  boardAt: 5900,
+  boardMs: 800,
+  /** The ride down, and the beacon's pings that turn the world (then the family) HD. */
+  descendAt: 6900,
+  descendMs: 9600,
+  pings: [10000, 11500, 13000] as const,
+  pingMs: 1100,
+  resolveAt: 11500,
+  kevinAt: 13000,
+  kevinMs: 1300,
+  /** The base below wakes lamp by lamp. */
+  lampsAt: 15200,
+  lampEveryMs: 260,
+  titleAt: 16900,
+  titleMs: 2600,
+  dockAt: 19700,
+  dockMs: 900,
+  /** Skipping fades out this fast. */
+  skipMs: 350,
+  /** How the HD layer comes in at each ping (alpha after it). */
+  hdSteps: [0.34, 0.67, 1] as const,
+} as const;

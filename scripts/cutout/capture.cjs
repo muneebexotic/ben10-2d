@@ -5,6 +5,7 @@
 //     node scripts/cutout/capture.cjs <outDir> "level=ch7&mute=1&at=14&artres=8" 2.4
 //   ffmpeg -framerate 30 -i <outDir>/f%04d.png -c:v libx264 -pix_fmt yuv420p out.mp4
 // PLAN: [step, "down"|"up", key] (keys as Playwright names them); the last argument is the camera zoom.
+// FROM_START=1 records from the level's first frame (an opening cinematic).
 // SETUP=<file.js>: an async function body run in the page once the level is up (`scene` is the level,
 // `step` the frame count so far as `window.__frame`), e.g. to place Gwen and Max and walk them about.
 const { chromium } = require('playwright');
@@ -17,7 +18,9 @@ const [outDir, query, zoomArg] = process.argv.slice(2);
   const errs = [];
   p.on('pageerror', (e) => errs.push(String(e)));
   await p.goto('http://localhost:5173/?' + query);
-  await p.waitForTimeout(11000);
+  // FROM_START=1: step from the moment the level is up (an opening), not after a settling wait.
+  if (process.env.FROM_START) await p.waitForFunction(() => window.__level && window.__level.story, null, { timeout: 60000 });
+  else await p.waitForTimeout(11000);
   await p.evaluate(async (zoom) => {
     const g = window.__game;
     if (zoom > 0) (await import('/src/systems/CameraZoom.ts')).cameraZoom.base = zoom;
@@ -33,7 +36,7 @@ const [outDir, query, zoomArg] = process.argv.slice(2);
     window.__step = (n) => { for (let i = 0; i < n; i++) { window.__t += 1000 / 60; g.step(window.__t, 1000 / 60); } };
   }, Number(zoomArg ?? 0));
   // Let the spawn flicker finish first.
-  await p.evaluate(() => window.__step(Number(120)));
+  if (!process.env.FROM_START) await p.evaluate(() => window.__step(Number(120)));
   if (process.env.SETUP) {
     const body = fs.readFileSync(process.env.SETUP, 'utf8');
     await p.evaluate(async (src) => {

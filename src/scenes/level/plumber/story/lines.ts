@@ -115,3 +115,14 @@ export const CELL7_LINES: readonly Line[] = [
   { who: 'gwen', text: 'GUYS? SOMETHING BIG JUST MOVED IN THE MOON POOL.', ms: 2400 },
   { who: 'max', text: 'I\'LL TAKE THE BOOTH AND WORK THE PUMPS. GO, BEN!', ms: 2200 },
 ];
+
+/** The jetty: Max walks them to the water. */
+export const JETTY_LINES: readonly Line[] = [{ who: 'max', text: 'STAY CLOSE. AND DON\'T TOUCH ANYTHING.', ms: 2200 }];
+export const NAVY_LINES: readonly Line[] = [{ who: 'gwen', text: 'THAT IS NOT NAVY STUFF.', ms: 1800 }];
+
+/** The descent: the base's scanner sweeps them, and everything turns sharp. */
+export const RESOLVE_LINES: readonly Line[] = [
+  { who: 'ben', text: 'WHOA. DO YOU GUYS FEEL... SHARPER?', ms: 2000 },
+  { who: 'gwen', text: 'EVERYTHING LOOKS... DIFFERENT.', ms: 1800 },
+  { who: 'max', text: 'THAT\'S THE BASE\'S SCANNER. FIRST TIME\'S ALWAYS A LITTLE WEIRD.', ms: 2600 },
+];
