@@ -29,7 +29,7 @@ export const ACTS: Record<number, string> = {
  * Chapter 7 is still being built (docs/ch7-wip.md): dev and bench builds can
  * play it, release builds show it as coming soon until it's finished.
  */
-const CH7_BUILT = import.meta.env.DEV || import.meta.env.MODE === 'bench';
+export const CH7_BUILT = import.meta.env.DEV || import.meta.env.MODE === 'bench';
 
 export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 1, act: 1, title: 'CAMP CRASH', levelId: 'ch1', tease: 'A METEOR. A WATCH. A VERY WEIRD SUMMER.', cast: ['heatblast'] },

@@ -197,6 +197,26 @@ export const SCENARIOS = [
     play: (page, ms) => brawl(page, ms, { swap: false }),
   },
   {
+    id: 'ch7-sea',
+    title: 'Ch7 THE OPEN SEA as Ripjaws (the HD backdrop, light shafts, fish, the whale, the sea\'s water, gnashers, eels)',
+    query: 'level=ch7&start=cp-sea',
+    setup: async (page) => {
+      await sleep(600);
+      await skipCinematics(page, 2);
+    },
+    play: (page, ms) => brawl(page, ms, { swap: false }),
+  },
+  {
+    id: 'ch7-maelstrom',
+    title: 'Ch7 DEEPMAW, THE MAELSTROM (the whirlpool, orbiting debris, the moon pool\'s water, Max and Gwen in the booth)',
+    query: 'level=ch7&start=cp-maelstrom',
+    setup: async (page) => {
+      await sleep(600);
+      await skipCinematics(page, 4);
+    },
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
     id: 'ch6-hex',
     title: 'Ch6 HEX AND CHARMCASTER, phase 3 (illusions, ward threads, cataclysm, Max, rocklings)',
     query: 'level=ch6&start=cp-towertop',

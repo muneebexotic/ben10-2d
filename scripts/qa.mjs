@@ -172,7 +172,7 @@ class Session {
 
 // ------------------------------------------------------------------ the sweep
 
-const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
+const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7'];
 /** The story's one named forced misfire (FORCED_MISFIRES in src/systems/MisfireRules.ts). */
 const FORCED_MISFIRES = ['ch5-lift'];
 
@@ -521,6 +521,8 @@ const BOSS_FIGHTS = [
   { level: 'ch4', cp: 'cp-kevin', teleport: [396 * 16 + 8, 33 * 16] },
   { level: 'ch5', cp: 'cp-hunters' },
   { level: 'ch6', cp: 'cp-towertop' },
+  // Into the moon pool: the fight starts as Ben walks in.
+  { level: 'ch7', cp: 'cp-moonpool', teleport: [414 * 16, 40 * 16] },
 ];
 const HIT_KINDS = ['melee', 'fire', 'burst', 'rocket', 'smash', 'slime', 'tech'];
 

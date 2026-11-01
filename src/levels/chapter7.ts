@@ -121,7 +121,7 @@ ledge(245, 43, 18, 7);
 // A rock outcrop with the coral cave in it.
 wall(232, 30, 11, 15);
 carve(234, 38, 7, 5);
-carve(233, 40, 1, 2);
+carve(232, 40, 2, 2);
 // Coral ledges.
 platforms.push({ x: 190, y: 34, w: 5 }, { x: 206, y: 30, w: 4 }, { x: 224, y: 33, w: 5 }, { x: 248, y: 35, w: 5 });
 // The intake into the pump hall, low in the hull.
