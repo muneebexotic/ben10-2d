@@ -99,6 +99,11 @@ export class PlayerVisual {
     if (this.hdClip !== null) this.setHdClip(null);
     if (key === this.currentAnim) return;
     this.currentAnim = key;
+    // A form without this animation (an alien has no 'watch' for a swap) holds its frame: what Phaser does, without its warning.
+    if (!this.scene.anims.exists(key)) {
+      if (this.sprite.anims.isPlaying) this.sprite.anims.stop();
+      return;
+    }
     this.sprite.play(key, true);
   }
 

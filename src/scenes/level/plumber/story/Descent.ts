@@ -283,6 +283,8 @@ export class Descent implements StoryIntro {
   private end(): void {
     const kit = this.kit;
     this.phase = 'done';
+    // A skip mid-walk: the walk's tweens would play idles on sprites already gone.
+    kit.scene.tweens.killTweensOf(this.cast);
     this.root.destroy();
     for (const c of this.cast) c.sprite.destroy();
     this.cast.length = 0;
