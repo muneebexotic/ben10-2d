@@ -1,3 +1,4 @@
+import { RecordedMusic } from './RecordedMusic';
 import { AUDIO } from '../../config/audio';
 import { audio, midiToFreq } from './AudioEngine';
 import { ARP_SHAPE, arpBar, BOSS_BASS, bassBar, n, seq, type Track } from './musicKit';
@@ -204,6 +205,9 @@ export function trackData(name: TrackName): Track | undefined {
 
 class MusicPlayer {
   private current: TrackName | null = null;
+  /** Tracks with a recording (config/music.ts) play it instead of the sequencer. */
+  private readonly recorded = new RecordedMusic();
+  private recording = false;
   private track: Track | null = null;
   private step = 0;
   private nextTime = 0;
@@ -224,9 +228,15 @@ class MusicPlayer {
       this.current = name;
       return;
     }
-    if (this.current === name && this.timer && !restart) return;
+    if (this.current === name && (this.timer || this.recording) && !restart) return;
     this.stop(120);
     this.current = name;
+    if (this.recorded.has(name)) {
+      this.recording = true;
+      this.recorded.setIntensity(name === 'title' || name === 'victory' ? 1 : this.intensity);
+      this.recorded.play(name);
+      return;
+    }
     // A chapter track plays only once its chapter has loaded; until then, silence rather than the wrong music.
     const track = TRACKS[name];
     if (!track) return;
@@ -243,6 +253,8 @@ class MusicPlayer {
   }
 
   stop(fadeMs: number = AUDIO.musicFadeMs): void {
+    if (this.recording) this.recorded.stop(fadeMs);
+    this.recording = false;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     const ctx = audio.ctx;
@@ -264,6 +276,7 @@ class MusicPlayer {
   /** 0 = human Ben (sparser), 1 = alien (full hero layer). */
   setIntensity(value: number): void {
     this.intensity = value;
+    if (this.recording) this.recorded.setIntensity(value);
     const ctx = audio.ctx;
     if (!ctx || !this.heroBus) return;
     this.heroBus.gain.setTargetAtTime(0.35 + value * 0.65, ctx.currentTime, 0.25);
@@ -274,6 +287,7 @@ class MusicPlayer {
    * The track keeps its place, so it picks up on the beat it would have reached.
    */
   scratch(gapMs: number): void {
+    if (this.recording) this.recorded.scratch(gapMs);
     const ctx = audio.ctx;
     if (!ctx || !this.baseBus || !this.heroBus) return;
     const t = ctx.currentTime;
