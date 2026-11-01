@@ -50,7 +50,8 @@ export const PLUMBER_SYSTEMS = {
   intakeDamage: 1,
   intakeEveryMs: 900,
   /** Lamps light this far (px) and this bright, centred this far under the fitting. */
-  lampLight: { radius: 70, color: 0xdff4ff, intensity: 0.55, drop: 18 },
+  /** A woken section's lamps thud on in a wave out from Ben (px/s), each flaring this bright for a moment, with a thud this loud. */
+  lampLight: { radius: 70, color: 0xdff4ff, intensity: 0.55, drop: 18, wakeSpeed: 240, wakeFlare: 1.8, wakeFlareMs: 260, wakeThud: 0.4 },
   /** The red emergency lights (the reactor's blackout): a slow pulse (rad/ms). */
   emergencyLight: { radius: 60, color: 0xff3a2a, intensity: 0.6, pulse: 0.004 },
   screenLight: { radius: 40, color: 0x7dffb0, intensity: 0.4 },

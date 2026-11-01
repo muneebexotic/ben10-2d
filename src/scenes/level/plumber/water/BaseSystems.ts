@@ -38,6 +38,9 @@ interface Lamp {
   x: number;
   y: number;
   section: number;
+  /** When it comes on (base time, ms): a woken section lights lamp by lamp. */
+  litAt: number;
+  thudded: boolean;
 }
 
 /**
@@ -76,7 +79,7 @@ export class BaseSystems implements SetPiece {
     for (const d of PLUMBER_DECOR) {
       if (d.key !== PLUMBER_ART.props || d.frame !== 'lamp') continue;
       const section = LAMP_SECTIONS.findIndex((s) => d.x >= s.from && d.x < s.to);
-      if (section >= 0) this.lamps.push({ x: d.x * TILE + TILE / 2, y: d.y * TILE + 10, section });
+      if (section >= 0) this.lamps.push({ x: d.x * TILE + TILE / 2, y: d.y * TILE + 10, section, litAt: -Infinity, thudded: true });
     }
     for (const e of kit.level.entities) {
       if (e.type !== 'current' || !e.intake) continue;
@@ -93,7 +96,16 @@ export class BaseSystems implements SetPiece {
     const i = LAMP_SECTIONS.findIndex((s) => s.id === id);
     if (i < 0 || this.lampState[i] === state) return;
     this.lampState[i] = state;
-    if (thud && state === 'on') playSfx(lightsThud, 1);
+    if (!thud || state !== 'on') return;
+    playSfx(lightsThud, 1);
+    // Lamp by lamp, out from Ben.
+    const from = this.kit.player.x;
+    const speed = PLUMBER_SYSTEMS.lampLight.wakeSpeed;
+    for (const l of this.lamps) {
+      if (l.section !== i) continue;
+      l.litAt = this.t + (Math.abs(l.x - from) / speed) * 1000;
+      l.thudded = false;
+    }
   }
 
   /** The story wakes a section's console itself (Max at the hub): its screen, its lamps. */
@@ -161,10 +173,18 @@ export class BaseSystems implements SetPiece {
     const E = PLUMBER_SYSTEMS.emergencyLight;
     const pulse = 0.6 + 0.4 * Math.sin(this.t * E.pulse);
     for (const l of this.lamps) {
-      if (l.x < view.x - L.radius || l.x > view.right + L.radius) continue;
       const s = this.lampState[l.section];
-      if (s === 'on') this.kit.lighting.add(l.x, l.y + L.drop, L.radius, L.color, L.intensity);
-      else if (s === 'emergency') this.kit.lighting.add(l.x, l.y + L.drop, E.radius, E.color, E.intensity * pulse);
+      const since = this.t - l.litAt;
+      const inView = l.x >= view.x - L.radius && l.x <= view.right + L.radius;
+      if (s === 'on' && since >= 0 && !l.thudded) {
+        l.thudded = true;
+        if (inView) playSfx(lightsThud, L.wakeThud, 0.9 + Math.random() * 0.25);
+      }
+      if (!inView) continue;
+      if (s === 'on' && since >= 0) {
+        const flare = since < L.wakeFlareMs ? 1 + (L.wakeFlare - 1) * (1 - since / L.wakeFlareMs) : 1;
+        this.kit.lighting.add(l.x, l.y + L.drop, L.radius, L.color, L.intensity * flare);
+      } else if (s === 'emergency') this.kit.lighting.add(l.x, l.y + L.drop, E.radius, E.color, E.intensity * pulse);
     }
   }
 
