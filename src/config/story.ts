@@ -35,6 +35,11 @@ export const STORY = {
     charsPerSecond: 48,
     /** Voice blip every n typed characters. */
     blipEvery: 2,
+    /**
+     * In a skippable conversation an action press finishes the line being typed, or moves on to the next one;
+     * a line has to have been up this long first, so one quick double press never jumps a line nobody saw.
+     */
+    advanceGraceMs: 250,
   },
 } as const;
 

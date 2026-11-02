@@ -12,6 +12,7 @@ import { getAlien, getForm, hasAlien, HUMAN_FORM } from '../aliens/registry';
 import { RadialPicker } from '../ui/RadialPicker';
 import type { OmnitrixTick } from '../systems/events';
 import { viewWidth } from '../ui/view';
+import { GAME_HEIGHT } from '../config/constants';
 import { BakedGraphics } from '../ui/BakedGraphics';
 import { GWEN, SPELL_ORDER, type SpellId } from '../config/gwen';
 import { SPELL_INFO } from './level/family/gwenLines';
@@ -166,8 +167,12 @@ export class TouchScene extends Phaser.Scene {
   private onDown(p: Phaser.Input.Pointer): void {
     if (p.wasTouch) inputMode.set('touch');
     if (!this.levelRunning) return;
-    // Any touch skips cinematics, wherever it lands.
+    // Any touch reads on in a cinematic, wherever it lands; the SKIP corner skips the whole conversation.
     pad.tap();
+    if (this.cinematic && p.x >= viewWidth(this) - TOUCH.skipCorner.w && p.y >= GAME_HEIGHT - TOUCH.skipCorner.h) {
+      pad.press('skip');
+      pad.release('skip');
+    }
     if (!this.enabled || !this.hudVisible || this.cinematic || this.modal) {
       this.tracks.set(p.id, { kind: 'tap' });
       return;

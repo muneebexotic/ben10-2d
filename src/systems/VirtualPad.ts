@@ -2,7 +2,7 @@
  * On-screen controls as plain state. The Touch scene writes it, InputMap reads
  * it alongside the keyboard, so gameplay never knows which one was used.
  */
-export type PadButton = 'jump' | 'attack' | 'special' | 'transform' | 'pause' | 'dialPrev' | 'dialNext' | 'spell';
+export type PadButton = 'jump' | 'attack' | 'special' | 'transform' | 'pause' | 'dialPrev' | 'dialNext' | 'spell' | 'skip';
 
 export interface StickDirections {
   left: boolean;

@@ -96,6 +96,8 @@ class Autopilot {
     s.transform ||= h.transform && !p.transform;
     const confirm = h.confirm && !p.confirm;
     s.confirm ||= confirm;
+    // The scripted player's confirm is Enter: it skips whole conversations, as the benchmarks expect.
+    s.skip ||= confirm;
     s.anyPressed ||= confirm || s.jumpPressed || s.attackPressed || specialPressed || s.transform;
     this.prev = h;
   }

@@ -141,11 +141,17 @@ class Session {
     await this.page.waitForFunction((k) => window.__game.scene.isActive(k), key, { timeout });
   }
 
-  /** Taps (touch) or presses Enter (keyboard) to skip a cinematic, without changing the input mode. */
+  /**
+   * Skips a cinematic without changing the input mode: Enter on a keyboard; on touch, a tap on the SKIP corner of
+   * the letterbox (bottom right) while one is up (a tap anywhere else only reads on a line), or the old tap near
+   * the top otherwise.
+   */
   async skip(times = 4) {
     for (let i = 0; i < times; i++) {
-      if (this.touch) await this.page.touchscreen.tap(this.size.viewport.width / 2, 40);
-      else await this.page.keyboard.press('Enter');
+      if (!this.touch) await this.page.keyboard.press('Enter');
+      else if (await this.page.evaluate(() => window.__game.scene.getScene('Touch')?.cinematic === true).catch(() => false)) {
+        await this.page.touchscreen.tap(this.size.viewport.width - 14, this.size.viewport.height - 10);
+      } else await this.page.touchscreen.tap(this.size.viewport.width / 2, 40);
       await sleep(350);
     }
   }

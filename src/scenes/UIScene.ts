@@ -205,6 +205,7 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip, p.portrait), this);
     on('hud:dialogClear', () => this.dialog.clear(), this);
+    on('hud:dialogFill', () => this.dialog.fill(), this);
     on('hud:whisper', (p) => {
       this.whisper.show(p.text, p.color);
       playSfx(whisperSound, 0.7);
@@ -214,7 +215,10 @@ export class UIScene extends Phaser.Scene {
     on('boss:health', (p) => this.bossBar.setHealth(p.ratio, p.phase), this);
     on('boss:hide', () => this.bossBar.hide(), this);
     on('boss:copies', (p) => this.bossBar.setCopies(p.list, p.current), this);
-    on('input:mode', () => this.prompts.rerender(), this);
+    on('input:mode', () => {
+      this.prompts.rerender();
+      this.dialog.refreshSkip();
+    }, this);
     on('gwen:state', (p) => this.gwen.setState(p.present, p.known, p.charge), this);
     on('gwen:cast', (p) => this.gwen.cast(p.spell), this);
     on('gwen:learned', (p) => this.gwen.learned(p.spell), this);

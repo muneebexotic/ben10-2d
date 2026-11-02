@@ -18,6 +18,9 @@ export class DialogBox {
   private readonly name: Phaser.GameObjects.BitmapText;
   private readonly body: Phaser.GameObjects.BitmapText;
   private readonly skip: Phaser.GameObjects.BitmapText;
+  /** Touch, in a cinematic: SKIP >> as a button in the letterbox's corner (TOUCH.skipCorner is its tap target). */
+  private readonly skipButton: Phaser.GameObjects.BitmapText;
+  private readonly skipFrame: Phaser.GameObjects.Rectangle;
   private readonly portrait: Phaser.GameObjects.Image;
   private readonly portraitFrame: Phaser.GameObjects.Graphics;
   private full = '';
@@ -25,6 +28,7 @@ export class DialogBox {
   private voicePitch = 1;
   private right = GAME_WIDTH;
   private letterboxed = false;
+  private skippable = false;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.bg = scene.add.graphics();
@@ -34,6 +38,8 @@ export class DialogBox {
     this.portrait = scene.add.image(-W / 2 + 30, -4, '__DEFAULT').setVisible(false);
     this.root = scene.add.container(GAME_WIDTH / 2, Y, [this.bg, this.portraitFrame, this.portrait, this.name, this.body]).setDepth(950).setVisible(false);
     this.skip = pixelText(scene, 0, 0, '', { originX: 1, originY: 0.5, color: PALETTE.uiDim }).setDepth(950);
+    this.skipButton = pixelText(scene, 0, 0, 'SKIP >>', { originX: 1, originY: 0.5, color: PALETTE.white }).setDepth(950).setVisible(false);
+    this.skipFrame = scene.add.rectangle(0, 0, this.skipButton.width + 12, 16, PALETTE.ink, 0.6).setStrokeStyle(1, PALETTE.omnitrix, 0.8).setOrigin(1, 0.5).setDepth(949).setVisible(false);
     this.placeSkip();
   }
 
@@ -49,9 +55,21 @@ export class DialogBox {
     this.placeSkip();
   }
 
+  /** The player switched between keys and touch: the skip hint follows. */
+  refreshSkip(): void {
+    this.placeSkip();
+  }
+
   private placeSkip(): void {
-    if (this.letterboxed) this.skip.setPosition(this.right - 12, GAME_HEIGHT - 17);
+    const shown = this.skippable && this.root.visible;
+    // On touch the whole-scene skip is a button in the letterbox's corner (only there: TOUCH.skipCorner).
+    const button = shown && this.letterboxed && inputMode.current === 'touch';
+    this.skipButton.setPosition(this.right - 12, GAME_HEIGHT - 17).setVisible(button);
+    this.skipFrame.setPosition(this.right - 6, GAME_HEIGHT - 17).setVisible(button);
+    if (button) this.skip.setPosition(this.skipFrame.x - this.skipFrame.width - 10, GAME_HEIGHT - 17);
+    else if (this.letterboxed) this.skip.setPosition(this.right - 12, GAME_HEIGHT - 17);
     else this.skip.setPosition(GAME_WIDTH / 2 + W / 2 - 2, Y + H / 2 + 8);
+    this.skip.setText(this.skippable ? inputMode.format('{SKIP}') : '').setVisible(shown);
   }
 
   /** `portrait`: a texture key; the speaker's bust pops out of the box's left edge. */
@@ -95,14 +113,25 @@ export class DialogBox {
       this.root.setVisible(true).setAlpha(0).setY(Y - 10);
       this.scene.tweens.add({ targets: this.root, alpha: 1, y: Y, duration: 220, ease: 'Cubic.easeOut' });
     }
-    this.skip.setText(skip ? inputMode.format('{SKIP}') : '').setVisible(skip);
+    this.skippable = skip;
+    this.placeSkip();
+  }
+
+  /** Shows the whole line now (the player pressed to read on). */
+  fill(): void {
+    if (!this.root.visible || this.shown >= this.full.length) return;
+    this.shown = this.full.length;
+    this.body.setText(this.full);
   }
 
   clear(): void {
+    this.skippable = false;
     this.full = '';
     this.portrait.setVisible(false);
     this.root.setVisible(false);
     this.skip.setVisible(false);
+    this.skipButton.setVisible(false);
+    this.skipFrame.setVisible(false);
   }
 
   update(dtMs: number, now: number): void {

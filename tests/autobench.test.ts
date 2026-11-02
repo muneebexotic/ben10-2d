@@ -211,6 +211,7 @@ const emptyControls = (): Controls => ({
   transformLeadMs: 0,
   pause: false,
   confirm: false,
+  skip: false,
   anyPressed: false,
   spellPressed: false,
   spellPick: null,

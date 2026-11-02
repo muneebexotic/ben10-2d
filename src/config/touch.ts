@@ -6,6 +6,11 @@ import { GAME_HEIGHT } from './constants';
  * the right edge, so they stay under the thumb. Hit areas are larger than what is drawn.
  */
 export const TOUCH = {
+  /**
+   * In a cinematic, a tap here (the SKIP >> end of the hint in the bottom-right of the letterbox) skips the whole
+   * conversation; a tap anywhere else reads on a line. Measured from the bottom-right corner of the screen.
+   */
+  skipCorner: { w: 72, h: 44 },
   stick: {
     /** Touches that start left of this fraction of the screen width (and below the HUD) grab the stick. */
     zoneRightFraction: 0.42,

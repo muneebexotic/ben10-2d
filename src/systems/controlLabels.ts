@@ -17,7 +17,8 @@ const LABELS: Record<string, Record<InputKind, string>> = {
   DIAL: { keyboard: '[Q]/[E]/[1-9]', touch: 'SWIPE/HOLD THE OMNITRIX' },
   PAUSE: { keyboard: '[ESC]', touch: '[II]' },
   CONFIRM: { keyboard: '[ENTER]', touch: 'TAP' },
-  SKIP: { keyboard: 'ANY KEY: SKIP', touch: 'TAP: SKIP' },
+  /** Cinematic dialogue. On touch the whole-scene skip is a SKIP >> button in the letterbox's corner (DialogBox). */
+  SKIP: { keyboard: 'ANY KEY: NEXT   [ENTER] SKIP', touch: 'TAP: NEXT' },
 };
 
 export function formatControls(text: string, kind: InputKind): string {

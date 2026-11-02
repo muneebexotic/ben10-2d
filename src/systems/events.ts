@@ -110,6 +110,8 @@ export interface GameEvents {
   'hud:letterbox': { visible: boolean };
   'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean; portrait?: string };
   'hud:dialogClear': undefined;
+  /** The line being typed shows in full at once (the player pressed to read on). */
+  'hud:dialogFill': undefined;
   /** A whisper in the corner of the screen (Ghostfreak). */
   'hud:whisper': { text: string; color: number };
   'hud:visible': { visible: boolean; omnitrix?: boolean };

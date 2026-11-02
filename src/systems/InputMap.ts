@@ -23,6 +23,8 @@ export interface Controls {
   transformLeadMs: number;
   pause: boolean;
   confirm: boolean;
+  /** Skips a whole cinematic conversation: Enter, or the SKIP corner on touch (any other press reads on a line). */
+  skip: boolean;
   anyPressed: boolean;
   /** Gwen's spell button (G; with Up or Down for her other spells). */
   spellPressed: boolean;
@@ -50,6 +52,7 @@ export function emptyControls(): Controls {
     transformLeadMs: 0,
     pause: false,
     confirm: false,
+    skip: false,
     anyPressed: false,
     spellPressed: false,
     spellPick: null,
@@ -71,6 +74,7 @@ const BINDINGS = {
   transform: [K.T],
   pause: [K.ESC, K.P],
   confirm: [K.ENTER, K.SPACE],
+  skip: [K.ENTER],
   spell: [K.G],
 } as const;
 
@@ -152,10 +156,11 @@ export class InputMap {
     s.transformLeadMs = padTransform && !keyTransform ? pad.transformLeadMs : 0;
     s.pause = this.pressed('pause') || pad.consume('pause');
     s.confirm = this.pressed('confirm');
+    s.skip = this.pressed('skip') || pad.consume('skip');
     s.spellPressed = this.pressed('spell') || pad.consume('spell');
     s.spellPick = pad.consumeSpellPick();
     const tapped = pad.consumeTap();
-    s.anyPressed = s.jumpPressed || s.attackPressed || s.specialPressed || s.transform || s.confirm || tapped;
+    s.anyPressed = s.jumpPressed || s.attackPressed || s.specialPressed || s.transform || s.confirm || s.skip || tapped;
     autopilot.merge(s);
     return s;
   }
