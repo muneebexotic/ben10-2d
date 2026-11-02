@@ -26,7 +26,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
-| FISHBOWL GRUNT | 9 | 4 | 5 | 0 | 0 |
+| FISHBOWL GRUNT | 9 | 5 | 4 | 0 | 0 |
 | ZAPPER EEL | 4 | 0 | 0 | 0 | 4 |
 | JELLY MINE | 1 | 0 | 0 | 0 | 1 |
 | GNASHER SWARM | 4 | 0 | 0 | 0 | 4 |
@@ -406,7 +406,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
 | idle | standing guard, harpoon on its shoulder, bubbles in the bowl | drawn | guard |
-| walk | a heavy lead-booted trudge | stand-in | guard |
+| walk | a heavy lead-booted trudge | drawn | walk0, walk1, walk2, walk3, walk4, walk5, walk6, walk7 |
 | windup | the tell: the harpoon drawn back over its shoulder | drawn | windup |
 | throw | the throw: arm whipping through, empty-handed | drawn | throw |
 | flop | bowl broken: a fish flopping on the deck in a diving suit | drawn | flop |

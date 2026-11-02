@@ -1,4 +1,5 @@
 import { GRUNT } from '../../../config/plumber';
+import { GAIT_RATE } from '../../../config/cartoon/gait';
 import { PALETTE } from '../../../config/palette';
 import { TELL } from '../../../config/tells';
 import { DEEP_TEX } from '../../../scenes/preload/cartoon/plumber/deepSheets';
@@ -156,6 +157,9 @@ export class GruntBrain implements DroneBrain {
     d.sprite.setFlipX(faceOf(d) < 0);
     // The rig shows the bowl while it's whole (its frames carry the bowl's state).
     const bare = (d.memo.bowl ?? 1) <= 0;
+    // The walk's drawings keep pace with his trudge (its rate is set for the patrol), so his boots stay planted as he wades.
+    const walking = d.state !== 'flop' && d.state !== 'windup' && d.state !== 'throw' && Math.abs(d.vx) > 4;
+    d.sprite.anims.timeScale = walking ? Math.min(GAIT_RATE.max, Math.max(GAIT_RATE.min, Math.abs(d.vx) / GRUNT.patrolSpeed)) : 1;
     if (d.state === 'flop') show(d, 'grunt-flop');
     else if (d.state === 'windup') show(d, bare ? 'grunt-windupBare' : 'grunt-windup');
     else if (d.state === 'throw') show(d, bare ? 'grunt-throwBare' : 'grunt-throw');

@@ -178,13 +178,15 @@ const flopping = (t: number, p: Pose) => p.move('body', wave(t * 2) * 0.4, -Math
 /**
  * The grunt's drawings (docs/art-refs/grunt-model-sheet.webp): standing guard
  * with the harpoon on his shoulder, the wind-up, the throw (empty-handed: the
- * game flies the harpoon) and the bowl smashed, flopping. The walk plays the
- * guard drawing until his walk sheet arrives, and the bowl-broken moves play
+ * game flies the harpoon) and the bowl smashed, flopping; his walk
+ * (grunt-walk-cycle.webp) is an 8-drawing trudge. The bowl-broken moves play
  * the bowl drawings until that sheet arrives (docs/ART_COVERAGE.md).
  */
 export const GRUNT_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['guard'], ms: 1400, loop: true, motion: breathe(0.008) },
-  walk: { frames: ['guard'], ms: 900, loop: true, motion: trudge },
+  // About 3.2 px a drawing: at 7 a second the planted boot keeps pace with his patrol (GRUNT.patrolSpeed); the brain
+  // plays it slower as he wades.
+  walk: { frames: ['walk0', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7'], fps: 7, loop: true },
   windup: { frames: ['windup'], ms: 620, loop: false, motion: windBack },
   throw: { frames: ['throw'], ms: 320, loop: false, motion: lunge },
   flop: { frames: ['flop'], ms: 520, loop: true, motion: flopping },
