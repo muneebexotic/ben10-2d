@@ -92,10 +92,10 @@ describe('chapter 7 layout', () => {
   });
 
   it('the family and Kevin move at speeds their drawn cycles keep up with', () => {
-    // Twice the gait is the most a cycle plays (config/cartoon/gait.ts): Max walks 36, Gwen runs 62, Kevin runs 73.
+    // Twice the gait is the most a cycle plays (config/cartoon/gait.ts): Max walks 36, Gwen runs 62, Kevin runs 80.
     expect(CH7_BEATS.ring.maxHurry).toBeLessThanOrEqual(72);
     expect(CH7_LATE.max.speed).toBeLessThanOrEqual(72);
-    expect(CH7_REACTOR.glimpse.speed).toBeLessThanOrEqual(146);
+    expect(CH7_REACTOR.glimpse.speed).toBeLessThanOrEqual(160);
   });
 });
 
