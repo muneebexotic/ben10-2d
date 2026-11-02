@@ -49,9 +49,11 @@ export function toggleMute(): boolean {
   return muted;
 }
 
-/** M toggles sound in any scene that calls this. */
+/** M toggles sound in any scene that calls this (once per press: a held M doesn't flicker it on and off). */
 export function bindMuteKey(scene: Phaser.Scene): void {
-  scene.input.keyboard?.on('keydown-M', () => toggleMute());
+  scene.input.keyboard?.on('keydown-M', (e: KeyboardEvent) => {
+    if (!e.repeat) toggleMute();
+  });
 }
 
 /**

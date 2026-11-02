@@ -159,7 +159,8 @@ export class SettingsScene extends Phaser.Scene {
     kb.on('keydown-ESC', (e: KeyboardEvent) => !e.repeat && this.back());
     kb.on('keydown-P', (e: KeyboardEvent) => !e.repeat && this.back());
     // M mutes here too; the MUSIC and EFFECTS rows say so.
-    kb.on('keydown-M', () => {
+    kb.on('keydown-M', (e: KeyboardEvent) => {
+      if (e.repeat) return;
       toggleMute();
       this.menu.refresh();
     });
