@@ -63,7 +63,7 @@ function serve() {
 
 function chromePath() {
   if (process.env.BENCH_CHROME) return process.env.BENCH_CHROME;
-  for (const p of ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome']) if (fs.existsSync(p)) return p;
+  for (const p of ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/opt/pw-browsers/chromium']) if (fs.existsSync(p)) return p;
   return undefined;
 }
 
