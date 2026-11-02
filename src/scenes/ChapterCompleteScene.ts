@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { RANK_COLOR, SCORING, type Rank } from '../config/scoring';
+import { RESULTS } from '../config/ui';
 import { getDifficulty } from '../config/difficulty';
 import { CHAPTERS, chapterForLevel } from '../levels/chapters';
 import { levelMeta } from '../levels/registry';
@@ -30,10 +31,19 @@ import { SplitsReview } from '../ui/SplitsReview';
 import { achievementBadge } from '../ui/achievementBadge';
 import { ghostForms, ghostRecording, ghostStore } from '../systems/Ghost';
 
-/** What the results call the enemies Ben beat, by the level's look. */
-const FOES_LABEL: Partial<Record<LevelTheme, string>> = { museum: 'MUTANTS DEFEATED', city: 'ROBOTS WRECKED' };
-/** Ben's punch knocks back any enemy shot: drone lasers in Act 1's first two chapters, spit and bolts after. */
-const PARRY_LABEL: Partial<Record<LevelTheme, string>> = { museum: 'SHOTS PARRIED', city: 'SHOTS PARRIED' };
+/**
+ * What the results call the enemies Ben beat, by the level's look. A chapter without its own name says
+ * ENEMIES (Chapters 5 and 7 mix robots, crystal and aliens; before this, they fell back to Chapter 1's drones).
+ */
+const FOES_LABEL: Partial<Record<LevelTheme, string>> = {
+  forest: 'DRONES DESTROYED',
+  highway: 'DRONES DESTROYED',
+  museum: 'MUTANTS DEFEATED',
+  city: 'ROBOTS WRECKED',
+  karachi: 'ENCHANTMENTS BROKEN',
+};
+/** Ben's punch knocks back any enemy shot: drone lasers in Act 1's first two chapters, spit, bolts and shards after. */
+const PARRY_LABEL: Partial<Record<LevelTheme, string>> = { forest: 'LASERS PARRIED', highway: 'LASERS PARRIED' };
 
 /** Best tag team names, by how many forms joined one combo. */
 const TAG_TEAM_NAMES = ['', '', 'TAG TEAM!', 'TRIPLE THREAT!', 'FULL OMNITRIX!'];
@@ -128,9 +138,9 @@ export class ChapterCompleteScene extends Phaser.Scene {
     const rows: Row[] = [
       { label: 'TIME', value: () => formatTime(s.timeMs), ...this.timeHighlight(previousBest) },
       { label: 'DAMAGE TAKEN', value: () => String(s.damageTaken), count: { to: s.damageTaken, format: (n) => (Math.round(n * 2) / 2).toString() } },
-      { label: FOES_LABEL[levelMeta(this.levelId).theme ?? 'forest'] ?? 'DRONES DESTROYED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
+      { label: FOES_LABEL[levelMeta(this.levelId).theme ?? 'forest'] ?? 'ENEMIES DEFEATED', value: () => String(s.enemiesDefeated), count: { to: s.enemiesDefeated, format: (n) => String(Math.round(n)) }, highlight: s.strikes > 0 ? `${s.strikes} STRIKE${s.strikes === 1 ? '' : 'S'}!` : undefined },
       { label: 'BEST COMBO', value: () => `${s.bestCombo} HITS`, count: { to: s.bestCombo, format: (n) => `${Math.round(n)} HITS` }, highlight: s.multiCuts > 0 ? `${s.multiCuts} MULTI-CUT${s.multiCuts === 1 ? '' : 'S'}!` : undefined, highlightColor: 0x9fd8ff },
-      { label: PARRY_LABEL[levelMeta(this.levelId).theme ?? 'forest'] ?? 'LASERS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
+      { label: PARRY_LABEL[levelMeta(this.levelId).theme ?? 'forest'] ?? 'SHOTS PARRIED', value: () => String(s.parries), count: { to: s.parries, format: (n) => String(Math.round(n)) } },
       { label: 'PERFECT TRANSFORMS', value: () => String(s.perfectTransforms), count: { to: s.perfectTransforms, format: (n) => String(Math.round(n)) } },
       ...(s.misfires > 0 || d.wrongTransformChance > 0
         ? [{ label: 'MISFIRES', value: () => String(s.misfires), highlight: s.improvised > 0 ? `${s.improvised} IMPROVISED!` : undefined, highlightColor: PALETTE.gold }]
@@ -163,10 +173,19 @@ export class ChapterCompleteScene extends Phaser.Scene {
 
     bindMuteKey(this);
     const kb = this.input.keyboard!;
-    const confirm = () => (this.splitsReview.open ? this.splitsReview.close() : this.toChapters());
+    const confirm = (e?: KeyboardEvent) => {
+      if (e?.repeat) return;
+      if (!this.ready) this.hurry();
+      else if (this.splitsReview.open) this.splitsReview.close();
+      else this.toChapters();
+    };
     kb.on('keydown-ENTER', confirm);
     kb.on('keydown-SPACE', confirm);
     kb.on('keydown-ESC', confirm);
+    // A tap anywhere while the stats tally also hurries them along (the buttons take over once they're up).
+    this.input.on('pointerdown', () => {
+      if (!this.ready) this.hurry();
+    });
     kb.on('keydown-R', () => this.again());
     kb.on('keydown-C', () => this.share());
     kb.on('keydown-S', () => this.toggleSplits());
@@ -272,8 +291,20 @@ export class ChapterCompleteScene extends Phaser.Scene {
     this.splitsReview.toggle(rows, sumOfBest(rows.map((r) => r.id), best), this.stats.timeMs);
   }
 
+  /**
+   * The tally takes about five seconds; a press while it runs plays the rest fast instead of making the player
+   * wait (or skipping the rank stamp, which is the payoff). The same events in the same order, just quicker.
+   */
+  private hurry(): void {
+    if (this.time.timeScale > 1) return;
+    this.time.timeScale = RESULTS.hurry;
+    this.tweens.timeScale = RESULTS.hurry;
+  }
+
   private showFooter(): void {
     this.ready = true;
+    this.time.timeScale = 1;
+    this.tweens.timeScale = 1;
     const current = chapterForLevel(this.levelId);
     const next = current ? CHAPTERS.find((c) => c.number === current.number + 1) : undefined;
     if (next) {

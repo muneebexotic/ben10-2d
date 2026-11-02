@@ -106,9 +106,19 @@ export class FileSelectScene extends Phaser.Scene {
       items.push(this.add.image(-58, top + 70, TEX.light).setScale(0.8).setTint(PALETTE.omnitrix).setAlpha(0.25).setBlendMode(Phaser.BlendModes.ADD));
       items.push(this.add.sprite(-58, top + 89, TEX.ben, 0).setOrigin(0.5, 1).setScale(1.5));
       if (summary.aliens.length > 0) {
+        // Up to five heads fit one row at 1.5x; more (six after Chapter 4) go in two rows at 1x, so the
+        // strip never runs past the panel into the card's border.
+        const n = summary.aliens.length;
+        const oneRow = n <= 5;
+        const cols = oneRow ? n : Math.ceil(n / 2);
+        const step = oneRow ? 22 : Math.min(20, 98 / Math.max(1, cols - 1));
+        const x0 = oneRow ? -22 : -28;
         summary.aliens.forEach((id, i) => {
           const a = getAlien(id);
-          items.push(this.add.image(-22 + i * 22, top + 68, a.hudIcon).setScale(1.5).setTint(a.theme.color));
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const y = oneRow ? top + 68 : top + 59 + row * 19;
+          items.push(this.add.image(Math.round(x0 + col * step), y, a.hudIcon).setScale(oneRow ? 1.5 : 1).setTint(a.theme.color));
         });
       } else {
         items.push(pixelText(this, 18, top + 68, 'NO ALIENS YET', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim }));
