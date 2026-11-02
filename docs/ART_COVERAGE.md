@@ -25,7 +25,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GHOSTFREAK | 19 | 0 | 0 | 0 | 19 |
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
-| PLUMBER SENTRY | 3 | 0 | 0 | 0 | 3 |
+| PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
 | FISHBOWL GRUNT | 9 | 0 | 0 | 0 | 9 |
 | ZAPPER EEL | 4 | 0 | 0 | 0 | 4 |
 | JELLY MINE | 1 | 0 | 0 | 0 | 1 |
@@ -397,9 +397,9 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | on its beat: bobbing, fins sculling, the lens looking about (green) | painted |  |
-| lock | locked on: leaning in, fins out, the lens red and staring | painted |  |
-| fire | the stun beam: a kick back off the shot | painted |  |
+| idle | on its beat: bobbing, fins sculling, the lens looking about (green) | drawn | idle |
+| lock | locked on: leaning in, fins out, the lens red and staring | drawn | lock |
+| fire | the stun beam: a kick back off the shot | stand-in | lock |
 
 ## FISHBOWL GRUNT (`grunt`)
 

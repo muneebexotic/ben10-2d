@@ -3,6 +3,10 @@ import { plumberBadge } from '../../plumber/baseArt';
 import { INK, LINE, type Paint } from '../../paint';
 import { keyframes } from '../../humanoid';
 import { RigInfo, wave, type PartSpec, type RigDef } from '../../rig';
+import { cutoutImage } from '../../cutout/cutout';
+import { frameRig } from '../../cutout/frameRig';
+import { WARDEN_FRAME_CLIPS } from './wardenClips';
+import { WARDEN_FRAMES } from '../../cutout/wardenFrames';
 
 const C = WARDEN_CARTOON.colors;
 
@@ -80,7 +84,14 @@ function parts(): PartSpec[] {
 }
 
 /** The Plumber sentry's HD rig (Chapter 7): a floating ball with a camera lens for an eye. */
+/** The drone's rig: its drawings when they've loaded (Chapter 7 loads them), else painted. */
 export function wardenRig(): RigDef {
+  const frames = cutoutImage(WARDEN_FRAMES.id);
+  if (frames) return frameRig({ id: 'warden', meta: WARDEN_FRAMES, img: frames, clips: WARDEN_FRAME_CLIPS, fallback: 'idle' });
+  return paintedWarden();
+}
+
+function paintedWarden(): RigDef {
   const draft: RigDef = {
     id: 'warden',
     parts: parts(),

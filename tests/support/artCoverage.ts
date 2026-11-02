@@ -24,6 +24,7 @@ import { KEVIN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/k
 import { MAX_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/max';
 import { RIPJAWS_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/ripjaws';
 import { DEEPMAW_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deepmaw';
+import { WARDEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/wardenClips';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -39,6 +40,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   kevin: KEVIN_FRAME_CLIPS,
   ripjaws: RIPJAWS_FRAME_CLIPS,
   deepmaw: DEEPMAW_FRAME_CLIPS,
+  warden: WARDEN_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */
