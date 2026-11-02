@@ -19,6 +19,9 @@ import { TRAINING } from '../config/training';
 import { session } from '../systems/Session';
 import { getDifficulty } from '../config/difficulty';
 import { leaveTo, resetLeaving } from '../ui/menu/transition';
+import { hasLevel, levelMeta } from '../levels/registry';
+import { chapterForLevel } from '../levels/chapters';
+import { checkpointLabel } from '../systems/Progress';
 
 export interface PauseData {
   checkpoint: string | null;
@@ -89,7 +92,9 @@ export class PauseScene extends Phaser.Scene {
     kb.on('keydown-ESC', () => this.resume());
     kb.on('keydown-P', () => this.resume());
     bindMuteKey(this);
-    audio.musicBus?.gain.setTargetAtTime(0.1, audio.now, 0.05);
+    audio.setMusicDucked(true);
+    // However the menu goes away, the music comes back up.
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => audio.setMusicDucked(false));
   }
 
   private buildStory(): void {
@@ -99,6 +104,10 @@ export class PauseScene extends Phaser.Scene {
     const d = getDifficulty(session.difficulty);
     const file = pixelText(this, GAME_WIDTH / 2 - 3, 76, slot === null ? 'NO SAVE FILE  -' : `FILE ${slot + 1}  -`, { originX: 1, originY: 0.5, color: PALETTE.uiDim });
     this.difficultyLabel = pixelText(this, file.x + 6, 76, d.label, { originY: 0.5, color: d.color });
+    // Where you are and what you've found, the way a good pause screen orients you (Celeste's shows the chapter
+    // and its strawberries).
+    const where = this.whereLine();
+    if (where) pixelText(this, GAME_WIDTH / 2, 90, where, { originX: 0.5, originY: 0.5, color: PALETTE.cream });
 
     this.menu = new MenuList(this, touch ? 150 : 170, touch ? 118 : 130, [
       { label: 'RESUME', action: () => this.resume() },
@@ -115,11 +124,27 @@ export class PauseScene extends Phaser.Scene {
     });
     pixelText(this, GAME_WIDTH / 2, 272, 'TIP: TRANSFORMING KNOCKS NEARBY ENEMIES AWAY. USE IT TO ESCAPE!', { originX: 0.5, color: PALETTE.uiDim });
     if (slot !== null) pixelText(this, GAME_WIDTH / 2, 286, 'SAVE & QUIT KEEPS YOUR RUN AT THE LAST CHECKPOINT. CONTINUE PICKS IT UP.', { originX: 0.5, color: PALETTE.uiDim });
-    // Settings can change the difficulty: keep the label honest when it comes back.
-    this.events.on(Phaser.Scenes.Events.RESUME, () => {
+    // Settings can change the difficulty: keep the label honest when it comes back. (Scene events outlive a
+    // restart of the scene, so the listener goes when the menu does, or every pause would add one.)
+    const onResume = () => {
       const now = getDifficulty(session.difficulty);
       this.difficultyLabel?.setText(now.label).setTint(now.color);
-    });
+    };
+    this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.RESUME, onResume));
+  }
+
+  /** "CHAPTER 3: DR. ANIMO  -  LAB  -  CARDS 2/9" (null outside a story chapter). */
+  private whereLine(): string | null {
+    const id = this.info.levelId;
+    if (!id || !hasLevel(id)) return null;
+    const chapter = chapterForLevel(id);
+    if (!chapter) return null;
+    const parts = [`CHAPTER ${chapter.number}: ${levelMeta(id).name}`];
+    if (this.info.checkpoint) parts.push(checkpointLabel(id, this.info.checkpoint));
+    const { cardsFound, totalCards } = this.info.stats;
+    if (totalCards > 0) parts.push(`CARDS ${cardsFound.length}/${totalCards}`);
+    return parts.join('  -  ');
   }
 
   /** Sandbox menu on the left, every alien's moves on the right. */
@@ -255,20 +280,20 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private resume(): void {
-    audio.musicBus?.gain.setTargetAtTime(0.32, audio.now, 0.05);
+    audio.setMusicDucked(false);
     this.scene.resume(SCENES.level);
     this.scene.stop();
   }
 
   private restart(): void {
-    audio.musicBus?.gain.setTargetAtTime(0.32, audio.now, 0.05);
+    audio.setMusicDucked(false);
     const start: LevelStartData = { levelId: this.info.levelId, checkpoint: this.info.checkpoint, stats: this.info.stats };
     this.scene.start(SCENES.level, start);
   }
 
   /** Story: the run is saved at the last checkpoint and it's back to Chapter Select. Training: the title. */
   private quit(): void {
-    audio.musicBus?.gain.setTargetAtTime(0.32, audio.now, 0.05);
+    audio.setMusicDucked(false);
     if (!this.info.training) EventBus.emit('level:quit');
     this.scene.stop(SCENES.level);
     this.scene.stop(SCENES.ui);

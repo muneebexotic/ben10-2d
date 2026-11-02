@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
 import { ACCESSIBILITY } from '../config/accessibility';
+import { AUDIO } from '../config/audio';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PALETTE } from '../config/palette';
 import { a11y, flashCamera, prefersReducedMotion, shakeCamera } from '../systems/Accessibility';
 import { audio } from '../systems/audio/AudioEngine';
 import type { TouchMode } from '../systems/SaveSystem';
-import { bindMuteKey, getSettings, toggleMute, updateSettings } from '../systems/Settings';
+import { getSettings, toggleMute, updateSettings } from '../systems/Settings';
 import { MenuList, type MenuItem } from '../ui/MenuList';
+import { BakedGraphics } from '../ui/BakedGraphics';
 import { pixelText } from '../ui/text';
 import { COVER_W, COVER_X, frameView } from '../ui/view';
 import { SCENES } from './SceneKeys';
@@ -26,13 +28,17 @@ export interface SettingsData {
 const TOUCH_MODES: TouchMode[] = ['auto', 'on', 'off'];
 const SEGMENTS = 10;
 
+const percent = (v: number) => `${Math.round(v * 100)}%`;
+/** Enter (or a tap) on a slider steps it up, wrapping from full back to off. */
+const cycleUp = (v: number) => (v >= 0.999 ? 0 : v + AUDIO.volumeStep);
+
 /** Options overlay reachable from the title and pause menus. Every change is saved immediately. */
 export class SettingsScene extends Phaser.Scene {
   private menu!: MenuList;
   private returnTo: string = SCENES.menu;
   private hint!: Phaser.GameObjects.BitmapText;
-  private bar!: Phaser.GameObjects.Graphics;
-  private shakeRow = -1;
+  /** Rows drawn with a level bar beside them (screen shake, music, effects), the level each shows, and what its bar last drew. */
+  private sliders: Array<{ row: number; level: () => number; bar: BakedGraphics; drawn: number }> = [];
   private details: Phaser.GameObjects.BitmapText | null = null;
   private slot: number | null = null;
 
@@ -76,10 +82,16 @@ export class SettingsScene extends Phaser.Scene {
         hint: 'CAMERA SHAKE AND SCREEN WARPS ON HITS, SLAMS AND EXPLOSIONS.',
       },
       {
-        label: () => (audio.muted ? 'SOUND: OFF' : 'SOUND: ON'),
-        action: () => toggleMute(),
-        adjust: () => toggleMute(),
-        hint: inputMode.current === 'touch' ? 'MUTE EVERYTHING.' : 'MUTE EVERYTHING. [M] ALSO WORKS ANYWHERE.',
+        label: () => (audio.muted ? 'MUSIC: MUTED' : `MUSIC ${percent(getSettings().music)}`),
+        action: () => this.setVolume('music', cycleUp(getSettings().music)),
+        adjust: (dir) => this.setVolume('music', getSettings().music + dir * AUDIO.volumeStep),
+        hint: this.soundHint(),
+      },
+      {
+        label: () => (audio.muted ? 'EFFECTS: MUTED' : `EFFECTS ${percent(getSettings().sfx)}`),
+        action: () => this.setVolume('sfx', cycleUp(getSettings().sfx)),
+        adjust: (dir) => this.setVolume('sfx', getSettings().sfx + dir * AUDIO.volumeStep),
+        hint: this.soundHint(),
       },
       {
         label: () => `TOUCH CONTROLS: ${getSettings().touchControls.toUpperCase()}`,
@@ -114,13 +126,15 @@ export class SettingsScene extends Phaser.Scene {
       });
     }
     items.push({ label: 'BACK', action: () => this.back(), hint: '' });
-    this.shakeRow = withDifficulty ? 2 : 1;
+    const first = withDifficulty ? 2 : 1;
+    const levels = [() => a11y.shake, () => (audio.muted ? 0 : getSettings().music), () => (audio.muted ? 0 : getSettings().sfx)];
+    this.sliders = levels.map((level, i) => ({ row: first + i, level, bar: new BakedGraphics(this, -1, -1, SEGMENTS * 6, 10), drawn: -1 }));
 
     this.hint = pixelText(this, GAME_WIDTH / 2, 300, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim, maxWidth: 560, align: 'center' });
     this.details = withDifficulty ? pixelText(this, GAME_WIDTH / 2, 280, '', { originX: 0.5, originY: 0.5, color: PALETTE.cream }) : null;
-    this.bar = this.add.graphics();
-    const spacing = items.length > 9 ? 21 : items.length > 8 ? 23 : items.length > 6 ? 25 : 28;
-    this.menu = new MenuList(this, GAME_WIDTH / 2, items.length > 9 ? 70 : items.length > 8 ? 76 : items.length > 6 ? 82 : 92, items, {
+    const spacing = items.length > 10 ? 20 : items.length > 9 ? 21 : items.length > 8 ? 23 : items.length > 6 ? 25 : 28;
+    const top = items.length > 10 ? 64 : items.length > 9 ? 70 : items.length > 8 ? 76 : items.length > 6 ? 82 : 92;
+    this.menu = new MenuList(this, GAME_WIDTH / 2, top, items, {
       spacing,
       scale: 2,
       rowWidth: 440,
@@ -144,8 +158,23 @@ export class SettingsScene extends Phaser.Scene {
     const kb = this.input.keyboard!;
     kb.on('keydown-ESC', () => this.back());
     kb.on('keydown-P', () => this.back());
-    bindMuteKey(this);
-    this.events.on(Phaser.Scenes.Events.UPDATE, () => this.drawBar());
+    // M mutes here too; the MUSIC and EFFECTS rows say so.
+    kb.on('keydown-M', () => {
+      toggleMute();
+      this.menu.refresh();
+    });
+  }
+
+  private soundHint(): string {
+    return inputMode.current === 'touch' ? 'CHANGING EITHER ONE TURNS SOUND BACK ON IF IT WAS MUTED.' : 'CHANGING EITHER ONE TURNS SOUND BACK ON IF IT WAS MUTED. [M] MUTES ANYWHERE.';
+  }
+
+  /** A volume change is heard at once, and turns the sound back on if it was muted (or nobody hears the change). */
+  private setVolume(which: 'music' | 'sfx', value: number): void {
+    const v = Math.round(Math.min(1, Math.max(0, value)) * 10) / 10;
+    updateSettings(which === 'music' ? { music: v } : { sfx: v });
+    if (audio.muted) toggleMute();
+    if (which === 'sfx') playSfx('uiConfirm', 0.8);
   }
 
   private toggleFinds(): void {
@@ -217,23 +246,27 @@ export class SettingsScene extends Phaser.Scene {
     this.scene.stop();
   }
 
-  private drawBar(): void {
-    const g = this.bar;
-    g.clear();
-    if (this.shakeRow < 0) return;
-    const text = this.menu.rowText(this.shakeRow);
-    const x0 = Math.round(text.x + text.width / 2 + 8);
-    const y0 = Math.round(text.y - 4);
-    const filled = Math.round(a11y.shake * SEGMENTS);
-    for (let i = 0; i < SEGMENTS; i++) {
-      g.fillStyle(PALETTE.ink, 1);
-      g.fillRect(x0 + i * 6 - 1, y0 - 1, 6, 10);
-      g.fillStyle(i < filled ? PALETTE.omnitrix : PALETTE.uiPanelLight, 1);
-      g.fillRect(x0 + i * 6, y0, 4, 8);
+  /** The level bars beside the slider rows: each follows its row's text and redraws only when its level changes. */
+  private drawBars(): void {
+    for (const s of this.sliders) {
+      const text = this.menu.rowText(s.row);
+      s.bar.image.setPosition(Math.round(text.x + text.width / 2 + 8), Math.round(text.y - 4));
+      const filled = Math.round(s.level() * SEGMENTS);
+      if (filled === s.drawn) continue;
+      s.drawn = filled;
+      s.bar.draw((g) => {
+        for (let i = 0; i < SEGMENTS; i++) {
+          g.fillStyle(PALETTE.ink, 1);
+          g.fillRect(i * 6 - 1, -1, 6, 10);
+          g.fillStyle(i < filled ? PALETTE.omnitrix : PALETTE.uiPanelLight, 1);
+          g.fillRect(i * 6, 0, 4, 8);
+        }
+      });
     }
   }
 
   override update(time: number): void {
     this.menu.update(time);
+    this.drawBars();
   }
 }

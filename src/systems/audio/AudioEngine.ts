@@ -40,6 +40,11 @@ export class AudioEngine {
   private _muted = false;
   private loopsMuted = false;
   private pageHidden = false;
+  /** Settings' MUSIC and EFFECTS sliders (0..1), on top of the mix in `AUDIO`. */
+  private musicLevel = 1;
+  private sfxLevel = 1;
+  /** The pause menu lowers the music while it's open. */
+  private musicDucked = false;
 
   get ready(): boolean {
     return this.ctx !== null && this.ctx.state === 'running';
@@ -67,10 +72,10 @@ export class AudioEngine {
         comp.ratio.value = 4;
         this.master.connect(comp).connect(this.ctx.destination);
         this.sfxBus = this.ctx.createGain();
-        this.sfxBus.gain.value = AUDIO.sfxVolume;
+        this.sfxBus.gain.value = this.sfxGain();
         this.sfxBus.connect(this.master);
         this.musicBus = this.ctx.createGain();
-        this.musicBus.gain.value = AUDIO.musicVolume;
+        this.musicBus.gain.value = this.musicGain();
         this.musicBus.connect(this.master);
         this.loopBus = this.ctx.createGain();
         this.loopBus.gain.value = this.loopsMuted ? 0 : 1;
@@ -104,6 +109,34 @@ export class AudioEngine {
     if (!this.ctx) return;
     this.master.gain.cancelScheduledValues(this.now);
     this.master.gain.setTargetAtTime(muted ? 0 : AUDIO.masterVolume, this.now, 0.03);
+  }
+
+  /** Settings' MUSIC and EFFECTS levels (0..1). Safe before the first gesture: they apply when sound starts. */
+  setVolumes(music: number, sfx: number): void {
+    this.musicLevel = clamp01(music);
+    this.sfxLevel = clamp01(sfx);
+    if (!this.ctx) return;
+    this.glide(this.musicBus.gain, this.musicGain());
+    this.glide(this.sfxBus.gain, this.sfxGain());
+  }
+
+  /** The pause menu's dip in the music (and back), at whatever level Settings has it. */
+  setMusicDucked(ducked: boolean): void {
+    this.musicDucked = ducked;
+    if (this.ctx) this.glide(this.musicBus.gain, this.musicGain());
+  }
+
+  private musicGain(): number {
+    return AUDIO.musicVolume * this.musicLevel * (this.musicDucked ? AUDIO.pauseDuck : 1);
+  }
+
+  private sfxGain(): number {
+    return AUDIO.sfxVolume * this.sfxLevel;
+  }
+
+  private glide(param: AudioParam, value: number): void {
+    param.cancelScheduledValues(this.now);
+    param.setTargetAtTime(value, this.now, 0.05);
   }
 
   /** Silences held sounds while the game is paused (they keep their own state and resume with it). */
@@ -180,6 +213,10 @@ export class AudioEngine {
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
     return buffer;
   }
+}
+
+function clamp01(v: number): number {
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
 }
 
 export const audio = new AudioEngine();

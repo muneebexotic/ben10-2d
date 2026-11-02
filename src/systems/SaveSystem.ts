@@ -85,6 +85,9 @@ export interface SettingsData {
   gwenInReplays: boolean;
   /** A new card or a file's first drink stops the game to show itself (off: a banner, for speedruns and benchmarks). */
   finds: boolean;
+  /** Settings' MUSIC and EFFECTS volumes, 0..1. */
+  music: number;
+  sfx: number;
 }
 
 export interface SaveData {
@@ -122,7 +125,7 @@ export interface RecordOutcome {
 }
 
 export function createDefaultSettings(): SettingsData {
-  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true, gwenInReplays: false, finds: true };
+  return { reduceFlashing: null, shake: null, touchControls: 'auto', ghost: true, gwenInReplays: false, finds: true, music: 1, sfx: 1 };
 }
 
 export function createDefaultSave(): SaveData {
@@ -269,6 +272,8 @@ function migrateSettings(raw: unknown): SettingsData {
   if (typeof s.ghost === 'boolean') settings.ghost = s.ghost;
   if (typeof s.gwenInReplays === 'boolean') settings.gwenInReplays = s.gwenInReplays;
   if (typeof s.finds === 'boolean') settings.finds = s.finds;
+  if (typeof s.music === 'number' && Number.isFinite(s.music)) settings.music = Math.min(1, Math.max(0, s.music));
+  if (typeof s.sfx === 'number' && Number.isFinite(s.sfx)) settings.sfx = Math.min(1, Math.max(0, s.sfx));
   return settings;
 }
 

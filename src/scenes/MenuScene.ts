@@ -88,13 +88,18 @@ export class MenuScene extends Phaser.Scene {
     this.hint = pixelText(this, GAME_WIDTH / 2, 342, '', { originX: 0.5, originY: 0.5, color: PALETTE.uiDim });
     this.refreshHint();
     EventBus.on('input:mode', () => this.refreshHint(), this);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));
-    // Back from Settings: the CONTINUE line may show a new difficulty.
-    this.events.on(Phaser.Scenes.Events.RESUME, () => {
+    // Back from Settings: the CONTINUE line may show a new difficulty. (Scene events outlive a restart of the
+    // scene: the listener goes with this visit, or every return to the title would add one.)
+    const onResume = () => {
       const fresh = this.buildItems();
       items.forEach((item, i) => (item.hint = fresh[i]?.hint ?? item.hint));
       this.menu.refresh();
       this.detail.setText(items[this.menu.selectedIndex]?.hint ?? '');
+    };
+    this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      EventBus.offContext(this);
+      this.events.off(Phaser.Scenes.Events.RESUME, onResume);
     });
 
     bindMuteKey(this);

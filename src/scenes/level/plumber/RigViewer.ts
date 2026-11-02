@@ -50,9 +50,11 @@ export function startRigViewer(scene: Phaser.Scene, query: URLSearchParams): voi
   cam.setZoom(zoom);
   cam.setScroll(ox - (cam.width - view.w) / 2, oy - (cam.height - view.h) / 2);
   const freeze = query.get('t');
-  scene.events.on(Phaser.Scenes.Events.PRE_RENDER, () => {
+  const tick = () => {
     for (const a of actors) a.update(freeze !== null ? 0 : scene.game.loop.delta, freeze !== null ? Number(freeze) : null);
     cam.setZoom(zoom);
     cam.setScroll(ox - (cam.width - view.w) / 2, oy - (cam.height - view.h) / 2);
-  });
+  };
+  scene.events.on(Phaser.Scenes.Events.PRE_RENDER, tick);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.PRE_RENDER, tick));
 }

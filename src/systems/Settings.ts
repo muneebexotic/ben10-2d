@@ -19,7 +19,9 @@ export function applySavedSettings(): void {
 }
 
 function refreshA11y(): void {
-  setA11y(resolveA11y(saveSystem.load().settings, prefersReducedMotion()));
+  const settings = saveSystem.load().settings;
+  audio.setVolumes(settings.music, settings.sfx);
+  setA11y(resolveA11y(settings, prefersReducedMotion()));
   EventBus.emit('settings:changed', { reduceFlashing: a11y.reduceFlashing, shake: a11y.shake, touchControls: saveSystem.load().settings.touchControls });
 }
 
