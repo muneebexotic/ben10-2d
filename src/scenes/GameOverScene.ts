@@ -70,6 +70,11 @@ export class GameOverScene extends Phaser.Scene {
       { label: session.slot === null ? 'QUIT TO TITLE' : 'QUIT TO CHAPTERS', action: () => this.quit() },
     );
     this.menu = new MenuList(this, GAME_WIDTH / 2, easier ? 180 : 190, items, 22, 2);
+    // A press already on its way when Ben went down shouldn't pick a row: a moment's grace while the title lands.
+    this.menu.enabled = false;
+    this.time.delayedCall(GAMEOVER.inputGraceMs, () => {
+      this.menu.enabled = true;
+    });
     if (easier) this.showEasierDetails(easier);
     bindMuteKey(this);
   }

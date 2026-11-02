@@ -71,7 +71,8 @@ export class FileSelectScene extends Phaser.Scene {
     kb.on('keydown-A', () => move(-1));
     kb.on('keydown-RIGHT', () => move(1));
     kb.on('keydown-D', () => move(1));
-    const ok = () => (this.confirm ? this.confirmButtons[this.confirmFocus]?.press() : this.activate());
+    // Fresh presses only: Enter held from the title would otherwise play the file straight away.
+    const ok = (e?: KeyboardEvent) => !e?.repeat && (this.confirm ? this.confirmButtons[this.confirmFocus]?.press() : this.activate());
     kb.on('keydown-ENTER', ok);
     kb.on('keydown-SPACE', ok);
     kb.on('keydown-J', ok);

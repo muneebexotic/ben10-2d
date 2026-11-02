@@ -41,6 +41,16 @@ export const MENU = {
 export const GAMEOVER = {
   /** From this many deaths in one run, the tip suggests lowering the difficulty. */
   suggestEasierAfterDeaths: 4,
+  /**
+   * The menu ignores presses this long after it appears, so a jump or attack still being mashed when Ben goes
+   * down doesn't pick a row the player never saw (the title's slam-in takes about as long).
+   */
+  inputGraceMs: 350,
+} as const;
+
+export const RESULTS = {
+  /** Chapter Complete: a press while the stats tally plays the rest this many times faster. */
+  hurry: 6,
 } as const;
 
 /** The control hint bar at the bottom of the HUD. */

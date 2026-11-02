@@ -65,7 +65,7 @@ export class DifficultyScene extends Phaser.Scene {
     kb.on('keydown-A', () => this.setFocus(this.focus - 1));
     kb.on('keydown-RIGHT', () => this.setFocus(this.focus + 1));
     kb.on('keydown-D', () => this.setFocus(this.focus + 1));
-    for (const key of ['ENTER', 'SPACE', 'J']) kb.on(`keydown-${key}`, () => this.confirm());
+    for (const key of ['ENTER', 'SPACE', 'J']) kb.on(`keydown-${key}`, (e: KeyboardEvent) => !e.repeat && this.confirm());
     bindMuteKey(this);
     EventBus.on('input:mode', () => this.refresh(true), this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => EventBus.offContext(this));

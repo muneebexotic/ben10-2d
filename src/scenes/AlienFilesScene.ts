@@ -98,8 +98,8 @@ export class AlienFilesScene extends Phaser.Scene {
     ] as const) {
       for (const key of keys) kb.on(`keydown-${key}`, () => (dx !== 0 ? this.pickAlien(this.alien + dx) : this.pickMove(this.move + dy)));
     }
-    kb.on('keydown-ENTER', () => this.tryAlien());
-    kb.on('keydown-SPACE', () => this.tryAlien());
+    kb.on('keydown-ENTER', (e: KeyboardEvent) => !e.repeat && this.tryAlien());
+    kb.on('keydown-SPACE', (e: KeyboardEvent) => !e.repeat && this.tryAlien());
     bindMuteKey(this);
     EventBus.on('input:mode', () => this.refreshHint(true), this);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.onResize, this);

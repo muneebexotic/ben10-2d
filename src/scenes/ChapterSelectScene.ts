@@ -140,7 +140,8 @@ export class ChapterSelectScene extends Phaser.Scene {
     kb.on('keydown-D', () => this.setFocus(this.focus + 1));
     kb.on('keydown-UP', () => this.setButtonFocus(0));
     kb.on('keydown-DOWN', () => this.setButtonFocus(1));
-    for (const key of ['ENTER', 'SPACE', 'J']) kb.on(`keydown-${key}`, () => (this.buttonFocus === 1 && this.secondary.visible ? this.secondary.press() : this.primary.press()));
+    // Fresh presses only: a held key's repeats would race on through the next menu too.
+    for (const key of ['ENTER', 'SPACE', 'J']) kb.on(`keydown-${key}`, (e: KeyboardEvent) => !e.repeat && (this.buttonFocus === 1 && this.secondary.visible ? this.secondary.press() : this.primary.press()));
     kb.on('keydown-R', () => this.secondary.visible && this.secondary.press());
     this.bindSwipe();
     bindMuteKey(this);

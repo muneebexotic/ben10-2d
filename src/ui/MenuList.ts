@@ -83,9 +83,14 @@ export class MenuList {
     kb.on('keydown-A', () => this.adjust(-1));
     kb.on('keydown-RIGHT', () => this.adjust(1));
     kb.on('keydown-D', () => this.adjust(1));
-    kb.on('keydown-ENTER', () => this.activate());
-    kb.on('keydown-SPACE', () => this.activate());
-    kb.on('keydown-J', () => this.activate());
+    // Only a fresh press picks a row. A key held from gameplay (jump, or a hold-to-fire attack) repeats its
+    // keydown, which picked Game Over's first row before the player had seen the menu.
+    const press = (e?: KeyboardEvent) => {
+      if (!e?.repeat) this.activate();
+    };
+    kb.on('keydown-ENTER', press);
+    kb.on('keydown-SPACE', press);
+    kb.on('keydown-J', press);
     this.refresh();
     this.onSelect?.(this.index, this.items[this.index]);
   }
