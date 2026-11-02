@@ -1,7 +1,7 @@
 import { MAX_CARTOON } from '../../../../config/cartoon/max';
 import { EYES, handPart, humanRig, keyframes, limb, MOUTHS, shoePart, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
-import { wave, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { wave, type ClipDef, type PartSpec, type Pose, type RigDef, type RigInfo } from '../rig';
 import { cutoutImage, cutoutPart } from '../cutout/cutout';
 import { cutHumanRig } from '../cutout/cutRig';
 import { MAX_CUT } from '../cutout/max';
@@ -196,19 +196,31 @@ export function maxRig(): RigDef {
   });
 }
 
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+/** A blaster's kick: back a little, then forward again. */
+const kick = (t: number, p: Pose) => p.move('body', -0.8 * Math.sin(Math.PI * Math.min(1, t * 3)), 0);
+
 /**
- * Which of his drawings each animation plays (docs/art-refs: his model sheet
- * and walk cycle). Until his action and story-pose sheets arrive, every pose
- * without a drawing of its own (the blaster, the badge, a salute) is his
- * standing drawing, breathing; the clips that aren't listed fall back to it.
+ * Which of his drawings each animation plays (docs/art-refs: his model sheet,
+ * walk cycle and action poses). Until his story-pose sheet arrives, a pose
+ * without a drawing of its own (pointing, thinking) is his standing drawing,
+ * breathing; the clips that aren't listed fall back to it.
  */
 export const MAX_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 3000, loop: true, motion: breathe(0.005) },
   walk: { frames: ['walk0', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7'], fps: 10, loop: true },
   // A hurried walk: he doesn't run.
   run: { frames: ['walk0', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7'], fps: 15, loop: true },
-  // Turned side-on to the console (his model sheet's side view).
-  console: { frames: ['side'], ms: 3000, loop: true, motion: breathe(0.005) },
+  // Side-on at the console, both hands on it (the console is the booth's).
+  console: { frames: ['console'], ms: 3000, loop: true, motion: breathe(0.005) },
+  // His Plumber blaster, one-handed (the bolt is the game's): Chapter 7's spray is the blaster too.
+  blast: { frames: ['blast'], ms: 300, loop: false, motion: kick },
+  spray: { frames: ['blast'], ms: 300, loop: true, motion: kick },
+  badge: { frames: ['badge'], ms: 1800, loop: true, motion: bob(0.2) },
+  salute: { frames: ['salute'], ms: 1800, loop: true },
+  talk: { frames: ['talk'], ms: 1300, loop: true, motion: bob(0.25) },
+  cheer: { frames: ['cheer'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 1) },
+  surprise: { frames: ['surprise'], ms: 1800, loop: true },
   hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1 * (1 - t), 0) },
   defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
 };

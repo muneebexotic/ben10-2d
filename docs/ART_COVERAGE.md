@@ -13,7 +13,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 |---|---|---|---|---|---|
 | BEN TENNYSON | 26 | 17 | 9 | 0 | 0 |
 | GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
-| GRANDPA MAX | 26 | 2 | 4 | 20 | 0 |
+| GRANDPA MAX | 26 | 9 | 4 | 13 | 0 |
 | KEVIN LEVIN | 27 | 3 | 9 | 15 | 0 |
 | HEATBLAST | 13 | 0 | 0 | 0 | 13 |
 | FOUR ARMS | 21 | 0 | 0 | 0 | 21 |
@@ -101,17 +101,17 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | jump | crouch, push off | waiting |  |
 | fall | arms out | waiting |  |
 | land | a heavy landing | waiting |  |
-| spray | holding something out in front and firing it (the fire extinguisher, the blaster) | waiting |  |
-| blast | firing his Plumber blaster | waiting |  |
+| spray | holding something out in front and firing it (the fire extinguisher, the blaster) | stand-in | blast |
+| blast | firing his Plumber blaster | drawn | blast |
 | point | pointing | waiting |  |
-| cheer | fist up | waiting |  |
+| cheer | fist up | drawn | cheer |
 | hurt | knocked back | stand-in | stand |
 | defeat | down | stand-in | stand |
-| talk | gesturing while he talks | waiting |  |
-| badge | holding up his Plumber badge | waiting |  |
-| salute | a Plumber salute | waiting |  |
-| console | working a console | stand-in | side |
-| surprise | eyes wide | waiting |  |
+| talk | gesturing while he talks | drawn | talk |
+| badge | holding up his Plumber badge | drawn | badge |
+| salute | a Plumber salute | drawn | salute |
+| console | working a console | drawn | console |
+| surprise | eyes wide | drawn | surprise |
 | think | hand on chin | waiting |  |
 | shrug | shrugging | waiting |  |
 | angry | stern | waiting |  |

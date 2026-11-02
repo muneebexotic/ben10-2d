@@ -168,7 +168,7 @@ export class LateBase implements SetPiece {
     max.faceTo(target.x);
     max.hold('spray', 400);
     const ang = Math.atan2(target.y - handY, target.x - max.x);
-    kit.projectiles.spawn('laser', 'player', max.x + max.facing * 10, handY, Math.cos(ang) * M.shotSpeed, Math.sin(ang) * M.shotSpeed, M.damage, M.shotLifeMs, 3);
+    kit.projectiles.spawn('laser', 'player', max.x + max.facing * M.muzzleAhead, handY, Math.cos(ang) * M.shotSpeed, Math.sin(ang) * M.shotSpeed, M.damage, M.shotLifeMs, 3);
     playSfx('laser', 0.5, 0.8);
     this.blastIn = M.blastEveryMs[0] + Math.random() * (M.blastEveryMs[1] - M.blastEveryMs[0]);
   }
