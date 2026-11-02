@@ -43,3 +43,9 @@ Sources: write-ups of Celeste, Hollow Knight and Dead Cells' HUDs (Unity's game 
 5. **Pause:** Esc mid-chapter: CHAPTER n: NAME - CHECKPOINT - CARDS x/y under the file line.
 6. **The Ferris wheel:** `?level=ch6&start=cp-fair`: the wheel turns whole, frame after frame.
 7. **Save Files:** a file with six or more aliens shows them in two rows inside the panel.
+
+## Checks at the end
+
+- `npm run typecheck`, `npm run build`: clean. `npm test`: 567 tests pass (new: `dialogue.test.ts`, `textureIndexFix.test.ts`, two source rules).
+- `npm run bench` against main: no regression and no leaks. The first full run flagged three scenarios while tests and a build ran on the same machine; re-run alone (three rounds) they were within +1 to +4%. The texture-index fix's own run (the fair, stress, Chapter 1, Chapter 7) passed the same way.
+- `npm run qa -- --fuzz` at all three sizes: 0 page errors, every checkpoint and boss pass of Chapters 1-7 clean. Two flags, both checked: Chapter 7's docking ring "frozen for 1.6 s" on the phone run only, while two sweeps shared the machine (the freeze watch counts real time; re-run alone it passes), and a "?" under CLEARED! behind the Act 2 ending on the phone size (the sweep opens the ending on a save where Chapter 6 isn't cleared, so the stamp lands on a locked card; a real first clear saves first and shows the chapter's own art).
