@@ -10,6 +10,8 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 **In progress: Chapter 7, The Plumbers (Act 3, HD cartoon look).** Playable from start to finish in dev builds: the opening (the pixel jetty at midnight, the glass car's ride down, the beacon pings turning the world and the family HD, ACT 3: SECRETS), the docking ring (Max's reveal, his locker, the lockdown, Gwen at Ben's side, the split), Kevin's glimpse, the reactor (Kevin drains it, CONTAINMENT FAILURE, the flood, Ripjaws' unlock, the glass into the open sea), the pump hall on the intercom, containment with Max's blaster and Cell 7, DEEPMAW in the moon pool, and the ending with Magister Korr's hologram. Ben, Gwen, Max and Kevin are drawn frame by frame from the owner's sheets (Gwen, Max and Kevin have their cycles so far). **Waiting for the owner:** the other animation sheets (prompts: https://claude.ai/artifact/A71jAsoFCzNTYjNv9Fesm6), the recorded music (prompts: https://claude.ai/artifact/LT43EopKCbDLVwP2WFqgMS; the player is built, `config/music.ts`), the HUD, portrait and still art. Release builds show Chapter 7 as COMING SOON until those land; dev builds play it with `?level=ch7`. The handoff with the remaining steps is [ch7-wip.md](ch7-wip.md).
 
+**Also this session: a UX pass and bug hunt** over the shared menus and HUD ([history/ux-pass-and-bug-hunt.md](history/ux-pass-and-bug-hunt.md), BUGS.md U1-U7): menus no longer pick a row from a held key (Game Over's RETRY was picked unseen), scene listeners no longer pile up per visit, Chapters 5-7's results stop counting drones and lasers, MUSIC and EFFECTS volume sliders, cutscene dialogue that reads on a line per press (Enter, Esc or SKIP >> skips), a press hurries the results tally, and the pause menu says where you are. Proposals from comparing with top games (ASSIST options, QUICK RETRY, remapping, tabs) are in IDEAS.md.
+
 Next, when asked: finish Chapter 7 (Milestone 7 holds DEEP DIVE ATTACK). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
 
 ## How to run
@@ -58,8 +60,9 @@ URL switches for playtesting:
 | Gwen's spells (once she knows them) | G: SHIELD, Up+G: STUN, Down+G: REVEAL | The Gwen button (hold it for the spell picker) |
 | Pause (Training: training menu) | Esc / P | II button (top centre) |
 | Menus | Arrows / WASD, Enter, Esc (back); S opens Settings on Chapter Select | Tap a card to pick it, tap again to confirm; swipe or tap the arrows on Chapter Select; BACK in the top-left |
-| Skip a cinematic | Any key | Tap anywhere |
-| Mute | M | Settings |
+| Cutscene dialogue | Any key reads on (finishes the line, then the next); Enter or Esc skips the scene | Tap to read on; SKIP >> (bottom-right) skips the scene |
+| Skip a cinematic without dialogue | Any key | Tap anywhere |
+| Mute | M | Title or pause menu (Settings: MUSIC and EFFECTS volumes) |
 
 What ATTACK and SPECIAL do depends on the form (the touch buttons change icon with it):
 

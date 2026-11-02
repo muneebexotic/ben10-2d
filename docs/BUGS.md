@@ -122,6 +122,20 @@ Screenshot-driven checks of every Chapter 5 set piece in headless Chromium (brid
 | C31 | major | Chapter 6, HEX AND CHARMCASTER (found by the scripted runs) | Melee forms could barely hurt Hex (Four Arms: under 1.5 damage per 2.5 s of punching) while Heatblast's fireballs took a fifth of his health in the same time | He floated 18 px over the floor, above a punch | fixed: he floats 6 px up; hits outside the moment after a spell do 60% |
 | C28 | minor | Chapter 6, the vent card (found while building) | The tunnel vent's crawlspace was six tiles over the floor; Grey Matter jumps five | Placed by eye | fixed: the crawlspace is a row lower and a rubble step sits under the vent |
 
+## UX pass and bug hunt (during Chapter 7)
+
+Found by reading the menu, input, audio and scene code, the QA sweep's screenshots at three sizes, and driving the changed screens in headless Chromium. UX changes made in the same pass are in DECISIONS.md and `history/ux-pass-and-bug-hunt.md`.
+
+| # | Severity | Where | Bug | Cause | Status |
+|---|---|---|---|---|---|
+| U1 | major | Game Over (every chapter) | Holding jump, or a hold-to-fire attack (Heatblast, XLR8, Wildmutt...), as Ben went down picked RETRY the moment Game Over appeared: the player never saw the screen, its tip or its MAKE IT EASIER offer. Enter held on the title raced on through Save Files into a chapter the same way | Browsers repeat a held key's keydown and Phaser passes the repeats to `keydown-X` listeners; menus picked on every keydown | fixed: menus pick only on a fresh press, and Game Over ignores presses for 350 ms |
+| U2 | minor | Settings, the pause menu, the title | Every visit added another scene listener that was never removed: Settings redrew its shake bar once per past visit, every frame; each pause and each return to the title added a RESUME listener | Phaser keeps a scene's `events` listeners across a restart of the scene; the listeners were added in `create()` | fixed: removed on shutdown; the bars are baked and redraw only when a level changes; `tests/sourceRules.test.ts` checks every file |
+| U3 | minor | Chapter Complete, Chapters 5-7 | The results said DRONES DESTROYED and LASERS PARRIED for crab bots, crystal sentries, rocklings and enchanted armour | The labels fell back to Chapter 1's for every chapter without its own entry | fixed: ENEMIES DEFEATED (Chapters 5 and 7), ENCHANTMENTS BROKEN (Chapter 6), SHOTS PARRIED after Chapter 2 |
+| U4 | minor | Save Files | From the sixth alien on, the file's alien strip ran past its panel into the card's border (nine aliens after Chapter 6 reached well outside) | A single row laid out for five | fixed: six or more sit in two rows |
+| U5 | minor | Cutscenes (UX) | One press skipped a whole conversation, so a stray press mid-scene lost the story, and there was no way to read on faster | Skip-all on any press | changed: a press reads on a line; Enter, Esc or SKIP >> (touch) skips the scene |
+| U6 | minor | Settings (UX) | Sound was all or nothing: no way to turn the music down and keep the effects | Only a mute switch | changed: MUSIC and EFFECTS sliders |
+| U7 | minor | Chapter Complete (UX) | The five-second stats tally ignored every key and tap until it finished | Input only enabled with the footer | changed: a press hurries the tally |
+
 ## Needs your decision
 
 | # | Where | Question |
@@ -140,7 +154,8 @@ Screenshot-driven checks of every Chapter 5 set piece in headless Chromium (brid
 - `tests/spawns.test.ts`: no checkpoint of Chapters 1-4 spawns Ben inside a cart, lift, shutter, hidden door or vines.
 - `tests/cabinet.test.ts`: an arcade cabinet fires GAME OVER once through a real hit-stop and the world carries on.
 - The autobench flags a row `frozen` when gameplay sat in one hit-stop for over 1.5 s.
-- `tests/sourceRules.test.ts`: no `frame.name` compared without converting it (frame names are numbers).
+- `tests/sourceRules.test.ts`: no `frame.name` compared without converting it (frame names are numbers), and no scene event listener without a matching `off` (U2).
+- `tests/dialogue.test.ts`: cinematic dialogue reads on a line per press (typing first), skips on Enter or pause, ignores presses in its first moments, runs on its timers when left alone.
 - `tests/textfit.test.ts` (rank lines): every Chapter Complete rank line wraps without a stranded word.
 - `tests/misfire.test.ts` (forced misfires): `FORCED_MISFIRES` is exactly `['ch5-lift']`, and no source file but the lift calls `forceMisfire` (or with another name). The QA fuzz fails on a misfire during a story moment that isn't the lift.
 - `tests/chapter5.test.ts`: Chapter 5's layout, every route (only Ghostfreak leaves the cell, only fire clears the cave-in, everyone rides the dive, only Diamondhead opens the cavern gate), the ride's fairness rules, the hunters' rules, the forced misfire's pick, and each older chapter's new secret reachable only by its alien.

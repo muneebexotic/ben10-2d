@@ -151,3 +151,15 @@ Built within Milestone 4, part 4 (Chapter 5, not proposed beforehand, recorded h
 - **Hex's rematch in Training:** the four Charms as Training targets, each with its tell, to learn the counters (Stinkfly over the stone wave, Diamondhead against the lightning).
 - **Chai with Rauf:** after the chapter, Rauf's stall in Chapter Select's Karachi window serves a cup that heals one heart at the start of any chapter replay, once per day.
 
+
+### From the UX pass (during Chapter 7)
+
+Measured against how top games handle the same moments (the comparison is in `history/ux-pass-and-bug-hunt.md`). Each is bigger than a fix, so it waits for approval.
+
+- **ASSIST options, Celeste-style:** separate from difficulty, a short list anyone can switch on any time: game speed (70/80/90/100%), no damage, endless alien time, skip a set piece after three deaths. Named without judgement (Celeste renamed its "Cheat Mode" to Assist Mode for that reason), and runs with any of them on are clears, not timed runs (the rule difficulty changes already follow). The single biggest accessibility win in the genre, and it keeps Hard as hard as it is.
+- **QUICK RETRY:** a setting that skips the BEN'S DOWN! menu: after the death beat Ben is straight back at the checkpoint (Celeste and Super Meat Boy keep retries under a second), with the menu one press away (Esc). The MAKE IT EASIER offer would still show after a few deaths.
+- **Remappable keys** (already Deferred) **and a control scheme page:** the Game Accessibility Guidelines put remapping among the basics. The input layer already reads one `Controls` object, so it's a bindings table in the save plus a Settings page.
+- **Settings in tabs** (GAME, SOUND, SCREEN, CONTROLS): Settings has eleven rows now; one more and it should split, as Hollow Knight's and Hades' option menus do.
+- **TEXT SPEED** (slow, normal, instant) for the typewriter, a common story-game option that helps younger readers and speedrunners alike.
+- **The current alien's moves in the story pause menu:** the pause screen lists the generic keys; showing the form Ben is in (ATTACK, SPECIAL, its extra) the way Training's pause already does would answer "what does this alien do?" mid-chapter without leaving it.
+- **Hold-to-skip ring for cinematics without dialogue** (the descents and drives): they still skip on any press; a short hold with a filling ring is the standard guard against skipping a story beat by accident.
