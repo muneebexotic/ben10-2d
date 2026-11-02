@@ -2,6 +2,9 @@ import { GRUNT_CARTOON } from '../../../../../config/cartoon/grunt';
 import { humanRig, keyframes, limb, type HumanDims } from '../../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../../paint';
 import { wave, type PartSpec, type Pose, type RigDef } from '../../rig';
+import { cutoutImage } from '../../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../../cutout/frameRig';
+import { GRUNT_FRAMES } from '../../cutout/gruntFrames';
 
 const C = GRUNT_CARTOON.colors;
 
@@ -164,8 +167,42 @@ function parts(): PartSpec[] {
   ];
 }
 
-/** The fishbowl grunt's HD rig (Chapter 7): Deepmaw's crew, a fish in a diving suit. */
+/** A heavy lead-booted step twice a loop: the drawing rises off one boot and thumps down on the next. */
+const trudge = (t: number, p: Pose) => p.move('body', 0, -Math.abs(wave(t)) * 0.7);
+/** The wind-up leans back into the throw; the throw lunges after the harpoon. */
+const windBack = (t: number, p: Pose) => p.move('body', -1.2 * Math.min(1, t * 2), 0);
+const lunge = (t: number, p: Pose) => p.move('body', -1.2 + 2.6 * Math.min(1, t * 3), 0);
+/** A fish out of water: the whole drawing hops off the deck and slaps back down. */
+const flopping = (t: number, p: Pose) => p.move('body', wave(t * 2) * 0.4, -Math.abs(wave(t)) * 1.8);
+
+/**
+ * The grunt's drawings (docs/art-refs/grunt-model-sheet.webp): standing guard
+ * with the harpoon on his shoulder, the wind-up, the throw (empty-handed: the
+ * game flies the harpoon) and the bowl smashed, flopping. The walk plays the
+ * guard drawing until his walk sheet arrives, and the bowl-broken moves play
+ * the bowl drawings until that sheet arrives (docs/ART_COVERAGE.md).
+ */
+export const GRUNT_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['guard'], ms: 1400, loop: true, motion: breathe(0.008) },
+  walk: { frames: ['guard'], ms: 900, loop: true, motion: trudge },
+  windup: { frames: ['windup'], ms: 620, loop: false, motion: windBack },
+  throw: { frames: ['throw'], ms: 320, loop: false, motion: lunge },
+  flop: { frames: ['flop'], ms: 520, loop: true, motion: flopping },
+  idleBare: { frames: ['guard'], ms: 1400, loop: true, motion: breathe(0.008) },
+  walkBare: { frames: ['guard'], ms: 900, loop: true, motion: trudge },
+  windupBare: { frames: ['windup'], ms: 620, loop: false, motion: windBack },
+  throwBare: { frames: ['throw'], ms: 320, loop: false, motion: lunge },
+};
+
+/** The fishbowl grunt's HD rig (Chapter 7): Deepmaw's crew, a fish in a diving suit (his drawings once loaded). */
 export function gruntRig(): RigDef {
+  const frames = cutoutImage(GRUNT_FRAMES.id);
+  if (frames) return frameRig({ id: 'grunt', meta: GRUNT_FRAMES, img: frames, clips: GRUNT_FRAME_CLIPS, fallback: 'idle' });
+  return paintedGrunt();
+}
+
+/** The painted grunt (before his drawings load, and in the rig tests). */
+function paintedGrunt(): RigDef {
   return humanRig({
     id: 'grunt',
     dims: DIMS,

@@ -26,7 +26,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
-| FISHBOWL GRUNT | 9 | 0 | 0 | 0 | 9 |
+| FISHBOWL GRUNT | 9 | 4 | 5 | 0 | 0 |
 | ZAPPER EEL | 4 | 0 | 0 | 0 | 4 |
 | JELLY MINE | 1 | 0 | 0 | 0 | 1 |
 | GNASHER SWARM | 4 | 0 | 0 | 0 | 4 |
@@ -405,15 +405,15 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | standing guard, harpoon on its shoulder, bubbles in the bowl | painted |  |
-| walk | a heavy lead-booted trudge | painted |  |
-| windup | the tell: the harpoon drawn back over its shoulder | painted |  |
-| throw | the throw: arm whipping through, empty-handed | painted |  |
-| flop | bowl broken: a fish flopping on the deck in a diving suit | painted |  |
-| idleBare | standing, bowl broken (in water) | painted |  |
-| walkBare | walking, bowl broken (in water) | painted |  |
-| windupBare | the tell, bowl broken | painted |  |
-| throwBare | the throw, bowl broken | painted |  |
+| idle | standing guard, harpoon on its shoulder, bubbles in the bowl | drawn | guard |
+| walk | a heavy lead-booted trudge | stand-in | guard |
+| windup | the tell: the harpoon drawn back over its shoulder | drawn | windup |
+| throw | the throw: arm whipping through, empty-handed | drawn | throw |
+| flop | bowl broken: a fish flopping on the deck in a diving suit | drawn | flop |
+| idleBare | standing, bowl broken (in water) | stand-in | guard |
+| walkBare | walking, bowl broken (in water) | stand-in | guard |
+| windupBare | the tell, bowl broken | stand-in | windup |
+| throwBare | the throw, bowl broken | stand-in | throw |
 
 ## ZAPPER EEL (`eel`)
 
