@@ -73,13 +73,13 @@ function glowAll(p: Pose): void {
 }
 
 /**
- * The eel's drawings (docs/art-refs/eel-model-sheet.webp): swimming straight
- * and in an S-curve (its swim until its swim-cycle sheet arrives), coiled to
- * charge (the tell), the zap, and flopping both ways on a drained floor. The
- * game adds the crackle around it and the shock ring.
+ * The eel's drawings (docs/art-refs/eel-model-sheet.webp, eel-swim-cycle.webp):
+ * an 8-drawing ripple, coiled to charge (the tell), the zap, and flopping both
+ * ways on a drained floor. The game adds the crackle around it and the shock
+ * ring.
  */
 export const EEL_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
-  swim: { frames: ['straight', 'curve'], fps: 2.5, loop: true, motion: (t, p) => p.move('body', 0, wave(t) * 0.6) },
+  swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5', 'swim6', 'swim7'], fps: 8, loop: true, motion: (t, p) => p.move('body', 0, wave(t) * 0.4) },
   charge: { frames: ['charge'], ms: 140, loop: true, motion: (t, p) => p.move('body', wave(t) * 0.4, wave(t, 0.25) * 0.3) },
   zap: { frames: ['zap'], ms: 300, loop: false, motion: (t, p) => p.move('body', wave(t * 6) * 0.5, 0) },
   flop: { frames: ['flopUp', 'flopDown'], ms: 480, loop: true },
