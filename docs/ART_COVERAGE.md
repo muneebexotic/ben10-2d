@@ -29,7 +29,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | FISHBOWL GRUNT | 9 | 9 | 0 | 0 | 0 |
 | ZAPPER EEL | 4 | 4 | 0 | 0 | 0 |
 | JELLY MINE | 1 | 1 | 0 | 0 | 0 |
-| GNASHER SWARM | 4 | 0 | 0 | 0 | 4 |
+| GNASHER SWARM | 4 | 4 | 0 | 0 | 0 |
 | DEEPMAW | 17 | 17 | 0 | 0 | 0 |
 
 ## BEN TENNYSON (`ben`)
@@ -434,10 +434,10 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| swim | circling as a loose school | painted |  |
-| bunch | the tell: bunched into a tight ball, all turned one way | painted |  |
-| dart | darting in a line, jaws first | painted |  |
-| flop | drained: a heap of flapping fish | painted |  |
+| swim | circling as a loose school | drawn | swim0, swim1, swim2, swim3 |
+| bunch | the tell: bunched into a tight ball, all turned one way | drawn | dart, bite |
+| dart | darting in a line, jaws first | drawn | dart, swim0, swim1, swim2, swim3 |
+| flop | drained: a heap of flapping fish | drawn | flopUp, flopDown |
 
 ## DEEPMAW (`deepmaw`)
 
