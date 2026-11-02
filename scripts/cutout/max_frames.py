@@ -1,6 +1,7 @@
 # Grandpa Max frame by frame: every pose is one of his generated drawings (see frames.py).
 # Sheets: his model sheet (the three-quarter view, for standing; the side view)
-# and his walk cycle (8 frames).
+# and his walk cycle (8 frames, the owner's second walk sheet: his arms swap between frames 1 and 5 and 3 and 7;
+# 2 and 6, 4 and 8 share a leg, which reads fine with both trouser legs alike).
 
 ID = 'max'
 TEXEL = 5
@@ -16,9 +17,9 @@ HAIR = (146, 138, 134)
 SHIRT = (189, 49, 43)
 SKIN = (250, 173, 121)
 # The walk sheet draws him stockier than the model sheet (a head 13% bigger for his body), and his
-# grey hair matches the gun on his belt: scaled between his head (x1.32) and his height (x1.49), so
+# grey hair matches the gun on his belt: scaled between his head (x1.35) and his height (x1.52), so
 # neither jumps more than 6% when he stops walking.
-SHEET_SCALE = {'model': 1.0, 'walk': 1.40}
+SHEET_SCALE = {'model': 1.0, 'walk': 1.43}
 
 FRAMES = {
     'stand': ('model', 1), 'side': ('model', 2),
