@@ -28,7 +28,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
 | FISHBOWL GRUNT | 9 | 9 | 0 | 0 | 0 |
 | ZAPPER EEL | 4 | 4 | 0 | 0 | 0 |
-| JELLY MINE | 1 | 0 | 0 | 0 | 1 |
+| JELLY MINE | 1 | 1 | 0 | 0 | 0 |
 | GNASHER SWARM | 4 | 0 | 0 | 0 | 4 |
 | DEEPMAW | 17 | 17 | 0 | 0 | 0 |
 
@@ -428,7 +428,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| pulse | drifting: the bell pulsing, tendrils trailing | painted |  |
+| pulse | drifting: the bell pulsing, tendrils trailing | drawn | pulse0, pulse1, pulse2, pulse3, pulse4, pulse5, pulse6, pulse7 |
 
 ## GNASHER SWARM (`gnasher`)
 

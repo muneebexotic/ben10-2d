@@ -1,6 +1,9 @@
 import { JELLY_CARTOON } from '../../../../../config/cartoon/jelly';
 import { INK, LINE, type Paint } from '../../paint';
 import { wave, type PartSpec, type RigDef } from '../../rig';
+import { cutoutImage } from '../../cutout/cutout';
+import { frameRig, type FrameClip } from '../../cutout/frameRig';
+import { JELLY_FRAMES } from '../../cutout/jellyFrames';
 
 const C = JELLY_CARTOON.colors;
 
@@ -37,8 +40,28 @@ function parts(): PartSpec[] {
   ];
 }
 
-/** The jelly mine's HD rig (Chapter 7): a pulsing bell and four two-part tendrils. */
+/**
+ * The jelly mine's drawings (docs/art-refs/jelly-pulse-cycle.webp): the bell
+ * squeezing tall (the push lifts it a little) and opening wide again.
+ */
+export const JELLY_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  pulse: {
+    frames: ['pulse0', 'pulse1', 'pulse2', 'pulse3', 'pulse4', 'pulse5', 'pulse6', 'pulse7'],
+    ms: 1200,
+    loop: true,
+    motion: (t, p) => p.move('body', 0, -Math.max(0, wave(t)) * 1.0),
+  },
+};
+
+/** The jelly mine's HD rig (Chapter 7): its drawings once loaded. */
 export function jellyRig(): RigDef {
+  const frames = cutoutImage(JELLY_FRAMES.id);
+  if (frames) return frameRig({ id: 'jelly', meta: JELLY_FRAMES, img: frames, clips: JELLY_FRAME_CLIPS, fallback: 'pulse', alias: { idle: 'pulse' } });
+  return paintedJelly();
+}
+
+/** The painted jelly mine (before its drawings load, and in the rig tests): a pulsing bell and four two-part tendrils. */
+function paintedJelly(): RigDef {
   const roots = [-4.4, -1.6, 1.4, 4.2];
   const bones: RigDef['bones'][number][] = [{ id: 'bell', x: 0, y: -1, part: 'bell', z: 20, dir: 1 }];
   roots.forEach((x, i) => {

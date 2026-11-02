@@ -27,6 +27,7 @@ import { DEEPMAW_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters
 import { WARDEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/wardenClips';
 import { GRUNT_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/grunt';
 import { EEL_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/eel';
+import { JELLY_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/jelly';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -45,6 +46,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   warden: WARDEN_FRAME_CLIPS,
   grunt: GRUNT_FRAME_CLIPS,
   eel: EEL_FRAME_CLIPS,
+  jelly: JELLY_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */
