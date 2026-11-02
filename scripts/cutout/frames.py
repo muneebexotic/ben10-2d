@@ -106,6 +106,18 @@ def anchor(rgba, shirt, band=None):
     return cx, cy, float(rows.max())
 
 
+def marker(rgba, colour, tol=70):
+    """The middle of the largest blob of `colour` (a lure's bulb, an eye), or None."""
+    a = rgba[..., 3]
+    rgb = np.where(a[..., None] > 0, rgba[..., :3] / np.maximum(a[..., None], 1e-6), 0)
+    near = (np.linalg.norm(rgb - np.array(colour, np.float32), axis=2) < tol) & (a > 0.9)
+    n, lab, stats, cents = cv2.connectedComponentsWithStats(near.astype(np.uint8))
+    if n < 2:
+        return None
+    k = 1 + int(np.argmax(stats[1:, 4]))
+    return float(cents[k][0]), float(cents[k][1])
+
+
 def snap_colours(rgba, palette, strength):
     """Pulls every colour toward the nearest model-sheet colour (keeps shading steps, kills drift between sheets)."""
     if not palette or strength <= 0:
@@ -159,8 +171,11 @@ def main():
         print(f'{name}: set to x{k:.3f}')
     texel = S.TEXEL / S.SCALE
     images, pivots = {}, {}
+    # Named points per drawing (a lure's bulb, an eye: MARKERS = {name: colour}), in game px from the pivot.
+    markers = {name: {} for name in getattr(S, 'MARKERS', {})}
     for frame, (sheet, index) in S.FRAMES.items():
-        rgba = snap_colours(sheets[sheet][index], getattr(S, 'PALETTE', []), getattr(S, 'SNAP', 0.0))
+        raw = sheets[sheet][index]
+        rgba = snap_colours(raw, getattr(S, 'PALETTE', []), getattr(S, 'SNAP', 0.0))
         band = None
         if getattr(S, 'SHIRT_BAND', None) and skin:
             # The torso: from the chin down a head and a bit.
@@ -177,6 +192,10 @@ def main():
         lift = S.LIFT.get(frame, 0.0) * S.TEXEL
         images['body:' + frame] = small
         pivots['body:' + frame] = (cx * k, floor * k + lift)
+        for name, colour in getattr(S, 'MARKERS', {}).items():
+            at = marker(raw, colour)
+            if at:
+                markers[name][frame] = [round((at[0] * k - cx * k) / S.TEXEL, 2), round((at[1] * k - floor * k - lift) / S.TEXEL, 2)]
     atlas, rects = pack(images)
     # WebP keeps the drawings' alpha at a fraction of PNG's size (every browser the game supports reads it).
     out_png = os.path.join(ROOT, 'public', 'assets', 'cast', S.ID + '-frames.webp')
@@ -193,7 +212,13 @@ def main():
         f.write('  joints: {},\n  frames: {\n')
         for k, v in sorted(frames.items()):
             f.write(f'    {json.dumps(k)}: {json.dumps(v, separators=(", ", ": "))},\n')
-        f.write('  },\n  bends: {},\n};\n')
+        f.write('  },\n  bends: {},\n')
+        if markers:
+            f.write('  markers: {\n')
+            for name, per in markers.items():
+                f.write(f'    {name}: {json.dumps(per, separators=(", ", ": "))},\n')
+            f.write('  },\n')
+        f.write('};\n')
     print(f'{S.ID}: {len(frames)} frames, atlas {atlas.shape[1]}x{atlas.shape[0]} -> {os.path.relpath(out_png, ROOT)}')
     if debug:
         os.makedirs(debug, exist_ok=True)

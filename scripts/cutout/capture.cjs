@@ -5,7 +5,8 @@
 //     node scripts/cutout/capture.cjs <outDir> "level=ch7&mute=1&at=14&artres=8" 2.4
 //   ffmpeg -framerate 30 -i <outDir>/f%04d.png -c:v libx264 -pix_fmt yuv420p out.mp4
 // PLAN: [step, "down"|"up", key] (keys as Playwright names them); the last argument is the camera zoom.
-// FROM_START=1 records from the level's first frame (an opening cinematic).
+// FROM_START=1 records from the level's first frame (an opening cinematic). WAIT='<js expression>' waits for it first
+// (WAIT='window.__level.arena.boss' for a boss whose textures are made when it appears).
 // SETUP=<file.js>: an async function body run in the page once the level is up (`scene` is the level,
 // `step` the frame count so far as `window.__frame`), e.g. to place Gwen and Max and walk them about.
 const { chromium } = require('playwright');
@@ -21,6 +22,11 @@ const [outDir, query, zoomArg] = process.argv.slice(2);
   // FROM_START=1: step from the moment the level is up (an opening), not after a settling wait.
   if (process.env.FROM_START) await p.waitForFunction(() => window.__level && window.__level.story, null, { timeout: 60000 });
   else await p.waitForTimeout(11000);
+  // WAIT='<js expression>': also wait for it (a boss to be up), then a moment for its textures to reach the GPU.
+  if (process.env.WAIT) {
+    await p.waitForFunction(process.env.WAIT, null, { timeout: 90000 });
+    await p.waitForTimeout(2000);
+  }
   await p.evaluate(async (zoom) => {
     const g = window.__game;
     if (zoom > 0) (await import('/src/systems/CameraZoom.ts')).cameraZoom.base = zoom;

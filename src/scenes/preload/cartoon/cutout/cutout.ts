@@ -33,6 +33,8 @@ export interface CutoutMeta {
   frames: Readonly<Record<string, CutoutFrame>>;
   /** The limbs cut straight, and how far each of their bends spreads either side of its joint (game px). */
   bends: Readonly<Record<string, readonly number[]>>;
+  /** Named points per drawing (a lure's bulb, an eye), game px from the drawing's pivot: a frame rig's extra bones. */
+  markers?: Readonly<Record<string, Readonly<Record<string, readonly [number, number]>>>>;
 }
 
 const images = new Map<string, HTMLImageElement>();

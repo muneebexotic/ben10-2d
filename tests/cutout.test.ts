@@ -261,3 +261,33 @@ describe('Ripjaws frame by frame', () => {
     }
   });
 });
+
+describe('DEEPMAW frame by frame', () => {
+  it('has a clip for every clip the fight plays, and marks his bulb in every drawing but the beaten one', async () => {
+    const { DEEPMAW_FRAMES } = await import('../src/scenes/preload/cartoon/cutout/deepmawFrames');
+    const { DEEPMAW_FRAME_CLIPS } = await import('../src/scenes/preload/cartoon/characters/deepmaw');
+    const fight = Object.values(import.meta.glob('../src/entities/bosses/deepmaw/DeepmawBoss.ts', { query: '?raw', import: 'default', eager: true }) as Record<string, string>)[0];
+    const played = new Set([...fight.matchAll(/(?:clip = |play\()'(\w+)'/g)].map((m) => m[1]));
+    played.add('defeat');
+    for (const clip of played) expect(DEEPMAW_FRAME_CLIPS[clip], clip).toBeDefined();
+    const bulb = DEEPMAW_FRAMES.markers?.bulb ?? {};
+    for (const name of frameNames(DEEPMAW_FRAMES)) if (name !== 'beaten') expect(bulb[name], name).toBeDefined();
+  });
+
+  it("a frame rig's markers are bones on the body that sit where the drawing has them", async () => {
+    const { DEEPMAW_FRAMES } = await import('../src/scenes/preload/cartoon/cutout/deepmawFrames');
+    const { DEEPMAW_FRAME_CLIPS } = await import('../src/scenes/preload/cartoon/characters/deepmaw');
+    const rig = frameRig({ id: 'deepmaw', meta: DEEPMAW_FRAMES, img: {} as HTMLImageElement, clips: DEEPMAW_FRAME_CLIPS, fallback: 'idle' });
+    expect(rig.bones.map((b) => b.id)).toEqual(['body', 'bulb', 'eye']);
+    const info = new RigInfo(rig);
+    const pose = new Pose(info);
+    rig.clips.lure.pose(0, pose);
+    const world = makeWorld(info);
+    solve(info, pose, world);
+    const at = DEEPMAW_FRAMES.markers!.bulb.bait;
+    const b = info.bone('bulb');
+    // The body hangs 24 px up (the fight places him by his middle); the bulb is where the bait drawing has it.
+    expect(world.x[b]).toBeCloseTo(at[0], 0);
+    expect(world.y[b]).toBeCloseTo(at[1] - 24, 0);
+  });
+});

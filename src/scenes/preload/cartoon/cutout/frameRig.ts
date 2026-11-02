@@ -43,6 +43,8 @@ export function frameRig(o: FrameRigOptions): RigDef {
   const body = cutoutPart(o.meta, o.img, 'body', names);
   const height = body.py;
   const clips: Record<string, ClipDef> = {};
+  // Marked points (a lure's bulb) are bones on the body that sit where the drawing on show has them.
+  const markers = Object.entries(o.meta.markers ?? {});
   for (const [name, c] of Object.entries(o.clips)) {
     const n = c.frames.length;
     const ms = c.ms ?? (n / (c.fps ?? 12)) * 1000;
@@ -50,7 +52,12 @@ export function frameRig(o: FrameRigOptions): RigDef {
       ms,
       loop: c.loop,
       pose: (t, p) => {
-        p.show('body', c.frames[Math.min(n - 1, Math.floor(t * n))]);
+        const frame = c.frames[Math.min(n - 1, Math.floor(t * n))];
+        p.show('body', frame);
+        for (const [id, at] of markers) {
+          const m = at[frame];
+          if (m) p.move(id, m[0], m[1]);
+        }
         c.motion?.(t, p, height);
       },
     };
@@ -60,7 +67,7 @@ export function frameRig(o: FrameRigOptions): RigDef {
   return {
     id: o.id,
     parts: [body],
-    bones: [{ id: 'body', x: 0, y: 0, part: 'body', z: 50, dir: 1 }],
+    bones: [{ id: 'body', x: 0, y: 0, part: 'body', z: 50, dir: 1 }, ...markers.map(([id]) => ({ id, parent: 'body', x: 0, y: 0, z: 0, dir: 1 as const }))],
     clips,
     fallback: o.fallback,
     alias: o.alias,

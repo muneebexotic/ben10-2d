@@ -6,6 +6,7 @@ import { PALETTE } from '../../../config/palette';
 import { TELL } from '../../../config/tells';
 import { plumberArtRes } from '../../../scenes/level/plumber/presentation';
 import { castRig } from '../../../scenes/preload/cartoon/cast';
+import { deepmawFace } from '../../../scenes/preload/cartoon/characters/deepmaw';
 import { PLUMBER_ART } from '../../../scenes/preload/cartoon/plumber/baseArt';
 import { makeRigPortrait } from '../../../scenes/preload/cartoon/portrait';
 import { HD_PORTRAITS } from '../../../scenes/preload/cartoon/portraitKeys';
@@ -144,7 +145,9 @@ export class DeepmawBoss implements ArenaBoss, Liftable {
     this.actor = new RigActor(scene, rig, rigTextureKey('deepmaw'));
     this.actor.container.setDepth(DEPTH.boss);
     this.bulbBone = this.actor.info.bone('bulb');
-    makeRigPortrait(scene, HD_PORTRAITS.deepmaw, rig, { clip: 'talk', t: 0.25, cx: 15, cy: -24, scale: 1.2, bg: 0x0c2632, glow: PALETTE.deepmaw }, res);
+    // On his drawn face when his drawings are in, else the painted rig's.
+    const face = deepmawFace();
+    makeRigPortrait(scene, HD_PORTRAITS.deepmaw, rig, { clip: 'talk', t: 0.25, cx: face ? face.x + 6 : 15, cy: face ? face.y + 4 : -24, scale: 1.2, bg: 0x0c2632, glow: PALETTE.deepmaw }, res);
     this.base = deepEnv.base;
     this.midX = x;
     this.x = x;

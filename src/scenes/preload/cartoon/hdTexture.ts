@@ -59,11 +59,20 @@ export function packFrames(sizes: ReadonlyArray<{ name: string; w: number; h: nu
  * Paints `frames` into a new texture `key` at `res` (replacing nothing: a key
  * that exists is kept). Returns how long it took (ms).
  */
-export function makeHdTexture(scene: Phaser.Scene, key: string, frames: readonly HdFrame[], res: number): number {
+/** The biggest texture side every GPU the game supports takes (phones: 4096). */
+export const MAX_TEXTURE_SIDE = 4096;
+
+export function makeHdTexture(scene: Phaser.Scene, key: string, frames: readonly HdFrame[], wantedRes: number): number {
   if (scene.textures.exists(key)) return 0;
   const t0 = performance.now();
-  const sizes = frames.map((f) => ({ name: f.name, w: Math.ceil(f.w * res), h: Math.ceil(f.h * res) }));
-  const packed = packFrames(sizes);
+  // A texture that would pass what every phone's GPU takes is painted a little softer instead (a big boss's
+  // drawings at a high art resolution): one past the limit draws black.
+  let res = wantedRes;
+  let packed = packFrames(frames.map((f) => ({ name: f.name, w: Math.ceil(f.w * res), h: Math.ceil(f.h * res) })));
+  for (let i = 0; i < 4 && Math.max(packed.width, packed.height) > MAX_TEXTURE_SIDE; i++) {
+    res *= (MAX_TEXTURE_SIDE / Math.max(packed.width, packed.height)) * 0.97;
+    packed = packFrames(frames.map((f) => ({ name: f.name, w: Math.ceil(f.w * res), h: Math.ceil(f.h * res) })));
+  }
   const texture = scene.textures.createCanvas(key, packed.width, packed.height);
   if (!texture) return 0;
   const ctx = texture.getContext();

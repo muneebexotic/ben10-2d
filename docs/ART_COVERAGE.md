@@ -30,7 +30,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | ZAPPER EEL | 4 | 0 | 0 | 0 | 4 |
 | JELLY MINE | 1 | 0 | 0 | 0 | 1 |
 | GNASHER SWARM | 4 | 0 | 0 | 0 | 4 |
-| DEEPMAW | 16 | 0 | 0 | 0 | 16 |
+| DEEPMAW | 17 | 17 | 0 | 0 | 0 |
 
 ## BEN TENNYSON (`ben`)
 
@@ -443,19 +443,20 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | hanging in the water: fins sculling, tail swaying, the lure bobbing | painted |  |
-| swim | cruising: tail sweeping, fins back | painted |  |
-| lure | baiting: the lure drifts out in front, swaying, jaws a little open | painted |  |
-| flare | the tell: the lure flares white and freezes, the body goes still | painted |  |
-| lunge | the lunge: jaws as wide as they go, everything thrown forward | painted |  |
-| spit | the lure flash: rearing back, the bulb blazing | painted |  |
-| stunned | lure hit: dazed, jaw hanging open (hit him now), eye spinning | painted |  |
-| flop | on dry deck: propped on his fins, flopping and gasping | painted |  |
-| slam | a tail slam: rearing up on his fins and crashing the tail down | painted |  |
-| roll | curled for the rolling chomp: fins tucked, jaws open | painted |  |
-| leap | a belly flop: launched up, fins spread | painted |  |
-| swallow | the maelstrom: jaws wide, sucking everything in | painted |  |
-| hurt | flinching back | painted |  |
-| defeat | beaten: belly up, eye shut, lure out | painted |  |
-| talk | gloating, jaw flapping | painted |  |
-| roar | a roar, jaws wide, lure blazing | painted |  |
+| idle | hanging in the water: fins sculling, tail swaying, the lure bobbing | drawn | swim0, swim1, swim2, swim3, swim4, swim5, swim6, swim7 |
+| swim | cruising: tail sweeping, fins back | drawn | swim0, swim1, swim2, swim3, swim4, swim5, swim6, swim7 |
+| lure | baiting: the lure drifts out in front, swaying, jaws a little open | drawn | bait |
+| flare | the tell: the lure flares white and freezes, the body goes still | drawn | flare |
+| lunge | the lunge: jaws as wide as they go, everything thrown forward | drawn | lunge |
+| spit | the lure flash: rearing back, the bulb blazing | drawn | flash |
+| stunned | lure hit: dazed, jaw hanging open (hit him now), eye spinning | drawn | stunned |
+| flop | on dry deck: propped on his fins, flopping and gasping | drawn | gasp, flop |
+| slam | a tail slam: rearing up on his fins and crashing the tail down | drawn | rear, slam |
+| roll | curled for the rolling chomp: fins tucked, jaws open | drawn | roll |
+| leap | a belly flop: launched up, fins spread | drawn | leap |
+| swallow | the maelstrom: jaws wide, sucking everything in | drawn | swallow |
+| hurt | flinching back | drawn | flinch |
+| defeat | beaten: belly up, eye shut, lure out | drawn | beaten |
+| talk | gloating, jaw flapping | drawn | grin |
+| roar | a roar, jaws wide, lure blazing | drawn | roar |
+| laugh | (story pose) | drawn | laugh |

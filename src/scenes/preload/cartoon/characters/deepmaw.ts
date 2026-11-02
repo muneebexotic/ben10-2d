@@ -2,6 +2,9 @@ import { DEEPMAW_CARTOON } from '../../../../config/cartoon/deepmaw';
 import { keyframes } from '../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
 import { RigInfo, wave, type PartSpec, type Pose, type RigDef } from '../rig';
+import { cutoutImage } from '../cutout/cutout';
+import { frameRig, type FrameClip } from '../cutout/frameRig';
+import { DEEPMAW_FRAMES } from '../cutout/deepmawFrames';
 
 const C = DEEPMAW_CARTOON.colors;
 
@@ -159,7 +162,56 @@ function parts(): PartSpec[] {
 }
 
 /** DEEPMAW's HD rig (Chapter 7's boss). */
+/** The fight places him by the middle of his body, this far (rig px) over the rig's origin: his drawings hang from their belly's middle. */
+const BODY_DROP = 24;
+const at = (extra?: (t: number, p: Pose) => void) => (t: number, p: Pose) => {
+  p.move('body', 0, -BODY_DROP);
+  extra?.(t, p);
+};
+const bob = (amount: number) => at((t, p) => p.move('body', 0, wave(t) * amount));
+
+/**
+ * Which of his drawings each clip of the fight plays (docs/art-refs: his model
+ * sheet, swim cycle, poses in the water and on the drained pool floor). Every
+ * drawing marks his lure's bulb (the weak point follows it) and his eye.
+ */
+export const DEEPMAW_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5', 'swim6', 'swim7'], fps: 8, loop: true, motion: bob(0.6) },
+  swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5', 'swim6', 'swim7'], fps: 12, loop: true, motion: at() },
+  lure: { frames: ['bait'], ms: 1600, loop: true, motion: bob(0.8) },
+  flare: { frames: ['flare'], ms: 600, loop: true, motion: at() },
+  lunge: { frames: ['lunge'], ms: 400, loop: true, motion: at() },
+  spit: { frames: ['flash'], ms: 500, loop: true, motion: at() },
+  stunned: { frames: ['stunned'], ms: 900, loop: true, motion: at((t, p) => p.set('body', wave(t) * 4)) },
+  hurt: { frames: ['flinch'], ms: 300, loop: false, motion: at() },
+  roar: { frames: ['roar'], ms: 260, loop: true, motion: at((t, p) => p.move('body', wave(t) * 0.6, 0)) },
+  // Stranded: gasping, flopping over, gasping.
+  flop: { frames: ['gasp', 'flop'], fps: 3, loop: true, motion: at() },
+  // Rearing up through the tell, the tail crashing down as it lands.
+  slam: { frames: ['rear', 'rear', 'rear', 'slam'], ms: 800, loop: false, motion: at() },
+  // Curled up: the fight turns him as he rolls.
+  roll: { frames: ['roll'], ms: 400, loop: true, motion: at() },
+  leap: { frames: ['leap'], ms: 600, loop: true, motion: at() },
+  swallow: { frames: ['swallow'], ms: 500, loop: true, motion: at((t, p) => p.size('body', 1 + wave(t) * 0.02)) },
+  defeat: { frames: ['beaten'], ms: 1200, loop: true, motion: at() },
+  talk: { frames: ['grin'], ms: 1200, loop: true, motion: bob(0.3) },
+  laugh: { frames: ['laugh'], ms: 300, loop: true, motion: at((t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.8)) },
+};
+
+/** Where his face is in his talking drawing (rig px from the origin): the portrait centres on it. */
+export function deepmawFace(): { x: number; y: number } | null {
+  const eye = DEEPMAW_FRAMES.markers?.eye?.grin;
+  return cutoutImage(DEEPMAW_FRAMES.id) && eye ? { x: eye[0], y: eye[1] - BODY_DROP } : null;
+}
+
+/** DEEPMAW's rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function deepmawRig(): RigDef {
+  const frames = cutoutImage(DEEPMAW_FRAMES.id);
+  if (frames) return frameRig({ id: 'deepmaw', meta: DEEPMAW_FRAMES, img: frames, clips: DEEPMAW_FRAME_CLIPS, fallback: 'idle' });
+  return paintedDeepmaw();
+}
+
+function paintedDeepmaw(): RigDef {
   const draft: RigDef = {
     id: 'deepmaw',
     parts: parts(),
