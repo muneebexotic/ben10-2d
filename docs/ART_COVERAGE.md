@@ -14,7 +14,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | BEN TENNYSON | 26 | 17 | 9 | 0 | 0 |
 | GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
 | GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
-| KEVIN LEVIN | 27 | 3 | 9 | 15 | 0 |
+| KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
 | HEATBLAST | 13 | 0 | 0 | 0 | 13 |
 | FOUR ARMS | 21 | 0 | 0 | 0 | 21 |
 | XLR8 | 18 | 0 | 0 | 0 | 18 |
@@ -130,19 +130,19 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | idle | a slouch, hands loose, blinking | drawn | stand |
 | run | a loping run | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
 | walk | a swagger (story) | stand-in | run0, run1, run2, run3, run4, run5, run6, run7 |
-| jump | push off | stand-in | run1, run3 |
+| jump | push off | drawn | jump |
 | fall | arms out | stand-in | run7 |
 | land | landing | stand-in | run5 |
 | absorb | palms out, drinking in power, eyes and hands glowing purple | drawn | absorb |
-| windup | a bolt charging in his hand | stand-in | absorb |
-| throw | hurling a bolt | stand-in | absorb |
-| hurt | knocked back | stand-in | stand |
-| laugh | head back, laughing | waiting |  |
-| lunge | grabbing forward | stand-in | run3 |
+| windup | a bolt charging in his hand | drawn | windup |
+| throw | hurling a bolt | drawn | throw |
+| hurt | knocked back | drawn | hurt |
+| laugh | head back, laughing | drawn | laugh |
+| lunge | grabbing forward | drawn | lunge |
 | point | pointing | waiting |  |
-| defeat | down | stand-in | stand |
+| defeat | down | stand-in | hurt |
 | talk | talking with his hands | waiting |  |
-| smirk | hands in pockets, smirking | waiting |  |
+| smirk | hands in pockets, smirking | drawn | smirk |
 | surprise | caught out | waiting |  |
 | angry | scowling | waiting |  |
 | wave | waving (a stolen badge) | waiting |  |

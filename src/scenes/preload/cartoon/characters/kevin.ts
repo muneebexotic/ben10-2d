@@ -1,7 +1,7 @@
 import { KEVIN_CARTOON } from '../../../../config/cartoon/kevin';
 import { EYES, handPart, humanRig, keyframes, limb, MOUTHS, shoePart, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
-import { wave, type BoneSpec, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { wave, type BoneSpec, type ClipDef, type PartSpec, type Pose, type RigDef, type RigInfo } from '../rig';
 import { cutoutImage } from '../cutout/cutout';
 import { cutHumanRig } from '../cutout/cutRig';
 import { KEVIN_CUT } from '../cutout/kevin';
@@ -144,27 +144,31 @@ export function kevinRig(): RigDef {
   return cutHumanRig({ id: 'kevin', meta: KEVIN_CUT, img, style, bounds: BOUNDS, clips: kevinClips, extraParts: [power], extraBones: [POWER] });
 }
 
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
 /**
  * Which of his drawings each animation plays (docs/art-refs: his model sheet,
- * whose absorbing pose glows purple in the drawing, and his run cycle). Until
- * his action sheet arrives, the poses without a drawing of their own (a laugh,
- * a point) are his standing smirk, breathing; unlisted clips fall back to it.
+ * run cycle and action poses, whose absorbing and wind-up drawings glow purple
+ * themselves). The story poses he has no drawing for (a point, a shrug) are his
+ * standing drawing until a story sheet arrives; unlisted clips fall back to it.
  */
 export const KEVIN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 2400, loop: true, motion: breathe() },
   run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 16, loop: true },
   walk: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 10, loop: true },
-  jump: { frames: ['run1', 'run3', 'run3', 'run3', 'run3', 'run3'], ms: 420, loop: false },
+  jump: { frames: ['jump'], ms: 420, loop: false },
   fall: { frames: ['run7'], ms: 700, loop: true },
   land: { frames: ['run5'], ms: 170, loop: false },
   // Drinking in power: the drawing's own purple, breathing fast.
   absorb: { frames: ['absorb'], ms: 520, loop: true, motion: breathe(0.008) },
-  windup: { frames: ['absorb'], ms: 300, loop: false },
-  throw: { frames: ['absorb'], ms: 240, loop: false },
-  // The run's flight drawing: a leap at you.
-  lunge: { frames: ['run3'], ms: 200, loop: false },
-  hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
-  defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  windup: { frames: ['windup'], ms: 300, loop: false, motion: (t, p) => p.move('body', -0.6 * Math.min(1, t * 2), 0) },
+  throw: { frames: ['throw'], ms: 240, loop: false, motion: (t, p) => p.move('body', 1 * Math.sin(Math.PI * Math.min(1, t * 1.5)), 0) },
+  lunge: { frames: ['lunge'], ms: 200, loop: false },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['hurt'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  // Head back, laughing: a quick shake.
+  laugh: { frames: ['laugh'], ms: 320, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.5) },
+  smirk: { frames: ['smirk'], ms: 2400, loop: true, motion: bob(0.15) },
 };
 
 const BOUNDS = { left: -12, right: 14, top: -40, bottom: 2 };
