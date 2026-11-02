@@ -1,6 +1,9 @@
 import { EEL_CARTOON } from '../../../../../config/cartoon/eel';
 import { INK, LINE, lightOf, type Paint } from '../../paint';
 import { wave, type PartSpec, type Pose, type RigDef } from '../../rig';
+import { cutoutImage } from '../../cutout/cutout';
+import { frameRig, type FrameClip } from '../../cutout/frameRig';
+import { EEL_FRAMES } from '../../cutout/eelFrames';
 
 const C = EEL_CARTOON.colors;
 
@@ -69,8 +72,28 @@ function glowAll(p: Pose): void {
   for (const s of SEG_IDS) p.show(s, 'glow');
 }
 
-/** The zapper eel's HD rig (Chapter 7): a chain of segments behind a grumpy head. */
+/**
+ * The eel's drawings (docs/art-refs/eel-model-sheet.webp): swimming straight
+ * and in an S-curve (its swim until its swim-cycle sheet arrives), coiled to
+ * charge (the tell), the zap, and flopping both ways on a drained floor. The
+ * game adds the crackle around it and the shock ring.
+ */
+export const EEL_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  swim: { frames: ['straight', 'curve'], fps: 2.5, loop: true, motion: (t, p) => p.move('body', 0, wave(t) * 0.6) },
+  charge: { frames: ['charge'], ms: 140, loop: true, motion: (t, p) => p.move('body', wave(t) * 0.4, wave(t, 0.25) * 0.3) },
+  zap: { frames: ['zap'], ms: 300, loop: false, motion: (t, p) => p.move('body', wave(t * 6) * 0.5, 0) },
+  flop: { frames: ['flopUp', 'flopDown'], ms: 480, loop: true },
+};
+
+/** The zapper eel's HD rig (Chapter 7): its drawings once loaded. */
 export function eelRig(): RigDef {
+  const frames = cutoutImage(EEL_FRAMES.id);
+  if (frames) return frameRig({ id: 'eel', meta: EEL_FRAMES, img: frames, clips: EEL_FRAME_CLIPS, fallback: 'swim', alias: { idle: 'swim' } });
+  return paintedEel();
+}
+
+/** The painted eel (before its drawings load, and in the rig tests): a chain of segments behind a grumpy head. */
+function paintedEel(): RigDef {
   const bones: RigDef['bones'][number][] = [{ id: 'head', x: 8, y: 0, part: 'head', z: 30, dir: 1 }];
   SEGS.forEach((_, i) => bones.push({ id: `seg${i}`, parent: i === 0 ? 'head' : `seg${i - 1}`, x: i === 0 ? 0 : -SEGS[i - 1][0] + 0.4, y: 0, part: `seg${i}`, z: 28 - i * 2, dir: 1 }));
   const swim = (amp: number) => (t: number, p: Pose) => {

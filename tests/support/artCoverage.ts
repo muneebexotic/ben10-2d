@@ -26,6 +26,7 @@ import { RIPJAWS_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters
 import { DEEPMAW_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deepmaw';
 import { WARDEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/wardenClips';
 import { GRUNT_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/grunt';
+import { EEL_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/eel';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -43,10 +44,11 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   deepmaw: DEEPMAW_FRAME_CLIPS,
   warden: WARDEN_FRAME_CLIPS,
   grunt: GRUNT_FRAME_CLIPS,
+  eel: EEL_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */
-const ALIAS: Readonly<Record<string, readonly string[]>> = { lookHands: ['hands'], sad: ['worried'], angry: ['stern'], run: ['hop'], defeat: ['flop', 'beaten'], lure: ['bait'], spit: ['flash'], hurt: ['flinch'], talk: ['grin'], idle: ['swim', 'guard'], idleBare: ['guardBare'] };
+const ALIAS: Readonly<Record<string, readonly string[]>> = { lookHands: ['hands'], sad: ['worried'], angry: ['stern'], run: ['hop'], defeat: ['flop', 'beaten'], lure: ['bait'], spit: ['flash'], hurt: ['flinch'], talk: ['grin'], idle: ['swim', 'guard'], idleBare: ['guardBare'], flop: ['flopUp', 'flopDown'] };
 
 export type Coverage = 'drawn' | 'stand-in' | 'waiting' | 'painted';
 

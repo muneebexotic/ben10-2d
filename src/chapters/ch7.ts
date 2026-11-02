@@ -24,6 +24,7 @@ import { RIPJAWS_FRAMES } from '../scenes/preload/cartoon/cutout/ripjawsFrames';
 import { DEEPMAW_FRAMES } from '../scenes/preload/cartoon/cutout/deepmawFrames';
 import { WARDEN_FRAMES } from '../scenes/preload/cartoon/cutout/wardenFrames';
 import { GRUNT_FRAMES } from '../scenes/preload/cartoon/cutout/gruntFrames';
+import { EEL_FRAMES } from '../scenes/preload/cartoon/cutout/eelFrames';
 import { CH7_BEATS } from '../config/chapter7';
 import { CH7_GWEN_CHATTER } from '../scenes/level/plumber/story/lines';
 import type { ChapterModule } from './types';
@@ -32,7 +33,7 @@ import type { ChapterModule } from './types';
 export const CHAPTER: ChapterModule = {
   level: CHAPTER_7,
   // The cast frame by frame from their generated drawings (scripts/cutout/frames.py).
-  prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, KEVIN_FRAMES, RIPJAWS_FRAMES, DEEPMAW_FRAMES, WARDEN_FRAMES, GRUNT_FRAMES]),
+  prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, KEVIN_FRAMES, RIPJAWS_FRAMES, DEEPMAW_FRAMES, WARDEN_FRAMES, GRUNT_FRAMES, EEL_FRAMES]),
   enter: (scene) => {
     enterPlumberBase(scene);
     // The ending's hologram speaker.

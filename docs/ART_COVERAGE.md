@@ -27,7 +27,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
 | FISHBOWL GRUNT | 9 | 9 | 0 | 0 | 0 |
-| ZAPPER EEL | 4 | 0 | 0 | 0 | 4 |
+| ZAPPER EEL | 4 | 3 | 1 | 0 | 0 |
 | JELLY MINE | 1 | 0 | 0 | 0 | 1 |
 | GNASHER SWARM | 4 | 0 | 0 | 0 | 4 |
 | DEEPMAW | 17 | 17 | 0 | 0 | 0 |
@@ -419,10 +419,10 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| swim | a slow ripple through the water | painted |  |
-| charge | the tell: coiled tight, spots blazing, crackling | painted |  |
-| zap | the shock: body rigid, arcs off every spot | painted |  |
-| flop | drained out of its tank: flopping on the floor | painted |  |
+| swim | a slow ripple through the water | stand-in | straight, curve |
+| charge | the tell: coiled tight, spots blazing, crackling | drawn | charge |
+| zap | the shock: body rigid, arcs off every spot | drawn | zap |
+| flop | drained out of its tank: flopping on the floor | drawn | flopUp, flopDown |
 
 ## JELLY MINE (`jelly`)
 
