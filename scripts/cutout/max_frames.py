@@ -12,6 +12,7 @@ SHEETS = {
     'model': ('docs/art-refs/max-model-sheet.webp', 235),
     'walk': ('docs/art-refs/max-walk-cycle.webp', 235),
     'action': ('docs/art-refs/max-action-poses.webp', 235),
+    'story': ('docs/art-refs/max-story-poses.webp', 235),
 }
 REF = ('model', 1)
 HAIR = (146, 138, 134)
@@ -20,8 +21,8 @@ SKIN = (250, 173, 121)
 # The walk sheet draws him stockier than the model sheet (a head 13% bigger for his body), and his
 # grey hair matches the gun on his belt: scaled between his head (x1.35) and his height (x1.52), so
 # neither jumps more than 6% when he stops walking.
-# The action sheet the same way: his head (x1.31) and his height (x1.41).
-SHEET_SCALE = {'model': 1.0, 'walk': 1.43, 'action': 1.36}
+# The pose sheets the same way: action, his head x1.31 and height x1.41; story, x1.25 and x1.40.
+SHEET_SCALE = {'model': 1.0, 'walk': 1.43, 'action': 1.36, 'story': 1.33}
 
 FRAMES = {
     'stand': ('model', 1),
@@ -30,6 +31,8 @@ FRAMES = {
     # Action poses (the sheet's own standing drawing is left out: the model sheet's is used).
     'console': ('action', 1), 'blast': ('action', 2), 'badge': ('action', 3), 'salute': ('action', 4),
     'talk': ('action', 5), 'cheer': ('action', 6), 'surprise': ('action', 7),
+    'point': ('story', 0), 'shrug': ('story', 1), 'think': ('story', 2), 'wave': ('story', 3),
+    'worried': ('story', 4), 'laugh': ('story', 5), 'stern': ('story', 6), 'hurt': ('story', 7),
 }
 LIFT = {}
 

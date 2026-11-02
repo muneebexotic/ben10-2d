@@ -202,9 +202,8 @@ const kick = (t: number, p: Pose) => p.move('body', -0.8 * Math.sin(Math.PI * Ma
 
 /**
  * Which of his drawings each animation plays (docs/art-refs: his model sheet,
- * walk cycle and action poses). Until his story-pose sheet arrives, a pose
- * without a drawing of its own (pointing, thinking) is his standing drawing,
- * breathing; the clips that aren't listed fall back to it.
+ * walk cycle, action and story poses). He never jumps or swims in a story, so
+ * those clips aren't listed: they fall back to his standing drawing.
  */
 export const MAX_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 3000, loop: true, motion: breathe(0.005) },
@@ -221,8 +220,17 @@ export const MAX_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   talk: { frames: ['talk'], ms: 1300, loop: true, motion: bob(0.25) },
   cheer: { frames: ['cheer'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 1) },
   surprise: { frames: ['surprise'], ms: 1800, loop: true },
-  hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1 * (1 - t), 0) },
-  defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1 * (1 - t), 0) },
+  defeat: { frames: ['hurt'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  point: { frames: ['point'], ms: 1800, loop: true, motion: bob(0.2) },
+  shrug: { frames: ['shrug'], ms: 1800, loop: true, motion: bob(0.2) },
+  think: { frames: ['think'], ms: 1800, loop: true, motion: bob(0.2) },
+  wave: { frames: ['wave'], ms: 700, loop: true, motion: (t, p) => p.set('body', wave(t) * 1.2) },
+  // His worried drawing (a hand on the back of his neck) for sad, his stern one (arms folded) for angry.
+  sad: { frames: ['worried'], ms: 1800, loop: true, motion: bob(0.15) },
+  angry: { frames: ['stern'], ms: 2600, loop: true, motion: breathe(0.005) },
+  // A big laugh, his belly shaking.
+  laugh: { frames: ['laugh'], ms: 360, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.6) },
 };
 
 const BOUNDS = { left: -14, right: 16, top: -38, bottom: 2 };

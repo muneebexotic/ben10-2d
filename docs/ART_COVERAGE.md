@@ -13,7 +13,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 |---|---|---|---|---|---|
 | BEN TENNYSON | 26 | 17 | 9 | 0 | 0 |
 | GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
-| GRANDPA MAX | 26 | 9 | 4 | 13 | 0 |
+| GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
 | KEVIN LEVIN | 27 | 3 | 9 | 15 | 0 |
 | HEATBLAST | 13 | 0 | 0 | 0 | 13 |
 | FOUR ARMS | 21 | 0 | 0 | 0 | 21 |
@@ -103,24 +103,25 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | land | a heavy landing | waiting |  |
 | spray | holding something out in front and firing it (the fire extinguisher, the blaster) | stand-in | blast |
 | blast | firing his Plumber blaster | drawn | blast |
-| point | pointing | waiting |  |
+| point | pointing | drawn | point |
 | cheer | fist up | drawn | cheer |
-| hurt | knocked back | stand-in | stand |
-| defeat | down | stand-in | stand |
+| hurt | knocked back | drawn | hurt |
+| defeat | down | stand-in | hurt |
 | talk | gesturing while he talks | drawn | talk |
 | badge | holding up his Plumber badge | drawn | badge |
 | salute | a Plumber salute | drawn | salute |
 | console | working a console | drawn | console |
 | surprise | eyes wide | drawn | surprise |
-| think | hand on chin | waiting |  |
-| shrug | shrugging | waiting |  |
-| angry | stern | waiting |  |
-| sad | shoulders down | waiting |  |
+| think | hand on chin | drawn | think |
+| shrug | shrugging | drawn | shrug |
+| angry | stern | drawn | stern |
+| sad | shoulders down | drawn | worried |
 | lookHands | staring at his hands (the transition) | waiting |  |
-| wave | waving | waiting |  |
+| wave | waving | drawn | wave |
 | swim | swimming | waiting |  |
 | tread | treading water | waiting |  |
 | drown | out of air | waiting |  |
+| laugh | (story pose) | drawn | laugh |
 
 ## KEVIN LEVIN (`kevin`)
 
