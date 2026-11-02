@@ -156,8 +156,8 @@ export class SettingsScene extends Phaser.Scene {
     back.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.back());
 
     const kb = this.input.keyboard!;
-    kb.on('keydown-ESC', () => this.back());
-    kb.on('keydown-P', () => this.back());
+    kb.on('keydown-ESC', (e: KeyboardEvent) => !e.repeat && this.back());
+    kb.on('keydown-P', (e: KeyboardEvent) => !e.repeat && this.back());
     // M mutes here too; the MUSIC and EFFECTS rows say so.
     kb.on('keydown-M', () => {
       toggleMute();

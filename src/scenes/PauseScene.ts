@@ -89,8 +89,9 @@ export class PauseScene extends Phaser.Scene {
     else this.buildStory();
 
     const kb = this.input.keyboard!;
-    kb.on('keydown-ESC', () => this.resume());
-    kb.on('keydown-P', () => this.resume());
+    // Fresh presses only: Esc held a moment too long in Settings would otherwise close this menu too.
+    kb.on('keydown-ESC', (e: KeyboardEvent) => !e.repeat && this.resume());
+    kb.on('keydown-P', (e: KeyboardEvent) => !e.repeat && this.resume());
     bindMuteKey(this);
     audio.setMusicDucked(true);
     // However the menu goes away, the music comes back up.

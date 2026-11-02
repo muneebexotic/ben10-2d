@@ -157,8 +157,9 @@ export function backButton(scene: Phaser.Scene, onBack: () => void): Phaser.Game
   zone.on('pointerover', () => t.setTint(PALETTE.white));
   zone.on('pointerout', () => t.setTint(PALETTE.uiDim));
   zone.on('pointerdown', () => onBack());
-  scene.input.keyboard?.on('keydown-ESC', () => onBack());
-  scene.input.keyboard?.on('keydown-BACKSPACE', () => onBack());
+  // Fresh presses only, or one held Esc backs out through several menus.
+  scene.input.keyboard?.on('keydown-ESC', (e: KeyboardEvent) => !e.repeat && onBack());
+  scene.input.keyboard?.on('keydown-BACKSPACE', (e: KeyboardEvent) => !e.repeat && onBack());
   return t;
 }
 

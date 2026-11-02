@@ -1,6 +1,6 @@
 # UX pass and bug hunt (during Chapter 7)
 
-The owner asked for a hunt for anything wrong in the game, fixes for what turned up, and a look at the UI and UX against how top games do it. This pass ran on Chapters 1-6 (shipped) and the shared menus and HUD; Chapter 7 work carried on separately. Bugs found are in `BUGS.md` (U1-U7), decisions in `DECISIONS.md` ("UX pass and bug hunt"), proposals that need approval in `IDEAS.md` ("From the UX pass").
+The owner asked for a hunt for anything wrong in the game, fixes for what turned up, and a look at the UI and UX against how top games do it. This pass ran on Chapters 1-6 (shipped) and the shared menus and HUD; Chapter 7 work carried on separately. Bugs found are in `BUGS.md` (U1-U10), decisions in `DECISIONS.md` ("UX pass and bug hunt"), proposals that need approval in `IDEAS.md` ("From the UX pass").
 
 ## How the game was checked
 
@@ -27,6 +27,7 @@ Sources: write-ups of Celeste, Hollow Knight and Dead Cells' HUDs (Unity's game 
 ## Fixed and changed
 
 - **U1 held keys picked menu rows** (Game Over's RETRY before the screen was seen; Enter held through two menus).
+- **U8-U10, the same held-key repeats elsewhere:** a card reveal closed itself unread while a hold-to-fire attack was held; the Spell Engine spun pipes and pulled its pendulum's lever on a held key; a held Enter could skip an act's cliffhanger, and a held Esc backed out through Settings and the pause menu. A source rule now fails on any pick, skip or back key that doesn't check for repeats.
 - **U2 scene listeners piled up** on every visit to Settings, pause and the title; Settings redrew its bar once per past visit every frame. A source rule now guards it.
 - **U3 results said DRONES and LASERS** in Chapters 5-7.
 - **U4 the save file's alien strip** overflowed its panel from the sixth alien.
@@ -34,7 +35,7 @@ Sources: write-ups of Celeste, Hollow Knight and Dead Cells' HUDs (Unity's game 
 
 ## How to test
 
-1. **Held keys:** in any chapter hold J (or Space) and let an enemy finish Ben: Game Over stays up until a fresh press. Hold Enter on the title's SAVE FILES: it stops at Save Files.
+1. **Held keys:** in any chapter hold J (or Space) and let an enemy finish Ben: Game Over stays up until a fresh press. Hold Enter on the title's SAVE FILES: it stops at Save Files. As Heatblast, hold J and run into a card: the card stays up. In the Spell Engine, hold J on a pipe: it turns once. In Settings from the pause menu, hold Esc: only Settings closes.
 2. **Settings:** Settings > MUSIC and EFFECTS (left/right in 10% steps, the bar follows); press M: both rows say MUTED; change either: sound comes back. Pause during play: the music dips and returns at the slider's level.
 3. **Dialogue:** start Chapter 3 (`?level=ch3`): Space shows the typing line in full, Space again moves on, Enter skips the conversation. On a phone (or an emulated one): tap to read on, SKIP >> in the bottom-right corner skips.
 4. **Results:** clear a chapter (or `?level=ch1&start=cp-arena` and beat the boss) and press Enter during the tally: it races to the rank stamp, then Enter continues as before.

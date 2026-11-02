@@ -97,6 +97,8 @@ export class ActEndScene extends Phaser.Scene {
 
     const kb = this.input.keyboard!;
     kb.on('keydown', (e: KeyboardEvent) => {
+      // A key still held from Chapter Complete's CONTINUE repeats: only fresh presses skip the act's ending.
+      if (e.repeat) return;
       if (e.code === 'KeyC' && this.phase === 'complete' && this.data0.act > 1) this.share();
       else this.press();
     });

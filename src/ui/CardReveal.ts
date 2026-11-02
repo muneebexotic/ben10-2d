@@ -43,7 +43,11 @@ export class CardReveal {
   private onClose: (() => void) | null = null;
 
   constructor(private readonly scene: Phaser.Scene) {
-    scene.input.keyboard?.on('keydown', () => this.press());
+    // Fresh presses only: holding a hold-to-fire attack as Ben grabs a card repeats its keydown, which would
+    // close the card the moment its grace ran out, unread.
+    scene.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
+      if (!e.repeat) this.press();
+    });
     scene.input.on('pointerdown', () => this.press());
   }
 

@@ -133,7 +133,9 @@ export class SpellEngineScene extends Phaser.Scene {
     kb.on('keydown-W', () => move(0, -1));
     kb.on('keydown-DOWN', () => move(0, 1));
     kb.on('keydown-S', () => move(0, 1));
-    for (const key of ['ENTER', 'SPACE', 'J', 'X']) kb.on(`keydown-${key}`, () => this.confirm());
+    // Fresh presses only: a held key's repeats spun a pipe round and round, and pulled the pendulum's lever about
+    // thirty times a second (its timing window would be hold-to-win).
+    for (const key of ['ENTER', 'SPACE', 'J', 'X']) kb.on(`keydown-${key}`, (e: KeyboardEvent) => !e.repeat && this.confirm());
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (p: Phaser.Input.Pointer) => this.tap(p));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       kb.removeAllListeners();
