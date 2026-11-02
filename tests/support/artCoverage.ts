@@ -46,7 +46,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
 };
 
 /** Drawings named for something other than their clip. */
-const ALIAS: Readonly<Record<string, readonly string[]>> = { lookHands: ['hands'], sad: ['worried'], angry: ['stern'], run: ['hop'], defeat: ['flop', 'beaten'], lure: ['bait'], spit: ['flash'], hurt: ['flinch'], talk: ['grin'], idle: ['swim', 'guard'] };
+const ALIAS: Readonly<Record<string, readonly string[]>> = { lookHands: ['hands'], sad: ['worried'], angry: ['stern'], run: ['hop'], defeat: ['flop', 'beaten'], lure: ['bait'], spit: ['flash'], hurt: ['flinch'], talk: ['grin'], idle: ['swim', 'guard'], idleBare: ['guardBare'] };
 
 export type Coverage = 'drawn' | 'stand-in' | 'waiting' | 'painted';
 

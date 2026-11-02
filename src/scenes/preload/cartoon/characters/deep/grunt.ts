@@ -167,8 +167,6 @@ function parts(): PartSpec[] {
   ];
 }
 
-/** A heavy lead-booted step twice a loop: the drawing rises off one boot and thumps down on the next. */
-const trudge = (t: number, p: Pose) => p.move('body', 0, -Math.abs(wave(t)) * 0.7);
 /** The wind-up leans back into the throw; the throw lunges after the harpoon. */
 const windBack = (t: number, p: Pose) => p.move('body', -1.2 * Math.min(1, t * 2), 0);
 const lunge = (t: number, p: Pose) => p.move('body', -1.2 + 2.6 * Math.min(1, t * 3), 0);
@@ -179,8 +177,8 @@ const flopping = (t: number, p: Pose) => p.move('body', wave(t * 2) * 0.4, -Math
  * The grunt's drawings (docs/art-refs/grunt-model-sheet.webp): standing guard
  * with the harpoon on his shoulder, the wind-up, the throw (empty-handed: the
  * game flies the harpoon) and the bowl smashed, flopping; his walk
- * (grunt-walk-cycle.webp) is an 8-drawing trudge. The bowl-broken moves play
- * the bowl drawings until that sheet arrives (docs/ART_COVERAGE.md).
+ * (grunt-walk-cycle.webp) is an 8-drawing trudge; and the same moves with the
+ * bowl smashed, for when it breaks in the water (grunt-bare-poses.webp).
  */
 export const GRUNT_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['guard'], ms: 1400, loop: true, motion: breathe(0.008) },
@@ -190,10 +188,11 @@ export const GRUNT_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   windup: { frames: ['windup'], ms: 620, loop: false, motion: windBack },
   throw: { frames: ['throw'], ms: 320, loop: false, motion: lunge },
   flop: { frames: ['flop'], ms: 520, loop: true, motion: flopping },
-  idleBare: { frames: ['guard'], ms: 1400, loop: true, motion: breathe(0.008) },
-  walkBare: { frames: ['guard'], ms: 900, loop: true, motion: trudge },
-  windupBare: { frames: ['windup'], ms: 620, loop: false, motion: windBack },
-  throwBare: { frames: ['throw'], ms: 320, loop: false, motion: lunge },
+  // Bowl smashed in the water: he fights on (grunt-bare-poses.webp). His 4-drawing trudge steps about 6.6 px a drawing.
+  idleBare: { frames: ['guardBare'], ms: 1400, loop: true, motion: breathe(0.008) },
+  walkBare: { frames: ['walkBare0', 'walkBare1', 'walkBare2', 'walkBare3'], fps: 3.4, loop: true },
+  windupBare: { frames: ['windupBare'], ms: 620, loop: false, motion: windBack },
+  throwBare: { frames: ['throwBare'], ms: 320, loop: false, motion: lunge },
 };
 
 /** The fishbowl grunt's HD rig (Chapter 7): Deepmaw's crew, a fish in a diving suit (his drawings once loaded). */
