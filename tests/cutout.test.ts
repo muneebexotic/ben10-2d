@@ -235,3 +235,29 @@ describe('frame by frame', () => {
     }
   });
 });
+
+describe('Ripjaws frame by frame', () => {
+  it('every animation of his game sheet has a clip, and every clip plays only his drawings', async () => {
+    const { RIPJAWS_FRAMES: SHEET } = await import('../src/aliens/ripjaws/art');
+    const { RIPJAWS_FRAMES } = await import('../src/scenes/preload/cartoon/cutout/ripjawsFrames');
+    const { RIPJAWS_FRAME_CLIPS } = await import('../src/scenes/preload/cartoon/characters/ripjaws');
+    const rig = frameRig({ id: 'ripjaws', meta: RIPJAWS_FRAMES, img: {} as HTMLImageElement, clips: RIPJAWS_FRAME_CLIPS, fallback: 'idle' });
+    for (const name of Object.keys(SHEET)) expect(rig.clips[name], name).toBeDefined();
+    const names = new Set(frameNames(RIPJAWS_FRAMES));
+    for (const clip of Object.values(RIPJAWS_FRAME_CLIPS)) for (const f of clip.frames) expect(names.has(f), f).toBe(true);
+  });
+
+  it('his side-on swimming drawings hang from the middle of the body, the hop flies, the rest stand on the floor', async () => {
+    const { RIPJAWS_FRAMES } = await import('../src/scenes/preload/cartoon/cutout/ripjawsFrames');
+    const T = RIPJAWS_FRAMES.texel;
+    const centred = (n: string) => /^swim\d$|^dash$|^swimBite$/.test(n);
+    for (const [key, f] of Object.entries(RIPJAWS_FRAMES.frames)) {
+      const name = key.slice(5);
+      const below = (f.h - f.py) / T;
+      if (centred(name)) expect(below, name).toBeGreaterThan(2);
+      else if (name === 'hop2' || name === 'hop3') expect(below, name).toBeLessThan(-3);
+      // (A faint fin edge can reach half a pixel under the floor.)
+      else expect(Math.abs(below), name).toBeLessThan(0.75);
+    }
+  });
+});

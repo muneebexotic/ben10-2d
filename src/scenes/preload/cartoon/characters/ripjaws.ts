@@ -3,6 +3,9 @@ import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, mix, shadeOf, type Paint, type ShapeStyle } from '../paint';
 import { wave, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo } from '../rig';
 import { omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { RIPJAWS_FRAMES } from '../cutout/ripjawsFrames';
 
 const C = RIPJAWS_CARTOON.colors;
 
@@ -517,8 +520,49 @@ function ripClips(info: RigInfo, base: Record<string, ClipDef>): Record<string, 
   };
 }
 
-/** Ripjaws' HD rig: a fish-man's upper body on a tail, a hinged jaw full of fangs, a lure, fins, and every move he has in and out of water. */
+/** In the water his body's middle sits this far over his feet (his swimming body is 22 px tall): the side-on drawings hang there. */
+const SWIM_Y = -11;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+const inWater = (amount: number) => (t: number, p: Pose) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * amount);
+
+/**
+ * Which of his drawings each animation plays (docs/art-refs: his model sheet,
+ * swim cycle, hop cycle, action poses and his poses in and out of the water).
+ * The few story poses without a drawing (cheer, point, surprise) are his
+ * balanced-on-his-tail drawing until a story sheet arrives.
+ */
+export const RIPJAWS_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['idle'], ms: 1800, loop: true, motion: breathe(0.012) },
+  // Bounding along on his tail; the two flights float as drawn.
+  run: { frames: ['hop0', 'hop1', 'hop2', 'hop3', 'hop4', 'hop5', 'hop6', 'hop7'], fps: 14, loop: true },
+  jump: { frames: ['jump'], ms: 420, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 170, loop: false },
+  swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5', 'swim6', 'swim7'], fps: 12, loop: true, motion: inWater(0.4) },
+  tread: { frames: ['tread'], ms: 1300, loop: true, motion: bob(0.6) },
+  dash: { frames: ['dash'], ms: 300, loop: true, motion: inWater(0.2) },
+  swimBite: { frames: ['swimBite'], ms: 260, loop: false, motion: inWater(0) },
+  biteA: { frames: ['biteA'], ms: 200, loop: false, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * 1.2, 0) },
+  biteB: { frames: ['biteB'], ms: 320, loop: false, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 1.5)) * 2, 0) },
+  whip: { frames: ['whip'], ms: 360, loop: false },
+  gasp: { frames: ['gasp'], ms: 700, loop: true, motion: bob(0.5) },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  // Down: flopped on his belly.
+  defeat: { frames: ['flop'], ms: 900, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t, 0.1)) * 0.6) },
+  drown: { frames: ['drown'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 5) },
+  roar: { frames: ['roar'], ms: 1800, loop: true, motion: bob(0.2) },
+  talk: { frames: ['talk'], ms: 1300, loop: true, motion: bob(0.25) },
+};
+
+/** Ripjaws' HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function ripjawsRig(): RigDef {
+  const frames = cutoutImage(RIPJAWS_FRAMES.id);
+  if (frames) return frameRig({ id: 'ripjaws', meta: RIPJAWS_FRAMES, img: frames, clips: RIPJAWS_FRAME_CLIPS, fallback: 'idle' });
+  return paintedRipjaws();
+}
+
+/** A fish-man's upper body on a tail, a hinged jaw full of fangs, a lure, fins, and every move he has in and out of water. */
+function paintedRipjaws(): RigDef {
   return humanRig({
     id: 'ripjaws',
     dims: RIPJAWS_DIMS,

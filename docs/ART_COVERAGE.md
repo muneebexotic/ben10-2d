@@ -24,7 +24,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | DIAMONDHEAD | 22 | 0 | 0 | 0 | 22 |
 | GHOSTFREAK | 19 | 0 | 0 | 0 | 19 |
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
-| RIPJAWS | 21 | 0 | 0 | 0 | 21 |
+| RIPJAWS | 21 | 18 | 0 | 3 | 0 |
 | PLUMBER SENTRY | 3 | 0 | 0 | 0 | 3 |
 | FISHBOWL GRUNT | 9 | 0 | 0 | 0 | 9 |
 | ZAPPER EEL | 4 | 0 | 0 | 0 | 4 |
@@ -371,27 +371,27 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | on dry land: balanced on his tail, gills flaring, jaw working | painted |  |
-| run | hopping along on his tail, big springy bounds | painted |  |
-| jump | a tail-spring push off | painted |  |
-| fall | tail curling, arms out | painted |  |
-| land | squashing down on his tail | painted |  |
-| swim | swimming flat out: body level, tail beating, arms swept back | painted |  |
-| tread | hanging in the water, tail waving, hands sculling | painted |  |
-| dash | RIP DASH: a torpedo, jaws first, tail a blur | painted |  |
-| biteA | a snapping chomp | painted |  |
-| biteB | the lunging CHOMP, jaws as wide as they go | painted |  |
-| swimBite | a bite on the move in the water | painted |  |
-| whip | the tail whip: a full spin, tail out | painted |  |
-| gasp | out of water: gasping, a hand at his gills | painted |  |
-| hurt | knocked back, jaw open | painted |  |
-| defeat | down, flopping | painted |  |
-| drown | thrashing | painted |  |
-| roar | the discovery: arms flung wide, jaws wide open, lure blazing | painted |  |
-| talk | talking through a mouthful of fangs | painted |  |
-| cheer | fists up, grinning fangs | painted |  |
-| point | pointing | painted |  |
-| surprise | eyes wide | painted |  |
+| idle | on dry land: balanced on his tail, gills flaring, jaw working | drawn | idle |
+| run | hopping along on his tail, big springy bounds | drawn | hop0, hop1, hop2, hop3, hop4, hop5, hop6, hop7 |
+| jump | a tail-spring push off | drawn | jump |
+| fall | tail curling, arms out | drawn | fall |
+| land | squashing down on his tail | drawn | land |
+| swim | swimming flat out: body level, tail beating, arms swept back | drawn | swim0, swim1, swim2, swim3, swim4, swim5, swim6, swim7 |
+| tread | hanging in the water, tail waving, hands sculling | drawn | tread |
+| dash | RIP DASH: a torpedo, jaws first, tail a blur | drawn | dash |
+| biteA | a snapping chomp | drawn | biteA |
+| biteB | the lunging CHOMP, jaws as wide as they go | drawn | biteB |
+| swimBite | a bite on the move in the water | drawn | swimBite |
+| whip | the tail whip: a full spin, tail out | drawn | whip |
+| gasp | out of water: gasping, a hand at his gills | drawn | gasp |
+| hurt | knocked back, jaw open | drawn | hurt |
+| defeat | down, flopping | drawn | flop |
+| drown | thrashing | drawn | drown |
+| roar | the discovery: arms flung wide, jaws wide open, lure blazing | drawn | roar |
+| talk | talking through a mouthful of fangs | drawn | talk |
+| cheer | fists up, grinning fangs | waiting |  |
+| point | pointing | waiting |  |
+| surprise | eyes wide | waiting |  |
 
 ## PLUMBER SENTRY (`warden`)
 

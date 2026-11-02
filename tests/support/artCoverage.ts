@@ -22,6 +22,7 @@ import { BEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/ben
 import { GWEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/gwen';
 import { KEVIN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/kevin';
 import { MAX_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/max';
+import { RIPJAWS_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/ripjaws';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -35,10 +36,11 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   gwen: GWEN_FRAME_CLIPS,
   max: MAX_FRAME_CLIPS,
   kevin: KEVIN_FRAME_CLIPS,
+  ripjaws: RIPJAWS_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */
-const ALIAS: Readonly<Record<string, string>> = { lookHands: 'hands', sad: 'worried', angry: 'stern' };
+const ALIAS: Readonly<Record<string, string>> = { lookHands: 'hands', sad: 'worried', angry: 'stern', run: 'hop', defeat: 'flop' };
 
 export type Coverage = 'drawn' | 'stand-in' | 'waiting' | 'painted';
 
@@ -48,8 +50,8 @@ export function clipCoverage(clip: string, frames: Readonly<Record<string, Frame
   const fc = frames[clip];
   if (!fc) return { status: 'waiting', drawings: '' };
   const names = [...new Set(fc.frames)];
-  const own = ALIAS[clip] ?? clip;
-  const drawn = names.some((n) => n.replace(/\d+$/, '') === own) || (clip === 'idle' && names.includes('stand'));
+  const own = [clip, ALIAS[clip]];
+  const drawn = names.some((n) => own.includes(n.replace(/\d+$/, ''))) || (clip === 'idle' && names.includes('stand'));
   return { status: drawn ? 'drawn' : 'stand-in', drawings: names.join(', ') };
 }
 

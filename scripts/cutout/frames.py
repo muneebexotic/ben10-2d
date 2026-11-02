@@ -41,12 +41,12 @@ def read_sheet(path):
     return cv2.cvtColor(raw, cv2.COLOR_BGR2RGB)
 
 
-def figures(img, white, min_area=15000):
-    """Every figure on the page (premultiplied RGBA crops), row by row, left to right."""
+def figures(img, white, min_area=15000, gap=7):
+    """Every figure on the page (premultiplied RGBA crops), row by row, left to right. `gap`: how far apart (px) two figures must be."""
     H, W = img.shape[:2]
     fig = figure_rgba(img, (0, 0, W, H), white)
     solid = (fig[..., 3] > 0.3).astype(np.uint8)
-    blob = cv2.dilate(solid, np.ones((7, 7), np.uint8))
+    blob = cv2.dilate(solid, np.ones((gap, gap), np.uint8))
     n, lab, stats, _ = cv2.connectedComponentsWithStats(blob)
     found = [(i, stats[i]) for i in range(1, n) if stats[i][4] > min_area]
     rows = sorted(found, key=lambda f: f[1][1] + f[1][3] / 2)
@@ -130,7 +130,8 @@ def main():
     S = load_spec(args[0])
     sheets = {}
     for name, (path, white) in S.SHEETS.items():
-        sheets[name] = figures(read_sheet(path), white)
+        # A sheet whose drawings nearly touch (GAP) or are drawn small (MIN_AREA) says so in the spec.
+        sheets[name] = figures(read_sheet(path), white, getattr(S, 'MIN_AREA', {}).get(name, 15000), getattr(S, 'GAP', {}).get(name, 7))
         print(f'{name}: {len(sheets[name])} figures')
     # Each sheet's scale: its median hair width against the model sheet's.
     ref = hair_width(sheets[S.REF[0]][S.REF[1]], S.HAIR)
