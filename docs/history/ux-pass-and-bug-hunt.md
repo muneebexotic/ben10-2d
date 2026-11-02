@@ -1,6 +1,6 @@
 # UX pass and bug hunt (during Chapter 7)
 
-The owner asked for a hunt for anything wrong in the game, fixes for what turned up, and a look at the UI and UX against how top games do it. This pass ran on Chapters 1-6 (shipped) and the shared menus and HUD; Chapter 7 work carried on separately. Bugs found are in `BUGS.md` (U1-U10), decisions in `DECISIONS.md` ("UX pass and bug hunt"), proposals that need approval in `IDEAS.md` ("From the UX pass").
+The owner asked for a hunt for anything wrong in the game, fixes for what turned up, and a look at the UI and UX against how top games do it. This pass ran on Chapters 1-6 (shipped) and the shared menus and HUD; Chapter 7 work carried on separately. Bugs found are in `BUGS.md` (U1-U11), decisions in `DECISIONS.md` ("UX pass and bug hunt"), proposals that need approval in `IDEAS.md` ("From the UX pass").
 
 ## How the game was checked
 
@@ -28,6 +28,7 @@ Sources: write-ups of Celeste, Hollow Knight and Dead Cells' HUDs (Unity's game 
 
 - **U1 held keys picked menu rows** (Game Over's RETRY before the screen was seen; Enter held through two menus).
 - **U8-U10, the same held-key repeats elsewhere:** a card reveal closed itself unread while a hold-to-fire attack was held; the Spell Engine spun pipes and pulled its pendulum's lever on a held key; a held Enter could skip an act's cliffhanger, and a held Esc backed out through Settings and the pause menu. A source rule now fails on any pick, skip or back key that doesn't check for repeats.
+- **U11 the Ferris wheel lost slices** (Chapter 6's fair): an engine bug in how Phaser 4.2 picks a batched sprite's texture (exact float comparisons on an interpolated index), patched at boot. Found by bisecting: copies of the wheel, lighting off, tiles off, then probes at every depth.
 - **U2 scene listeners piled up** on every visit to Settings, pause and the title; Settings redrew its bar once per past visit every frame. A source rule now guards it.
 - **U3 results said DRONES and LASERS** in Chapters 5-7.
 - **U4 the save file's alien strip** overflowed its panel from the sixth alien.
@@ -40,4 +41,5 @@ Sources: write-ups of Celeste, Hollow Knight and Dead Cells' HUDs (Unity's game 
 3. **Dialogue:** start Chapter 3 (`?level=ch3`): Space shows the typing line in full, Space again moves on, Enter skips the conversation. On a phone (or an emulated one): tap to read on, SKIP >> in the bottom-right corner skips.
 4. **Results:** clear a chapter (or `?level=ch1&start=cp-arena` and beat the boss) and press Enter during the tally: it races to the rank stamp, then Enter continues as before.
 5. **Pause:** Esc mid-chapter: CHAPTER n: NAME - CHECKPOINT - CARDS x/y under the file line.
-6. **Save Files:** a file with six or more aliens shows them in two rows inside the panel.
+6. **The Ferris wheel:** `?level=ch6&start=cp-fair`: the wheel turns whole, frame after frame.
+7. **Save Files:** a file with six or more aliens shows them in two rows inside the panel.

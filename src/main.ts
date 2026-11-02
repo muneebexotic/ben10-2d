@@ -26,10 +26,13 @@ import { inputMode } from './systems/InputMode';
 import { audio } from './systems/audio/AudioEngine';
 import { contextVariant } from './systems/PerfSwitches';
 import { applyHdScale, installRenderSwitches } from './systems/RenderSwitches';
+import { installTextureIndexFix } from './systems/TextureIndexFix';
 import { prepareLevel } from './chapters/start';
 
 applySavedSettings();
 installPageAudio();
+// Before the renderer compiles its shaders: batched sprites otherwise lose slices (BUGS.md U11).
+installTextureIndexFix();
 
 const game = new Phaser.Game(
   createGameConfig([
