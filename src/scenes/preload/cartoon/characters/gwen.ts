@@ -1,7 +1,7 @@
 import { GWEN_CARTOON } from '../../../../config/cartoon/gwen';
 import { EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
-import { wave, type BoneSpec, type ClipDef, type PartSpec, type RigDef, type RigInfo } from '../rig';
+import { wave, type BoneSpec, type ClipDef, type PartSpec, type Pose, type RigDef, type RigInfo } from '../rig';
 import { cutoutImage } from '../cutout/cutout';
 import { breathe, frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
 import { GWEN_FRAMES } from '../cutout/gwenFrames';
@@ -203,24 +203,37 @@ export function gwenRig(): RigDef {
   return cutHumanRig({ id: 'gwen', meta: GWEN_CUT, img, style, bounds: BOUNDS, clips: gwenClips, extraParts: [mana], extraBones: [MANA] });
 }
 
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
 /**
- * Which of her drawings each animation plays (docs/art-refs: her model sheet
- * and run cycle). Until her action and story-pose sheets arrive, every pose
- * without a drawing of its own (a cast, a point, a talk) is her standing
- * drawing, breathing; the clips that aren't listed fall back to it too.
+ * Which of her drawings each animation plays (docs/art-refs: her model sheet,
+ * run cycle, action poses and story poses). The few poses without a drawing of
+ * their own borrow the nearest one; the clips that aren't listed (swimming,
+ * looking at her hands) fall back to her standing drawing.
  */
 export const GWEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 2600, loop: true, motion: breathe() },
   // A short, quick stride (her second run sheet): 20 drawings a second keep her feet planted at Ben's pace.
   run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 20, loop: true },
   walk: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 10, loop: true },
-  // The run's lowest drawing for the push-off, then its flight.
-  jump: { frames: ['run1', 'run3', 'run3', 'run3', 'run3', 'run3'], ms: 420, loop: false },
-  fall: { frames: ['run7'], ms: 700, loop: true },
-  land: { frames: ['run5'], ms: 170, loop: false },
-  hurt: { frames: ['stand'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
-  defeat: { frames: ['stand'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
-  cast: { frames: ['stand'], ms: 300, loop: true },
+  jump: { frames: ['jump'], ms: 420, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 170, loop: false },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['hurt'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  // Her spell: the drawing holds the magic in both hands.
+  cast: { frames: ['cast'], ms: 300, loop: true, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 3)) * 0.6, 0) },
+  folded: { frames: ['folded'], ms: 2600, loop: true, motion: breathe() },
+  talk: { frames: ['talk'], ms: 1300, loop: true, motion: bob(0.25) },
+  point: { frames: ['point'], ms: 1800, loop: true, motion: bob(0.2) },
+  shrug: { frames: ['shrug'], ms: 1800, loop: true, motion: bob(0.2) },
+  surprise: { frames: ['surprise'], ms: 1800, loop: true },
+  cheer: { frames: ['cheer'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 1.2) },
+  think: { frames: ['think'], ms: 1800, loop: true, motion: bob(0.2) },
+  wave: { frames: ['wave'], ms: 700, loop: true, motion: (t, p) => p.set('body', wave(t) * 1.5) },
+  // Her worried drawing (hands clasped) for sad, her unimpressed one for angry.
+  sad: { frames: ['worried'], ms: 1800, loop: true, motion: bob(0.15) },
+  angry: { frames: ['folded'], ms: 1800, loop: true },
 };
 
 const BOUNDS = { left: -12, right: 14, top: -32, bottom: 2 };

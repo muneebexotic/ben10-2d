@@ -48,6 +48,11 @@ export class FamilyActor {
     return this.mode !== 'hidden';
   }
 
+  /** The pose showing now ('idle', 'run', 'talk'...). */
+  get posing(): string {
+    return this.current;
+  }
+
   get handX(): number {
     return this.x + this.facing * 7;
   }
@@ -177,7 +182,12 @@ export class FamilyActor {
 
   private show(name: string): void {
     if (name === this.current) return;
-    const frames = this.look.frames[name];
+    let frames: readonly number[] | undefined = this.look.frames[name];
+    // An HD chapter's rig has story poses the pixel sheet doesn't (talk, shrug): the sprite holds its idle frame and the rig plays the pose.
+    const hdOnly = !frames && presentationIsHd() ? this.look.frames.idle : undefined;
+    if (!frames && !hdOnly) return;
+    if (presentationIsHd()) this.sprite.setData('hdClip', hdOnly ? name : null);
+    if (hdOnly) frames = hdOnly;
     if (!frames) return;
     this.current = name;
     const key = `${this.look.prefix}-${name}`;

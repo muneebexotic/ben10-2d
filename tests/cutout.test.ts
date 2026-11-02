@@ -185,7 +185,7 @@ describe('frame by frame', () => {
   });
 
   const FAMILY = [
-    { id: 'gwen', meta: GWEN_FRAMES, clips: GWEN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'land', 'hurt', 'cast'], cycle: 'run', air: ['run3', 'run7'] },
+    { id: 'gwen', meta: GWEN_FRAMES, clips: GWEN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'land', 'hurt', 'cast', 'folded', 'talk', 'point', 'shrug', 'surprise', 'cheer', 'think', 'wave', 'sad'], cycle: 'run', air: ['run3', 'run7'] },
     { id: 'max', meta: MAX_FRAMES, clips: MAX_FRAME_CLIPS, own: ['idle', 'walk', 'run', 'console', 'hurt'], cycle: 'walk', air: [] },
     { id: 'kevin', meta: KEVIN_FRAMES, clips: KEVIN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'absorb', 'windup', 'throw', 'lunge', 'hurt'], cycle: 'run', air: ['run3', 'run7'] },
   ] as const;

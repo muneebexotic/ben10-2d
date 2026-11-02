@@ -43,6 +43,12 @@ export class Dialogue {
     return this.run !== null;
   }
 
+  /** Who is speaking the line on screen now, or null. */
+  get speaker(): string | null {
+    const r = this.run;
+    return r && r.index >= 0 ? (r.lines[r.index]?.who ?? null) : null;
+  }
+
   play(lines: readonly Line[], opts: { skippable?: boolean; onDone?: () => void } = {}): void {
     this.stop(false);
     this.run = { lines, index: -1, left: 0, skippable: opts.skippable ?? false, age: 0, lineAge: 0, filled: false, onDone: opts.onDone };

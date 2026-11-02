@@ -38,7 +38,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
 };
 
 /** Drawings named for something other than their clip. */
-const ALIAS: Readonly<Record<string, string>> = { lookHands: 'hands' };
+const ALIAS: Readonly<Record<string, string>> = { lookHands: 'hands', sad: 'worried' };
 
 export type Coverage = 'drawn' | 'stand-in' | 'waiting' | 'painted';
 

@@ -3,6 +3,7 @@ import { DEPTH } from '../../../config/constants';
 import { PALETTE } from '../../../config/palette';
 import { GWEN_FRAME, GWEN_FRAMES, MAX_FRAME, MAX_FRAMES } from '../../../scenes/preload/family';
 import { TEX } from '../../../scenes/preload/assetKeys';
+import { talker } from '../../../scenes/level/plumber/story/talkers';
 import { FamilyActor } from '../../../scenes/level/family/FamilyActor';
 import { makeHdImage } from '../../../scenes/preload/cartoon/hdTexture';
 import { INK } from '../../../scenes/preload/cartoon/paint';
@@ -33,7 +34,8 @@ export class Booth {
   ) {
     const depth = DEPTH.decorBack + 1;
     this.max = new FamilyActor(scene, { texture: TEX.max, prefix: 'max', frameWidth: MAX_FRAME.w, frameHeight: MAX_FRAME.h, feetY: MAX_FRAME.feetY, frames: MAX_FRAMES, handHeight: 18 }, depth);
-    this.gwen = new FamilyActor(scene, { texture: TEX.gwen, prefix: 'gwen', frameWidth: GWEN_FRAME.w, frameHeight: GWEN_FRAME.h, feetY: GWEN_FRAME.feetY, frames: GWEN_FRAMES, handHeight: 15 }, depth);
+    // Gwen talks with her hands on the intercom; Max keeps working the console (his pose is the console's).
+    this.gwen = talker(scene, 'gwen', new FamilyActor(scene, { texture: TEX.gwen, prefix: 'gwen', frameWidth: GWEN_FRAME.w, frameHeight: GWEN_FRAME.h, feetY: GWEN_FRAME.feetY, frames: GWEN_FRAMES, handHeight: 15 }, depth));
     makeHdImage(scene, SHIELD_KEY, SHIELD_SIZE, SHIELD_SIZE, res, (p) => {
       const r = SHIELD_SIZE / 2 - 1;
       const ball = p.circle(SHIELD_SIZE / 2, SHIELD_SIZE / 2, r);

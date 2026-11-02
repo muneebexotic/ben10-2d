@@ -12,7 +12,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | Character | Animations | Drawn | Stand-in | Waiting | Painted |
 |---|---|---|---|---|---|
 | BEN TENNYSON | 26 | 17 | 9 | 0 | 0 |
-| GWEN TENNYSON | 23 | 2 | 7 | 14 | 0 |
+| GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
 | GRANDPA MAX | 26 | 2 | 4 | 20 | 0 |
 | KEVIN LEVIN | 27 | 3 | 9 | 15 | 0 |
 | HEATBLAST | 13 | 0 | 0 | 0 | 13 |
@@ -70,26 +70,26 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | idle | breathing, a weight shift, blinking | drawn | stand |
 | run | a full run cycle | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
 | walk | a calmer walk (story) | stand-in | run0, run1, run2, run3, run4, run5, run6, run7 |
-| jump | crouch, push off, tuck | stand-in | run1, run3 |
-| fall | arms up, legs pedalling | stand-in | run7 |
-| land | a knees-bent landing | stand-in | run5 |
-| cast | both hands thrust forward with a mana glow (her spells) | stand-in | stand |
-| point | pointing | waiting |  |
-| hurt | knocked back | stand-in | stand |
-| defeat | knocked flat | stand-in | stand |
+| jump | crouch, push off, tuck | drawn | jump |
+| fall | arms up, legs pedalling | drawn | fall |
+| land | a knees-bent landing | drawn | land |
+| cast | both hands thrust forward with a mana glow (her spells) | drawn | cast |
+| point | pointing | drawn | point |
+| hurt | knocked back | drawn | hurt |
+| defeat | knocked flat | stand-in | hurt |
 | swim | breaststroke: glide, pull, frog kick | waiting |  |
 | tread | treading water | waiting |  |
 | drown | out of air | waiting |  |
-| talk | gesturing while she talks | waiting |  |
-| shrug | shrugging | waiting |  |
-| surprise | eyes wide | waiting |  |
-| cheer | both fists up | waiting |  |
-| think | hand on chin | waiting |  |
-| angry | fists clenched | waiting |  |
-| sad | shoulders down | waiting |  |
+| talk | gesturing while she talks | drawn | talk |
+| shrug | shrugging | drawn | shrug |
+| surprise | eyes wide | drawn | surprise |
+| cheer | both fists up | drawn | cheer |
+| think | hand on chin | drawn | think |
+| angry | fists clenched | stand-in | folded |
+| sad | shoulders down | drawn | worried |
 | lookHands | staring at her hands (the transition) | waiting |  |
-| wave | waving | waiting |  |
-| folded | arms folded, eyebrow up (unimpressed) | waiting |  |
+| wave | waving | drawn | wave |
+| folded | arms folded, eyebrow up (unimpressed) | drawn | folded |
 
 ## GRANDPA MAX (`max`)
 
