@@ -29,6 +29,7 @@ import { GRUNT_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/d
 import { EEL_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/eel';
 import { JELLY_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/jelly';
 import { GNASHER_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/deep/gnasher';
+import { HEATBLAST_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/heatblast';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -49,6 +50,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   eel: EEL_FRAME_CLIPS,
   jelly: JELLY_FRAME_CLIPS,
   gnasher: GNASHER_FRAME_CLIPS,
+  heatblast: HEATBLAST_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */

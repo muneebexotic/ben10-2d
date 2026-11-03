@@ -1,7 +1,10 @@
 import { HEATBLAST_CARTOON } from '../../../../config/cartoon/heatblast';
 import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { LINE, lightOf, shadeOf, type Paint } from '../paint';
-import { wave, type PartSpec, type RigDef } from '../rig';
+import { wave, type PartSpec, type Pose, type RigDef } from '../rig';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { HEATBLAST_FRAMES } from '../cutout/heatblastFrames';
 import { omnitrixBadge } from './alienBits';
 
 const C = HEATBLAST_CARTOON.colors;
@@ -184,8 +187,39 @@ function parts(): PartSpec[] {
   ];
 }
 
-/** Heatblast's HD rig: his fireball, the charged burst, the rocket jump; the flame head flickers on its own. */
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Heatblast's drawings (docs/art-refs/heatblast-*.webp): standing, his 8-drawing
+ * run, and his action poses. The game draws his fire (the fireball, the charge's
+ * swirl, the rocket's jet, the embers off his head). In water he borrows the
+ * falling and hurt drawings until his water sheet arrives.
+ */
+export const HEATBLAST_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['stand'], ms: 1300, loop: true, motion: breathe(0.008) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 15, loop: true },
+  jump: { frames: ['jump'], ms: 300, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 170, loop: false },
+  shoot: { frames: ['shoot'], ms: 140, loop: false, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * 1.0, 0) },
+  charge: { frames: ['charge'], ms: 260, loop: true, motion: (t, p) => p.move('body', wave(t * 2) * 0.3, 0) },
+  rocket: { frames: ['rocket'], ms: 300, loop: true, motion: bob(0.3) },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
+  swim: { frames: ['fall'], ms: 900, loop: true, motion: bob(0.6) },
+  tread: { frames: ['fall'], ms: 1300, loop: true, motion: bob(0.6) },
+  drown: { frames: ['hurt'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 5) },
+};
+
+/** Heatblast's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function heatblastRig(): RigDef {
+  const frames = cutoutImage(HEATBLAST_FRAMES.id);
+  if (frames) return frameRig({ id: 'heatblast', meta: HEATBLAST_FRAMES, img: frames, clips: HEATBLAST_FRAME_CLIPS, fallback: 'idle', alias: { punch: 'shoot' } });
+  return paintedHeatblast();
+}
+
+/** The painted Heatblast: his fireball, the charged burst, the rocket jump; the flame head flickers on its own. */
+function paintedHeatblast(): RigDef {
   const rig = humanRig({
     id: 'heatblast',
     dims: HEATBLAST_DIMS,

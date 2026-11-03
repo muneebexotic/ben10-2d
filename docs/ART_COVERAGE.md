@@ -15,7 +15,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
 | GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
-| HEATBLAST | 13 | 0 | 0 | 0 | 13 |
+| HEATBLAST | 13 | 10 | 3 | 0 | 0 |
 | FOUR ARMS | 21 | 0 | 0 | 0 | 21 |
 | XLR8 | 18 | 0 | 0 | 0 | 18 |
 | WILDMUTT | 20 | 0 | 0 | 0 | 20 |
@@ -159,19 +159,19 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | a flickering stance, head ablaze | painted |  |
-| run | a run cycle, flames streaming back | painted |  |
-| jump | push off | painted |  |
-| fall | arms out, flames up | painted |  |
-| land | landing | painted |  |
-| shoot | a fireball from the near hand | painted |  |
-| charge | both hands drawn in, charging a burst, flames roaring | painted |  |
-| rocket | rocket jump: arms down, fire from the feet | painted |  |
-| hurt | knocked back, flame gutters | painted |  |
-| defeat | down, embers | painted |  |
-| swim | swimming in a cloud of steam (he hates water) | painted |  |
-| tread | treading water, hissing | painted |  |
-| drown | sputtering | painted |  |
+| idle | a flickering stance, head ablaze | drawn | stand |
+| run | a run cycle, flames streaming back | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | push off | drawn | jump |
+| fall | arms out, flames up | drawn | fall |
+| land | landing | drawn | land |
+| shoot | a fireball from the near hand | drawn | shoot |
+| charge | both hands drawn in, charging a burst, flames roaring | drawn | charge |
+| rocket | rocket jump: arms down, fire from the feet | drawn | rocket |
+| hurt | knocked back, flame gutters | drawn | hurt |
+| defeat | down, embers | drawn | defeat |
+| swim | swimming in a cloud of steam (he hates water) | stand-in | fall |
+| tread | treading water, hissing | stand-in | fall |
+| drown | sputtering | stand-in | hurt |
 
 ## FOUR ARMS (`fourarms`)
 
