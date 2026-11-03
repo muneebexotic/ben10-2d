@@ -18,7 +18,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | HEATBLAST | 13 | 13 | 0 | 0 | 0 |
 | FOUR ARMS | 21 | 21 | 0 | 0 | 0 |
 | XLR8 | 18 | 18 | 0 | 0 | 0 |
-| WILDMUTT | 20 | 0 | 0 | 0 | 20 |
+| WILDMUTT | 20 | 20 | 0 | 0 | 0 |
 | STINKFLY | 16 | 0 | 0 | 0 | 16 |
 | UPGRADE | 19 | 0 | 0 | 0 | 19 |
 | DIAMONDHEAD | 22 | 0 | 0 | 0 | 22 |
@@ -226,26 +226,26 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | breathing hard, gills flaring, sniffing the air | painted |  |
-| run | a rotary gallop: gather, stretch, land | painted |  |
-| jump | springing up | painted |  |
-| fall | paws out | painted |  |
-| land | a crouching landing | painted |  |
-| clawA | a rake with the near paw | painted |  |
-| clawB | a rake with the far paw | painted |  |
-| clawC | rearing up for a double rake | painted |  |
-| pounce | the pounce: stretched flat out, claws first | painted |  |
-| hurt | knocked back, jaw wide | painted |  |
-| defeat | down on his side | painted |  |
-| climb | crawling up a wall | painted |  |
-| cling | clinging to a wall, sniffing | painted |  |
-| swim | dog-paddling | painted |  |
-| tread | paddling in place, head up | painted |  |
-| drown | thrashing | painted |  |
-| talk | growling | painted |  |
-| sniff | nose to the floor, sniffing | painted |  |
-| howl | head back, howling | painted |  |
-| cheer | bouncing, tail going | painted |  |
+| idle | breathing hard, gills flaring, sniffing the air | drawn | stand |
+| run | a rotary gallop: gather, stretch, land | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | springing up | drawn | jump |
+| fall | paws out | drawn | fall |
+| land | a crouching landing | drawn | land |
+| clawA | a rake with the near paw | drawn | clawA |
+| clawB | a rake with the far paw | drawn | clawB |
+| clawC | rearing up for a double rake | drawn | clawC |
+| pounce | the pounce: stretched flat out, claws first | drawn | pounce |
+| hurt | knocked back, jaw wide | drawn | hurt |
+| defeat | down on his side | drawn | defeat |
+| climb | crawling up a wall | drawn | climb0, climb1 |
+| cling | clinging to a wall, sniffing | drawn | cling |
+| swim | dog-paddling | drawn | swim0, swim1 |
+| tread | paddling in place, head up | drawn | tread |
+| drown | thrashing | drawn | drown |
+| talk | growling | drawn | talk |
+| sniff | nose to the floor, sniffing | drawn | sniff |
+| howl | head back, howling | drawn | howl |
+| cheer | bouncing, tail going | drawn | cheer |
 
 ## STINKFLY (`stinkfly`)
 

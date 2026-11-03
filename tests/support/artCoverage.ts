@@ -32,6 +32,7 @@ import { GNASHER_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters
 import { HEATBLAST_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/heatblast';
 import { FOURARMS_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/fourarms';
 import { XLR8_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/xlr8';
+import { WILDMUTT_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/wildmutt';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -55,6 +56,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   heatblast: HEATBLAST_FRAME_CLIPS,
   fourarms: FOURARMS_FRAME_CLIPS,
   xlr8: XLR8_FRAME_CLIPS,
+  wildmutt: WILDMUTT_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */

@@ -3,6 +3,9 @@ import { keyframes } from '../humanoid';
 import { LINE, type Paint } from '../paint';
 import { RigInfo, wave, type BoneSpec, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef } from '../rig';
 import { cel, omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { WILDMUTT_FRAMES } from '../cutout/wildmuttFrames';
 
 const C = WILDMUTT_CARTOON.colors;
 
@@ -388,8 +391,52 @@ function wildmuttClips(info: RigInfo): Record<string, ClipDef> {
   return clips;
 }
 
-/** Wildmutt's HD rig: a quadruped skeleton (haunch, chest, a head with a hinged jaw, four legs, a tail) with every gait and attack he has. */
+/** Where the middle of his body sits while he paddles (game px above the game sprite's feet). */
+const SWIM_Y = -11;
+/** On a wall the drawings stand him up it, paws against it: this far back puts the paws where the wall is. */
+const ON_WALL = -5;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+const rake = (px: number) => (t: number, p: Pose) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * px, 0);
+const bounce = (amount: number) => (t: number, p: Pose) => p.move('body', 0, -Math.abs(wave(t)) * amount);
+
+/**
+ * Wildmutt's drawings (docs/art-refs/wildmutt-*.webp): standing, his 8-drawing
+ * gallop, the rakes and the pounce, climbing and clinging to walls (drawn
+ * upright, paws to the wall), the dog-paddle and his growls, sniffs and howls.
+ */
+export const WILDMUTT_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  // Breathing hard, sniffing the air.
+  idle: { frames: ['stand'], ms: 1100, loop: true, motion: breathe(0.012) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 16, loop: true },
+  jump: { frames: ['jump'], ms: 300, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 180, loop: false },
+  clawA: { frames: ['clawA'], ms: 110, loop: false, motion: rake(1.2) },
+  clawB: { frames: ['clawB'], ms: 110, loop: false, motion: rake(1.2) },
+  clawC: { frames: ['clawC'], ms: 200, loop: false },
+  pounce: { frames: ['pounce'], ms: 300, loop: true },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
+  climb: { frames: ['climb0', 'climb1'], fps: 4, loop: true, motion: (_t, p) => p.move('body', ON_WALL, 0) },
+  cling: { frames: ['cling'], ms: 1400, loop: true, motion: (t, p) => p.move('body', ON_WALL + 1.2, wave(t) * 0.3) },
+  swim: { frames: ['swim0', 'swim1'], fps: 5, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  tread: { frames: ['tread'], ms: 1100, loop: true, motion: bob(0.6) },
+  drown: { frames: ['drown'], ms: 420, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  talk: { frames: ['talk'], ms: 900, loop: true, motion: bob(0.2) },
+  sniff: { frames: ['sniff'], ms: 700, loop: true, motion: (t, p) => p.move('body', wave(t * 2) * 0.3, 0) },
+  howl: { frames: ['howl'], ms: 1400, loop: true, motion: breathe(0.01) },
+  cheer: { frames: ['cheer'], ms: 450, loop: true, motion: bounce(1.0) },
+};
+
+/** Wildmutt's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function wildmuttRig(): RigDef {
+  const frames = cutoutImage(WILDMUTT_FRAMES.id);
+  if (frames) return frameRig({ id: 'wildmutt', meta: WILDMUTT_FRAMES, img: frames, clips: WILDMUTT_FRAME_CLIPS, fallback: 'idle' });
+  return paintedWildmutt();
+}
+
+/** The painted Wildmutt: a quadruped skeleton (haunch, chest, a head with a hinged jaw, four legs, a tail) with every gait and attack he has. */
+function paintedWildmutt(): RigDef {
   const draft: RigDef = { id: 'wildmutt', parts: parts(), bones: bones(), clips: {}, fallback: 'idle', bounds: { left: -26, right: 28, top: -30, bottom: 3 } };
   const info = new RigInfo(draft);
   return { ...draft, clips: wildmuttClips(info) };
