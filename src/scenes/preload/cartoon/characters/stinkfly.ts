@@ -2,6 +2,9 @@ import { STINKFLY_CARTOON } from '../../../../config/cartoon/stinkfly';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
 import { RigInfo, wave, type BoneSpec, type ClipDef, type PartSpec, type Pose, type RigDef } from '../rig';
 import { cel, omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { STINKFLY_FRAMES } from '../cutout/stinkflyFrames';
 
 const C = STINKFLY_CARTOON.colors;
 
@@ -335,8 +338,44 @@ function stinkflyClips(_info: RigInfo): Record<string, ClipDef> {
   };
 }
 
-/** Stinkfly's HD rig: an insect skeleton (thorax, a three-part abdomen, a head with eyestalks and mandibles, four wings, six legs). */
+/** Where the middle of his body sits while he swims (game px above the game sprite's feet), as Ben's. */
+const SWIM_Y = -13;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Stinkfly's drawings (docs/art-refs/stinkfly-*.webp): standing on his legs,
+ * the 4-drawing wingbeat and scuttle, the hop, glide, spit and stink, the swim
+ * and his talking and cheering poses. The game draws his slime and stink.
+ */
+export const STINKFLY_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['stand'], ms: 1200, loop: true, motion: breathe(0.01) },
+  run: { frames: ['scuttle0', 'scuttle1', 'scuttle2', 'scuttle3'], fps: 12, loop: true },
+  jump: { frames: ['jump'], ms: 260, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 170, loop: false },
+  // Wings a blur: the beat runs fast and the body rides it.
+  fly: { frames: ['fly0', 'fly1', 'fly2', 'fly3'], fps: 18, loop: true, motion: bob(0.5) },
+  glide: { frames: ['glide'], ms: 900, loop: true, motion: bob(0.4) },
+  spit: { frames: ['spit'], ms: 160, loop: false, motion: (t, p) => p.move('body', -0.8 * Math.sin(Math.PI * t), 0) },
+  vent: { frames: ['vent'], ms: 300, loop: true, motion: (t, p) => p.move('body', wave(t * 2) * 0.3, 0) },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 900, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.4) },
+  swim: { frames: ['swim0', 'swim1'], fps: 4, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  tread: { frames: ['tread'], ms: 1100, loop: true, motion: bob(0.6) },
+  drown: { frames: ['drown'], ms: 420, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  talk: { frames: ['talk'], ms: 900, loop: true, motion: bob(0.25) },
+  cheer: { frames: ['cheer'], ms: 400, loop: true, motion: bob(0.8) },
+};
+
+/** Stinkfly's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function stinkflyRig(): RigDef {
+  const frames = cutoutImage(STINKFLY_FRAMES.id);
+  if (frames) return frameRig({ id: 'stinkfly', meta: STINKFLY_FRAMES, img: frames, clips: STINKFLY_FRAME_CLIPS, fallback: 'idle' });
+  return paintedStinkfly();
+}
+
+/** The painted Stinkfly: an insect skeleton (thorax, a three-part abdomen, a head with eyestalks and mandibles, four wings, six legs). */
+function paintedStinkfly(): RigDef {
   const draft: RigDef = { id: 'stinkfly', parts: parts(), bones: bones(), clips: {}, fallback: 'idle', bounds: { left: -24, right: 16, top: -36, bottom: 2 } };
   const info = new RigInfo(draft);
   return { ...draft, clips: stinkflyClips(info) };

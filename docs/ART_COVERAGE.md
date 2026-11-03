@@ -19,7 +19,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | FOUR ARMS | 21 | 21 | 0 | 0 | 0 |
 | XLR8 | 18 | 18 | 0 | 0 | 0 |
 | WILDMUTT | 20 | 20 | 0 | 0 | 0 |
-| STINKFLY | 16 | 0 | 0 | 0 | 16 |
+| STINKFLY | 16 | 16 | 0 | 0 | 0 |
 | UPGRADE | 19 | 0 | 0 | 0 | 19 |
 | DIAMONDHEAD | 22 | 0 | 0 | 0 | 22 |
 | GHOSTFREAK | 19 | 0 | 0 | 0 | 19 |
@@ -251,22 +251,22 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | standing on six legs, eyestalks swaying, wings twitching | painted |  |
-| run | scuttling on six legs, wings buzzing | painted |  |
-| jump | a buzzing hop | painted |  |
-| fall | wings half open | painted |  |
-| land | touching down | painted |  |
-| fly | flying: wings a blur, legs tucked | painted |  |
-| glide | gliding on spread wings | painted |  |
-| spit | spitting slime from the eyestalks | painted |  |
-| vent | venting stink from the tail | painted |  |
-| hurt | knocked back, stalks recoiling | painted |  |
-| defeat | on his back, legs in the air | painted |  |
-| swim | soaked wings, paddling with his legs | painted |  |
-| tread | floating, legs paddling | painted |  |
-| drown | thrashing | painted |  |
-| talk | stalks bobbing | painted |  |
-| cheer | a happy buzz | painted |  |
+| idle | standing on six legs, eyestalks swaying, wings twitching | drawn | stand |
+| run | scuttling on six legs, wings buzzing | drawn | scuttle0, scuttle1, scuttle2, scuttle3 |
+| jump | a buzzing hop | drawn | jump |
+| fall | wings half open | drawn | fall |
+| land | touching down | drawn | land |
+| fly | flying: wings a blur, legs tucked | drawn | fly0, fly1, fly2, fly3 |
+| glide | gliding on spread wings | drawn | glide |
+| spit | spitting slime from the eyestalks | drawn | spit |
+| vent | venting stink from the tail | drawn | vent |
+| hurt | knocked back, stalks recoiling | drawn | hurt |
+| defeat | on his back, legs in the air | drawn | defeat |
+| swim | soaked wings, paddling with his legs | drawn | swim0, swim1 |
+| tread | floating, legs paddling | drawn | tread |
+| drown | thrashing | drawn | drown |
+| talk | stalks bobbing | drawn | talk |
+| cheer | a happy buzz | drawn | cheer |
 
 ## UPGRADE (`upgrade`)
 
