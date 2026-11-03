@@ -16,7 +16,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
 | HEATBLAST | 13 | 13 | 0 | 0 | 0 |
-| FOUR ARMS | 21 | 0 | 0 | 0 | 21 |
+| FOUR ARMS | 21 | 21 | 0 | 0 | 0 |
 | XLR8 | 18 | 0 | 0 | 0 | 18 |
 | WILDMUTT | 20 | 0 | 0 | 0 | 20 |
 | STINKFLY | 16 | 0 | 0 | 0 | 16 |
@@ -177,27 +177,27 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | a heavy stance, four fists ready, chest heaving | painted |  |
-| run | a pounding run, all four arms pumping | painted |  |
-| jump | a heavy push off | painted |  |
-| fall | arms spread | painted |  |
-| land | a ground-shaking landing | painted |  |
-| punchA | a jab with the upper near arm | painted |  |
-| punchB | a jab with the lower near arm | painted |  |
-| haymakerUp | winding up the haymaker | painted |  |
-| haymaker | the haymaker: everything behind one swing | painted |  |
-| clap | the overhead clap | painted |  |
-| slamUp | leaping up for the ground slam, all arms raised | painted |  |
-| slam | the ground slam | painted |  |
-| meteor | the meteor drop: plunging fists first | painted |  |
-| carry | holding something overhead | painted |  |
-| carryRun | running with it overhead | painted |  |
-| throw | hurling it | painted |  |
-| hurt | knocked back (barely) | painted |  |
-| defeat | down | painted |  |
-| swim | striding along the bottom, arms paddling (he sinks) | painted |  |
-| tread | standing on the bottom, arms paddling | painted |  |
-| drown | out of air | painted |  |
+| idle | a heavy stance, four fists ready, chest heaving | drawn | stance |
+| run | a pounding run, all four arms pumping | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | a heavy push off | drawn | jump |
+| fall | arms spread | drawn | fall |
+| land | a ground-shaking landing | drawn | land |
+| punchA | a jab with the upper near arm | drawn | punchA |
+| punchB | a jab with the lower near arm | drawn | punchB |
+| haymakerUp | winding up the haymaker | drawn | haymakerUp |
+| haymaker | the haymaker: everything behind one swing | drawn | haymaker |
+| clap | the overhead clap | drawn | clap |
+| slamUp | leaping up for the ground slam, all arms raised | drawn | slamUp |
+| slam | the ground slam | drawn | slam |
+| meteor | the meteor drop: plunging fists first | drawn | meteor |
+| carry | holding something overhead | drawn | carry |
+| carryRun | running with it overhead | drawn | carryRun0, carryRun1, carryRun2, carryRun3 |
+| throw | hurling it | drawn | throw |
+| hurt | knocked back (barely) | drawn | hurt |
+| defeat | down | drawn | defeat |
+| swim | striding along the bottom, arms paddling (he sinks) | drawn | wade0, wade1 |
+| tread | standing on the bottom, arms paddling | drawn | tread |
+| drown | out of air | drawn | gasp |
 
 ## XLR8 (`xlr8`)
 

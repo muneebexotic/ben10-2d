@@ -3,6 +3,9 @@ import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { INK, LINE, shadeOf, type Paint } from '../paint';
 import { type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo, wave } from '../rig';
 import { omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { FOURARMS_FRAMES } from '../cutout/fourarmsFrames';
 
 const C = FOURARMS_CARTOON.colors;
 
@@ -295,8 +298,51 @@ function fourArmClips(info: RigInfo, base: Record<string, ClipDef>): Record<stri
   };
 }
 
-/** Four Arms' HD rig: the humanoid kit with a second pair of arms and every punch, slam and throw he has. */
+const bob = (amount: number) => (t: number, p: Pose) => p.move('body', 0, wave(t) * amount);
+/** A punch's weight: the drawing lunges a step into it and settles. */
+const lunge = (px: number) => (t: number, p: Pose) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * px, 0);
+
+/**
+ * Four Arms' drawings (docs/art-refs/fourarms-*.webp): his fighting stance,
+ * his 8-drawing run, every punch, clap, slam and throw, carrying overhead and
+ * running with it, and walking the sea floor (he sinks). The game draws his
+ * shockwaves and dust and whatever he carries.
+ */
+export const FOURARMS_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  // A heavy stance, four fists ready, chest heaving.
+  idle: { frames: ['stance'], ms: 1700, loop: true, motion: breathe(0.012) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 14, loop: true },
+  jump: { frames: ['jump'], ms: 300, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 200, loop: false },
+  punchA: { frames: ['punchA'], ms: 90, loop: false, motion: lunge(1.0) },
+  punchB: { frames: ['punchB'], ms: 90, loop: false, motion: lunge(1.0) },
+  haymakerUp: { frames: ['haymakerUp'], ms: 160, loop: false, motion: (t, p) => p.move('body', -0.8 * Math.min(1, t * 2), 0) },
+  haymaker: { frames: ['haymaker'], ms: 120, loop: false, motion: lunge(1.6) },
+  clap: { frames: ['clap'], ms: 110, loop: false },
+  slamUp: { frames: ['slamUp'], ms: 160, loop: false },
+  slam: { frames: ['slam'], ms: 120, loop: false },
+  meteor: { frames: ['meteor'], ms: 140, loop: true },
+  carry: { frames: ['carry'], ms: 1200, loop: true, motion: breathe(0.008) },
+  carryRun: { frames: ['carryRun0', 'carryRun1', 'carryRun2', 'carryRun3'], fps: 6.5, loop: true },
+  throw: { frames: ['throw'], ms: 120, loop: false, motion: lunge(1.2) },
+  hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.0 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
+  // Too heavy to swim: striding along the bottom, paddling.
+  swim: { frames: ['wade0', 'wade1'], fps: 2.2, loop: true },
+  tread: { frames: ['tread'], ms: 1100, loop: true, motion: breathe(0.01) },
+  drown: { frames: ['gasp'], ms: 520, loop: true, motion: (t, p) => p.move('body', wave(t * 2) * 0.4, 0) },
+};
+
+/** Four Arms' HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function fourarmsRig(): RigDef {
+  const frames = cutoutImage(FOURARMS_FRAMES.id);
+  if (frames) return frameRig({ id: 'fourarms', meta: FOURARMS_FRAMES, img: frames, clips: FOURARMS_FRAME_CLIPS, fallback: 'idle' });
+  return paintedFourarms();
+}
+
+/** The painted Four Arms: the humanoid kit with a second pair of arms and every punch, slam and throw he has. */
+function paintedFourarms(): RigDef {
   const D = FOURARMS_DIMS;
   return humanRig({
     id: 'fourarms',
