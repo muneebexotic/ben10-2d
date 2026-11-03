@@ -187,13 +187,14 @@ function parts(): PartSpec[] {
   ];
 }
 
+/** Where the middle of his body sits while he swims (game px above the game sprite's feet), as Ben's. */
+const SWIM_Y = -13;
 const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
 
 /**
  * Heatblast's drawings (docs/art-refs/heatblast-*.webp): standing, his 8-drawing
  * run, and his action poses. The game draws his fire (the fireball, the charge's
- * swirl, the rocket's jet, the embers off his head). In water he borrows the
- * falling and hurt drawings until his water sheet arrives.
+ * swirl, the rocket's jet, the embers off his head, the steam in water).
  */
 export const HEATBLAST_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 1300, loop: true, motion: breathe(0.008) },
@@ -206,9 +207,9 @@ export const HEATBLAST_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   rocket: { frames: ['rocket'], ms: 300, loop: true, motion: bob(0.3) },
   hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
   defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
-  swim: { frames: ['fall'], ms: 900, loop: true, motion: bob(0.6) },
-  tread: { frames: ['fall'], ms: 1300, loop: true, motion: bob(0.6) },
-  drown: { frames: ['hurt'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 5) },
+  swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3'], fps: 8, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  tread: { frames: ['tread0', 'tread1'], fps: 3, loop: true, motion: bob(0.6) },
+  drown: { frames: ['sputter0', 'sputter1'], fps: 6, loop: true, motion: (t, p) => p.set('body', wave(t) * 3) },
 };
 
 /** Heatblast's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */

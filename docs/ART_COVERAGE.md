@@ -15,7 +15,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
 | GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
-| HEATBLAST | 13 | 10 | 3 | 0 | 0 |
+| HEATBLAST | 13 | 13 | 0 | 0 | 0 |
 | FOUR ARMS | 21 | 0 | 0 | 0 | 21 |
 | XLR8 | 18 | 0 | 0 | 0 | 18 |
 | WILDMUTT | 20 | 0 | 0 | 0 | 20 |
@@ -169,9 +169,9 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | rocket | rocket jump: arms down, fire from the feet | drawn | rocket |
 | hurt | knocked back, flame gutters | drawn | hurt |
 | defeat | down, embers | drawn | defeat |
-| swim | swimming in a cloud of steam (he hates water) | stand-in | fall |
-| tread | treading water, hissing | stand-in | fall |
-| drown | sputtering | stand-in | hurt |
+| swim | swimming in a cloud of steam (he hates water) | drawn | swim0, swim1, swim2, swim3 |
+| tread | treading water, hissing | drawn | tread0, tread1 |
+| drown | sputtering | drawn | sputter0, sputter1 |
 
 ## FOUR ARMS (`fourarms`)
 
