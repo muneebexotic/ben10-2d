@@ -17,7 +17,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
 | HEATBLAST | 13 | 13 | 0 | 0 | 0 |
 | FOUR ARMS | 21 | 21 | 0 | 0 | 0 |
-| XLR8 | 18 | 0 | 0 | 0 | 18 |
+| XLR8 | 18 | 18 | 0 | 0 | 0 |
 | WILDMUTT | 20 | 0 | 0 | 0 | 20 |
 | STINKFLY | 16 | 0 | 0 | 0 | 16 |
 | UPGRADE | 19 | 0 | 0 | 0 | 19 |
@@ -203,24 +203,24 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | bouncing on his ball feet, tail flicking, claws ready | painted |  |
-| run | a blur of a run: leaning flat out, feet a spin, speed streaks | painted |  |
-| jump | a springy push off | painted |  |
-| fall | tail up for balance | painted |  |
-| land | a skidding landing | painted |  |
-| strikeA | a claw slash with the near hand | painted |  |
-| strikeB | a claw slash with the far hand | painted |  |
-| kick | a high kick | painted |  |
-| dash | the dash: flat out, streaks everywhere | painted |  |
-| hurt | knocked back, tail up | painted |  |
-| defeat | down, dazed | painted |  |
-| swim | kicking along like a torpedo | painted |  |
-| tread | running in place on the water | painted |  |
-| drown | thrashing | painted |  |
-| talk | talking fast | painted |  |
-| point | pointing | painted |  |
-| cheer | arms up | painted |  |
-| surprise | jolted | painted |  |
+| idle | bouncing on his ball feet, tail flicking, claws ready | drawn | stance |
+| run | a blur of a run: leaning flat out, feet a spin, speed streaks | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | a springy push off | drawn | jump |
+| fall | tail up for balance | drawn | fall |
+| land | a skidding landing | drawn | land |
+| strikeA | a claw slash with the near hand | drawn | strikeA |
+| strikeB | a claw slash with the far hand | drawn | strikeB |
+| kick | a high kick | drawn | kick |
+| dash | the dash: flat out, streaks everywhere | drawn | dash |
+| hurt | knocked back, tail up | drawn | hurt |
+| defeat | down, dazed | drawn | defeat |
+| swim | kicking along like a torpedo | drawn | swim0, swim1 |
+| tread | running in place on the water | drawn | tread |
+| drown | thrashing | drawn | drown |
+| talk | talking fast | drawn | talk |
+| point | pointing | drawn | point |
+| cheer | arms up | drawn | cheer |
+| surprise | jolted | drawn | surprise |
 
 ## WILDMUTT (`wildmutt`)
 

@@ -3,6 +3,9 @@ import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, shadeOf, type Paint } from '../paint';
 import { wave, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo } from '../rig';
 import { cel, omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { XLR8_FRAMES } from '../cutout/xlr8Frames';
 
 const C = XLR8_CARTOON.colors;
 
@@ -287,8 +290,49 @@ function xlr8Clips(info: RigInfo, base: Record<string, ClipDef>): Record<string,
   return { ...out, ...clips };
 }
 
-/** XLR8's HD rig: the humanoid kit leaning into a raptor's stance, with a three-part tail, claws, ball feet and speed streaks. */
+/** Where the middle of his body sits while he swims (game px above the game sprite's feet), as Ben's. */
+const SWIM_Y = -13;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+/** A slash's snap: the drawing darts a step into it. */
+const dart = (px: number) => (t: number, p: Pose) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * px, 0);
+
+/**
+ * XLR8's drawings (docs/art-refs/xlr8-*.webp): his springy ready stance, the
+ * 8-drawing run, the slashes, kick and dash, the torpedo swim, running on water
+ * and his story poses. The game draws his speed streaks.
+ */
+export const XLR8_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  // Bouncing on his ball feet.
+  idle: { frames: ['stance'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.6) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 20, loop: true },
+  jump: { frames: ['jump'], ms: 260, loop: false },
+  fall: { frames: ['fall'], ms: 600, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 160, loop: false, motion: (t, p) => p.move('body', 1.4 * (1 - t), 0) },
+  strikeA: { frames: ['strikeA'], ms: 90, loop: false, motion: dart(1.2) },
+  strikeB: { frames: ['strikeB'], ms: 90, loop: false, motion: dart(1.2) },
+  kick: { frames: ['kick'], ms: 140, loop: false },
+  dash: { frames: ['dash'], ms: 200, loop: true },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1.4 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
+  swim: { frames: ['swim0', 'swim1'], fps: 6, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  // Running on the water: high knees, a blur (the game shakes him).
+  tread: { frames: ['tread'], ms: 160, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.8) },
+  drown: { frames: ['drown'], ms: 420, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  talk: { frames: ['talk'], ms: 900, loop: true, motion: bob(0.25) },
+  point: { frames: ['point'], ms: 1200, loop: true, motion: breathe(0.006) },
+  cheer: { frames: ['cheer'], ms: 500, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.8) },
+  surprise: { frames: ['surprise'], ms: 700, loop: false },
+};
+
+/** XLR8's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function xlr8Rig(): RigDef {
+  const frames = cutoutImage(XLR8_FRAMES.id);
+  if (frames) return frameRig({ id: 'xlr8', meta: XLR8_FRAMES, img: frames, clips: XLR8_FRAME_CLIPS, fallback: 'idle' });
+  return paintedXlr8();
+}
+
+/** The painted XLR8: the humanoid kit leaning into a raptor's stance, with a three-part tail, claws, ball feet and speed streaks. */
+function paintedXlr8(): RigDef {
   const D = XLR8_DIMS;
   return humanRig({
     id: 'xlr8',
