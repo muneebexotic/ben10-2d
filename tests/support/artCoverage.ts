@@ -35,6 +35,7 @@ import { XLR8_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/xl
 import { WILDMUTT_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/wildmutt';
 import { STINKFLY_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/stinkfly';
 import { UPGRADE_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/upgrade';
+import { DIAMONDHEAD_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/diamondhead';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -61,6 +62,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   wildmutt: WILDMUTT_FRAME_CLIPS,
   stinkfly: STINKFLY_FRAME_CLIPS,
   upgrade: UPGRADE_FRAME_CLIPS,
+  diamondhead: DIAMONDHEAD_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */

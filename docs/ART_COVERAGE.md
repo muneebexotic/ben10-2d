@@ -21,7 +21,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | WILDMUTT | 20 | 20 | 0 | 0 | 0 |
 | STINKFLY | 16 | 16 | 0 | 0 | 0 |
 | UPGRADE | 19 | 18 | 1 | 0 | 0 |
-| DIAMONDHEAD | 22 | 0 | 0 | 0 | 22 |
+| DIAMONDHEAD | 22 | 22 | 0 | 0 | 0 |
 | GHOSTFREAK | 19 | 0 | 0 | 0 | 19 |
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
@@ -296,28 +296,28 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | a solid stance, crystals glinting | painted |  |
-| run | a heavy, sure run | painted |  |
-| jump | push off | painted |  |
-| fall | arms out | painted |  |
-| land | a hard landing | painted |  |
-| shoot | firing crystal shards from the near hand | painted |  |
-| shootUp | shards upward | painted |  |
-| shield | a crystal shield wall held out | painted |  |
-| shieldUp | the shield angled up | painted |  |
-| shieldDown | the shield angled down | painted |  |
-| grow | raising a hand as crystal grows | painted |  |
-| spikes | fists to the ground: spikes burst up around him | painted |  |
-| hurt | knocked back, chips flying | painted |  |
-| defeat | down | painted |  |
-| swim | sinking, striding along the bottom | painted |  |
-| tread | standing on the bottom, arms paddling | painted |  |
-| drown | thrashing (he does not need air) | painted |  |
-| talk | talking | painted |  |
-| point | pointing | painted |  |
-| cheer | arms up | painted |  |
-| surprise | jolted | painted |  |
-| think | chin on fist | painted |  |
+| idle | a solid stance, crystals glinting | drawn | stance |
+| run | a heavy, sure run | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | push off | drawn | jump |
+| fall | arms out | drawn | fall |
+| land | a hard landing | drawn | land |
+| shoot | firing crystal shards from the near hand | drawn | shoot |
+| shootUp | shards upward | drawn | shootUp |
+| shield | a crystal shield wall held out | drawn | shield |
+| shieldUp | the shield angled up | drawn | shieldUp |
+| shieldDown | the shield angled down | drawn | shieldDown |
+| grow | raising a hand as crystal grows | drawn | grow |
+| spikes | fists to the ground: spikes burst up around him | drawn | spikes |
+| hurt | knocked back, chips flying | drawn | hurt |
+| defeat | down | drawn | defeat |
+| swim | sinking, striding along the bottom | drawn | wade0, wade1 |
+| tread | standing on the bottom, arms paddling | drawn | tread |
+| drown | thrashing (he does not need air) | drawn | drown |
+| talk | talking | drawn | talk |
+| point | pointing | drawn | point |
+| cheer | arms up | drawn | cheer |
+| surprise | jolted | drawn | surprise |
+| think | chin on fist | drawn | think |
 
 ## GHOSTFREAK (`ghostfreak`)
 

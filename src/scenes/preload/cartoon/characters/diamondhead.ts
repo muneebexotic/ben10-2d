@@ -1,8 +1,11 @@
 import { DIAMONDHEAD_CARTOON } from '../../../../config/cartoon/diamondhead';
 import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { LINE, mix, type Paint, type ShapeStyle } from '../paint';
-import { wave, type ClipDef, type PartSpec, type PoseData, type RigDef, type RigInfo } from '../rig';
+import { wave, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo } from '../rig';
 import { omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { DIAMONDHEAD_FRAMES } from '../cutout/diamondheadFrames';
 
 const C = DIAMONDHEAD_CARTOON.colors;
 
@@ -281,8 +284,52 @@ function diamondClips(info: RigInfo, base: Record<string, ClipDef>): Record<stri
   };
 }
 
-/** Diamondhead's HD rig: the humanoid kit in faceted crystal, with his back spikes, a crystal shield, shards and a ground burst. */
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Diamondhead's drawings (docs/art-refs/diamondhead-*.webp): his planted stance,
+ * the 8-drawing run, both shard shots, growing crystal, the ground punch, the
+ * shield level, up and down, wading along the sea floor and his story poses.
+ * The game draws his shards and the ground spikes; the shield is in his drawings.
+ */
+export const DIAMONDHEAD_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  // Planted and solid: barely a breath.
+  idle: { frames: ['stance'], ms: 1800, loop: true, motion: breathe(0.008) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 14, loop: true },
+  jump: { frames: ['jump'], ms: 260, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 200, loop: false },
+  // A shot's kick: the drawing gives a step back.
+  shoot: { frames: ['shoot'], ms: 180, loop: false, motion: (t, p) => p.move('body', -0.8 * Math.sin(Math.PI * t), 0) },
+  shootUp: { frames: ['shootUp'], ms: 180, loop: false },
+  // Held while he shields: a one-shot holds its drawing.
+  shield: { frames: ['shield'], ms: 220, loop: false },
+  shieldUp: { frames: ['shieldUp'], ms: 220, loop: false },
+  shieldDown: { frames: ['shieldDown'], ms: 220, loop: false },
+  grow: { frames: ['grow'], ms: 300, loop: false },
+  spikes: { frames: ['spikes'], ms: 320, loop: false },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.004) },
+  // Too heavy to swim: striding along the bottom, paddling.
+  swim: { frames: ['wade0', 'wade1'], fps: 2.2, loop: true },
+  tread: { frames: ['tread'], ms: 1100, loop: true, motion: breathe(0.01) },
+  drown: { frames: ['drown'], ms: 520, loop: true, motion: (t, p) => p.move('body', wave(t * 2) * 0.4, 0) },
+  talk: { frames: ['talk'], ms: 900, loop: true, motion: bob(0.25) },
+  point: { frames: ['point'], ms: 1200, loop: true, motion: breathe(0.006) },
+  cheer: { frames: ['cheer'], ms: 500, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.8) },
+  surprise: { frames: ['surprise'], ms: 700, loop: false },
+  think: { frames: ['think'], ms: 1400, loop: true, motion: breathe(0.006) },
+};
+
+/** Diamondhead's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function diamondheadRig(): RigDef {
+  const frames = cutoutImage(DIAMONDHEAD_FRAMES.id);
+  if (frames) return frameRig({ id: 'diamondhead', meta: DIAMONDHEAD_FRAMES, img: frames, clips: DIAMONDHEAD_FRAME_CLIPS, fallback: 'idle' });
+  return paintedDiamondhead();
+}
+
+/** The painted Diamondhead: the humanoid kit in faceted crystal, with his back spikes, a crystal shield, shards and a ground burst. */
+function paintedDiamondhead(): RigDef {
   const D = DIAMONDHEAD_DIMS;
   return humanRig({
     id: 'diamondhead',
