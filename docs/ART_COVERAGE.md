@@ -20,7 +20,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | XLR8 | 18 | 18 | 0 | 0 | 0 |
 | WILDMUTT | 20 | 20 | 0 | 0 | 0 |
 | STINKFLY | 16 | 16 | 0 | 0 | 0 |
-| UPGRADE | 19 | 0 | 0 | 0 | 19 |
+| UPGRADE | 19 | 18 | 1 | 0 | 0 |
 | DIAMONDHEAD | 22 | 0 | 0 | 0 | 22 |
 | GHOSTFREAK | 19 | 0 | 0 | 0 | 19 |
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
@@ -272,25 +272,25 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | a loose, liquid sway, circuits pulsing | painted |  |
-| run | a rubbery run, limbs stretching | painted |  |
-| jump | push off | painted |  |
-| fall | arms up, stretching | painted |  |
-| land | a splashy landing that wobbles | painted |  |
-| laser | firing the eye beam ahead | painted |  |
-| laserUp | the eye beam up | painted |  |
-| laserDown | the eye beam down | painted |  |
-| merge | melting into a puddle of liquid metal and sliding along | painted |  |
-| hurt | knocked back, ripples through his body | painted |  |
-| defeat | down, circuits flickering | painted |  |
-| swim | sinking slowly, swimming in a liquid ripple | painted |  |
-| tread | bobbing upright | painted |  |
-| drown | thrashing (he does not need air) | painted |  |
-| talk | eye pulsing as he talks | painted |  |
-| point | pointing | painted |  |
-| cheer | arms up | painted |  |
-| surprise | eye wide | painted |  |
-| think | scanning | painted |  |
+| idle | a loose, liquid sway, circuits pulsing | drawn | stance |
+| run | a rubbery run, limbs stretching | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | push off | drawn | jump |
+| fall | arms up, stretching | drawn | fall |
+| land | a splashy landing that wobbles | drawn | land |
+| laser | firing the eye beam ahead | drawn | laser |
+| laserUp | the eye beam up | drawn | laserUp |
+| laserDown | the eye beam down | drawn | laserDown |
+| merge | melting into a puddle of liquid metal and sliding along | drawn | melt, puddle |
+| hurt | knocked back, ripples through his body | drawn | hurt |
+| defeat | down, circuits flickering | drawn | defeat |
+| swim | sinking slowly, swimming in a liquid ripple | drawn | swim0, swim1 |
+| tread | bobbing upright | drawn | tread |
+| drown | thrashing (he does not need air) | drawn | drown |
+| talk | eye pulsing as he talks | drawn | talk |
+| point | pointing | drawn | point |
+| cheer | arms up | drawn | cheer |
+| surprise | eye wide | drawn | surprise |
+| think | scanning | stand-in | dazed |
 
 ## DIAMONDHEAD (`diamondhead`)
 

@@ -1,8 +1,11 @@
 import { UPGRADE_CARTOON } from '../../../../config/cartoon/upgrade';
 import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { LINE, mix, type Paint, type ShapeStyle } from '../paint';
-import { wave, type ClipDef, type PartSpec, type PoseData, type RigDef, type RigInfo } from '../rig';
+import { wave, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo } from '../rig';
 import { omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { UPGRADE_FRAMES } from '../cutout/upgradeFrames';
 
 const C = UPGRADE_CARTOON.colors;
 
@@ -245,8 +248,49 @@ function upgradeClips(info: RigInfo, base: Record<string, ClipDef>): Record<stri
   };
 }
 
-/** Upgrade's HD rig: the humanoid kit in liquid metal, with circuits, one eye, an eye beam and a melt into a puddle. */
+/** Where the middle of his body sits while he swims (game px above the game sprite's feet), as Ben's. */
+const SWIM_Y = -13;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Upgrade's drawings (docs/art-refs/upgrade-*.webp): his ready stance, the
+ * 8-drawing run, the eye beam ahead, up and down, the melt into a puddle, the
+ * swim and his story poses. The game draws his beam and the circuit sparks.
+ */
+export const UPGRADE_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  // Loose and liquid: a slow sway.
+  idle: { frames: ['stance'], ms: 1600, loop: true, motion: breathe(0.012) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 16, loop: true },
+  jump: { frames: ['jump'], ms: 260, loop: false },
+  fall: { frames: ['fall'], ms: 600, loop: true, motion: bob(0.4) },
+  land: { frames: ['land'], ms: 170, loop: false },
+  laser: { frames: ['laser'], ms: 200, loop: true },
+  laserUp: { frames: ['laserUp'], ms: 200, loop: true },
+  laserDown: { frames: ['laserDown'], ms: 200, loop: true },
+  // The glide lasts 300 ms: he melts, then the puddle slides (the game moves it).
+  merge: { frames: ['melt', 'puddle', 'puddle'], ms: 300, loop: false },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1.4 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
+  swim: { frames: ['swim0', 'swim1'], fps: 4, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  tread: { frames: ['tread'], ms: 1100, loop: true, motion: bob(0.6) },
+  drown: { frames: ['drown'], ms: 420, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  talk: { frames: ['talk'], ms: 900, loop: true, motion: bob(0.25) },
+  point: { frames: ['point'], ms: 1200, loop: true, motion: breathe(0.006) },
+  cheer: { frames: ['cheer'], ms: 500, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.8) },
+  surprise: { frames: ['surprise'], ms: 700, loop: false },
+  // Hand on his head, the eye squinting: puzzling it out.
+  think: { frames: ['dazed'], ms: 1400, loop: true, motion: breathe(0.006) },
+};
+
+/** Upgrade's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function upgradeRig(): RigDef {
+  const frames = cutoutImage(UPGRADE_FRAMES.id);
+  if (frames) return frameRig({ id: 'upgrade', meta: UPGRADE_FRAMES, img: frames, clips: UPGRADE_FRAME_CLIPS, fallback: 'idle' });
+  return paintedUpgrade();
+}
+
+/** The painted Upgrade: the humanoid kit in liquid metal, with circuits, one eye, an eye beam and a melt into a puddle. */
+function paintedUpgrade(): RigDef {
   return humanRig({
     id: 'upgrade',
     dims: UPGRADE_DIMS,
