@@ -11,7 +11,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Character | Animations | Drawn | Stand-in | Waiting | Painted |
 |---|---|---|---|---|---|
-| BEN TENNYSON | 26 | 17 | 9 | 0 | 0 |
+| BEN TENNYSON | 26 | 25 | 1 | 0 | 0 |
 | GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
 | GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
@@ -43,25 +43,25 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | fall | arms up, legs pedalling | drawn | fall |
 | land | a knees-bent landing between falling and standing | drawn | land |
 | punch | a jab with the near arm and the far arm pulled back | drawn | punch |
-| roll | a tucked dodge roll, all the way round | stand-in | jump |
+| roll | a tucked dodge roll, all the way round | drawn | roll0, roll1, roll2, roll3 |
 | hurt | knocked back, face screwed up | drawn | hurt |
-| defeat | knocked flat (the level spins him away) | stand-in | hurt |
-| watch | the Omnitrix raised to his face (transforming, story beats) | stand-in | slam |
+| defeat | knocked flat (the level spins him away) | drawn | defeat |
+| watch | the Omnitrix raised to his face (transforming, story beats) | drawn | watch |
 | slam | the transform slam: hand raised over the watch | drawn | slam |
 | swim | breaststroke: glide, pull, frog kick | drawn | swim0, swim1, swim2, swim3, swim4, swim5 |
-| tread | treading water | stand-in | idle0 |
-| drown | out of air, thrashing | stand-in | hurt |
+| tread | treading water | drawn | tread |
+| drown | out of air, thrashing | drawn | drown |
 | talk | gesturing while he talks | drawn | talk |
 | point | pointing | drawn | point |
 | shrug | shrugging | drawn | shrug |
 | surprise | jumping back, eyes wide | drawn | surprise |
 | cheer | both fists up | drawn | cheer |
 | think | hand on chin | drawn | think |
-| angry | fists clenched | stand-in | stand |
-| sad | shoulders down | stand-in | idle0 |
+| angry | fists clenched | drawn | angry |
+| sad | shoulders down | drawn | sad |
 | lookHands | staring at his own hands (the transition) | drawn | hands |
 | wave | waving | drawn | wave |
-| listen | (story pose) | stand-in | idle0, idle1, idle2, idle3 |
+| listen | (story pose) | drawn | listen |
 
 ## GWEN TENNYSON (`gwen`)
 

@@ -2,7 +2,7 @@ import { BEN_CARTOON } from '../../../../config/cartoon/ben';
 import { BEN_STYLE, EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
 import { wave, type ClipDef, type PartSpec, type Pose, type RigDef, type RigInfo } from '../rig';
-import { frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
+import { frameRig, type FrameClip } from '../cutout/frameRig';
 import { BEN_FRAMES } from '../cutout/benFrames';
 import { cutoutImage } from '../cutout/cutout';
 import { cutHumanRig } from '../cutout/cutRig';
@@ -202,8 +202,8 @@ const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body'
 
 /**
  * Which of his drawings each animation plays (docs/art-refs: the run and swim
- * cycles, the idle/run, action and story-pose sheets). The rare poses without
- * a drawing of their own borrow the nearest one.
+ * cycles, the idle/run, action, story-pose and last sheets). The rare poses without
+ * a drawing of their own borrow the nearest one (his calmer story walk plays the run, slower).
  */
 export const BEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['idle0', 'idle1', 'idle2', 'idle3'], fps: 2.5, loop: true },
@@ -215,24 +215,25 @@ export const BEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
   land: { frames: ['land'], ms: 170, loop: false },
   hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
-  defeat: { frames: ['hurt'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  defeat: { frames: ['defeat'], ms: 900, loop: true },
   punch: { frames: ['punch'], ms: 220, loop: false, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 2)) * 1.5, 0) },
-  roll: { frames: ['jump'], ms: 320, loop: true, motion: (t, p, h) => spinAboutMiddle(p, t * 360, h) },
-  watch: { frames: ['slam'], ms: 260, loop: false },
+  // The dodge roll lasts as long as the clip: the dive, the ball over and round, the crouch out of it.
+  roll: { frames: ['roll0', 'roll1', 'roll2', 'roll3'], ms: 320, loop: false },
+  watch: { frames: ['watch'], ms: 260, loop: false },
   slam: { frames: ['slam'], ms: 340, loop: false },
   // Breaststroke: glide, the arms sweep out and pull in, the legs bend and kick; the glide (first and last) holds twice as long.
   swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5'], fps: 8, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
-  tread: { frames: ['idle0'], ms: 900, loop: true, motion: bob(0.6) },
-  drown: { frames: ['hurt'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 6) },
+  tread: { frames: ['tread'], ms: 900, loop: true, motion: bob(0.6) },
+  drown: { frames: ['drown'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
   talk: { frames: ['talk'], ms: 1300, loop: true, motion: bob(0.25) },
-  listen: { frames: ['idle0', 'idle1', 'idle2', 'idle3'], fps: 2, loop: true },
+  listen: { frames: ['listen'], ms: 1800, loop: true, motion: bob(0.2) },
   point: { frames: ['point'], ms: 1800, loop: true, motion: bob(0.2) },
   shrug: { frames: ['shrug'], ms: 1800, loop: true, motion: bob(0.2) },
   surprise: { frames: ['surprise'], ms: 1800, loop: true },
   cheer: { frames: ['cheer'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 1.2) },
   think: { frames: ['think'], ms: 1800, loop: true, motion: bob(0.2) },
-  angry: { frames: ['stand'], ms: 1800, loop: true },
-  sad: { frames: ['idle0'], ms: 1800, loop: true },
+  angry: { frames: ['angry'], ms: 1800, loop: true, motion: bob(0.2) },
+  sad: { frames: ['sad'], ms: 1800, loop: true },
   lookHands: { frames: ['hands'], ms: 1800, loop: true, motion: bob(0.2) },
   wave: { frames: ['wave'], ms: 700, loop: true, motion: (t, p) => p.set('body', wave(t) * 1.5) },
 };

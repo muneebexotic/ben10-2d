@@ -1,7 +1,9 @@
 # Ben frame by frame: every pose is one of his generated drawings (see frames.py).
 # Sheets: his model sheet (the three-quarter view, for scale and standing), the
 # idle/run sheet (idle), the action sheet (jump, fall, land, punch, hurt, the
-# slam), the run cycle (8 frames), the swim cycle (6) and the story poses (8).
+# slam), the run cycle (8 frames), the swim cycle (6), the story poses (8) and a last
+# sheet (the dodge roll in 4, down, raising the Omnitrix, treading water, out of air,
+# angry, sad, listening).
 
 ID = 'ben'
 TEXEL = 5
@@ -15,6 +17,7 @@ SHEETS = {
     'run': ('docs/art-refs/ben-run-cycle.webp', 235),
     'swim': ('docs/art-refs/ben-swim-cycle.webp', 235),
     'story': ('docs/art-refs/ben-story-poses.webp', 235),
+    'last': ('docs/art-refs/ben-last-poses.webp', 235),
 }
 # The model sheet's three-quarter view sets the scale for every sheet.
 REF = ('model', 1)
@@ -31,6 +34,9 @@ FRAMES = {
     'swim0': ('swim', 0), 'swim1': ('swim', 1), 'swim2': ('swim', 2), 'swim3': ('swim', 3), 'swim4': ('swim', 4), 'swim5': ('swim', 5),
     'talk': ('story', 0), 'point': ('story', 1), 'shrug': ('story', 2), 'surprise': ('story', 3),
     'cheer': ('story', 4), 'think': ('story', 5), 'wave': ('story', 6), 'hands': ('story', 7),
+    'roll0': ('last', 0), 'roll1': ('last', 1), 'roll2': ('last', 2), 'roll3': ('last', 3),
+    'defeat': ('last', 4), 'watch': ('last', 5), 'tread': ('last', 6), 'drown': ('last', 7),
+    'angry': ('last', 8), 'sad': ('last', 9), 'listen': ('last', 10),
 }
 CENTRED = {'swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5', 'dive'}
 # The airborne run frames float this far (game px) over the floor.
