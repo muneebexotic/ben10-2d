@@ -3,7 +3,7 @@ import { EYES, humanRig, keyframes, MOUTHS, type HumanDims } from '../humanoid';
 import { css, INK, type Paint } from '../paint';
 import { wave, type BoneSpec, type ClipDef, type PartSpec, type Pose, type RigDef, type RigInfo } from '../rig';
 import { cutoutImage } from '../cutout/cutout';
-import { breathe, frameRig, spinAboutMiddle, type FrameClip } from '../cutout/frameRig';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
 import { GWEN_FRAMES } from '../cutout/gwenFrames';
 import { cutHumanRig } from '../cutout/cutRig';
 import { GWEN_CUT } from '../cutout/gwen';
@@ -204,12 +204,13 @@ export function gwenRig(): RigDef {
 }
 
 const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+/** Where the middle of her body sits while she swims (game px above the game sprite's feet), as Ben's. */
+const SWIM_Y = -13;
 
 /**
  * Which of her drawings each animation plays (docs/art-refs: her model sheet,
- * run cycle, action poses and story poses). The few poses without a drawing of
- * their own borrow the nearest one; the clips that aren't listed (swimming,
- * looking at her hands) fall back to her standing drawing.
+ * run cycle, action poses, story poses and last sheet). The calmer story walk
+ * borrows her run, slower.
  */
 export const GWEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   idle: { frames: ['stand'], ms: 2600, loop: true, motion: breathe() },
@@ -220,7 +221,12 @@ export const GWEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.4) },
   land: { frames: ['land'], ms: 170, loop: false },
   hurt: { frames: ['hurt'], ms: 320, loop: false, motion: (t, p) => p.move('body', -1.2 * (1 - t), 0) },
-  defeat: { frames: ['hurt'], ms: 900, loop: true, motion: (_t, p, h) => spinAboutMiddle(p, -70, h) },
+  defeat: { frames: ['defeat'], ms: 900, loop: true },
+  // Breaststroke: glide, the arms sweep out and pull in, the frog kick, glide.
+  swim: { frames: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5'], fps: 8, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  tread: { frames: ['tread'], ms: 900, loop: true, motion: bob(0.6) },
+  drown: { frames: ['drown'], ms: 520, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  lookHands: { frames: ['hands'], ms: 1800, loop: true, motion: bob(0.2) },
   // Her spell: the drawing holds the magic in both hands.
   cast: { frames: ['cast'], ms: 300, loop: true, motion: (t, p) => p.move('body', Math.sin(Math.PI * Math.min(1, t * 3)) * 0.6, 0) },
   folded: { frames: ['folded'], ms: 2600, loop: true, motion: breathe() },
@@ -231,9 +237,9 @@ export const GWEN_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   cheer: { frames: ['cheer'], ms: 700, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 1.2) },
   think: { frames: ['think'], ms: 1800, loop: true, motion: bob(0.2) },
   wave: { frames: ['wave'], ms: 700, loop: true, motion: (t, p) => p.set('body', wave(t) * 1.5) },
-  // Her worried drawing (hands clasped) for sad, her unimpressed one for angry.
+  // Her worried drawing (hands clasped) for sad.
   sad: { frames: ['worried'], ms: 1800, loop: true, motion: bob(0.15) },
-  angry: { frames: ['folded'], ms: 1800, loop: true },
+  angry: { frames: ['angry'], ms: 1800, loop: true, motion: bob(0.2) },
 };
 
 const BOUNDS = { left: -12, right: 14, top: -32, bottom: 2 };

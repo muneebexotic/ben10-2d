@@ -12,7 +12,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | Character | Animations | Drawn | Stand-in | Waiting | Painted |
 |---|---|---|---|---|---|
 | BEN TENNYSON | 26 | 25 | 1 | 0 | 0 |
-| GWEN TENNYSON | 23 | 16 | 3 | 4 | 0 |
+| GWEN TENNYSON | 23 | 22 | 1 | 0 | 0 |
 | GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
 | HEATBLAST | 13 | 13 | 0 | 0 | 0 |
@@ -76,18 +76,18 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | cast | both hands thrust forward with a mana glow (her spells) | drawn | cast |
 | point | pointing | drawn | point |
 | hurt | knocked back | drawn | hurt |
-| defeat | knocked flat | stand-in | hurt |
-| swim | breaststroke: glide, pull, frog kick | waiting |  |
-| tread | treading water | waiting |  |
-| drown | out of air | waiting |  |
+| defeat | knocked flat | drawn | defeat |
+| swim | breaststroke: glide, pull, frog kick | drawn | swim0, swim1, swim2, swim3, swim4, swim5 |
+| tread | treading water | drawn | tread |
+| drown | out of air | drawn | drown |
 | talk | gesturing while she talks | drawn | talk |
 | shrug | shrugging | drawn | shrug |
 | surprise | eyes wide | drawn | surprise |
 | cheer | both fists up | drawn | cheer |
 | think | hand on chin | drawn | think |
-| angry | fists clenched | stand-in | folded |
+| angry | fists clenched | drawn | angry |
 | sad | shoulders down | drawn | worried |
-| lookHands | staring at her hands (the transition) | waiting |  |
+| lookHands | staring at her hands (the transition) | drawn | hands |
 | wave | waving | drawn | wave |
 | folded | arms folded, eyebrow up (unimpressed) | drawn | folded |
 
