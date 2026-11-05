@@ -22,7 +22,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | STINKFLY | 16 | 16 | 0 | 0 | 0 |
 | UPGRADE | 19 | 18 | 1 | 0 | 0 |
 | DIAMONDHEAD | 22 | 22 | 0 | 0 | 0 |
-| GHOSTFREAK | 19 | 0 | 0 | 0 | 19 |
+| GHOSTFREAK | 19 | 19 | 0 | 0 | 0 |
 | GREY MATTER | 19 | 0 | 0 | 0 | 19 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
@@ -323,25 +323,25 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | floating, tail curling, claws twitching | painted |  |
-| run | drifting fast, tail streaming back | painted |  |
-| jump | rising | painted |  |
-| fall | drifting down, arms up | painted |  |
-| land | settling | painted |  |
-| lash | tentacles whipping out of his chest | painted |  |
-| lashLong | a long lash | painted |  |
-| phase | arms wrapped round himself, phasing | painted |  |
-| scream | the scream: arms flung wide, jaw gaping | painted |  |
-| hurt | recoiling, eye shut | painted |  |
-| defeat | fading, slumped | painted |  |
-| swim | drifting as if the water were not there | painted |  |
-| tread | hanging in the water | painted |  |
-| drown | thrashing (he does not need air) | painted |  |
-| talk | a whisper | painted |  |
-| point | a long claw pointing | painted |  |
-| cheer | arms up | painted |  |
-| surprise | eye wide | painted |  |
-| think | claw at his jaw | painted |  |
+| idle | floating, tail curling, claws twitching | drawn | hover0, hover1, hover2, hover3 |
+| run | drifting fast, tail streaming back | drawn | drift0, drift1, drift2, drift3 |
+| jump | rising | drawn | jump |
+| fall | drifting down, arms up | drawn | fall |
+| land | settling | drawn | land |
+| lash | tentacles whipping out of his chest | drawn | lash |
+| lashLong | a long lash | drawn | lashLong |
+| phase | arms wrapped round himself, phasing | drawn | phase |
+| scream | the scream: arms flung wide, jaw gaping | drawn | scream |
+| hurt | recoiling, eye shut | drawn | hurt |
+| defeat | fading, slumped | drawn | defeat |
+| swim | drifting as if the water were not there | drawn | drift0, drift1, drift2, drift3 |
+| tread | hanging in the water | drawn | hover0, hover1, hover2, hover3 |
+| drown | thrashing (he does not need air) | drawn | drown |
+| talk | a whisper | drawn | talk |
+| point | a long claw pointing | drawn | point |
+| cheer | arms up | drawn | cheer |
+| surprise | eye wide | drawn | surprise |
+| think | claw at his jaw | drawn | think |
 
 ## GREY MATTER (`greymatter`)
 

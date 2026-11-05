@@ -36,6 +36,7 @@ import { WILDMUTT_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/character
 import { STINKFLY_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/stinkfly';
 import { UPGRADE_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/upgrade';
 import { DIAMONDHEAD_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/diamondhead';
+import { GHOSTFREAK_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/ghostfreak';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -63,10 +64,11 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   stinkfly: STINKFLY_FRAME_CLIPS,
   upgrade: UPGRADE_FRAME_CLIPS,
   diamondhead: DIAMONDHEAD_FRAME_CLIPS,
+  ghostfreak: GHOSTFREAK_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */
-const ALIAS: Readonly<Record<string, readonly string[]>> = { lookHands: ['hands'], sad: ['worried'], angry: ['stern'], run: ['hop', 'scuttle'], defeat: ['flop', 'beaten'], lure: ['bait'], spit: ['flash'], hurt: ['flinch'], talk: ['grin'], idle: ['swim', 'guard', 'stance'], idleBare: ['guardBare'], flop: ['flopUp', 'flopDown'], bunch: ['dart', 'bite'], drown: ['sputter', 'gasp'], swim: ['wade'], merge: ['melt', 'puddle'] };
+const ALIAS: Readonly<Record<string, readonly string[]>> = { lookHands: ['hands'], sad: ['worried'], angry: ['stern'], run: ['hop', 'scuttle', 'drift'], defeat: ['flop', 'beaten'], lure: ['bait'], spit: ['flash'], hurt: ['flinch'], talk: ['grin'], idle: ['swim', 'guard', 'stance', 'hover'], idleBare: ['guardBare'], flop: ['flopUp', 'flopDown'], bunch: ['dart', 'bite'], drown: ['sputter', 'gasp'], swim: ['wade', 'drift'], tread: ['hover'], merge: ['melt', 'puddle'] };
 
 export type Coverage = 'drawn' | 'stand-in' | 'waiting' | 'painted';
 

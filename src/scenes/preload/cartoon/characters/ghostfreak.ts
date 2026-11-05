@@ -3,6 +3,9 @@ import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { LINE, mix, type Paint, type ShapeStyle } from '../paint';
 import { wave, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo } from '../rig';
 import { omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { GHOSTFREAK_FRAMES } from '../cutout/ghostfreakFrames';
 
 const C = GHOSTFREAK_CARTOON.colors;
 
@@ -316,8 +319,53 @@ function ghostClips(info: RigInfo, base: Record<string, ClipDef>): Record<string
   };
 }
 
-/** Ghostfreak's HD rig: the humanoid kit floating on a misty tail, with his one eye, a gaping scream, claws and chest tentacles. */
+/** How high the Omnitrix on his chest floats over the floor while he hovers (game px): the drifting drawings hang from it there. */
+const CHEST_Y = -23.4;
+/** Where the middle of his body sits while he swims (game px above the game sprite's feet), as Ben's. */
+const SWIM_Y = -13;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Ghostfreak's drawings (docs/art-refs/ghostfreak-*.webp): hovering and
+ * drifting (four drawings each, the tail rippling through them), rising,
+ * settling, both tentacle lashes, phasing, the scream and his story poses.
+ * His chest tentacles are in the lash drawings.
+ */
+export const GHOSTFREAK_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  // Hovering: the tail ripples through four drawings and he bobs on it.
+  idle: { frames: ['hover0', 'hover1', 'hover2', 'hover3'], fps: 5, loop: true, motion: bob(0.6) },
+  // Drifting fast at the height he hovers, the tail streaming out behind.
+  run: { frames: ['drift0', 'drift1', 'drift2', 'drift3'], fps: 10, loop: true, motion: (t, p) => p.move('body', 0, CHEST_Y + wave(t) * 0.4) },
+  jump: { frames: ['jump'], ms: 300, loop: false },
+  fall: { frames: ['fall'], ms: 700, loop: true, motion: bob(0.5) },
+  land: { frames: ['land'], ms: 260, loop: false },
+  lash: { frames: ['lash'], ms: 220, loop: false },
+  lashLong: { frames: ['lashLong'], ms: 280, loop: false },
+  phase: { frames: ['phase'], ms: 1200, loop: true, motion: bob(0.5) },
+  // The scream shakes him.
+  scream: { frames: ['scream'], ms: 500, loop: false, motion: (t, p) => p.move('body', wave(t * 6) * 0.4 * (1 - t), 0) },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1.4 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1600, loop: true, motion: breathe(0.004) },
+  // Drifting through the water as if it weren't there.
+  swim: { frames: ['drift0', 'drift1', 'drift2', 'drift3'], fps: 6, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.5) },
+  tread: { frames: ['hover0', 'hover1', 'hover2', 'hover3'], fps: 4, loop: true, motion: bob(0.6) },
+  drown: { frames: ['drown'], ms: 420, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  talk: { frames: ['talk'], ms: 1000, loop: true, motion: bob(0.4) },
+  point: { frames: ['point'], ms: 1200, loop: true, motion: bob(0.4) },
+  cheer: { frames: ['cheer'], ms: 500, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.8) },
+  surprise: { frames: ['surprise'], ms: 700, loop: false },
+  think: { frames: ['think'], ms: 1400, loop: true, motion: bob(0.4) },
+};
+
+/** Ghostfreak's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function ghostfreakRig(): RigDef {
+  const frames = cutoutImage(GHOSTFREAK_FRAMES.id);
+  if (frames) return frameRig({ id: 'ghostfreak', meta: GHOSTFREAK_FRAMES, img: frames, clips: GHOSTFREAK_FRAME_CLIPS, fallback: 'idle' });
+  return paintedGhostfreak();
+}
+
+/** The painted Ghostfreak: the humanoid kit floating on a misty tail, with his one eye, a gaping scream, claws and chest tentacles. */
+function paintedGhostfreak(): RigDef {
   return humanRig({
     id: 'ghostfreak',
     dims: GHOSTFREAK_DIMS,
