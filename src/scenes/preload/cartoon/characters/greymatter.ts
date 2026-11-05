@@ -1,8 +1,11 @@
 import { GREYMATTER_CARTOON } from '../../../../config/cartoon/greymatter';
 import { humanRig, keyframes, type HumanDims } from '../humanoid';
 import { INK, LINE, lightOf, type Paint } from '../paint';
-import { wave, type ClipDef, type PartSpec, type PoseData, type RigDef, type RigInfo } from '../rig';
+import { wave, type ClipDef, type PartSpec, type Pose, type PoseData, type RigDef, type RigInfo } from '../rig';
 import { cel, omnitrixBadge } from './alienBits';
+import { cutoutImage } from '../cutout/cutout';
+import { breathe, frameRig, type FrameClip } from '../cutout/frameRig';
+import { GREYMATTER_FRAMES } from '../cutout/greymatterFrames';
 
 const C = GREYMATTER_CARTOON.colors;
 
@@ -190,8 +193,47 @@ function greyClips(info: RigInfo, base: Record<string, ClipDef>): Record<string,
   };
 }
 
-/** Grey Matter's HD rig: a tiny humanoid with a huge head, big glossy eyes, a nip and his ANALYZE scan. */
+/** Where the middle of his body sits while he swims (game px above the game sprite's feet): Ben's, for his size. */
+const SWIM_Y = -7;
+const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);
+
+/**
+ * Grey Matter's drawings (docs/art-refs/greymatter-*.webp): his know-it-all
+ * stance, the 8-drawing scurry, the nip and the lunging chomp, ANALYZE, the
+ * tiny breaststroke and his story poses (lecturing, the smug shrug).
+ */
+export const GREYMATTER_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
+  idle: { frames: ['stance'], ms: 1400, loop: true, motion: breathe(0.01) },
+  run: { frames: ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'], fps: 18, loop: true },
+  jump: { frames: ['jump'], ms: 240, loop: false },
+  fall: { frames: ['fall'], ms: 500, loop: true, motion: bob(0.3) },
+  land: { frames: ['land'], ms: 160, loop: false },
+  // The nip snaps a step in; the chomp is a lunge (the game moves him).
+  biteA: { frames: ['biteA'], ms: 160, loop: false, motion: (t, p) => p.move('body', Math.sin(Math.PI * t) * 0.8, 0) },
+  biteB: { frames: ['biteB'], ms: 260, loop: false },
+  scan: { frames: ['scan'], ms: 420, loop: false },
+  hurt: { frames: ['hurt'], ms: 300, loop: false, motion: (t, p) => p.move('body', -1 * (1 - t), 0) },
+  defeat: { frames: ['defeat'], ms: 1300, loop: true, motion: breathe(0.006) },
+  cheer: { frames: ['cheer'], ms: 400, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.6) },
+  swim: { frames: ['swim0', 'swim1'], fps: 4, loop: true, motion: (t, p) => p.move('body', 0, SWIM_Y + wave(t, 0.25) * 0.3) },
+  tread: { frames: ['tread'], ms: 900, loop: true, motion: bob(0.4) },
+  drown: { frames: ['drown'], ms: 420, loop: true, motion: (t, p) => p.set('body', wave(t) * 4) },
+  talk: { frames: ['talk'], ms: 900, loop: true, motion: bob(0.2) },
+  point: { frames: ['point'], ms: 1200, loop: true, motion: breathe(0.006) },
+  shrug: { frames: ['shrug'], ms: 900, loop: true, motion: breathe(0.01) },
+  think: { frames: ['think'], ms: 1400, loop: true, motion: breathe(0.006) },
+  surprise: { frames: ['surprise'], ms: 700, loop: false },
+};
+
+/** Grey Matter's HD rig: his drawings frame by frame when they've loaded (Chapter 7 loads them), else painted. */
 export function greymatterRig(): RigDef {
+  const frames = cutoutImage(GREYMATTER_FRAMES.id);
+  if (frames) return frameRig({ id: 'greymatter', meta: GREYMATTER_FRAMES, img: frames, clips: GREYMATTER_FRAME_CLIPS, fallback: 'idle' });
+  return paintedGreymatter();
+}
+
+/** The painted Grey Matter: a tiny humanoid with a huge head, big glossy eyes, a nip and his ANALYZE scan. */
+function paintedGreymatter(): RigDef {
   return humanRig({
     id: 'greymatter',
     dims: GREYMATTER_DIMS,

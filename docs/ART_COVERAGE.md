@@ -23,7 +23,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | UPGRADE | 19 | 18 | 1 | 0 | 0 |
 | DIAMONDHEAD | 22 | 22 | 0 | 0 | 0 |
 | GHOSTFREAK | 19 | 19 | 0 | 0 | 0 |
-| GREY MATTER | 19 | 0 | 0 | 0 | 19 |
+| GREY MATTER | 19 | 19 | 0 | 0 | 0 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
 | FISHBOWL GRUNT | 9 | 9 | 0 | 0 | 0 |
@@ -347,25 +347,25 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 
 | Animation | What it is | Now | Drawings |
 |---|---|---|---|
-| idle | a know-it-all stance, head tilting | painted |  |
-| run | a scurry of tiny steps | painted |  |
-| jump | a little hop | painted |  |
-| fall | arms flailing | painted |  |
-| land | a tiny landing | painted |  |
-| biteA | a nip | painted |  |
-| biteB | a lunging chomp | painted |  |
-| scan | ANALYZE: a finger to his temple, eyes blazing | painted |  |
-| hurt | knocked back | painted |  |
-| cheer | arms up, delighted with himself | painted |  |
-| defeat | down | painted |  |
-| swim | a tiny breaststroke | painted |  |
-| tread | treading water | painted |  |
-| drown | out of air | painted |  |
-| talk | lecturing | painted |  |
-| point | pointing out the obvious | painted |  |
-| shrug | a smug shrug | painted |  |
-| think | pondering | painted |  |
-| surprise | eyes huge | painted |  |
+| idle | a know-it-all stance, head tilting | drawn | stance |
+| run | a scurry of tiny steps | drawn | run0, run1, run2, run3, run4, run5, run6, run7 |
+| jump | a little hop | drawn | jump |
+| fall | arms flailing | drawn | fall |
+| land | a tiny landing | drawn | land |
+| biteA | a nip | drawn | biteA |
+| biteB | a lunging chomp | drawn | biteB |
+| scan | ANALYZE: a finger to his temple, eyes blazing | drawn | scan |
+| hurt | knocked back | drawn | hurt |
+| cheer | arms up, delighted with himself | drawn | cheer |
+| defeat | down | drawn | defeat |
+| swim | a tiny breaststroke | drawn | swim0, swim1 |
+| tread | treading water | drawn | tread |
+| drown | out of air | drawn | drown |
+| talk | lecturing | drawn | talk |
+| point | pointing out the obvious | drawn | point |
+| shrug | a smug shrug | drawn | shrug |
+| think | pondering | drawn | think |
+| surprise | eyes huge | drawn | surprise |
 
 ## RIPJAWS (`ripjaws`)
 

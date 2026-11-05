@@ -37,6 +37,7 @@ import { STINKFLY_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/character
 import { UPGRADE_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/upgrade';
 import { DIAMONDHEAD_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/diamondhead';
 import { GHOSTFREAK_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/ghostfreak';
+import { GREYMATTER_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/greymatter';
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
@@ -65,6 +66,7 @@ const FRAMED: Readonly<Record<string, Readonly<Record<string, FrameClip>>>> = {
   upgrade: UPGRADE_FRAME_CLIPS,
   diamondhead: DIAMONDHEAD_FRAME_CLIPS,
   ghostfreak: GHOSTFREAK_FRAME_CLIPS,
+  greymatter: GREYMATTER_FRAME_CLIPS,
 };
 
 /** Drawings named for something other than their clip. */
