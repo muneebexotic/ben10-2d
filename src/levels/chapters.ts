@@ -31,6 +31,13 @@ export const ACTS: Record<number, string> = {
  */
 export const CH7_BUILT = import.meta.env.DEV || import.meta.env.MODE === 'bench';
 
+/**
+ * The dev server (`npm run dev`; not the bench build, the tests or a release) opens the chapter still being built
+ * from Chapter Select whatever the save says, so it can be tried without finishing the one before (a preview pane
+ * can't always add `?level=ch7`).
+ */
+const DEV_OPEN: readonly string[] = import.meta.env.DEV && import.meta.env.MODE === 'development' ? ['ch7'] : [];
+
 export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 1, act: 1, title: 'CAMP CRASH', levelId: 'ch1', tease: 'A METEOR. A WATCH. A VERY WEIRD SUMMER.', cast: ['heatblast'] },
   { number: 2, act: 1, title: 'ROAD TRIP', levelId: 'ch2', tease: 'THE DIAL IS ABOUT TO GET TWO NEW FACES...', cast: ['fourarms', 'xlr8'] },
@@ -54,14 +61,14 @@ export type ChapterState = 'open' | 'locked' | 'soon';
  */
 export function chapterState(info: ChapterInfo, completedLevelIds: readonly string[]): ChapterState {
   if (info.levelId === null) return 'soon';
-  if (info.number === 1) return 'open';
+  if (info.number === 1 || DEV_OPEN.includes(info.levelId)) return 'open';
   const previous = CHAPTERS.find((c) => c.number === info.number - 1);
   return previous?.levelId && completedLevelIds.includes(previous.levelId) ? 'open' : 'locked';
 }
 
 /** The title shows on open chapters and on the next one up; the rest stay a mystery. */
 export function titleRevealed(info: ChapterInfo, completedLevelIds: readonly string[]): boolean {
-  if (info.number === 1) return true;
+  if (info.number === 1 || (info.levelId !== null && DEV_OPEN.includes(info.levelId))) return true;
   const previous = CHAPTERS.find((c) => c.number === info.number - 1);
   return previous?.levelId !== null && previous?.levelId !== undefined && completedLevelIds.includes(previous.levelId);
 }
