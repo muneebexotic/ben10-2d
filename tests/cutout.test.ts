@@ -185,9 +185,9 @@ describe('frame by frame', () => {
   });
 
   const FAMILY = [
-    { id: 'gwen', meta: GWEN_FRAMES, clips: GWEN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'land', 'hurt', 'cast', 'folded', 'talk', 'point', 'shrug', 'surprise', 'cheer', 'think', 'wave', 'sad'], cycle: 'run', air: ['run3', 'run7'] },
-    { id: 'max', meta: MAX_FRAMES, clips: MAX_FRAME_CLIPS, own: ['idle', 'walk', 'run', 'console', 'hurt', 'blast', 'spray', 'badge', 'salute', 'talk', 'cheer', 'surprise', 'point', 'shrug', 'think', 'wave', 'sad', 'angry', 'laugh'], cycle: 'walk', air: [] },
-    { id: 'kevin', meta: KEVIN_FRAMES, clips: KEVIN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'absorb', 'windup', 'throw', 'lunge', 'hurt', 'laugh', 'smirk'], cycle: 'run', air: ['run3', 'run7'] },
+    { id: 'gwen', meta: GWEN_FRAMES, clips: GWEN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'land', 'hurt', 'cast', 'folded', 'talk', 'point', 'shrug', 'surprise', 'cheer', 'think', 'wave', 'sad'], cycle: 'run', air: ['run3', 'run7'], hung: ['swim0', 'swim1', 'swim2', 'swim3', 'swim4', 'swim5'] },
+    { id: 'max', meta: MAX_FRAMES, clips: MAX_FRAME_CLIPS, own: ['idle', 'walk', 'run', 'console', 'hurt', 'blast', 'spray', 'badge', 'salute', 'talk', 'cheer', 'surprise', 'point', 'shrug', 'think', 'wave', 'sad', 'angry', 'laugh'], cycle: 'walk', air: [], hung: [] },
+    { id: 'kevin', meta: KEVIN_FRAMES, clips: KEVIN_FRAME_CLIPS, own: ['idle', 'run', 'walk', 'jump', 'fall', 'absorb', 'windup', 'throw', 'lunge', 'hurt', 'laugh', 'smirk'], cycle: 'run', air: ['run3', 'run7'], hung: [] },
   ] as const;
 
   it("Gwen, Max and Kevin play only their own drawings, and every animation they're given has a clip", () => {
@@ -199,13 +199,14 @@ describe('frame by frame', () => {
     }
   });
 
-  it("their cycles' airborne drawings float and the rest stand on the floor", () => {
+  it("their cycles' airborne drawings float, the swimming ones hang from the body's middle and the rest stand on the floor", () => {
     for (const c of FAMILY) {
       const T = c.meta.texel;
       for (const [key, f] of Object.entries(c.meta.frames)) {
         const name = key.slice(5);
         const below = (f.h - f.py) / T;
         if ((c.air as readonly string[]).includes(name)) expect(below, `${c.id} ${name}`).toBeLessThan(-1);
+        else if ((c.hung as readonly string[]).includes(name)) expect(below, `${c.id} ${name}`).toBeGreaterThan(1);
         else expect(Math.abs(below), `${c.id} ${name}`).toBeLessThan(0.5);
       }
     }
