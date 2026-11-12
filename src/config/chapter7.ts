@@ -162,6 +162,8 @@ export const CH7_OPENING = {
   lampEveryMs: 260,
   titleAt: 16900,
   titleMs: 2600,
+  /** The title's sting rings out this long (the owner's recording, `act3`); then the base's theme comes back. */
+  stingMs: 8600,
   dockAt: 19700,
   dockMs: 900,
   /** Skipping fades out this fast. */

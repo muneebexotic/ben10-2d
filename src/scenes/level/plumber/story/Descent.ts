@@ -5,6 +5,7 @@ import type { StoryIntro } from '../../../../chapters/types';
 import { EventBus } from '../../../../systems/EventBus';
 import type { Controls } from '../../../../systems/InputMap';
 import { playSfx } from '../../../../systems/audio/Sfx';
+import { music } from '../../../../systems/audio/Music';
 import { TEX } from '../../../preload/assetKeys';
 import { BEN_FRAME } from '../../../preload/characters';
 import { GWEN_FRAME, MAX_FRAME } from '../../../preload/family';
@@ -61,6 +62,8 @@ export class Descent implements StoryIntro {
 
   constructor(private readonly kit: StoryKit) {
     const scene = kit.scene;
+    // Decoded now, so the title's sting lands with the card.
+    music.preload('act3');
     const cam = scene.cameras.main;
     this.L = descentLayout(Math.ceil(cam.width / cam.zoom), Math.ceil(cam.height / cam.zoom));
     const L = this.L;
@@ -189,6 +192,11 @@ export class Descent implements StoryIntro {
     }
     if (this.once('title', O.titleAt)) {
       EventBus.emit('hud:banner', { title: 'ACT 3: SECRETS', subtitle: 'CHAPTER 7: THE PLUMBERS', color: PALETTE.plumber, durationMs: O.titleMs, style: 'slam' });
+      // The title's sting, then the base's theme again (it rings out over the first moments of play).
+      kit.playMusic('act3');
+      scene.time.delayedCall(O.stingMs, () => {
+        if (music.playing === 'act3') kit.playMusic('deep');
+      });
     }
     if (this.t >= O.dockAt) this.finish(O.dockMs);
   }

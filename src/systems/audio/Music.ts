@@ -195,6 +195,9 @@ export type TrackName =
 /** The tracks the shared code plays (menus, Chapter 1, Training); chapter tracks join when their chapter loads. */
 const TRACKS: Partial<Record<TrackName, Track>> = { forest: FOREST, boss: BOSS, title: TITLE, victory: VICTORY, simulation: SIMULATION };
 
+/** Tracks that play with the mix fully open whatever Ben's form (menus, fanfares, title stings). */
+const FULL_MIX: ReadonlySet<TrackName> = new Set<TrackName>(['title', 'victory', 'act3']);
+
 /** A chapter's chunk adds its tracks (`chapters/registry.ts`). */
 export function registerTracks(tracks: Partial<Record<TrackName, Track>>): void {
   Object.assign(TRACKS, tracks);
@@ -235,7 +238,7 @@ class MusicPlayer {
     this.current = name;
     if (this.recorded.has(name)) {
       this.recording = true;
-      this.recorded.setIntensity(name === 'title' || name === 'victory' ? 1 : this.intensity);
+      this.recorded.setIntensity(FULL_MIX.has(name) ? 1 : this.intensity);
       this.recorded.play(name);
       return;
     }

@@ -30,6 +30,9 @@ export const RECORDINGS: Readonly<Record<string, Recording>> = {
   // 4.008 s to 49.413 s: the full fight, the breakdown and the lighter section, whose last bars sound like the intro's,
   // back into the fight (the smoothest join in it). The first 4 s play once. -11.2 LUFS.
   deepmaw: { url: 'assets/audio/music/deepmaw.m4a', loopStart: 4.008, loopEnd: 49.413, gainDb: -4.8 },
+  // Chapter 7's ACT 3: SECRETS card (the owner's recording): a 100 BPM pulse that rings out to silence by 8.6 s.
+  // Plays once; the opening returns to the base's theme after it (CH7_OPENING.stingMs). -13.1 LUFS.
+  act3: { url: 'assets/audio/music/act3.m4a', loopStart: 0, loopEnd: 9.02, gainDb: -2.9, once: true },
 };
 
 /** How a recording reacts to Ben's form (the sequencer's hero layer, for a single mixed file). */
