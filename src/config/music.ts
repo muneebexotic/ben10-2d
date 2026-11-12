@@ -23,6 +23,9 @@ export const RECORDINGS: Readonly<Record<string, Recording>> = {
   // Chapter 7, the Plumber base (the owner's recording). 112 BPM, 28 bars made to loop as a whole: from just before
   // the first kick (0.024 s) to the same point 28 bars (60 s) on, where the next downbeat lands. -11.5 LUFS.
   deep: { url: 'assets/audio/music/deep.m4a', loopStart: 0.022, loopEnd: 60.022, gainDb: -4.5 },
+  // Chapter 7, the open sea (the owner's recording). 90 BPM; the file fades out from 53.5 s, so the loop is the 16 bars
+  // before it (10.285 to 52.952 s, the smoothest join in it) and the first 10 s play once. -11.5 LUFS.
+  opensea: { url: 'assets/audio/music/opensea.m4a', loopStart: 10.285, loopEnd: 52.952, gainDb: -4.5 },
 };
 
 /** How a recording reacts to Ben's form (the sequencer's hero layer, for a single mixed file). */

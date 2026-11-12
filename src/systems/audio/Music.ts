@@ -254,6 +254,11 @@ class MusicPlayer {
     this.timer = setInterval(() => this.schedule(), 25);
   }
 
+  /** Fetches and decodes a recording ahead of time, so switching to it mid-level is instant (a no-op without audio). */
+  preload(name: TrackName): void {
+    this.recorded.preload(name);
+  }
+
   stop(fadeMs: number = AUDIO.musicFadeMs): void {
     if (this.recording) this.recorded.stop(fadeMs);
     this.recording = false;

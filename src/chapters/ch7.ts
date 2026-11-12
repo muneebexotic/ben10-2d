@@ -6,6 +6,7 @@ import { JellyBrain } from '../entities/enemies/deep/jelly';
 import { WardenBrain } from '../entities/enemies/deep/warden';
 import { CHAPTER_7 } from '../levels/chapter7';
 import { PLUMBER_SEA } from '../levels/chapter7Decor';
+import { plumberTrack } from '../scenes/level/plumber/story/seaMusicRules';
 import { enterPlumberBase, plumberArtRes } from '../scenes/level/plumber/presentation';
 import { makeKorrPortrait } from '../scenes/preload/cartoon/plumber/korr';
 import { PlumberBackdrop } from '../scenes/level/plumber/PlumberBackdrop';
@@ -71,8 +72,8 @@ export const CHAPTER: ChapterModule = {
   // Gwen walks with Ben through the docking ring (the story joins her, and takes her at the hub).
   gwen: { chatter: CH7_GWEN_CHATTER, runSpeed: CH7_BEATS.ring.gwenFollow },
   art: [{ assets: DEEP_ASSETS, anims: DEEP_ANIMS }],
-  // The base's recording plays everywhere (the open sea and DEEPMAW's get their own when their recordings land).
-  track: () => 'deep',
+  // The base's recording inside the hull, the open sea's outside it (the story's `SeaMusic` turns it as Ben crosses).
+  track: plumberTrack,
   // The music is the shared boss theme until Chapter 7's own tracks land.
   bosses: { deepmaw: { music: 'boss', hologram: [], create: (scene, world, x) => new DeepmawBoss(scene, world, x) } },
   brains: {

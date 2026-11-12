@@ -169,3 +169,9 @@ export const CH7_OPENING = {
   /** How the HD layer comes in at each ping (alpha after it). */
   hdSteps: [0.34, 0.67, 1] as const,
 } as const;
+
+/** Chapter 7's music: the base's theme inside the hull, the open sea's outside it (the owner's recordings, config/music.ts). */
+export const CH7_MUSIC = {
+  /** Tiles past the hull's edge before the music turns, either way, so swimming along the edge doesn't flip it. */
+  seaMargin: 2,
+} as const;

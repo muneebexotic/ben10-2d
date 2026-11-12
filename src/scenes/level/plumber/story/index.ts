@@ -1,4 +1,5 @@
 import type { ChapterStory } from '../../../../chapters/types';
+import { SeaMusic } from './SeaMusic';
 import type { StoryKit } from '../../story/StoryKit';
 import type { UnlockBeat } from '../../story/UnlockBeat';
 import { BaseSystems } from '../water/BaseSystems';
@@ -14,13 +15,14 @@ export function buildPlumberStory(kit: StoryKit, resumeX: number, unlockBeats: R
   const talkers = new Talkers(kit);
   if (kit.gwen) talker(kit.scene, 'gwen', kit.gwen.actor);
   const base = new BaseSystems(kit, resumeX);
+  const seaMusic = new SeaMusic(kit);
   const plan = kit.level.story?.plumber;
-  if (!plan) return { intro: null, pieces: [talkers, base] };
+  if (!plan) return { intro: null, pieces: [talkers, base, seaMusic] };
   // The opening plays on a fresh start only (never on a retry, a continue or a checkpoint).
   const intro = !kit.continuing && kit.startCheckpoint === null ? new Descent(kit) : null;
   return {
     intro,
-    pieces: [talkers, ...(intro ? [intro] : []), base, new DockingRing(kit, base, plan, resumeX), new Reactor(kit, base, plan, unlockBeats.get(plan.reactor.alien) ?? null, resumeX),
+    pieces: [talkers, seaMusic, ...(intro ? [intro] : []), base, new DockingRing(kit, base, plan, resumeX), new Reactor(kit, base, plan, unlockBeats.get(plan.reactor.alien) ?? null, resumeX),
       new LateBase(kit, base, plan, resumeX),
     ],
   };
