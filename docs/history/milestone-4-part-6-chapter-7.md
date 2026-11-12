@@ -82,7 +82,7 @@ The chapter's heaviest moments are in the bench (`ch7-sea`, `ch7-maelstrom` in `
 
 ## Release gates (2026-11-12)
 
-GATES_PLACEHOLDER
+Typecheck, the production build and 574 tests pass. The benchmark against main and the QA sweep with fuzz were still running at release; their results are added here when they finish.
 
 ## Known issues
 
