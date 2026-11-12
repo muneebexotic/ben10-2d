@@ -152,6 +152,13 @@ Built within Milestone 4, part 4 (Chapter 5, not proposed beforehand, recorded h
 - **Chai with Rauf:** after the chapter, Rauf's stall in Chapter Select's Karachi window serves a cup that heals one heart at the start of any chapter replay, once per day.
 
 
+### From Chapter 7 (Milestone 4 part 6)
+
+- **The cartoon look for Chapters 1-6, as a choice:** a Settings row, LOOK: CLASSIC (the pixel art, as now) / CARTOON (the HD presentation Chapter 7 uses). The cast is already drawn for Chapter 7 and plays in any chapter's HD presentation; each older chapter would need its world art (tiles, backdrops, props), its enemies' and bosses' sheets, and its own lines tagged with moods. One chapter at a time, CLASSIC staying the default until each is done, so the owner's rule (Chapters 1-6 unchanged) holds for anyone who doesn't switch.
+- **DEEPMAW in Training:** the lure as a target with its bait, flare and lunge tells, to practise BAIT AND SWITCH and the shield reflect.
+- **A Ripjaws time trial in the open sea:** a ring course round the hull and through the coral cave, with a ghost of your best run and a share line.
+- **Korr's case files:** each Plumber cell in containment opens a short file on its prisoner (an alien from the show), a collectible set like Ghostfreak's diary, the last one locked until Act 4.
+
 ### From the UX pass (during Chapter 7)
 
 Measured against how top games handle the same moments (the comparison is in `history/ux-pass-and-bug-hunt.md`). Each is bigger than a fix, so it waits for approval.

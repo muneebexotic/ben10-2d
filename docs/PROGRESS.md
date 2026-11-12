@@ -4,15 +4,11 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 ## Status
 
-**Milestone 4 part 5 and Milestone 5 built Chapter 6, Magic, set in Karachi, and closed Act 2.** Six story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11, Bounty Hunters, Magic), nine aliens (Grey Matter joins), six bosses (HEX AND CHARMCASTER is new), Gwen as a companion with three spells, Max in the field, the Act 1 and Act 2 endings, Omnitrix Training, ALIEN FILES, achievements, the card album (45 cards), JOKES FOUND and Ghostfreak's diary. The full record is [history/milestone-5-chapter-6.md](history/milestone-5-chapter-6.md).
+**Milestone 4 part 6 built Chapter 7, The Plumbers, and opened Act 3 in an HD cartoon look.** Seven story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11, Bounty Hunters, Magic, The Plumbers), ten aliens (Ripjaws joins, and every form swims), seven bosses (DEEPMAW is new). In Chapter 7 every character is the owner's own drawings played frame by frame (Ben, Gwen, Max, Kevin, all ten aliens, the enemies and DEEPMAW), the dialogue faces change with each line's mood, the HUD and the Chapter Select card are the owner's art, and the music is the owner's four recordings, looped on the beat. Chapters 1-6 are unchanged. The full record is [history/milestone-4-part-6-chapter-7.md](history/milestone-4-part-6-chapter-7.md).
 
-**This session:** the approved fixes (chapter cards before the first line, THE HUNTERS resumes at the stage you died in, Ghostfreak's diary in EXTRAS), each chapter's code in its own chunk (boot 28% faster on Slow 4G), then Chapter 6: the Sea View fair, the pink palace, the library, the cellars and Charmcaster's cage, the tunnel to Kharadar, the Spell Engine (Grey Matter's puzzle), **THE TOWER WRAP** (a climb around a turning 3D clock tower) and HEX AND CHARMCASTER on the tower top; the Act 2 ending at Keamari harbour and ACT 2 COMPLETE with a share line. Also: Gwen in Chapters 1-5 replays (Settings, off by default), the Chapter 1 cameo, Grey Matter's secrets in Chapters 3-5, cards and first drinks that stop the game to show themselves, and **ALIEN FILES** (every move with a live bot demo, and TRY IT).
+**Also during Chapter 7: a UX pass and bug hunt** over the shared menus and HUD ([history/ux-pass-and-bug-hunt.md](history/ux-pass-and-bug-hunt.md), BUGS.md U1-U11): menus pick a row only on a fresh press, MUSIC and EFFECTS volume sliders, cutscene dialogue a line per press (Enter, Esc or SKIP >> skips), the pause menu says where you are, Chapter 6's Ferris wheel fixed.
 
-**In progress: Chapter 7, The Plumbers (Act 3, HD cartoon look).** Playable from start to finish in dev builds: the opening (the pixel jetty at midnight, the glass car's ride down, the beacon pings turning the world and the family HD, ACT 3: SECRETS), the docking ring (Max's reveal, his locker, the lockdown, Gwen at Ben's side, the split), Kevin's glimpse, the reactor (Kevin drains it, CONTAINMENT FAILURE, the flood, Ripjaws' unlock, the glass into the open sea), the pump hall on the intercom, containment with Max's blaster and Cell 7, DEEPMAW in the moon pool, and the ending with Magister Korr's hologram. Ben, Gwen, Max and Kevin are drawn frame by frame from the owner's sheets (Gwen, Max and Kevin have their cycles so far). **Waiting for the owner:** the other animation sheets (prompts: https://claude.ai/artifact/A71jAsoFCzNTYjNv9Fesm6), the recorded music (prompts: https://claude.ai/artifact/LT43EopKCbDLVwP2WFqgMS; the player is built, `config/music.ts`), the HUD, portrait and still art. Release builds show Chapter 7 as COMING SOON until those land; dev builds play it with `?level=ch7`. The handoff with the remaining steps is [ch7-wip.md](ch7-wip.md).
-
-**Also this session: a UX pass and bug hunt** over the shared menus and HUD ([history/ux-pass-and-bug-hunt.md](history/ux-pass-and-bug-hunt.md), BUGS.md U1-U11): menus no longer pick a row from a held key (Game Over's RETRY was picked unseen), scene listeners no longer pile up per visit, Chapters 5-7's results stop counting drones and lasers, Chapter 6's Ferris wheel no longer loses slices (an engine shader bug, patched at boot), MUSIC and EFFECTS volume sliders, cutscene dialogue that reads on a line per press (Enter, Esc or SKIP >> skips), a press hurries the results tally, and the pause menu says where you are. Proposals from comparing with top games (ASSIST options, QUICK RETRY, remapping, tabs) are in IDEAS.md.
-
-Next, when asked: finish Chapter 7 (Milestone 7 holds DEEP DIVE ATTACK). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge.
+Next, when asked: Chapter 8, Zombozo (Cannonbolt). Proposals waiting for approval are in IDEAS.md (among them the cartoon look for Chapters 1-6 as a Settings choice). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge; Milestone 7 holds DEEP DIVE ATTACK.
 
 ## How to run
 
@@ -36,6 +32,7 @@ URL switches for playtesting:
 | `?level=ch4` | Play Chapter 4 directly (a practice run). Combine with `&start=`: `cp-arcade` (Easy and Normal), `cp-lair`, `cp-highscore` (Easy and Normal), `cp-station` (Easy and Normal), `cp-line`, `cp-turn`, `cp-depot` (Easy and Normal), `cp-kevin` (KEVIN 11) |
 | `?level=ch5` | Play Chapter 5 directly (a practice run). Combine with `&start=`: `cp-street`, `cp-hotel`, `cp-minehead`, `cp-tunnels`, `cp-crystals` (Easy and Normal), `cp-jail`, `cp-dive` (THE DEEP DIVE), `cp-cavern`, `cp-lift`, `cp-hunters` (THE HUNTERS) |
 | `?level=ch6` | Play Chapter 6 directly (a practice run). Combine with `&start=`: `cp-fair`, `cp-palace` (Easy only), `cp-hall`, `cp-library`, `cp-cellar`, `cp-cage`, `cp-tunnel`, `cp-engine` (the Spell Engine), `cp-engine-2` (its second half, Easy only), `cp-wrap` (THE TOWER WRAP), `cp-towertop` (HEX AND CHARMCASTER) |
+| `?level=ch7` | Play Chapter 7 directly (a practice run). Combine with `&start=`: `cp-docking`, `cp-flooded`, `cp-reactor`, `cp-sea`, `cp-pump`, `cp-tank3`, `cp-containment`, `cp-moonpool`, `cp-drydock` (DEEPMAW's second stage), `cp-maelstrom` (his third) |
 | `?training=1` | Straight into Omnitrix Training (with the last file's aliens and difficulty) |
 | `?aliens=fourarms,xlr8` | Adds aliens to the dial (a practice run). With Four Arms the Chapter 1 vault card spawns and counts; `?aliens=diamondhead,ghostfreak` opens the older chapters' new secrets |
 | `?mute=1` | Start muted |
@@ -78,6 +75,9 @@ What ATTACK and SPECIAL do depends on the form (the touch buttons change icon wi
 | Ghostfreak | Tentacle lash (hold; every 3rd reaches further and drags) | Hold: phase (through phase walls, enemies and shots; can't attack). Phased and still: invisible | Floats down slowly. Swap-in scream frightens enemies |
 | Diamondhead | Crystal shards (hold; every 3rd a fan; Up aims high) | Hold: crystal shield, reflects shots and laser beams (Up/Down while holding tilts it). Up+K: a crystal platform (two at a time) | Swap-in crystal spikes |
 | Grey Matter | Bite (hold; every 3rd hops and chomps) | ANALYZE: marks a weak point for a few seconds; any alien hits it x3 | One tile tall: vents and gaps a tile high. Swap-in: everything nearby gets a weak point |
+| Ripjaws | Bite (hold; every 3rd a lunging CHOMP) | In water: RIP DASH, a torpedo that bites through a line. On land: tail whip | The fastest swimmer. On land he hops and the Omnitrix runs down 2.5x as fast |
+
+**Swimming (Chapter 7, every form):** the stick or arrows swim any way, Jump strokes upward (at the surface: jumps out). Under water the breath meter runs down; air pockets and bubble vents refill it. Heavy forms (Four Arms, Diamondhead) sink and walk the bottom.
 
 **THE SPELL ENGINE (Chapter 6's puzzle):** arrows or WASD move, Enter/Space/J acts; on touch, tap the pieces (the pendulum: tap anywhere). **THE TOWER WRAP:** left/right run round the tower, Jump, J swats rocklings and gargoyles.
 
@@ -106,33 +106,29 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **Ghostfreak's whispers and hesitation** (a 40% chance at timeout to hold on 0.9-1.9 s) are by design; if the hesitation reads as a bug to players, `GHOSTFREAK.hesitate` in `config/aliens/ghostfreak.ts`.
 - **Saves live in one browser:** no cloud sync or export yet (see IDEAS.md).
 - **Training options reset** when the game is reloaded (they aren't saved).
-- **Each chapter's own tuning notes** (what to check first with real players, and where its numbers live) are in its history file: [Chapter 2](history/milestone-4-part-1-chapter-2.md), [3](history/milestone-4-part-2-chapter-3.md), [4](history/milestone-4-part-3-chapter-4.md), [5](history/milestone-4-part-4-chapter-5.md), [6](history/milestone-5-chapter-6.md).
+- **Each chapter's own tuning notes** (what to check first with real players, and where its numbers live) are in its history file: [Chapter 2](history/milestone-4-part-1-chapter-2.md), [3](history/milestone-4-part-2-chapter-3.md), [4](history/milestone-4-part-3-chapter-4.md), [5](history/milestone-4-part-4-chapter-5.md), [6](history/milestone-5-chapter-6.md), [7](history/milestone-4-part-6-chapter-7.md).
 - **HEX AND CHARMCASTER with damage on is unproven.** God-mode runs beat him on every difficulty; the damage-on bot reached him with one death but didn't beat him in 7 minutes (it brawls inside the bodies, or spaced out deals too little). Play him by hand first. Levers in `config/hexBoss.ts`: `maxHp`, `contactDamage`, `hex.guardMultiplier`, `both.cataclysm`.
 - **Chapter 6 is tuned by scripted playtests, not people.** HEX AND CHARMCASTER's health (120) and phase thresholds, the gargoyles' dive, the golem's slam and the tower's foes are the first things to check. Numbers: `config/hexBoss.ts`, `config/magic.ts`, `config/tower.ts`, `config/gwen.ts`.
 - **THE TOWER WRAP and the Spell Engine need a human feel pass** (headless runs at about a third of real speed): the climb's run and jump, the gusts, and the pendulum's windows on a phone (`config/tower.ts`, `PENDULUM` in `scenes/engine/rules.ts`).
 - **The romanised Urdu was written carefully but not checked by a native speaker;** every word and its gloss is in `config/urdu.ts`.
 - **ALIEN FILES' demos are scripted inputs**, so a demo can look clumsy after an alien is retuned (`config/alienFiles.ts`); the window shows the real game.
+- **Chapter 7 is tuned by scripted playtests, not people.** DEEPMAW (120 HP, `config/deepmaw.ts`), swimming and breath (`config/swim.ts`) and Ripjaws (`config/aliens/ripjaws.ts`) are the first things to check. Max and Kevin still have stand-ins for a few poses Chapter 7 doesn't use (`docs/ART_COVERAGE.md`).
 - **Cards and first drinks pause the game** to show themselves (once per card per file). Settings: NEW FINDS: QUICK turns that into a banner (for speedruns; the benchmarks run with it).
 
 ## How to test the latest chapter
 
-**Chapter 6, desktop** (`npm run dev`). Chapter 5's steps are in [history/milestone-4-part-4-chapter-5.md](history/milestone-4-part-4-chapter-5.md).
+**Chapter 7, desktop** (`npm run dev`). Chapter 6's steps are in [history/milestone-5-chapter-6.md](history/milestone-5-chapter-6.md).
 
-1. **Get there:** a file that has cleared Chapter 5, Chapter Select: MAGIC > PLAY. Sections on their own: `?level=ch6&start=<checkpoint>` (see the URL switches).
-2. **Cold open:** the crane at Karachi Port, the fair, Rauf's chai, THE GREAT HEXO, Charmcaster's snatch, the Charm rolling to Gwen. Any key skips; a retry doesn't replay it.
-3. **The fair:** kites (fire cuts their strings), rocklings, talk to Rauf, Zain (try Heatblast and Four Arms near him) and Rafiq; the first chai stops the game to say what it does; the camel card stops it to flip over (POWER, WEIGHT, SPEED).
-4. **The gate and the hall:** the Rustbucket rams the gate; enchanted armour (get behind it or smash it); SHIELD comes out of Gwen: press G.
-5. **The library:** gargoyles wake and dive (Up+G: STUN); the chandelier and shelf cards.
-6. **The cellars:** Down+G: REVEAL, the hidden door, the floor that isn't there and the bridge that is; the cage: NEW DNA, Grey Matter between the bars.
-7. **The tunnel:** the golem (K as Grey Matter on it, then T to Four Arms: x3), Max and the extinguisher, the vent card (Grey Matter, from the rubble under the roof vent).
-8. **The Spell Engine:** at the grille, as Grey Matter: pipes, gears (try a dead-end slot first), the pendulum. Wait 25 s on a stage for its hint.
-9. **THE TOWER WRAP:** run right and jump the risers; watch the tower turn and the skyline wheel past; let a gust push you; miss a gap on purpose (the catch ledge).
-10. **HEX AND CHARMCASTER:** STUN her summon; ANALYZE Hex to see the next Charm; in phase 3, REVEAL the real Hex and hit Charmcaster to drop the wards.
-11. **The end of Act 2** (first clear): the harbour, the base under the sea, THE PLUMBERS, ACT 2 COMPLETE ([C] or SHARE YOUR SUMMER).
-12. **ALIEN FILES** from the title: pick Grey Matter, step through his moves, TRY IT.
-13. **Older chapters:** Chapter 1's camp (Gwen and Max) and its ending line; Grey Matter's cards: Chapter 3's vent nook (Wildmutt opens the wing's hidden vent, then swap), Chapter 4's claw machine, Chapter 5's mouse hole in the saloon's stoop. Settings: GWEN IN CHAPTERS 1-5.
-14. **Difficulty:** Hard keeps THE CAGE, SPELL ENGINE, THE TOWER WRAP and the tower top only; Easy adds PALACE GATE and the Engine's second half.
+1. **Get there:** a file that has cleared Chapter 6, Chapter Select: THE PLUMBERS > PLAY (the dev server opens it without Chapter 6). Sections on their own: `?level=ch7&start=<checkpoint>` (see the URL switches).
+2. **The opening:** the pixel jetty, the glass car, the world and the family turning HD at the beacon's pings, ACT 3: SECRETS with the owner's sting, then the base's theme. Any key skips.
+3. **The docking ring:** Max's reveal and badge, his locker, the sentries' lockdown, Gwen running at Ben's side, the split at the hub.
+4. **The reactor:** Kevin's shadow at the porthole, the drain, CONTAINMENT FAILURE, the flood; hold on as Ben until NEW DNA; smash the glass as Ripjaws.
+5. **The open sea:** swim out and back across the hull (the music turns each way); the coral cave's card.
+6. **The pump hall:** every pump and the valve (ALL SYSTEMS GO); the flooded ring as Ben without running out of air (DEEP BREATH).
+7. **Containment:** fight beside Max (his blaster) to Cell 7.
+8. **DEEPMAW:** stun his lure as three different forms (BAIT AND SWITCH), bounce his flash back with Diamondhead's shield, throw him as Four Arms while he's dazed or beached, ride out THE MAELSTROM.
+9. **The ending:** Magister Korr's hologram, the surface camera on Kevin's getaway, the smoothie; NEXT: CHAPTER 8 (COMING SOON).
+10. **Faces:** the dialogue faces change with each line's mood.
+11. **Older chapters:** unchanged; Ripjaws swims their water once he's unlocked.
 
-**Phone (emulated wide phone or real):** the Gwen button (hold for the spell picker), the Spell Engine by taps (the pendulum: tap anywhere), the tower climb with the stick, the card reveal closed with a tap, ACT 2 COMPLETE's share sheet. `?autobench=1` now plays THE TOWER WRAP too.
-
-**Chapter 7 (in progress, dev builds):** `?level=ch7` from the start (the opening plays; any key skips), or `?level=ch7&start=<checkpoint>` / `&at=<tile x>` (the list is in [ch7-wip.md](ch7-wip.md), "How to look at it"). Walk with Max into the ring, let Kevin flood the reactor and hold on as Ben until NEW DNA, smash the glass as Ripjaws, run every pump and the valve (ALL SYSTEMS GO), cross the flooded ring as Ben without running out of air (DEEP BREATH), fight beside Max to Cell 7, then DEEPMAW (stun his lure as three different forms for BAIT AND SWITCH, bounce his flash back with Diamondhead's shield, and once the pool is drained, throw him as Four Arms while he's dazed or beached).
+**Phone (emulated wide phone or real):** the owner's icons on the touch Omnitrix button, swimming with the stick, the dialogue box and the camera feed. `?autobench=1` plays THE OPEN SEA and THE MAELSTROM too.

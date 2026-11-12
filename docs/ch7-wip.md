@@ -1,6 +1,6 @@
-# Chapter 7, The Plumbers: work in progress (handoff)
+# Chapter 7, The Plumbers: working notes (released)
 
-Chapter 7 is being built in the HD cartoon look (GAME_DESIGN.md, "Act 3" and "Chapter 7: The Plumbers"). It is **not finished**: release builds show it as COMING SOON and can't start it by URL (`levels/chapters.ts` `CH7_BUILT`, `chapters/registry.ts` `knownLevelIds`); dev and bench builds play it. Remove both gates when the chapter is done. Chapters 1 to 6 must stay exactly as they are (the owner's rule): everything new is chapter-specific or only switches on in an HD presentation.
+**Chapter 7 was released on 2026-11-12**; its record is [history/milestone-4-part-6-chapter-7.md](history/milestone-4-part-6-chapter-7.md). These working notes stay as the how-to for the frame-by-frame pipeline, the recording tools and the HD presentation (Chapters 8 and 9 use them too). It was built in the HD cartoon look (GAME_DESIGN.md, "Act 3" and "Chapter 7: The Plumbers"). Chapters 1 to 6 must stay exactly as they are (the owner's rule): everything new is chapter-specific or only switches on in an HD presentation.
 
 ## Done (committed)
 
