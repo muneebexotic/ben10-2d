@@ -6,6 +6,7 @@ import type { OmnitrixTick } from '../systems/events';
 import { getAlien, hasAlien } from '../aliens/registry';
 import { pixelText } from './text';
 import { arcSteps, BakedGraphics } from './BakedGraphics';
+import { tintIcon } from './iconTint';
 
 /** A round, semi-transparent thumb button with an icon and a small caption. */
 export class TouchButton {
@@ -239,7 +240,7 @@ export class TouchDial {
       this.iconKey = key;
     }
     const alienColor = known ? getAlien(shownId).theme.color : PALETTE.omnitrix;
-    this.icon.setTint(t?.state === 'active' ? alienColor : ready ? PALETTE.omnitrix : t?.jammed ? PALETTE.jammer : PALETTE.enemyDark);
+    tintIcon(this.icon, t?.state === 'active' ? alienColor : ready ? PALETTE.omnitrix : t?.jammed ? PALETTE.jammer : PALETTE.enemyDark);
     this.glow.setTint(t?.canSwap ? alienColor : color).setAlpha(ready || t?.canSwap ? 0.3 + Math.sin(now * 0.006) * 0.12 : 0.12);
     this.swapLabel.setVisible(t?.canSwap === true).setTint(t?.fixOwed ? PALETTE.gold : alienColor);
     this.swapLabel.setText(t?.fixOwed ? 'FIX!' : 'SWAP!');

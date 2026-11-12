@@ -8,6 +8,7 @@ import { pixelText } from './text';
 import { blinkOn } from '../systems/Accessibility';
 import { inputMode } from '../systems/InputMode';
 import { arcSteps, BakedGraphics } from './BakedGraphics';
+import { tintIcon } from './iconTint';
 
 const R = 20;
 
@@ -148,8 +149,8 @@ export class OmnitrixDial {
       const selected = id === selectedId;
       img.setPosition(i * DIAL_UI.carouselSpacing - span / 2, 0);
       // Stolen DNA: a dark purple ghost of the icon.
-      if (stolen.includes(id)) img.setScale(0.8).setTint(PALETTE.kevinDark).setAlpha(0.45);
-      else img.setScale(selected ? 1.25 : 0.8).setTint(selected ? colorFor(id) : PALETTE.uiDim).setAlpha(selected ? 1 : 0.55);
+      if (stolen.includes(id)) tintIcon(img.setScale(0.8), PALETTE.kevinDark).setAlpha(0.45);
+      else tintIcon(img.setScale(selected ? 1.25 : 0.8), selected ? colorFor(id) : PALETTE.uiDim).setAlpha(selected ? 1 : 0.55);
     });
     const name = hasAlien(selectedId) ? getAlien(selectedId).name : '';
     this.carouselName.setText(name).setTint(colorFor(selectedId)).setX(0);
@@ -219,7 +220,7 @@ export class OmnitrixDial {
     } else this.icon.setX(0);
 
     this.glow.setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : active ? alienColor : PALETTE.omnitrix).setAlpha(glowAlpha);
-    this.icon.setTint(iconColor);
+    tintIcon(this.icon, iconColor);
     this.status.setText(status).setTint(t.jammed ? PALETTE.jammer : t.state === 'cooldown' || t.warning ? PALETTE.enemy : active ? alienColor : PALETTE.omnitrix);
     if (t.state === 'ready' && !t.jammed) this.status.setAlpha(0.7 + Math.sin(now * 0.008) * 0.3);
     else this.status.setAlpha(1);
@@ -233,7 +234,7 @@ export class OmnitrixDial {
     const show = t.state === 'active' && !t.jammed && t.selectedId !== null && t.selectedId !== t.activeId;
     this.badge.setVisible(show);
     if (!show) return;
-    this.badgeIcon.setTexture(iconFor(t.selectedId)).setTint(t.canSwap ? colorFor(t.selectedId) : PALETTE.uiDim);
+    tintIcon(this.badgeIcon.setTexture(iconFor(t.selectedId)), t.canSwap ? colorFor(t.selectedId) : PALETTE.uiDim);
     this.badge.setAlpha(t.canSwap ? 0.8 + Math.sin(now * 0.012) * 0.2 : 0.5);
     this.badgeRing.setVisible(t.fixOwed);
     this.fixLabel.setVisible(t.fixOwed);
