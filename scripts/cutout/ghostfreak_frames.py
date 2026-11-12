@@ -6,8 +6,9 @@
 
 ID = 'ghostfreak'
 TEXEL = 5
-# Sheet pixels per game px on the model sheet: hood to tail tip he floats about 36 game px tall.
-SCALE = 17.0
+# Sheet pixels per game px on the model sheet: hood to tail tip he floats about 45 game px tall (smaller, his thin
+# body read as a pencil next to the others).
+SCALE = 13.6
 
 SHEETS = {
     'model': ('docs/art-refs/ghostfreak-model-sheet.webp', 245),

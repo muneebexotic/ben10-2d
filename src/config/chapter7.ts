@@ -123,8 +123,8 @@ export const CH7_LATE = {
     shotSpeed: 330,
     shotLifeMs: 900,
     /** The blaster's muzzle in his firing drawing (px over his feet, px ahead of him): the bolt starts there. */
-    handHeight: 32,
-    muzzleAhead: 23,
+    handHeight: 35,
+    muzzleAhead: 25,
   },
   /** Ben this close to Cell 7 (tiles): the reveal. */
   cellNear: 2,

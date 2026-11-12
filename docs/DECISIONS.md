@@ -229,3 +229,18 @@ Measurements and before/after numbers are in `PERFORMANCE.md`.
 ## A school from one drawn fish (Chapter 7's gnasher swarm)
 
 The gnasher swarm is one enemy drawn as seven fish. Its sheet is one gnasher (a swim, the dart, the bite, the flop), and the game makes the school from seven copies of those drawings, each played whole at its own phase, placed and faced by the same circle, ball, line and heap the painted school used (`characters/deep/gnasher.ts`). The far fish are drawn a little smaller and behind. Seven fish redrawn as a group in every frame would never hold still between drawings, and the school's shapes have to move smoothly with the fight.
+
+## One cast, one scale (Chapter 7)
+
+The owner asked for every character to look right next to Ben. Measured side by side at game scale (standing or
+idle drawing), XLR8's crouch (24 px) and Upgrade's bent-kneed stance (26) stood shorter than Ben (32), Diamondhead's
+wide stance was Ben's height, Ghostfreak read as a pencil (9 px wide) and Max stood barely over Kevin. Redrawn
+bigger in their specs (`scripts/cutout/<id>_frames.py`, SCALE): XLR8 x1.25, Upgrade x1.3, Ghostfreak x1.25,
+Diamondhead x1.12, Max x1.1. Every collision box is the same 10x22, so only the look changes, but a few numbers
+follow a drawing and were kept true: Max's gait (`GAIT.max`) and blaster muzzle (`CH7_LATE.max`), and Ghostfreak's
+drifting height (`CHEST_Y`). Numbers shared with the pixel chapters stay as they are, so they cap two of the sizes:
+Diamondhead stops at x1.12 because his shards leave 22 px over his feet (his firing palm is drawn 27 up), and Four
+Arms keeps his size because what he carries is held 36 px up (his raised hands would have climbed to 61). He is
+still the biggest (45 in his stance, Diamondhead 38). Upgrade's eye beam (28 px up) now meets his drawn eye better
+than before (23 up, from 18).
+

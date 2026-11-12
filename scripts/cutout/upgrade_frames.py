@@ -5,8 +5,9 @@
 
 ID = 'upgrade'
 TEXEL = 5
-# Sheet pixels per game px on the model sheet: dome to feet he stands about 33 game px (about Ben's height).
-SCALE = 18.3
+# Sheet pixels per game px on the model sheet: dome to feet he stands about 43 game px, tall and slim over Ben (his
+# ready stance about 34: at Ben's height his bent-kneed stance stood shorter than Ben).
+SCALE = 14.1
 
 SHEETS = {
     'model': ('docs/art-refs/upgrade-model-sheet.webp', 245),

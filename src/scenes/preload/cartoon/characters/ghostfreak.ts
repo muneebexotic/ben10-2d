@@ -320,7 +320,7 @@ function ghostClips(info: RigInfo, base: Record<string, ClipDef>): Record<string
 }
 
 /** How high the Omnitrix on his chest floats over the floor while he hovers (game px): the drifting drawings hang from it there. */
-const CHEST_Y = -23.4;
+const CHEST_Y = -29.3;
 /** Where the middle of his body sits while he swims (game px above the game sprite's feet), as Ben's. */
 const SWIM_Y = -13;
 const bob = (amount: number, phase = 0) => (t: number, p: Pose) => p.move('body', 0, wave(t, phase) * amount);

@@ -7,8 +7,10 @@
 
 ID = 'diamondhead'
 TEXEL = 5
-# Sheet pixels per game px on the model sheet: gem tip to feet he stands about 40 game px (a head over Ben).
-SCALE = 15.6
+# Sheet pixels per game px on the model sheet: gem tip to feet he stands about 45 game px, a crystal brute a third
+# over Ben (his wide stance about 38: at 40 standing, his stance was Ben's height). Not bigger: his shards leave
+# 22 px over his feet (config, shared with the pixel chapters), and his firing palm is drawn about 27 px up.
+SCALE = 13.9
 
 SHEETS = {
     'model': ('docs/art-refs/diamondhead-model-sheet.webp', 245),

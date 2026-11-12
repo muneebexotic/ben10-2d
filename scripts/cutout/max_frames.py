@@ -5,8 +5,9 @@
 
 ID = 'max'
 TEXEL = 5
-# Sheet pixels per game px on the model sheet (as his cut-out: the tallest of the family).
-SCALE = 17.7
+# Sheet pixels per game px on the model sheet: the tallest of the family, clearly the grown-up (about 42 game px
+# standing; at 38 he stood barely over Kevin).
+SCALE = 16.1
 
 SHEETS = {
     'model': ('docs/art-refs/max-model-sheet.webp', 235),

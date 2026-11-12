@@ -6,8 +6,9 @@
 
 ID = 'xlr8'
 TEXEL = 5
-# Sheet pixels per game px on the model sheet: helmet to feet he stands about 32 game px (about Ben's height).
-SCALE = 19.0
+# Sheet pixels per game px on the model sheet: helmet to feet he stands about 40 game px, an adult over Ben (his
+# crouched stance about 30: at Ben's height he looked a child next to him).
+SCALE = 15.2
 
 SHEETS = {
     'model': ('docs/art-refs/xlr8-model-sheet.webp', 245),

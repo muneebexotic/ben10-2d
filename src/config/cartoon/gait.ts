@@ -8,8 +8,8 @@
 export const GAIT: Readonly<Record<string, Readonly<Record<string, number>>>> = {
   // About 3.1 px a drawing (her second run sheet's shorter stride): 20 and 10 drawings a second.
   gwen: { run: 62, walk: 31 },
-  // About 3.6 px a drawing: 10 and 15 a second.
-  max: { walk: 36, run: 54 },
+  // About 4 px a drawing (drawn 10% bigger than at first): 10 and 15 a second.
+  max: { walk: 40, run: 60 },
   // About 5 px a drawing (his second run sheet): 16 and 10 a second.
   kevin: { run: 80, walk: 50 },
 };
