@@ -10,6 +10,7 @@ import { makeHdFont } from '../../preload/cartoon/font';
 import { DEEP_ANIMS } from '../../preload/cartoon/plumber/deepSheets';
 import { makeHudIcons } from '../../preload/cartoon/plumber/hudIcons';
 import { makeHudProps } from '../../preload/cartoon/plumber/hudProps';
+import { makeFamilyPortraits } from '../../preload/cartoon/plumber/familyPortraits';
 import { DEV_TOOLS } from '../../../systems/LaunchParams';
 
 let artRes = 0;
@@ -27,14 +28,16 @@ export function plumberArtRes(game: Phaser.Game): number {
 /**
  * Chapter 7 opens its level in the HD look: its art (made once), the shared
  * textures swapped for their HD twins (the HUD's icons, hearts, dial ring,
- * cards, checkpoint post and smoothie: the owner's drawings), the render
+ * cards, checkpoint post and smoothie, the family's dialogue portraits: the
+ * owner's drawings), the render
  * scale up, and every
  * character drawn by its rig. Called first thing in the level's create.
  */
 export function enterPlumberBase(scene: Phaser.Scene): HdMirror {
   const res = plumberArtRes(scene.game);
   makeCastArt(scene, res);
-  registerHdSkin({ textures: [...makeHudIcons(scene, res), ...makeHudProps(scene, res)], font: makeHdFont(scene, res) });
+  const twins = [...makeHudIcons(scene, res), ...makeHudProps(scene, res), ...makeFamilyPortraits(scene, res)];
+  registerHdSkin({ textures: twins, font: makeHdFont(scene, res) });
   usePresentation(scene, true);
   scene.cameras.main.setRoundPixels(false);
   cameraZoom.base = CH7_HD.zoom;
