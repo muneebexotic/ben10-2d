@@ -82,7 +82,14 @@ The chapter's heaviest moments are in the bench (`ch7-sea`, `ch7-maelstrom` in `
 
 ## Release gates (2026-11-12)
 
-Typecheck, the production build and 574 tests pass. The benchmark against main and the QA sweep with fuzz were still running at release; their results are added here when they finish.
+- **Typecheck, the production build and the tests** (574 at release, 579 with the shield fix) pass.
+- **The QA sweep with fuzz** (`npm run qa -- --fuzz`, three screen sizes): 0 page errors, 0 text issues, 76 checkpoints and boss fights with no failures; every boss, DEEPMAW included, knocked through all its phases and beaten.
+- **Chapters 1-6 unchanged:** the sweep's 741 screenshots of Chapters 1-6, the menus and the HUD compared pixel by pixel with a sweep from before the HUD, the faces and the music (commit 7ff6b60). Every difference opened was the moment captured (the run timer, the camera a few pixels on, an animation's frame); the menus, title, Settings and pause screens are within 3.5% (the world moving under the pause overlay).
+- **The benchmark** against a commit from before the cast was drawn (1801d01): no regression and no leaks after the quiet reruns the budget asks for (PERFORMANCE.md, "Chapter 7 check"). THE MAELSTROM is the heaviest scene on the CPU (17.5 ms at 4x).
+
+## After release
+
+- **Diamondhead's shield** (owner report, BUGS.md R1): with the shield up, W and the Up arrow tilt it without jumping (a jump swung the bounced beam off the receiver), and a bounced laser turns to a receiver within 20 degrees of where the face sends it. Checked in the game at Chapter 4's vault and Chapter 5's cavern.
 
 ## Known issues
 

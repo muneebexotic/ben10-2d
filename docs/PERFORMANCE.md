@@ -495,3 +495,19 @@ The other scenarios passed in the full run (ch1-forest -6.9%, ch2-convoy -13.5%,
 - **THE TOWER WRAP is the lightest scene on the CPU after THE DEEP DIVE** (5.2 ms): 48 strips, about a hundred ledge stones and a dozen sprites, all pooled, positioned each frame with no allocation. Its cost on a phone is fill rate (the tower covers half the screen); `?autobench=1` plays it (`ch6-wrap`).
 - **The fair** is the chapter's busiest scene (the Ferris wheel, stalls with their lights, kites, the sea, Gwen).
 - Measured noise this session was large (main's own ch1-boss ranged 5.4 to 12.3 ms between rounds): a lone failure should be rerun alone over four rounds before anything changes, as the budget says.
+
+## Chapter 7 check (Milestone 4 part 6)
+
+**The gate** (`npm run bench -- --base=1801d01`: main had become this branch, so the base is a commit from before the cast was drawn frame by frame and before the HUD, faces and music; 4x on the emulated wide phone). Chapter 7 plays in bench builds on both sides, so its scenes are compared too. The full run (two rounds), with the type-check, the tests and a build running alongside it for part of the time, flagged four pixel scenes: ch3-frog +24%, ch4-arcade +17%, ch4-station +23%, ch6-fair +20%, each against a main round far faster than main's other (ch3-frog main 8.28 and 10.15 ms). Nothing that changed in the shared code runs per frame beyond a flag check (the HUD icons' tint asks whether the presentation is HD; the camera feed is a hidden container). Rerun on a quiet machine, mean CPU ms per frame, best of four rounds:
+
+| Scenario | main | this | change |
+|---|---|---|---|
+| ch3-frog | 10.17 | 9.89 | -2.8% |
+| ch4-arcade (alone) | 9.95 | 10.05 | +1.0% |
+| ch4-station | 8.15 | 9.16 | +12.4% (inside the budget) |
+| ch6-fair | 9.60 | 9.12 | -5.0% |
+
+The four-scenario rerun still flagged ch4-arcade (+19.7%) on one fast main round (9.13 ms; its other three 11.25-11.95, this build's 10.93-11.92); alone over four rounds it measured +1%. The rest passed the full run, Chapter 7's own scenes included: ch7-sea 10.59 ms (+4.1%), ch7-maelstrom 17.49 ms (+13.3%, the heaviest scene in the game on the CPU: the whirlpool, its debris and DEEPMAW's rig). **No leaks:** flat over seven chapter cycles (62 EventBus listeners, 418 textures, 7-8 audio sources with none held, heap 16.1 to 17.9 MB).
+
+- **The HD chapter's cost on a phone is fill rate and memory, not the CPU:** render scale up to 3x, art at up to 4 texels per game pixel (`CH7_HD`), 4.7 MB of WebP atlases for the cast and 3.1 MB of AAC music, all loaded with the chapter. `?autobench=1` plays THE OPEN SEA and THE MAELSTROM; the phone's report is the final word.
+- The Diamondhead shield fix (BUGS.md R1, a flag check in the player's step and an aim check on a beam's bounce) was in the rerun's build.
