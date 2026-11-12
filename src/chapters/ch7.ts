@@ -74,8 +74,7 @@ export const CHAPTER: ChapterModule = {
   art: [{ assets: DEEP_ASSETS, anims: DEEP_ANIMS }],
   // The base's recording inside the hull, the open sea's outside it (the story's `SeaMusic` turns it as Ben crosses).
   track: plumberTrack,
-  // The music is the shared boss theme until Chapter 7's own tracks land.
-  bosses: { deepmaw: { music: 'boss', hologram: [], create: (scene, world, x) => new DeepmawBoss(scene, world, x) } },
+  bosses: { deepmaw: { music: 'deepmaw', hologram: [], create: (scene, world, x) => new DeepmawBoss(scene, world, x) } },
   brains: {
     warden: () => new WardenBrain(),
     grunt: () => new GruntBrain(),

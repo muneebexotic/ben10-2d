@@ -26,6 +26,10 @@ export const RECORDINGS: Readonly<Record<string, Recording>> = {
   // Chapter 7, the open sea (the owner's recording). 90 BPM; the file fades out from 53.5 s, so the loop is the 16 bars
   // before it (10.285 to 52.952 s, the smoothest join in it) and the first 10 s play once. -11.5 LUFS.
   opensea: { url: 'assets/audio/music/opensea.m4a', loopStart: 10.285, loopEnd: 52.952, gainDb: -4.5 },
+  // Chapter 7's boss, DEEPMAW (the owner's recording). 148 BPM; the file fades out from 55 s, so it loops 28 bars from
+  // 4.008 s to 49.413 s: the full fight, the breakdown and the lighter section, whose last bars sound like the intro's,
+  // back into the fight (the smoothest join in it). The first 4 s play once. -11.2 LUFS.
+  deepmaw: { url: 'assets/audio/music/deepmaw.m4a', loopStart: 4.008, loopEnd: 49.413, gainDb: -4.8 },
 };
 
 /** How a recording reacts to Ben's form (the sequencer's hero layer, for a single mixed file). */
