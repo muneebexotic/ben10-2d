@@ -85,6 +85,7 @@ class Autopilot {
     s.right ||= h.right;
     s.jumpPressed ||= h.jump && !p.jump;
     s.jumpHeld ||= h.jump;
+    if (h.jump) s.jumpByUp = false;
     s.attackPressed ||= h.attack && !p.attack;
     s.attackHeld ||= h.attack;
     const specialPressed = h.special && !p.special;

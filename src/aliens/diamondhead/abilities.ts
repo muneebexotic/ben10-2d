@@ -223,6 +223,11 @@ export class DiamondheadAbilities implements FormAbilities {
     return this.shielding ? SH.moveMultiplier : 1;
   }
 
+  /** Shield up: Up tilts it, so W and the Up arrow don't jump (a jump would swing a reflected beam off its target). */
+  upAims(): boolean {
+    return this.shielding;
+  }
+
   animOverride(): string | null {
     if (this.shielding) return this.tilt < 0 ? 'shieldUp' : this.tilt > 0 ? 'shieldDown' : 'shield';
     if (this.spikeAnimLeft > 0) return 'spikes';

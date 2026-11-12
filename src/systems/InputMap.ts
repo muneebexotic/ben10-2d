@@ -9,6 +9,11 @@ export interface Controls {
   down: boolean;
   jumpPressed: boolean;
   jumpHeld: boolean;
+  /**
+   * Every jump input this frame is an Up key (W or the Up arrow, which also aim up), not Space, the touch JUMP button
+   * or the scripted player: a form aiming with Up (Diamondhead tilting his shield) doesn't jump from them.
+   */
+  jumpByUp: boolean;
   attackPressed: boolean;
   attackHeld: boolean;
   specialPressed: boolean;
@@ -40,6 +45,7 @@ export function emptyControls(): Controls {
     down: false,
     jumpPressed: false,
     jumpHeld: false,
+    jumpByUp: false,
     attackPressed: false,
     attackHeld: false,
     specialPressed: false,
@@ -66,7 +72,9 @@ const BINDINGS = {
   right: [K.D, K.RIGHT],
   up: [K.W, K.UP],
   down: [K.S, K.DOWN],
-  jump: [K.SPACE, K.W, K.UP],
+  // Space jumps; W and the Up arrow aim up and jump too (`upJump`: Controls.jumpByUp tells them apart).
+  jump: [K.SPACE],
+  upJump: [K.W, K.UP],
   attack: [K.J, K.X],
   special: [K.K, K.C],
   dialPrev: [K.Q],
@@ -135,8 +143,12 @@ export class InputMap {
     s.right = this.held('right') || pad.stick.right;
     s.up = this.held('up') || pad.stick.up;
     s.down = this.held('down') || pad.stick.down;
-    s.jumpPressed = this.pressed('jump') || pad.consume('jump');
-    s.jumpHeld = this.held('jump') || pad.isHeld('jump') || s.jumpPressed;
+    const jumpKey = this.pressed('jump') || pad.consume('jump');
+    const upJump = this.pressed('upJump');
+    const jumpKeyHeld = this.held('jump') || pad.isHeld('jump') || jumpKey;
+    s.jumpPressed = jumpKey || upJump;
+    s.jumpHeld = jumpKeyHeld || this.held('upJump') || upJump;
+    s.jumpByUp = s.jumpHeld && !jumpKeyHeld;
     s.attackPressed = this.pressed('attack') || pad.consume('attack');
     s.attackHeld = this.held('attack') || pad.isHeld('attack') || s.attackPressed;
     s.specialPressed = this.pressed('special') || pad.consume('special');

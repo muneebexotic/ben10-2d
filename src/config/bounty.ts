@@ -133,6 +133,12 @@ export const SECURITY_LASER = {
   maxBounces: 4,
   /** A receiver must be lit this long to open its gate. */
   chargeMs: 450,
+  /**
+   * A beam Diamondhead's shield bounces turns to a receiver within this angle of where the face sends it (degrees),
+   * this close (px): a step either side of the exact spot still lights it, but the shield must face the right way.
+   */
+  reflectAssistDeg: 20,
+  reflectAssistRange: 260,
   /** The beam blinks off this long every cycle on the Kevin-era emitters that pulse (0: always on). */
   thickness: 3,
 } as const;

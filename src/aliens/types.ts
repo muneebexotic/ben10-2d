@@ -248,6 +248,8 @@ export interface FormAbilities {
   onSwapIn?(ctx: AbilityContext): void;
   speedMultiplier?(): number;
   locksMovement?(): boolean;
+  /** Up is aiming the form right now (Diamondhead tilting his shield): W and the Up arrow don't jump (Space still does). */
+  upAims?(): boolean;
   isInvulnerable?(): boolean;
   /** Animation suffix to play instead of the movement animation, or null. */
   animOverride?(): string | null;

@@ -140,6 +140,12 @@ Found by reading the menu, input, audio and scene code, the QA sweep's screensho
 | U6 | minor | Settings (UX) | Sound was all or nothing: no way to turn the music down and keep the effects | Only a mute switch | changed: MUSIC and EFFECTS sliders |
 | U7 | minor | Chapter Complete (UX) | The five-second stats tally ignored every key and tap until it finished | Input only enabled with the footer | changed: a press hurries the tally |
 
+## Owner reports (after Chapter 7's release)
+
+| # | Severity | Where | Bug | Cause | Status |
+|---|---|---|---|---|---|
+| R1 | major | Diamondhead's laser puzzles: Chapter 5's cavern (the story's way on), Chapter 4's vault, Chapter 1's jammer seam; DEEPMAW's flash | Holding K and pressing Up to tilt the shield made Diamondhead jump, so the bounced beam swung off the receiver before it could charge (it needs 0.45 s); and even standing still, the tilted beam only met the receiver from a strip about 26 px wide (Chapter 4; the space in front of the vault is 80), so a step either side missed | W and the Up arrow are jump keys as well as aim keys, and the player jumped whatever the form was doing; the reflected beam went exactly where the 40-degree face sent it, with no help (turned shots had a 24-degree assist, beams none) | fixed: while the shield is up, W and the Up arrow only tilt it (Space still jumps; touch was never affected: its stick doesn't jump); a bounced beam turns to a receiver within 20 degrees of where the face sends it (`SECURITY_LASER.reflectAssistDeg`) |
+
 ## Needs your decision
 
 | # | Where | Question |

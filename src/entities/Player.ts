@@ -384,8 +384,13 @@ export class Player implements PlayerHandle {
 
     this.abilities.update(this.ctx, dtMs);
 
+    // A form aiming with Up (Diamondhead's tilted shield) doesn't jump from the Up keys.
+    const upAims = c.jumpByUp && (this.abilities.upAims?.() ?? false);
+    const jumpPressed = c.jumpPressed && !upAims;
+    const jumpHeld = c.jumpHeld && !upAims;
+
     const standingOnPlatform = grounded && this.onPlatform?.(this) === true;
-    const dropping = standingOnPlatform && c.down && c.jumpPressed;
+    const dropping = standingOnPlatform && c.down && jumpPressed;
     if (dropping) {
       this.dropThroughUntil = this.now + PLAYER.dropThroughMs;
       this.body.setVelocityY(40);
@@ -401,7 +406,7 @@ export class Player implements PlayerHandle {
         const moveY: -1 | 0 | 1 = c.up === c.down ? 0 : c.up ? -1 : 1;
         const res = stepSwim(
           this.swimState,
-          { moveX, moveY, jumpPressed: c.jumpPressed },
+          { moveX, moveY, jumpPressed },
           swim,
           { top: this.body.top, height: this.body.height },
           water,
@@ -428,7 +433,7 @@ export class Player implements PlayerHandle {
       if (!locked) {
         const res = stepMotor(
           this.motor,
-          { moveX, jumpPressed: c.jumpPressed && !dropping, jumpHeld: c.jumpHeld },
+          { moveX, jumpPressed: jumpPressed && !dropping, jumpHeld },
           this.form.motor,
           { vx: this.body.velocity.x, vy: this.body.velocity.y, grounded },
           dtMs,
@@ -441,7 +446,7 @@ export class Player implements PlayerHandle {
       }
 
       const custom = this.abilities.gravityScale?.(this.ctx) ?? null;
-      const scale = (custom ?? gravityScale(this.body.velocity.y, c.jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale) * (heavy?.gravityScale ?? 1);
+      const scale = (custom ?? gravityScale(this.body.velocity.y, jumpHeld, GRAVITY_TUNING) * this.form.feel.gravityScale) * (heavy?.gravityScale ?? 1);
       this.body.setGravityY(PHYSICS.gravity * (scale - 1));
       const maxFall = heavy?.maxFall ?? this.abilities.maxFallSpeed?.(this.ctx) ?? PLAYER.maxFallSpeed;
       if (this.body.velocity.y > maxFall) this.body.setVelocityY(maxFall);

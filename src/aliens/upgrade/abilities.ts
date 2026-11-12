@@ -325,6 +325,7 @@ const IDLE: Controls = {
   down: false,
   jumpPressed: false,
   jumpHeld: false,
+  jumpByUp: false,
   attackPressed: false,
   attackHeld: false,
   specialPressed: false,

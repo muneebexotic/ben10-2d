@@ -244,3 +244,9 @@ Arms keeps his size because what he carries is held 36 px up (his raised hands w
 still the biggest (45 in his stance, Diamondhead 38). Upgrade's eye beam (28 px up) now meets his drawn eye better
 than before (23 up, from 18).
 
+
+## Up aims, not jumps, while Diamondhead's shield is up (owner report, BUGS.md R1)
+
+- **W and the Up arrow jump and aim** (that stays everywhere else), but while Diamondhead holds his shield they only tilt it: a jump swung the bounced beam off the receiver it was charging, so the laser puzzles (Chapter 5's cavern, the way on) could fail on a correct input. Space still jumps with the shield up; on touch, the stick never jumped. A form opts in with `upAims()` (`aliens/types.ts`); `Controls.jumpByUp` says when every jump input that frame is an Up key.
+- **A bounced laser finds a receiver it nearly meets** (`SECURITY_LASER.reflectAssistDeg`, 20 degrees, `entities/hazards/beamAssist.ts`), as turned shots already found enemies (24 degrees). Unhelped, the tilted beam lit Chapter 4's vault receiver from a strip about 26 px wide; now from about three tiles in front of it. Facing away, holding the shield level or standing right against the emitter still misses: the puzzle still asks for the tilt.
+- This changes Chapters 1, 4 and 5 on the owner's request (their "no changes to Chapters 1-6" rule doesn't cover fixes they ask for).

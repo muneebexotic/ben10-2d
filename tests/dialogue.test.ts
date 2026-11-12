@@ -18,7 +18,7 @@ const blank = (): Controls => ({
   jumpPressed: false, jumpHeld: false, attackPressed: false, attackHeld: false,
   specialPressed: false, specialHeld: false, specialReleased: false,
   dialPrev: false, dialNext: false, dialPick: null, transform: false, transformLeadMs: 0,
-  pause: false, confirm: false, skip: false, anyPressed: false, spellPressed: false, spellPick: null,
+  pause: false, confirm: false, skip: false, anyPressed: false, spellPressed: false, spellPick: null, jumpByUp: false,
 });
 const press = (): Controls => ({ ...blank(), jumpPressed: true, anyPressed: true });
 const enter = (): Controls => ({ ...blank(), confirm: true, skip: true, anyPressed: true });

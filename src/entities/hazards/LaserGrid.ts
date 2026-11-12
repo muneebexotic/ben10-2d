@@ -8,6 +8,7 @@ import type { Lighting } from '../../systems/Lighting';
 import { playSfx } from '../../systems/audio/Sfx';
 import { crystalBreak, laserBurn, receiverOn } from '../../systems/audio/bountySfx';
 import type { Rect } from '../types';
+import { aimBeam, type BeamDir } from './beamAssist';
 
 export type LaserDir = 'left' | 'right' | 'up' | 'down';
 
@@ -72,6 +73,7 @@ function samePath(a: readonly number[], b: readonly number[]): boolean {
   return true;
 }
 const STEP = 3;
+const ASSIST_COS = Math.cos((L.reflectAssistDeg * Math.PI) / 180);
 
 interface Emitter {
   spec: LaserSpec;
@@ -115,6 +117,9 @@ export class LaserGrid {
   private readonly gates: Gate[] = [];
   private readonly g: Phaser.GameObjects.Graphics;
   private readonly box: Rect = { x: 0, y: 0, w: 0, h: 0 };
+  /** Reused by the bounce's aim assist (no allocations per frame). */
+  private readonly aim: BeamDir = { dx: 0, dy: 0 };
+  private readonly unlit: Rect[] = [];
   private hurtCooldown = 0;
 
   constructor(
@@ -219,6 +224,15 @@ export class LaserGrid {
           path.push(x, y);
           dx = sx;
           dy = sy;
+          // Bent onto a receiver the face nearly points at (BUGS.md R1: a step off the exact spot missed).
+          this.unlit.length = 0;
+          for (const r of this.receivers) if (!r.lit) this.unlit.push(r.rect);
+          this.aim.dx = dx;
+          this.aim.dy = dy;
+          if (aimBeam(x, y, this.aim, this.unlit, ASSIST_COS, L.reflectAssistRange)) {
+            dx = this.aim.dx;
+            dy = this.aim.dy;
+          }
           bounces++;
           sinceBounce = 0;
           this.w.fx.burst('crystal', x, y, 1);
