@@ -3,17 +3,80 @@ import { makeHdImage } from '../hdTexture';
 import { INK, LINE } from '../paint';
 import { HD_PORTRAITS } from '../portraitKeys';
 import { PORTRAIT } from '../../portraits';
+import { cutoutImage } from '../cutout/cutout';
+import { KORR_FRAMES } from '../cutout/korrFrames';
 
 /** The hologram's colours: everything in one cool cyan, brightest where light hits. */
 const H = { bg: 0x041a20, deep: 0x0c4a56, mid: 0x1d8a96, light: 0x58d8de, hot: 0xc8fff8, glow: 0x3ae0d8 };
 
+/** The hologram's ramp, dark to bright: each pixel of the drawing takes the colour of its brightness. */
+const RAMP = [H.bg, H.deep, H.mid, H.light, H.hot];
+/** Where the bust's top sits in the portrait (game px); the panel crops the coat below. */
+const BUST_TOP = 1.5;
+
 /**
- * MAGISTER KORR's dialogue portrait (Chapter 7's ending), painted in code until
- * the owner's art arrives: an old Plumber built like a bull tortoise, two
+ * MAGISTER KORR's dialogue portrait (Chapter 7's ending): the owner's drawing
+ * (docs/art-refs/korr-portrait-sheet.webp, the stern close-up) as a
+ * flickering cyan hologram. Painted in code if the drawing hasn't loaded.
+ */
+export function makeKorrPortrait(scene: Phaser.Scene, res: number): void {
+  const img = cutoutImage(KORR_FRAMES.id);
+  const bust = KORR_FRAMES.frames['body:bust'];
+  if (img && bust) drawnKorr(scene, res, img, bust);
+  else paintedKorr(scene, res);
+}
+
+/** The drawing, recoloured by brightness into the hologram's ramp, framed in the portrait with scanlines over it. */
+function drawnKorr(scene: Phaser.Scene, res: number, img: HTMLImageElement, f: { x: number; y: number; w: number; h: number }): void {
+  const { w, h } = PORTRAIT;
+  const holo = hologram(img, f);
+  makeHdImage(scene, HD_PORTRAITS.korr, w, h, res, (p) => {
+    const panel = p.rrect(0.5, 0.5, w - 1, h - 1, 4);
+    p.fill(panel, H.bg);
+    p.within(panel, () => {
+      p.glow(w / 2, h * 0.45, w * 0.6, H.glow, 0.3);
+      if (holo) {
+        const T = KORR_FRAMES.texel;
+        p.ctx.drawImage(holo, (w - f.w / T) / 2, BUST_TOP, f.w / T, f.h / T);
+      }
+      for (let y = 1; y < h; y += 2) p.fill(p.rrect(0, y, w, 0.5, 0), H.bg, 0.28);
+      p.fill(p.rrect(0, 18, w, 2.5, 0), H.hot, 0.12);
+    });
+    p.stroke(panel, INK, LINE * 0.8);
+  });
+}
+
+/** The drawing on its own canvas, each pixel taking the hologram colour of its brightness (alpha kept, a little see-through). */
+function hologram(img: HTMLImageElement, f: { x: number; y: number; w: number; h: number }): HTMLCanvasElement | null {
+  const canvas = document.createElement('canvas');
+  canvas.width = f.w;
+  canvas.height = f.h;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.drawImage(img, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
+  const data = ctx.getImageData(0, 0, f.w, f.h);
+  const px = data.data;
+  const ramp = RAMP.map((c) => [(c >> 16) & 255, (c >> 8) & 255, c & 255]);
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] === 0) continue;
+    // Brightness, stretched so the drawing's darkest ink and lightest beard span the ramp.
+    const l = Math.min(1, Math.max(0, ((0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2]) / 255 - 0.05) * 1.35));
+    const k = l * (ramp.length - 1);
+    const a = Math.min(ramp.length - 2, Math.floor(k));
+    const t = k - a;
+    for (let c = 0; c < 3; c++) px[i + c] = Math.round(ramp[a][c] + (ramp[a + 1][c] - ramp[a][c]) * t);
+    px[i + 3] = Math.round(px[i + 3] * 0.94);
+  }
+  ctx.putImageData(data, 0, 0);
+  return canvas;
+}
+
+/**
+ * The fallback, painted in code: an old Plumber built like a bull tortoise, two
  * horns swept back, a heavy brow, a long braided beard, a coat with shoulder
  * plates and a glowing badge, all as a flickering cyan hologram.
  */
-export function makeKorrPortrait(scene: Phaser.Scene, res: number): void {
+function paintedKorr(scene: Phaser.Scene, res: number): void {
   const { w, h } = PORTRAIT;
   makeHdImage(scene, HD_PORTRAITS.korr, w, h, res, (p) => {
     const panel = p.rrect(0.5, 0.5, w - 1, h - 1, 4);

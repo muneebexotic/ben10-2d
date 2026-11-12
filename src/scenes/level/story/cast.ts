@@ -45,7 +45,7 @@ export const CAST: Record<CastId, CastMember> = {
   zain: { name: 'ZAIN', color: PALETTE.omnitrix, portrait: CH6_TEX.portraitZain, voicePitch: 1.6 },
   // Chapter 7 (the Plumber base): portraits painted from their rigs.
   deepmaw: { name: 'DEEPMAW', color: PALETTE.deepmaw, portrait: HD_PORTRAITS.deepmaw, voicePitch: 0.5 },
-  // A hologram painted in code until the owner's portrait arrives (cartoon/plumber/korr.ts).
+  // The owner's drawing as a hologram (cartoon/plumber/korr.ts).
   korr: { name: 'MAGISTER KORR', color: 0x58d8de, portrait: HD_PORTRAITS.korr, voicePitch: 0.6 },
 };
 
