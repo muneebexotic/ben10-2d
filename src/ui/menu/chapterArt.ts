@@ -38,6 +38,8 @@ export function chapterArt(scene: Phaser.Scene, chapter: ChapterInfo, open: bool
     out.push(...arcadeDusk(scene, bg, w, h));
   } else if (open && chapter.number === 5) {
     out.push(...silverSpur(scene, bg, w, h));
+  } else if (open && chapter.number === 7) {
+    out.push(...plumbersDeep(scene, bg, w, h));
   } else {
     const rim = ACT_COLORS[chapter.act] ?? PALETTE.omnitrix;
     bg.fillGradientStyle(0x05070f, 0x05070f, 0x141a33, 0x141a33, 1).fillRect(-w / 2, -h / 2, w, h);
@@ -48,6 +50,33 @@ export function chapterArt(scene: Phaser.Scene, chapter: ChapterInfo, open: bool
   frame.lineStyle(1, PALETTE.uiPanelLight, 1).strokeRect(-w / 2 + 0.5, -h / 2 + 0.5, w - 1, h - 1);
   out.push(frame);
   return out;
+}
+
+/** Chapter 7's window, the owner's painting (docs/art-refs/ch7-card-painting.webp) made the window's size (public/assets/stills). */
+const CH7_CARD = 'ch7-card';
+const CH7_CARD_URL = 'assets/stills/ch7-card.png';
+/** The deep sea it fades from while the picture loads (the painting's own edge colour). */
+const CH7_SEA = 0x0e2c3c;
+
+/**
+ * Chapter 7's window: the Plumber base on the floor of the Arabian Sea, the
+ * glass car with the family coming down, Ripjaws, and DEEPMAW's lure in the
+ * dark. The picture loads the first time the card is built.
+ */
+function plumbersDeep(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, w: number, h: number): Phaser.GameObjects.GameObject[] {
+  g.fillStyle(CH7_SEA, 1).fillRect(-w / 2, -h / 2, w, h);
+  const slot = scene.add.container(0, 0);
+  const place = () => {
+    if (!slot.active || !scene.textures.exists(CH7_CARD)) return;
+    slot.add(scene.add.image(0, 0, CH7_CARD).setDisplaySize(w, h));
+  };
+  if (scene.textures.exists(CH7_CARD)) place();
+  else {
+    scene.load.image(CH7_CARD, `${import.meta.env.BASE_URL}${CH7_CARD_URL}`);
+    scene.load.once(`filecomplete-image-${CH7_CARD}`, place);
+    scene.load.start();
+  }
+  return [slot];
 }
 
 /** Chapter 1's window: the camp at night, the RV, the campfire, Ben, and the green meteor coming down. */
