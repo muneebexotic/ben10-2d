@@ -16,7 +16,14 @@ export interface Recording {
   once?: boolean;
 }
 
-export const RECORDINGS: Readonly<Record<string, Recording>> = {};
+/** Every recording is levelled to about this loudness (integrated LUFS) with `gainDb`, so tracks sit at one level. */
+export const MUSIC_TARGET_LUFS = -16;
+
+export const RECORDINGS: Readonly<Record<string, Recording>> = {
+  // Chapter 7, the Plumber base (the owner's recording). 112 BPM, 28 bars made to loop as a whole: from just before
+  // the first kick (0.024 s) to the same point 28 bars (60 s) on, where the next downbeat lands. -11.5 LUFS.
+  deep: { url: 'assets/audio/music/deep.m4a', loopStart: 0.022, loopEnd: 60.022, gainDb: -4.5 },
+};
 
 /** How a recording reacts to Ben's form (the sequencer's hero layer, for a single mixed file). */
 export const RECORDED_MIX = {

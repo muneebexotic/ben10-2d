@@ -188,7 +188,9 @@ export type TrackName =
   | 'museum' | 'animo'
   | 'arcade' | 'subway' | 'kevin'
   | 'ghosttown' | 'mine' | 'hunters' | 'dive'
-  | 'fair' | 'manor' | 'engine' | 'hex';
+  | 'fair' | 'manor' | 'engine' | 'hex'
+  // Chapter 7: recordings only (config/music.ts), no sequencer tracks.
+  | 'deep' | 'opensea' | 'deepmaw' | 'act3';
 
 /** The tracks the shared code plays (menus, Chapter 1, Training); chapter tracks join when their chapter loads. */
 const TRACKS: Partial<Record<TrackName, Track>> = { forest: FOREST, boss: BOSS, title: TITLE, victory: VICTORY, simulation: SIMULATION };

@@ -71,6 +71,8 @@ export const CHAPTER: ChapterModule = {
   // Gwen walks with Ben through the docking ring (the story joins her, and takes her at the hub).
   gwen: { chatter: CH7_GWEN_CHATTER, runSpeed: CH7_BEATS.ring.gwenFollow },
   art: [{ assets: DEEP_ASSETS, anims: DEEP_ANIMS }],
+  // The base's recording plays everywhere (the open sea and DEEPMAW's get their own when their recordings land).
+  track: () => 'deep',
   // The music is the shared boss theme until Chapter 7's own tracks land.
   bosses: { deepmaw: { music: 'boss', hologram: [], create: (scene, world, x) => new DeepmawBoss(scene, world, x) } },
   brains: {
