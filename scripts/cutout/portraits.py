@@ -1,7 +1,7 @@
-"""Chapter 7's dialogue portraits of the family from the owner's model sheets: each character's close-up as it is
-(the talking face; Kevin's grin, as his box portrait grins), fitted whole into the 48-px portrait at T texels a game
-px, standing on its bottom edge. Writes public/assets/cast/family-portraits.webp and
-src/scenes/preload/cartoon/cutout/familyPortraits.ts (frames `body:<id>`).
+"""Chapter 7's dialogue portraits of the family from the owner's model sheets: each character's six close-ups as
+they are (neutral, happy, angry, shocked, hurt, talking: a line's mood picks one), fitted whole into the 48-px
+portrait at T texels a game px, standing on its bottom edge. Writes public/assets/cast/family-portraits.webp and
+src/scenes/preload/cartoon/cutout/familyPortraits.ts (frames `body:<id>:<mood>`).
 
     python3 -I scripts/cutout/portraits.py
 """
@@ -16,15 +16,18 @@ sys.path.insert(0, os.path.dirname(__file__))
 import frames as F  # noqa: E402
 from cut import ROOT  # noqa: E402
 
-# Which figure of each model sheet (0-3 the full views, then the close-ups left to right; Kevin's sheet has an
-# extra full-body pose first, so his close-ups start at 5).
-PICK = {'ben': 9, 'gwen': 9, 'max': 9, 'kevin': 6}
+# Where each model sheet's close-ups start (0-3 are the full views; Kevin's sheet has an extra full-body pose first),
+# and their order on every sheet (its prompt asked for them so).
+FIRST = {'ben': 4, 'gwen': 4, 'max': 4, 'kevin': 5}
+MOODS = ['neutral', 'happy', 'angry', 'shocked', 'hurt', 'talk']
 T = 6
 SIDE = 48 * T
 
 tiles = []
-for cid, k in PICK.items():
-    fig = F.figures(F.read_sheet(f'docs/art-refs/{cid}-model-sheet.webp'), 235, 15000, 7)[k]
+for cid, first in FIRST.items():
+  figs = F.figures(F.read_sheet(f'docs/art-refs/{cid}-model-sheet.webp'), 235, 15000, 7)
+  for m, mood in enumerate(MOODS):
+    fig = figs[first + m]
     h, w = fig.shape[:2]
     s = min(SIDE / w, SIDE / h)
     sw, sh = max(1, round(w * s)), max(1, round(h * s))
@@ -32,14 +35,17 @@ for cid, k in PICK.items():
     tile = np.zeros((SIDE, SIDE, 4), np.float32)
     ox = (SIDE - sw) // 2
     tile[SIDE - sh:, ox:ox + sw] = small
-    tiles.append((cid, tile))
+    tiles.append((f'{cid}:{mood}', tile))
 
-atlas = np.zeros((SIDE, SIDE * len(tiles) + 2 * (len(tiles) - 1), 4), np.float32)
+# A row per character, a column per mood.
+cols = len(MOODS)
+rows = len(FIRST)
+atlas = np.zeros((rows * (SIDE + 2) - 2, cols * (SIDE + 2) - 2, 4), np.float32)
 frames = {}
-for i, (cid, t) in enumerate(tiles):
-    x = i * (SIDE + 2)
-    atlas[:, x:x + SIDE] = t
-    frames['body:' + cid] = {'x': x, 'y': 0, 'w': SIDE, 'h': SIDE, 'px': 0, 'py': 0}
+for i, (name, t) in enumerate(tiles):
+    x, y = (i % cols) * (SIDE + 2), (i // cols) * (SIDE + 2)
+    atlas[y:y + SIDE, x:x + SIDE] = t
+    frames['body:' + name] = {'x': x, 'y': y, 'w': SIDE, 'h': SIDE, 'px': 0, 'py': 0}
 a = atlas[..., 3:]
 rgb = np.where(a > 0, atlas[..., :3] / np.maximum(a, 1e-6), 0)
 out = np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)

@@ -12,7 +12,12 @@ export interface Line {
   bubble?: boolean;
   /** A picture shown under the dialogue box while the line plays (a texture key: Chapter 7's surface camera). */
   still?: string;
+  /** The speaker's face, where their portrait has one drawn (Chapter 7's family); else their usual portrait. */
+  mood?: Mood;
 }
+
+/** The faces a portrait can show (the owner's model-sheet close-ups). */
+export type Mood = 'neutral' | 'happy' | 'angry' | 'shocked' | 'hurt' | 'talk';
 
 interface Running {
   lines: readonly Line[];
@@ -124,7 +129,7 @@ export class Dialogue {
       return;
     }
     const c = CAST[line.who];
-    EventBus.emit('hud:dialog', { speaker: c.name, text: line.text, color: c.color, voicePitch: c.voicePitch, skip: r.skippable, portrait: c.portrait });
+    EventBus.emit('hud:dialog', { speaker: c.name, text: line.text, color: c.color, voicePitch: c.voicePitch, skip: r.skippable, portrait: c.portrait, mood: line.mood });
   }
 
   /** Lines without a picture say nothing unless one is up (the older chapters' conversations never send this). */

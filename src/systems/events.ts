@@ -108,7 +108,8 @@ export interface GameEvents {
   'hud:promptClear': { id: string };
   'hud:banner': BannerPayload;
   'hud:letterbox': { visible: boolean };
-  'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean; portrait?: string };
+  /** `mood`: the face the portrait shows, where the chapter drew one (Chapter 7's family). */
+  'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean; portrait?: string; mood?: string };
   'hud:dialogClear': undefined;
   /** A picture under the dialogue box while a line plays (a texture key), or null to take it away (Chapter 7's surface camera). */
   'hud:still': { key: string | null };

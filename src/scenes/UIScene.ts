@@ -206,7 +206,7 @@ export class UIScene extends Phaser.Scene {
       this.letterbox.set(p.visible);
       this.dialog.setLetterbox(p.visible);
     }, this);
-    on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip, p.portrait), this);
+    on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip, p.portrait, p.mood), this);
     on('hud:dialogClear', () => this.dialog.clear(), this);
     on('hud:still', (p) => (p.key ? this.feed.show(p.key) : this.feed.hide()), this);
     on('hud:dialogFill', () => this.dialog.fill(), this);

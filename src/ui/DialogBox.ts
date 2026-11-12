@@ -5,6 +5,10 @@ import { STORY } from '../config/story';
 import { playSfx } from '../systems/audio/Sfx';
 import { inputMode } from '../systems/InputMode';
 import { boxed, pixelText } from './text';
+import { presentationIsHd } from '../systems/hd/Presentation';
+
+/** A portrait's face for a mood (as Chapter 7 names them: `plumber/familyPortraits.ts`). */
+const moodKey = (portrait: string, mood: string): string => `${portrait}@${mood}`;
 
 const W = 520;
 const H = 46;
@@ -28,6 +32,8 @@ export class DialogBox {
   private voicePitch = 1;
   private right = GAME_WIDTH;
   private letterboxed = false;
+  /** The speaker's portrait (before any mood's face), to tell a new speaker from a new face. */
+  private speakerPortrait = '';
   private skippable = false;
 
   constructor(private readonly scene: Phaser.Scene) {
@@ -72,8 +78,11 @@ export class DialogBox {
     this.skip.setText(this.skippable ? inputMode.format('{SKIP}') : '').setVisible(shown);
   }
 
-  /** `portrait`: a texture key; the speaker's bust pops out of the box's left edge. */
-  show(speaker: string, text: string, color: number, voicePitch = 1, skip = false, portrait?: string): void {
+  /**
+   * `portrait`: a texture key; the speaker's bust pops out of the box's left edge. `mood`: the face to show, where
+   * the chapter drew one (`<portrait>@<mood>`, Chapter 7's family); else the usual portrait.
+   */
+  show(speaker: string, text: string, color: number, voicePitch = 1, skip = false, portrait?: string, mood?: string): void {
     this.full = text;
     this.shown = 0;
     this.voicePitch = voicePitch;
@@ -84,8 +93,11 @@ export class DialogBox {
     const pf = this.portraitFrame;
     pf.clear();
     if (portrait) {
-      const changed = !this.portrait.visible || this.portrait.texture.key !== portrait;
-      this.portrait.setTexture(portrait).setVisible(true);
+      // A new face for the same speaker swaps in place; only a new speaker hops in.
+      const changed = !this.portrait.visible || this.speakerPortrait !== portrait;
+      this.speakerPortrait = portrait;
+      const face = mood && presentationIsHd() && this.scene.textures.exists(moodKey(portrait, mood)) ? moodKey(portrait, mood) : portrait;
+      this.portrait.setTexture(face).setVisible(true);
       pf.fillStyle(PALETTE.ink, 1).fillRect(-W / 2 + 4, -H / 2 - 9, 52, 52);
       pf.lineStyle(2, color, 1).strokeRect(-W / 2 + 4, -H / 2 - 9, 52, 52);
       if (changed) {

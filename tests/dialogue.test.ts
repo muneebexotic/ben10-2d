@@ -107,6 +107,17 @@ describe('cinematic dialogue', () => {
     expect(d.playing).toBe(true);
   });
 
+  it("a line's mood goes to the box with the speaker's portrait (the box shows that face where one is drawn)", () => {
+    const got: Array<{ portrait?: string; mood?: string }> = [];
+    const ctx = {};
+    EventBus.on('hud:dialog', (p) => got.push({ portrait: p.portrait, mood: p.mood }), ctx);
+    const d = new Dialogue({ show: vi.fn() } as never);
+    d.play([{ who: 'max', text: 'DEEPMAW.', ms: 1000, mood: 'angry' }, { who: 'gwen', text: 'SHORT.', ms: 1000 }]);
+    d.update(1050, blank());
+    expect(got).toEqual([{ portrait: 'p', mood: 'angry' }, { portrait: 'q', mood: undefined }]);
+    EventBus.offContext(ctx);
+  });
+
   it('a line with a picture shows it while it plays, the next line without one takes it away, and lines without pictures say nothing', () => {
     const stills: Array<string | null> = [];
     const ctx = {};
