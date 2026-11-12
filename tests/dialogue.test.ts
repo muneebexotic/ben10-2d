@@ -106,4 +106,23 @@ describe('cinematic dialogue', () => {
     expect(done).not.toHaveBeenCalled();
     expect(d.playing).toBe(true);
   });
+
+  it('a line with a picture shows it while it plays, the next line without one takes it away, and lines without pictures say nothing', () => {
+    const stills: Array<string | null> = [];
+    const ctx = {};
+    EventBus.on('hud:still', (p) => stills.push(p.key), ctx);
+    const d = new Dialogue({ show: vi.fn() } as never);
+    d.play(LINES);
+    for (let ms = 0; ms < 7100; ms += 50) d.update(50, blank());
+    expect(stills).toEqual([]);
+    const withPicture: Line[] = [LINES[0], { ...LINES[1], still: 'feed' }, { ...LINES[2], still: 'feed' }, { who: 'max', text: 'AFTER.', ms: 1000 }];
+    d.play(withPicture);
+    for (let ms = 0; ms < 8100; ms += 50) d.update(50, blank());
+    expect(stills).toEqual(['feed', null]);
+    // Skipped while the picture is up: it goes with the box.
+    d.play(withPicture.slice(1), { skippable: true });
+    d.update(600, enter());
+    expect(stills).toEqual(['feed', null, 'feed', null]);
+    EventBus.offContext(ctx);
+  });
 });

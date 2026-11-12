@@ -110,6 +110,8 @@ export interface GameEvents {
   'hud:letterbox': { visible: boolean };
   'hud:dialog': { speaker: string; text: string; color: number; voicePitch?: number; skip?: boolean; portrait?: string };
   'hud:dialogClear': undefined;
+  /** A picture under the dialogue box while a line plays (a texture key), or null to take it away (Chapter 7's surface camera). */
+  'hud:still': { key: string | null };
   /** The line being typed shows in full at once (the player pressed to read on). */
   'hud:dialogFill': undefined;
   /** A whisper in the corner of the screen (Ghostfreak). */

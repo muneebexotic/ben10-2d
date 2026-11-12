@@ -417,7 +417,8 @@ export interface StoryPlan {
    */
   chase?: { boardX: number; boardY: number; arenaX: number; roadY: number; endX: number; endY: number; checkpoint: string };
   /** Lines after the boss falls. */
-  outro?: Array<{ who: string; text: string; ms: number }>;
+  /** `still`: a picture under the dialogue box while that line plays (a texture key the chapter makes). */
+  outro?: Array<{ who: string; text: string; ms: number; still?: string }>;
   /** Chapter 3's opening: the Rustbucket parked outside the museum at night (`x`, `y`: where it stands). */
   museumIntro?: { x: number; y: number };
   /**

@@ -19,6 +19,7 @@ import { shakeCamera } from '../systems/Accessibility';
 import { SplitDisplay } from '../ui/SplitDisplay';
 import { playSfx } from '../systems/audio/Sfx';
 import { DialogBox } from '../ui/DialogBox';
+import { CameraFeed } from '../ui/CameraFeed';
 import { ComicPanel } from '../ui/ComicPanel';
 import { UnlockCard } from '../ui/UnlockCard';
 import { MISFIRE, SWAP } from '../config/omnitrix';
@@ -42,6 +43,7 @@ export class UIScene extends Phaser.Scene {
   private letterbox!: Letterbox;
   private splits!: SplitDisplay;
   private dialog!: DialogBox;
+  private feed!: CameraFeed;
   private comic!: ComicPanel;
   private unlockCard!: UnlockCard;
   private whisper!: Whisper;
@@ -73,6 +75,7 @@ export class UIScene extends Phaser.Scene {
     this.letterbox = new Letterbox(this);
     this.splits = new SplitDisplay(this, 54);
     this.dialog = new DialogBox(this);
+    this.feed = new CameraFeed(this);
     this.comic = new ComicPanel(this, frame);
     this.unlockCard = new UnlockCard(this);
     this.whisper = new Whisper(this);
@@ -205,6 +208,7 @@ export class UIScene extends Phaser.Scene {
     }, this);
     on('hud:dialog', (p) => this.dialog.show(p.speaker, p.text, p.color, p.voicePitch, p.skip, p.portrait), this);
     on('hud:dialogClear', () => this.dialog.clear(), this);
+    on('hud:still', (p) => (p.key ? this.feed.show(p.key) : this.feed.hide()), this);
     on('hud:dialogFill', () => this.dialog.fill(), this);
     on('hud:whisper', (p) => {
       this.whisper.show(p.text, p.color);

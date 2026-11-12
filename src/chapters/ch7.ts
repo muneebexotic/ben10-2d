@@ -37,6 +37,7 @@ import { DIAMONDHEAD_FRAMES } from '../scenes/preload/cartoon/cutout/diamondhead
 import { GHOSTFREAK_FRAMES } from '../scenes/preload/cartoon/cutout/ghostfreakFrames';
 import { GREYMATTER_FRAMES } from '../scenes/preload/cartoon/cutout/greymatterFrames';
 import { KORR_FRAMES } from '../scenes/preload/cartoon/cutout/korrFrames';
+import { KEVIN_POD_STILL, makeCameraFeed } from '../scenes/preload/cartoon/plumber/cameraFeed';
 import { CH7_BEATS } from '../config/chapter7';
 import { CH7_GWEN_CHATTER } from '../scenes/level/plumber/story/lines';
 import type { ChapterModule } from './types';
@@ -45,11 +46,13 @@ import type { ChapterModule } from './types';
 export const CHAPTER: ChapterModule = {
   level: CHAPTER_7,
   // The cast frame by frame from their generated drawings (scripts/cutout/frames.py).
-  prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, KEVIN_FRAMES, RIPJAWS_FRAMES, DEEPMAW_FRAMES, WARDEN_FRAMES, GRUNT_FRAMES, EEL_FRAMES, JELLY_FRAMES, GNASHER_FRAMES, HEATBLAST_FRAMES, FOURARMS_FRAMES, XLR8_FRAMES, WILDMUTT_FRAMES, STINKFLY_FRAMES, UPGRADE_FRAMES, DIAMONDHEAD_FRAMES, GHOSTFREAK_FRAMES, GREYMATTER_FRAMES, KORR_FRAMES]),
+  prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, KEVIN_FRAMES, RIPJAWS_FRAMES, DEEPMAW_FRAMES, WARDEN_FRAMES, GRUNT_FRAMES, EEL_FRAMES, JELLY_FRAMES, GNASHER_FRAMES, HEATBLAST_FRAMES, FOURARMS_FRAMES, XLR8_FRAMES, WILDMUTT_FRAMES, STINKFLY_FRAMES, UPGRADE_FRAMES, DIAMONDHEAD_FRAMES, GHOSTFREAK_FRAMES, GREYMATTER_FRAMES, KORR_FRAMES, KEVIN_POD_STILL]),
   enter: (scene) => {
     enterPlumberBase(scene);
     // The ending's hologram speaker.
     makeKorrPortrait(scene, plumberArtRes(scene.game));
+    // And the surface camera's picture of Kevin's getaway.
+    makeCameraFeed(scene, plumberArtRes(scene.game));
     const query = new URLSearchParams(window.location.search);
     if (DEV_TOOLS && query.has('rigview')) scene.time.delayedCall(50, () => startRigViewer(scene, query));
   },

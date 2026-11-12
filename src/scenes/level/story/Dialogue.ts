@@ -10,6 +10,8 @@ export interface Line {
   ms: number;
   /** Ben says it out loud in the world (speech bubble) instead of the dialogue box. */
   bubble?: boolean;
+  /** A picture shown under the dialogue box while the line plays (a texture key: Chapter 7's surface camera). */
+  still?: string;
 }
 
 interface Running {
@@ -36,6 +38,8 @@ const SKIP_GRACE_MS = 450;
  */
 export class Dialogue {
   private run: Running | null = null;
+  /** The picture on screen with the line, if any. */
+  private still: string | null = null;
 
   constructor(private readonly speech: SpeechBubble) {}
 
@@ -96,6 +100,7 @@ export class Dialogue {
     const r = this.run;
     if (!r) return;
     this.run = null;
+    this.showStill(null);
     EventBus.emit('hud:dialogClear');
     if (finish) r.onDone?.();
   }
@@ -112,6 +117,7 @@ export class Dialogue {
       return;
     }
     r.left = line.ms;
+    this.showStill(line.still ?? null);
     if (line.bubble || !isCastId(line.who)) {
       EventBus.emit('hud:dialogClear');
       this.speech.show(line.text, line.ms);
@@ -119,5 +125,12 @@ export class Dialogue {
     }
     const c = CAST[line.who];
     EventBus.emit('hud:dialog', { speaker: c.name, text: line.text, color: c.color, voicePitch: c.voicePitch, skip: r.skippable, portrait: c.portrait });
+  }
+
+  /** Lines without a picture say nothing unless one is up (the older chapters' conversations never send this). */
+  private showStill(key: string | null): void {
+    if (key === this.still) return;
+    this.still = key;
+    EventBus.emit('hud:still', { key });
   }
 }
