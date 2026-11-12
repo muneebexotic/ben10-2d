@@ -26,15 +26,9 @@ export const ACTS: Record<number, string> = {
 };
 
 /**
- * Chapter 7 is still being built (docs/ch7-wip.md): dev and bench builds can
- * play it, release builds show it as coming soon until it's finished.
- */
-export const CH7_BUILT = import.meta.env.DEV || import.meta.env.MODE === 'bench';
-
-/**
- * The dev server (`npm run dev`; not the bench build, the tests or a release) opens the chapter still being built
- * from Chapter Select whatever the save says, so it can be tried without finishing the one before (a preview pane
- * can't always add `?level=ch7`).
+ * The dev server (`npm run dev`; not the bench build, the tests or a release) opens the newest chapter from Chapter
+ * Select whatever the save says, so it can be tried without finishing the one before (a preview pane can't always
+ * add `?level=`).
  */
 const DEV_OPEN: readonly string[] = import.meta.env.DEV && import.meta.env.MODE === 'development' ? ['ch7'] : [];
 
@@ -45,7 +39,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 4, act: 2, title: 'KEVIN 11', levelId: 'ch4', tease: 'NEW FRIEND AT THE ARCADE. WHAT COULD GO WRONG?', cast: ['kevin', 'upgrade'] },
   { number: 5, act: 2, title: 'BOUNTY HUNTERS', levelId: 'ch5', tease: 'THREE HUNTERS. ONE BOUNTY. GUESS WHO.', cast: ['diamondhead', 'ghostfreak'] },
   { number: 6, act: 2, title: 'MAGIC', levelId: 'ch6', tease: "MAGIC ISN'T REAL. RIGHT, GWEN?", cast: ['greymatter'] },
-  { number: 7, act: 3, title: 'THE PLUMBERS', levelId: CH7_BUILT ? 'ch7' : null, tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },
+  { number: 7, act: 3, title: 'THE PLUMBERS', levelId: 'ch7', tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },
   { number: 8, act: 3, title: 'ZOMBOZO', levelId: null, tease: 'NEVER TRUST A CLOWN WHO LAUGHS LAST.', cast: ['cannonbolt'] },
   { number: 9, act: 3, title: 'GHOSTFREAK OUT', levelId: null, tease: 'SOMETHING IN THE WATCH WANTS OUT.', cast: ['ghostfreak'] },
   { number: 10, act: 4, title: 'FOREVER KNIGHTS', levelId: null, tease: 'KNIGHTS. CASTLES. VERY SHARP THINGS.', cast: ['wildvine'] },

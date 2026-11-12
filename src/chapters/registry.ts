@@ -24,9 +24,7 @@ const pending = new Map<string, Promise<ChapterModule>>();
 
 /** Every level id the game can load. */
 export function knownLevelIds(): string[] {
-  // Chapter 7 is still being built (docs/ch7-wip.md): release builds can't start it by URL either.
-  const building = import.meta.env.DEV || import.meta.env.MODE === 'bench' ? [] : ['ch7'];
-  return [...Object.keys(LOADERS).filter((id) => !building.includes(id)), 'training'];
+  return [...Object.keys(LOADERS), 'training'];
 }
 
 /**

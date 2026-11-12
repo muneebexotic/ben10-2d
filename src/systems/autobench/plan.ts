@@ -1,5 +1,4 @@
 import type { ContextVariant, PerfSwitches } from '../PerfSwitches';
-import { CH7_BUILT } from '../../levels/chapters';
 
 /**
  * The on-device autobench's plan: which scenes it plays, with which switches,
@@ -34,14 +33,10 @@ export const BENCH_SCENARIOS: readonly BenchScenario[] = [
   // Chapter 6's heaviest moment: THE TOWER WRAP, a turning tower of 48 stone strips over the skyline.
   { id: 'ch6-wrap', title: 'Ch6 THE TOWER WRAP', levelId: 'ch6', checkpoint: 'cp-wrap', driver: 'brawlNoSwap', setup: 'towerWrap' },
   { id: 'misfire', title: 'Training, misfires on CHAOS', levelId: 'training', checkpoint: null, driver: 'brawl', setup: 'misfireChaos' },
-  // Chapter 7's heaviest moments (only where the chapter is playable: release builds don't show it yet): the open sea
-  // (the HD backdrop, rays, fish, the whale, the sea's water) and DEEPMAW's maelstrom (the whirlpool, the debris, the pool's water).
-  ...(CH7_BUILT
-    ? ([
-        { id: 'ch7-sea', title: 'Ch7 THE OPEN SEA', levelId: 'ch7', checkpoint: 'cp-sea', driver: 'brawlNoSwap' },
-        { id: 'ch7-maelstrom', title: 'Ch7 DEEPMAW: THE MAELSTROM', levelId: 'ch7', checkpoint: 'cp-maelstrom', driver: 'brawl' },
-      ] as const)
-    : []),
+  // Chapter 7's heaviest moments: the open sea (the HD backdrop, rays, fish, the whale, the sea's water) and DEEPMAW's
+  // maelstrom (the whirlpool, the debris, the pool's water).
+  { id: 'ch7-sea', title: 'Ch7 THE OPEN SEA', levelId: 'ch7', checkpoint: 'cp-sea', driver: 'brawlNoSwap' },
+  { id: 'ch7-maelstrom', title: 'Ch7 DEEPMAW: THE MAELSTROM', levelId: 'ch7', checkpoint: 'cp-maelstrom', driver: 'brawl' },
 ];
 
 export interface BenchVariant {
