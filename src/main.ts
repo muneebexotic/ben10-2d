@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { inject } from '@vercel/analytics';
 import { createGameConfig } from './config/gameConfig';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
@@ -29,10 +28,9 @@ import { contextVariant } from './systems/PerfSwitches';
 import { applyHdScale, installRenderSwitches } from './systems/RenderSwitches';
 import { installTextureIndexFix } from './systems/TextureIndexFix';
 import { prepareLevel } from './chapters/start';
+import { installAnalytics } from './systems/Analytics';
 
-// Initialize Vercel Web Analytics
-inject();
-
+installAnalytics();
 applySavedSettings();
 installPageAudio();
 // Before the renderer compiles its shaders: batched sprites otherwise lose slices (BUGS.md U11).

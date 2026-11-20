@@ -12,6 +12,8 @@ Next, when asked: Chapter 8, Zombozo (Cannonbolt). Proposals waiting for approva
 
 ## How to run
 
+Play it: https://ben10.muscodes.com (Vercel builds every push to `main`; https://ben10-2d.vercel.app serves the same build).
+
 ```
 npm install
 npm run dev        # http://localhost:5173

@@ -250,3 +250,10 @@ than before (23 up, from 18).
 - **W and the Up arrow jump and aim** (that stays everywhere else), but while Diamondhead holds his shield they only tilt it: a jump swung the bounced beam off the receiver it was charging, so the laser puzzles (Chapter 5's cavern, the way on) could fail on a correct input. Space still jumps with the shield up; on touch, the stick never jumped. A form opts in with `upAims()` (`aliens/types.ts`); `Controls.jumpByUp` says when every jump input that frame is an Up key.
 - **A bounced laser finds a receiver it nearly meets** (`SECURITY_LASER.reflectAssistDeg`, 20 degrees, `entities/hazards/beamAssist.ts`), as turned shots already found enemies (24 degrees). Unhelped, the tilted beam lit Chapter 4's vault receiver from a strip about 26 px wide; now from about three tiles in front of it. Facing away, holding the shield level or standing right against the emitter still misses: the puzzle still asks for the tilt.
 - This changes Chapters 1, 4 and 5 on the owner's request (their "no changes to Chapters 1-6" rule doesn't cover fixes they ask for).
+
+
+## Deploy: ben10.muscodes.com and Vercel Web Analytics
+
+- **The game is served at https://ben10.muscodes.com** (a custom domain on the Vercel project; DNS at Cloudflare, a CNAME set to "DNS only" so Vercel issues the certificate and its CDN serves the game directly). https://ben10-2d.vercel.app keeps working.
+- **Saves don't follow a domain change:** localStorage belongs to one origin, so progress made on ben10-2d.vercel.app stays there. Redirecting that domain to the new one hides those saves, so redirect it only once nobody depends on them.
+- **Vercel Web Analytics** (page views, no cookies; Vercel's PR #1) loads only in release builds on a real host (`systems/Analytics.ts`). The script lives at `/_vercel/insights` on Vercel, so the dev server, the bench and QA builds (`--mode bench`) and `vite preview` on localhost would 404 on it, and the QA sweep fails on that console error. `@vercel/analytics` is pinned like every other dependency.
