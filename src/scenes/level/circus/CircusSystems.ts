@@ -128,6 +128,8 @@ export class CircusSystems implements SetPiece {
   private readonly clouds: Cloud[] = [];
   private readonly reflections: Reflection[] = [];
   private readonly loops: Array<{ cx: number; cy: number; R: number; footX: number; floorY: number }> = [];
+  /** A ball fired straight up a shaft: held on the shaft's column while it rises (the stick can't steer it into a wall). */
+  private chute: { x: number; speed: number; ms: number } | null = null;
   /** A ball going round a loop right now. */
   private ride: { loop: number; angle: number; dir: 1 | -1; speed: number } | null = null;
   private striker: StrikerPad | null = null;
@@ -194,6 +196,12 @@ export class CircusSystems implements SetPiece {
       last.x = p.x;
       last.y = p.centerY;
       last.facing = p.facing;
+    }
+    if (this.chute) {
+      // Up the tube at a steady speed (the body's own speed cap is too low for a long shaft), until the top mirror takes it.
+      this.chute.ms -= dtMs;
+      if (p.dead || !p.rolling || this.chute.ms <= 0) this.chute = null;
+      else p.setVelocity((this.chute.x - p.x) * 12, -this.chute.speed);
     }
     if (this.ride) this.stepLoop(dtMs);
     else if (!p.dead) {
@@ -336,7 +344,8 @@ export class CircusSystems implements SetPiece {
       const s = d.e.speed;
       if (d.e.turn === 'up') {
         p.ride(cx, cy - TILE / 2 - 1);
-        p.launch(-s, false);
+        p.launch(-Math.min(s, TOYS.chuteSpeed), false);
+        this.chute = { x: cx, speed: TOYS.chuteSpeed, ms: (s / TOYS.chuteSpeed) * 1000 * TOYS.chuteMsPerSpeed };
       } else if (d.e.turn === 'down') {
         p.ride(cx, cy + TILE / 2 + BALL_R * 2 + 1);
         p.setVelocity(0, s);
@@ -344,6 +353,7 @@ export class CircusSystems implements SetPiece {
         const dir = d.e.turn === 'right' ? 1 : -1;
         p.ride(cx + dir * (TILE / 2 + BALL_R + 1), cy + BALL_R + 2);
         p.setVelocity(dir * s, -60);
+        this.chute = null;
       }
       this.kit.fx.flash(cx, cy, 0xd8f0ff, 24, 160);
       this.kit.fx.burst('crystal', cx, cy, 8);
@@ -444,7 +454,7 @@ export class CircusSystems implements SetPiece {
       c.life -= dtMs;
       c.tick -= dtMs;
       const k = Math.max(0, c.life / H.lifeMs);
-      c.img.setAlpha(0.9 * Math.min(1, k * 2)).setScale((H.radius / 14) * (1.1 - k * 0.2)).setFrame(String(Math.floor(c.life / 300) % 2));
+      c.img.setAlpha(0.9 * Math.min(1, k * 2)).setScale((H.radius / 14) * (1.1 - k * 0.2)).setFrame(String(Math.floor(Math.max(0, c.life) / 300) % 2));
       if (!p.dead && c.tick <= 0 && Math.hypot(p.x - c.x, p.centerY - c.y) < H.radius) {
         c.tick = H.everyMs;
         this.kit.onPlayerHurt(p.takeDamage(H.damage, c.x));

@@ -142,8 +142,7 @@ const entities: EntitySpawn[] = [
   { type: 'circus', kind: 'grinner', x: 75, y: 34 },
   { type: 'striker', id: 'striker', x: 81, y: 34, reward: 'ch8-striker' },
   { type: 'card', id: 'ch8-card-striker', x: 81, y: 34, reward: 'ch8-striker' },
-  { type: 'circus', kind: 'hound', x: 86, y: 26 },
-  { type: 'circus', kind: 'jackbox', x: 89, y: 34 },
+  { type: 'circus', kind: 'hound', x: 66, y: 22 },
 
   // ---- The funhouse
   { type: 'checkpoint', id: 'cp-barrel', x: 111, y: 34, density: 'sparse', label: 'THE BARREL' },

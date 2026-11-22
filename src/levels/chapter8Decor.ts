@@ -52,7 +52,6 @@ export const CIRCUS_DECOR: readonly CircusDecor[] = [
 
   // ---- The funhouse
   { key: A.facade, x: 105.5, y: 34, front: true, scale: 0.7 },
-  { key: A.barrel, x: 117, y: 25, hang: true, dx: 0 },
 
   // ---- The rolling course (its toys draw themselves)
   { key: A.bulbs, frame: 0, x: 150, y: 23, hang: true },

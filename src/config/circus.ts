@@ -109,6 +109,12 @@ export const TOYS = {
   loopMinSpeed: 250,
   /** Angled mirrors: how long they flash after firing a ball off. */
   deflectorFlashMs: 220,
+  /**
+   * Fired straight up a shaft, the ball rides it like a pneumatic tube at this speed (px/s), for as long as the
+   * mirror's own speed says: `speed / chuteSpeed` seconds times this (960 up a 22-row shaft: just past its top).
+   */
+  chuteSpeed: 560,
+  chuteMsPerSpeed: 0.42,
   /** Mirror doors light up when Ben is this close (px) for this long. */
   doorWakeRange: 34,
   doorWakeMs: 420,
