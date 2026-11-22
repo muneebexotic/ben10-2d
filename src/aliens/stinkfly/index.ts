@@ -42,6 +42,7 @@ export const STINKFLY_FORM: FormDefinition = {
         ghostfreak: ['SPOOKY? NO. JUST STINKY.', 'GHOST? MORE LIKE GROSS.'],
         greymatter: ['TINY AND SMART? GOT TINY AND SMELLY.', 'WRONG BUG BRAIN!'],
         ripjaws: ['WANTED TO SWIM. GOT SOGGY WINGS.', 'BUGS AND WATER DO NOT MIX!'],
+        ricochet: ['I WANTED TO BOUNCE. I BUZZ INSTEAD.', 'NO SHELL. JUST SMELL.'],
       },
       any: ['A BUG?! I WANTED A HERO, NOT A PEST!'],
     },

@@ -232,8 +232,8 @@ const entities: EntitySpawn[] = [
   { type: 'pressureDoor', id: 'd-p34', x: 320, y: 36, h: 10, left: 't-p3', right: 't-p4' },
   { type: 'tank', id: 't-p4', x: 321, w: 13, top: 30, bottom: 46, level: 46 },
   { type: 'deep', kind: 'grunt', x: 328, y: 46 },
-  { type: 'card', id: 'ch7-card-chute', x: 330, y: 28, requires: 'cannonbolt' },
-  { type: 'alienHint', id: 'ch7-chute-hint', alien: 'cannonbolt', x: 324, y: 40, w: 8, h: 6, line: 'A CHUTE... IF ONLY I COULD ROLL THROUGH THERE.' },
+  { type: 'card', id: 'ch7-card-chute', x: 330, y: 28, requires: 'ricochet' },
+  { type: 'alienHint', id: 'ch7-chute-hint', alien: 'ricochet', x: 324, y: 40, w: 8, h: 6, line: 'A CHUTE... IF ONLY I COULD ROLL THROUGH THERE.' },
   { type: 'smoothy', x: 338, y: 42 },
 
   // ---- Containment

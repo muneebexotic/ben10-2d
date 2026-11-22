@@ -46,6 +46,7 @@ export const WILDMUTT_FORM: FormDefinition = {
         ghostfreak: ['ARF! (WANTED THE SCARY ONE!)', 'GRRR... (I SMELL GHOSTS. NOT BE ONE.)'],
         greymatter: ['*GROWL* (THIS IS NOT A GENIUS.)', '*SNIFF* (SMELLS LIKE THE WRONG ALIEN.)'],
         ripjaws: ['WANTED A SHARK. GOT A WET DOG.', 'DOG-PADDLE MODE: ACTIVATED.'],
+        ricochet: ['WANTED TO ROLL. GOT TO ROLL OVER.', 'GOOD BOY... BUT NOT A BALL.'],
       },
       any: ["GRRR... (WRONG ALIEN, I THINK.)"],
     },

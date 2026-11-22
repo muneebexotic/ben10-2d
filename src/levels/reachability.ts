@@ -25,6 +25,8 @@ export interface Capabilities {
   tiny?: boolean;
   /** Swims in water and mutagen (Ripjaws): anywhere in it is somewhere he can be. */
   canSwim?: boolean;
+  /** Curls into a ball and rolls (Ricochet): ball gates open to him, kickers and loops carry him. */
+  canRoll?: boolean;
 }
 
 /** Each alien declares its own envelope in its definition (`reach`). */

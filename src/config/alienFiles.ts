@@ -106,6 +106,18 @@ export const ALIEN_DEMOS: Readonly<Record<string, readonly MoveDemo[]>> = {
     { x: 26, steps: [s(['right'], 1500), wait(900)] },
     { x: 38, swapFrom: 'fourarms', enemy: { kind: 'scout', dx: 4 }, steps: [wait(500), ...tap('transform', 1800)] },
   ],
+  ricochet: [
+    { x: 38, enemy: { kind: 'gunner', dx: 3 }, steps: [s(['attack'], 1500), wait(500)] },
+    // Curl up, roll along the plaza and uncurl.
+    { x: 28, steps: [...tap('special', 120), s(['right'], 1400), wait(300), ...tap('special', 600)] },
+    // Rolling at the cracked wall: it smashes; then into the far side: BONK.
+    { x: 66, steps: [...tap('special', 120), s(['right'], 1700), wait(900), ...tap('special', 400)] },
+    // Bounces: a jump, then Jump again right as he lands.
+    { x: 30, steps: [...tap('special', 120), s(['right'], 400), s(['jump'], 90), wait(520), s(['jump'], 90), wait(700), ...tap('special', 400)] },
+    // SPIN BOOST, then a SHELL DROP from a bounce.
+    { x: 26, steps: [...tap('special', 120), s(['right'], 500), ...tap('attack', 500), s(['jump'], 90), wait(260), s(['down'], 120), wait(700), ...tap('special', 400)] },
+    { x: 34, swapFrom: 'fourarms', enemy: { kind: 'scout', dx: 4 }, steps: [wait(500), ...tap('transform', 1800)] },
+  ],
 };
 
 /** Where a demo is in its loop at `t` ms: the keys held now (pure, for tests). */

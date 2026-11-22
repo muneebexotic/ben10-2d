@@ -49,6 +49,7 @@ export const GHOSTFREAK_FORM: FormDefinition = {
         diamondhead: ['I WANTED SOLID. THIS IS THE OPPOSITE.', 'TOO SEE-THROUGH TO BLOCK ANYTHING!'],
         greymatter: ['WANTED BRAINS. GOT CREEPY.', 'SMALL? NO. SPOOKY? YES.'],
         ripjaws: ['WANTED A FISH. GOT A GHOST.', 'NO GILLS... NO LUNGS EITHER?'],
+        ricochet: ['WANTED A SHELL. GOT A SHEET.', 'I CANNOT ROLL. I CAN FLOAT. CLOSE ENOUGH?'],
       },
       any: ['DID THE WATCH... PICK THIS ONE ON PURPOSE?'],
     },

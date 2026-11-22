@@ -32,6 +32,8 @@ export interface Hit {
   fear?: number;
   /** The projectile that landed it (a crystal shard, a reflected claw blast), when it was a shot. */
   shot?: string;
+  /** A rolling ball landed it (Ricochet curled up): ball gates only open to these. */
+  roll?: boolean;
 }
 
 export type HitResult = 'none' | 'hit' | 'killed' | 'blocked';

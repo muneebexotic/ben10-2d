@@ -49,6 +49,7 @@ export const GREYMATTER_FORM: FormDefinition = {
         diamondhead: ['ROCK SOLID? MORE LIKE POCKET SIZED.', 'I WANTED A SHIELD. I GOT A THEORY.'],
         ghostfreak: ['NOT SPOOKY. JUST SMALL.', 'I CAN EXPLAIN GHOSTS. I CANNOT BE ONE.'],
         ripjaws: ['I WANTED JAWS. I GOT A GOLDFISH.', 'TINY, WET AND VERY SMART.'],
+        ricochet: ['I WANTED TO ROLL. I AM A MARBLE.', 'ROUND, YES. ARMORED, NO.'],
       },
       any: ['WELL, AT LEAST I KNOW WHY THIS HAPPENED.'],
     },

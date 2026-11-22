@@ -136,7 +136,7 @@ export const LEVEL_META: readonly LevelMeta[] = [
       { id: 'ch5-card-tower' },
       { id: 'ch5-card-hotel' },
       { id: 'ch5-card-alcove' },
-      { id: 'ch5-card-loop', requires: 'cannonbolt' },
+      { id: 'ch5-card-loop', requires: 'ricochet' },
       { id: 'ch5-card-dive', reward: 'dive' },
       { id: 'ch5-card-ledge' },
       { id: 'ch5-card-flooded', requires: 'ripjaws' },
@@ -200,7 +200,7 @@ export const LEVEL_META: readonly LevelMeta[] = [
       { id: 'ch7-card-cave' },
       { id: 'ch7-card-vine', requires: 'wildvine' },
       { id: 'ch7-card-tank' },
-      { id: 'ch7-card-chute', requires: 'cannonbolt' },
+      { id: 'ch7-card-chute', requires: 'ricochet' },
     ],
     checkpoints: [
       { id: 'cp-docking', label: 'DOCKING RING' },

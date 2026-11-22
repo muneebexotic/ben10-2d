@@ -44,6 +44,7 @@ export const HEATBLAST_FORM: FormDefinition = {
         ghostfreak: ['NOT SPOOKY. JUST SPICY.', 'WANTED A GHOST. GOT A TORCH.'],
         greymatter: ['I WANTED A BRAIN, NOT A BONFIRE.', 'TOO HOT TO THINK!'],
         ripjaws: ['WANTED GILLS. GOT A FLAMETHROWER.', 'FIRE AND WATER? THIS WILL GO GREAT.'],
+        ricochet: ['WANTED A BALL. GOT A FIREBALL.', 'I CAN ROLL... INTO FLAMES.'],
       },
       any: ['HEATBLAST?! WELL, THIS IS AWKWARD.'],
     },

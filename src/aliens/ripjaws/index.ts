@@ -50,6 +50,7 @@ export const RIPJAWS_FORM: FormDefinition = {
         diamondhead: ['NO CRYSTALS. JUST CHOMPERS.', 'WANTED A SHIELD. GOT A SNORKEL FACE.'],
         ghostfreak: ['NOT A GHOST. A VERY DRY FISH.', 'SPOOKY? NO. SLIMY? YES.'],
         greymatter: ['BIG BRAIN? BIG MOUTH INSTEAD.', 'I WANTED SMART. I GOT HUNGRY.'],
+        ricochet: ['WANTED A SHELL. GOT SCALES.', 'I CAN ROLL... OVER AND FLOP.'],
       },
       any: ['A FISH?! WHERE IS THE WATER?!'],
     },

@@ -292,8 +292,8 @@ export const CHAPTER_5: LevelData = {
     { type: 'card', id: 'ch5-card-alcove', x: 307, y: 43 },
     { type: 'rockfall', id: 't1-rocks', x: 262, w: 6, ceiling: 25 },
     { type: 'rockfall', id: 't3-rocks', x: 306, w: 13, ceiling: 34 },
-    { type: 'card', id: 'ch5-card-loop', x: 318, y: 33, requires: 'cannonbolt' },
-    { type: 'alienHint', id: 'ch5-loop-hint', alien: 'cannonbolt', x: 314, y: 34, w: 8, h: 6, line: 'THE RAILS LOOP UP INTO THE ROCK... ONLY SOMETHING ROUND COULD RIDE THAT.' },
+    { type: 'card', id: 'ch5-card-loop', x: 318, y: 33, requires: 'ricochet' },
+    { type: 'alienHint', id: 'ch5-loop-hint', alien: 'ricochet', x: 314, y: 34, w: 8, h: 6, line: 'THE RAILS LOOP UP INTO THE ROCK... ONLY SOMETHING ROUND COULD RIDE THAT.' },
     { type: 'smoothy', x: 275, y: 34 },
     { type: 'smoothy', x: 300, y: 36 },
 

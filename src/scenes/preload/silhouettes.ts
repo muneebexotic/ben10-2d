@@ -17,7 +17,7 @@ export const SILHOUETTE_KEYS = {
   ghostfreak: 'sil-ghostfreak',
   greymatter: 'sil-greymatter',
   ripjaws: 'sil-ripjaws',
-  cannonbolt: 'sil-cannonbolt',
+  ricochet: 'sil-ricochet',
   wildvine: 'sil-wildvine',
   waybig: 'sil-waybig',
   kevin: 'sil-kevin',
@@ -100,7 +100,7 @@ function ripjaws(pc: PixelCanvas): void {
 }
 
 /** Mostly ball: armoured shell, tiny head, stubby arms. */
-function cannonbolt(pc: PixelCanvas): void {
+function ricochet(pc: PixelCanvas): void {
   pc.circle(16, 17, 13, W);
   pc.rect(13, 1, 6, 5, W);
   pc.poly([[3, 14], [0, 20], [3, 21]], W).poly([[29, 14], [32, 20], [29, 21]], W);
@@ -142,7 +142,7 @@ const DRAW: Record<SilhouetteId, { w: number; h: number; draw: (pc: PixelCanvas)
   ghostfreak: { w: 27, h: 35, draw: ghostfreak },
   greymatter: { w: 10, h: 11, draw: greymatter },
   ripjaws: { w: 29, h: 35, draw: ripjaws },
-  cannonbolt: { w: 33, h: 33, draw: cannonbolt },
+  ricochet: { w: 33, h: 33, draw: ricochet },
   wildvine: { w: 23, h: 39, draw: wildvine },
   waybig: { w: 49, h: 64, draw: waybig },
   kevin: { w: 17, h: 30, draw: kevin },

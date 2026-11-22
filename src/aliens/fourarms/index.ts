@@ -42,6 +42,7 @@ export const FOURARMS_FORM: FormDefinition = {
         ghostfreak: ['TOO SOLID TO GO THROUGH WALLS!', 'GHOSTS DO NOT HAVE BICEPS.'],
         greymatter: ['I WANTED SMART. I GOT FOUR FISTS.', 'BIG MUSCLES, SMALL VENTS. PROBLEM.'],
         ripjaws: ['I WANTED FINS, NOT FOUR FISTS!', 'TOO HEAVY TO SWIM. WAY TOO HEAVY.'],
+        ricochet: ['I WANTED TO ROLL, NOT PUNCH!', 'FOUR ARMS. ZERO CURL.'],
       },
       any: ['WRONG ALIEN! BIG, BUT WRONG!'],
     },

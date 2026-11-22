@@ -25,6 +25,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | GHOSTFREAK | 19 | 19 | 0 | 0 | 0 |
 | GREY MATTER | 19 | 19 | 0 | 0 | 0 |
 | RIPJAWS | 21 | 18 | 0 | 3 | 0 |
+| RICOCHET | 14 | 0 | 0 | 0 | 14 |
 | PLUMBER SENTRY | 3 | 2 | 1 | 0 | 0 |
 | FISHBOWL GRUNT | 9 | 9 | 0 | 0 | 0 |
 | ZAPPER EEL | 4 | 4 | 0 | 0 | 0 |
@@ -392,6 +393,25 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | cheer | fists up, grinning fangs | waiting |  |
 | point | pointing | waiting |  |
 | surprise | eyes wide | waiting |  |
+
+## RICOCHET (`ricochet`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| idle | planted on his short legs, shell rising and falling | painted |  |
+| run | a stomping waddle, the shell rocking | painted |  |
+| jump | a heavy hop, arms up | painted |  |
+| fall | arms out, legs tucked | painted |  |
+| land | a thud | painted |  |
+| bashA | a forearm bash with the near arm | painted |  |
+| bashB | a forearm bash with the far arm | painted |  |
+| slam | the shell slam: the whole body thrown forward | painted |  |
+| roll | curled into a ball, spinning (faster the faster he rolls) | painted |  |
+| hurt | knocked back into his shell | painted |  |
+| defeat | flat on his back, legs in the air | painted |  |
+| swim | rolling along the bottom (he sinks) | painted |  |
+| tread | standing on the bottom | painted |  |
+| drown | out of air | painted |  |
 
 ## PLUMBER SENTRY (`warden`)
 

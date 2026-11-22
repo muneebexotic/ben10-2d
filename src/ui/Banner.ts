@@ -80,6 +80,7 @@ export class Banner {
     else if (opts.style === 'haunt') this.hauntSlam(text, color, scale, hold, y);
     else if (opts.style === 'equation') this.equationSlam(text, color, scale, hold, y);
     else if (opts.style === 'splash') this.splashSlam(text, color, scale, hold, y);
+    else if (opts.style === 'bounce') this.bounceSlam(text, color, scale, hold, y);
     else this.blazeSlam(text, color, scale, hold, y, opts.first);
   }
 
@@ -558,6 +559,57 @@ export class Banner {
       duration: 260,
       onComplete: () => this.finish(c),
     });
+  }
+
+  /**
+   * The name ricochets in (Ricochet): each letter flies in from a screen edge
+   * (left and right in turn), bounces off the floor of the slam in shrinking
+   * hops, and squashes as it lands; at the end they all spring up and away.
+   */
+  private bounceSlam(text: string, color: number, scale: number, hold: number, y: number): void {
+    const scene = this.scene;
+    const measure = pixelText(scene, 0, 0, text, { scale });
+    const total = measure.width;
+    measure.destroy();
+    const letters: Phaser.GameObjects.BitmapText[] = [];
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === ' ') continue;
+      const before = i === 0 ? 0 : pixelText(scene, 0, 0, text.slice(0, i), { scale });
+      const x = (before === 0 ? 0 : before.width) - total / 2;
+      if (before !== 0) before.destroy();
+      const t = pixelText(scene, x, 0, ch, { scale, originX: 0, originY: 1, color: PALETTE.white });
+      t.setTint(PALETTE.white, PALETTE.white, color, color);
+      t.setData('homeX', x);
+      letters.push(t);
+    }
+    const floor = scene.add.rectangle(0, 2, total + 24, 2, color, 0.7).setScale(0, 1);
+    const c = scene.add.container(GAME_WIDTH / 2, y, [floor, ...letters]).setDepth(450);
+    this.current = c;
+    scene.tweens.add({ targets: floor, scaleX: 1, duration: 200, ease: 'Quad.easeOut' });
+    letters.forEach((t, i) => {
+      const home = t.getData('homeX') as number;
+      const from = i % 2 === 0 ? -GAME_WIDTH / 2 - 20 : GAME_WIDTH / 2 + 20;
+      t.setX(from).setY(-60 - (i % 3) * 12).setAlpha(1);
+      const delay = 60 + i * 45;
+      scene.tweens.add({ targets: t, x: home, delay, duration: 360, ease: 'Quad.easeOut' });
+      scene.tweens.add({
+        targets: t,
+        y: 0,
+        delay,
+        duration: 520,
+        ease: 'Bounce.easeOut',
+        onComplete: () => {
+          t.setScale(scale * 1.25, scale * 0.7);
+          scene.tweens.add({ targets: t, scaleX: scale, scaleY: scale, duration: 160, ease: 'Back.easeOut' });
+        },
+      });
+    });
+    // Away: they spring up and off, one after another.
+    letters.forEach((t, i) => {
+      scene.tweens.add({ targets: t, y: -90, alpha: 0, delay: hold + 420 + i * 30, duration: 300, ease: 'Back.easeIn' });
+    });
+    scene.tweens.add({ targets: floor, scaleX: 0, alpha: 0, delay: hold + 520, duration: 260, onComplete: () => this.finish(c) });
   }
 
   /**

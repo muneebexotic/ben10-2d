@@ -42,6 +42,7 @@ export const XLR8_FORM: FormDefinition = {
         ghostfreak: ["CAN'T PHASE. CAN SPRINT. SO...", 'NOT GHOSTLY. JUST GONE QUICKLY.'],
         greymatter: ['FAST, BUT NOT SMART FAST.', 'I WANTED TO THINK, NOT RUN.'],
         ripjaws: ['WANTED A FISH. GOT A SPEEDBOAT.', 'NO GILLS, BUT I CAN RUN ON IT.'],
+        ricochet: ['WANTED TO ROLL. GOT TO RUN. FINE!', 'NO SHELL. ALL SPEED.'],
       },
       any: ['WRONG GUY! ...AT LEAST I GOT HERE FAST.'],
     },

@@ -54,7 +54,7 @@ Mobile (built early, in the Chapter 1 polish pass): a floating thumb stick on th
 | Ghostfreak | Scare attack | Phase through walls, invisibility | Ch 5 (lost in Ch 9) |
 | Grey Matter | Weak bite | Tiny size, crawl through vents, find weak points | Ch 6 |
 | Ripjaws | Bite, tail whip | Fast underwater swimming (timer drains faster on land) | Ch 7 |
-| Cannonbolt | Rolling charge | Bounce, smash barriers | Ch 8 |
+| Ricochet | Shell bash, rolling charge | Roll with momentum, bounce, ricochet off walls and mirrors, smash barriers | Ch 8 |
 | Wildvine | Seed bombs | Vine grapple | Ch 10 |
 | Way Big | Cosmic ray | Finale only | Ch 12 |
 
@@ -79,7 +79,7 @@ Mobile (built early, in the Chapter 1 polish pass): a floating thumb stick on th
 
 ### Act 3: Secrets
 - **Ch 7, The Plumbers:** Max revealed as a secret alien cop. Unlock Ripjaws. *Set piece: underwater Plumber base.*
-- **Ch 8, Zombozo:** haunted circus. Unlock Cannonbolt. *Set piece: funhouse mirror maze.*
+- **Ch 8, Cacklejack:** haunted circus. Unlock Ricochet. *Set piece: funhouse mirror maze.*
 - **Ch 9, Ghostfreak Out:** Ghostfreak escapes the Omnitrix. Ghostfreak is permanently removed from the dial. *Boss: fight the alien you used to be.*
 
 ### Act 4: The Omnitrix
@@ -215,7 +215,7 @@ Upgrade's takeover makes every machine enemy (mascots, turrets, track-bots, and 
 - **Phase 3: Tetrax**, an honourable duel on the mine head. Crystal on crystal: Diamondhead's shards barely scratch him, Four Arms' smash cracks him, fire heats his crystal for a combo. He telegraphs every strike with a crystal glint. **Falls:** at low health he yields (not killed), and the ending plays.
 - Switching rewarded: each hunter has a weakness a different alien exploits; any alien can finish the fight slowly.
 
-**Secrets.** For later aliens: a mouse hole in the saloon wall (Grey Matter), the flooded lower shaft (Ripjaws), a mine-cart loop only a rolling ball survives (Cannonbolt). New aliens open older secrets: Diamondhead reflects Chapter 4's substation laser, Ghostfreak walks into Chapter 4's sealed room, and each adds one more: Ghostfreak phases into the museum's sealed exhibit vault (Chapter 3), Diamondhead reflects the jammer's beam onto a hidden receiver (Chapter 1).
+**Secrets.** For later aliens: a mouse hole in the saloon wall (Grey Matter), the flooded lower shaft (Ripjaws), a mine-cart loop only a rolling ball survives (Ricochet, Chapter 8). New aliens open older secrets: Diamondhead reflects Chapter 4's substation laser, Ghostfreak walks into Chapter 4's sealed room, and each adds one more: Ghostfreak phases into the museum's sealed exhibit vault (Chapter 3), Diamondhead reflects the jammer's beam onto a hidden receiver (Chapter 1).
 
 **Achievements (plan):** REFLECTED (send 25 shots back as Diamondhead), BOO! (frighten 20 enemies as Ghostfreak), CLUTCH MISFIRE (survive the forced misfire without taking a hit), BOUNTY VOID (beat the Hunters).
 
@@ -275,13 +275,13 @@ The story, characters, Gwen's arc, Grey Matter, the Spell Engine and the boss ar
 
 **Milestone 5 work in this chapter.** Gwen's companion and spells (above; also usable in replays of Chapters 1-5 once earned, as a Settings option that defaults to OFF so old routes stay as designed), Max in the field, and the deferred Chapter 1 intro cameos (Gwen: "GREAT, NOW YOU'RE EVEN MORE ANNOYING.").
 
-**Secrets.** For later aliens: the palace's flooded cellar (Ripjaws), a corridor of heavy doors only a rolling battering ram opens (Cannonbolt), the overgrown garden's high balcony (Wildvine's grapple). Grey Matter opens older secrets: Chapter 3's vent card (already waiting), Chapter 4's claw machine, Chapter 5's saloon mouse hole.
+**Secrets.** For later aliens: the palace's flooded cellar (Ripjaws), a corridor of heavy doors only a rolling battering ram opens (Ricochet, Chapter 8), the overgrown garden's high balcony (Wildvine's grapple). Grey Matter opens older secrets: Chapter 3's vent card (already waiting), Chapter 4's claw machine, Chapter 5's saloon mouse hole.
 
 **Achievements:** SPELLBOUND (call 30 of Gwen's spells), BIG BRAIN (land 10 weak-point hits after an analyse), THE ENGINE ROOM (solve the Spell Engine without a hint), ACT 2 (finish Act 2, secret).
 
 ## Act 3 plan: Secrets
 
-Act 3 is about the secrets the summer has been keeping: Grandpa Max's past (Chapter 7), the thing hiding behind a clown's smile (Chapter 8), and the thing hiding inside the watch (Chapter 9). Act 1 taught the dial, Act 2 attacked the player's habits; Act 3 changes the ground under the player's feet: water that has to be swum, a ball that has to be rolled, and finally an alien that leaves the dial for good. Each chapter ends on a hook into the next: Kevin escapes the Plumber base with a stolen badge and a Magister warns Max of "something stirring on the roads ahead"; Zombozo's last laugh wakes something in the Omnitrix; Ghostfreak's escape sends the family looking for the watch's maker (Act 4).
+Act 3 is about the secrets the summer has been keeping: Grandpa Max's past (Chapter 7), the thing hiding behind a clown's smile (Chapter 8), and the thing hiding inside the watch (Chapter 9). Act 1 taught the dial, Act 2 attacked the player's habits; Act 3 changes the ground under the player's feet: water that has to be swum, a ball that has to be rolled, and finally an alien that leaves the dial for good. Each chapter ends on a hook into the next: Kevin escapes the Plumber base with a stolen badge and a Magister warns Max of "something stirring on the roads ahead"; Cacklejack's last laugh wakes something in the Omnitrix; Ghostfreak's escape sends the family looking for the watch's maker (Act 4).
 
 **Act 3 is the season premiere.** It opens with the game itself changing: halfway down a Plumber elevator under Keamari harbour, the pixel world resolves into an HD cartoon one, and Act 3 stays that way.
 
@@ -332,7 +332,7 @@ New for Act 3:
 | Docking ring (34-96) | The base wakes, Max's reveal and locker (card), the sentries' lockdown, Gwen with Ben, the split | DOCKING RING (all) |
 | Flooded ring (96-176) | Swimming with breath, air pockets, burst-pipe currents, pressure doors, jelly mines, zapper eels, grunts; Kevin glimpsed; a card behind a current | FLOODED RING (Easy, Normal) |
 | The reactor (176-206) | Kevin drains the reactor, the blackout, the flood; the sealed chamber; Ripjaws' discovery | THE REACTOR (all) |
-| The open sea (206-290) | Ripjaws outside the hull: currents, intake vents, gnashers, the coral cave card, the Cannonbolt secret | THE OPEN SEA (Easy, Normal) |
+| The open sea (206-290) | Ripjaws outside the hull: currents, intake vents, gnashers, the coral cave card, the rolling alien's secret | THE OPEN SEA (Easy, Normal) |
 | Pump hall (290-372) | Three pump consoles that drain and flood the hall's rooms, pressure doors, a card in a drained tank, the Wildvine secret | PUMP HALL (all), PUMP HALL: TANK 3 (Easy) |
 | Containment block (372-444) | Cells, the crew, sentries, Max with his blaster, Cell 7 | CONTAINMENT (Easy, Normal) |
 | The moon pool (444-500) | DEEPMAW in three stages (each a hidden checkpoint: retries start at the stage you died in) | THE MOON POOL (all), DRY DOCK, THE MAELSTROM (hidden) |
@@ -371,17 +371,71 @@ New for Act 3:
 - Retrying starts at the stage you died in. Tells are the same length on every difficulty; rests and punish windows follow the difficulty. Any alien can win; switching is faster.
 - Defeat: RECAPTURED!, then the ending.
 
-**Secrets** (7 cards: 5 reachable in Chapter 7, 2 for later aliens). Reachable now: Max's locker in the docking ring, behind a burst-pipe current in the flooded ring, the reactor's catwalk, the coral cave outside the hull, the drained tank in the pump hall. For later aliens: a rolling chute only a ball survives (Cannonbolt: "IF ONLY I COULD ROLL THROUGH THERE..."), a grapple point high in the pump hall's shaft (Wildvine: "WAY UP THERE... I'D NEED A VINE"). **Ripjaws opens older secrets:** Chapter 3's mutagen vat, Chapter 5's flooded lower shaft and Chapter 6's cistern (each card already waiting there).
+**Secrets** (7 cards: 5 reachable in Chapter 7, 2 for later aliens). Reachable now: Max's locker in the docking ring, behind a burst-pipe current in the flooded ring, the reactor's catwalk, the coral cave outside the hull, the drained tank in the pump hall. For later aliens: a rolling chute only a ball survives (Ricochet, Chapter 8: "IF ONLY I COULD ROLL THROUGH THERE..."), a grapple point high in the pump hall's shaft (Wildvine: "WAY UP THERE... I'D NEED A VINE"). **Ripjaws opens older secrets:** Chapter 3's mutagen vat, Chapter 5's flooded lower shaft and Chapter 6's cistern (each card already waiting there).
 
 **Achievements:** FISH OUT OF WATER (KO 5 enemies as Ripjaws on dry land), ALL SYSTEMS GO (wake every console in the base), DEEP BREATH (cross the flooded ring as Ben without running out of air), BAIT AND SWITCH (stun Deepmaw by hitting his lure as three different forms in one fight).
 
-### Chapter 8: Zombozo (plan only)
+### Chapter 8: Cacklejack
 
-**Setting.** The Plumbers fly the Rustbucket home in a transport and drop the family at a seaside boardwalk town on the US coast, where ZOMBOZO'S CIRCUS OF FEARS has pitched its tent for one night only. The midway, the big top, the funhouse and its mirror maze, the trapeze rig high above the ring. Night, coloured bulbs, fog off the sea. Music: `midway` (a wonky calliope in a minor key), `bigtop`, `zombozo` (boss).
+**Original characters.** Chapter 8's villain, his acts, its enemies and its new alien are this game's own characters (as DEEPMAW was in Chapter 7), not the show's: the ringmaster **CACKLEJACK** fills the plan's circus villain, and **RICOCHET** is the alien who rolls. The old ids in earlier chapters' secrets now point at Ricochet. DECISIONS.md has the reasons.
 
-**Story beats.** Zombozo, a clown who feeds on fear, and his freak-show acts (an acid-spitting strongman, a contortionist, a rubber-limbed acrobat) drain the town's crowd one scare at a time. Gwen is taken into the mirror maze; Max is caught by the strongman. Cannonbolt unlocks when Ben is trapped in the funhouse's spinning barrel: the watch rolls him up into an armoured ball that smashes out. The funhouse mirror maze is the set piece: mirrors show reflections that lie (a reflection that moves differently is a hole, a mirror that lights up is a door), and Cannonbolt bouncing off the angled mirrors is how the maze's heart is reached. Zombozo's last laugh, as he falls, makes the Omnitrix flicker to Ghostfreak on its own.
+**Setting.** A Plumber transport flies the Rustbucket home from Karachi and drops the family at **Driftwood Bay**, a seaside boardwalk town on the US coast, on the one night **CACKLEJACK'S CIRCUS OF FRIGHTS** has pitched its tent on the pier. The boardwalk, the midway, the funhouse and its mirror maze, backstage among the wagons, the rigging high over the ring, and the big top. Night, strings of coloured bulbs, fog rolling off the sea, the lighthouse beam sweeping through it. Music (the owner's recordings, like Chapter 7's): `midway` (a wonky calliope in a minor key), `bigtop`, `cacklejack` (the boss); until they arrive the chapter plays existing tracks.
 
-**Movement:** Cannonbolt rolls (momentum, ramps, loops, bounces off walls and angled mirrors). **Alien unlock: Cannonbolt** (J: a shell bash, K: curl and roll; roll into a jump for a big bounce; swap-in: a rolling charge). **Boss: ZOMBOZO** in the big top: fear gas and jack-in-the-box traps (phase 1), his acts joining in on the trapeze rig (phase 2), and a giant inflatable clown head that has to be popped from inside while it fills the ring (phase 3). Secrets for later aliens (Wildvine's grapple over the big top, Way Big never, a fair game only Upgrade can rig), and Cannonbolt opens the older secrets: Chapter 5's mine-cart loop and Chapter 6's corridor of heavy doors.
+**Why there.** Korr's warning at the end of Chapter 7 ("SOMETHING IS STIRRING ON THE ROADS AHEAD"). The Plumbers have been tracking a circus whose audiences walk out grey, shaking and unable to remember being scared. Max wanted a quiet night off. He doesn't get one.
+
+**Story beats** (dialogue is the game's own).
+1. **Cold open (the boardwalk).** The transport lowers the Rustbucket onto the boardwalk. People stream past from the pier, grey as ash, saying nothing. Gwen: "THEY LOOK LIKE SOMEBODY UNPLUGGED THEM." Max: "THE PLUMBERS HAVE A FILE ON THIS CIRCUS. A FAT ONE." Ben smells funnel cake.
+2. **The midway.** Carnival games, a carousel, a test-your-strength bell, and townsfolk sitting grey on the benches. CACKLEJACK's voice rolls over the speakers. On his stage he shows what he eats: a scream, pulled out of a man as a wisp of light and swallowed ("FEAR IS THE ONLY SNACK THAT NEVER GOES STALE!"). His strongman, **IRONJAW**, scoops up Max and carries him into the big top.
+3. **The funhouse.** A clown-mouth door. Inside, Gwen is pulled into a mirror by **THE TANGLE**, a contortionist whose limbs stretch like taffy. Ben is alone.
+4. **The spinning barrel: RICOCHET (the discovery).** The funhouse's barrel spins up and its doors slam; the walls close in, studded with spikes. Every alien Ben picks is thrown about. The Omnitrix finds new DNA (the Plumber base's scanner gave it a sample) and Ben curls into **RICOCHET**, an armoured ball that smashes out through the barrel's door. His name bounces off the screen's edges.
+5. **The funhouse rolling course.** Ricochet's showcase: kicker ramps, pinball bumpers, bounce pads, a loop-the-loop, break-away walls only a fast roll smashes, a clown-mouth slide.
+6. **The mirror maze (set piece).** Mirrors show reflections that lie. A reflection that moves differently is a hole (walk through it); a mirror that lights up pink is Gwen's spell showing a door; angled mirrors send a rolling ball off at a right angle, and a chain of them is the only way up to the maze's heart. Some reflections step out of the glass to fight (**reflections**: dark copies of Ben that strike back when he strikes). At the heart, Gwen in a mirror; smash it and she's free, and walks with Ben.
+7. **Backstage and the rigging.** The wagons, the cages, the climb into the rigging over the ring, IRONJAW on watch and the cage with Max in it, hanging over the ring.
+8. **Boss: CACKLEJACK** in the big top.
+9. **Ending.** Cacklejack deflates with a shriek across the tent. The fear he ate pours back out over the town, and the colour comes back to Driftwood Bay. Max drops into the safety net. As Cacklejack crawls away he laughs his last laugh, and the Omnitrix answers it: it turns Ben into **Ghostfreak on its own**, for a breath, and Ghostfreak whispers ("SOON."). Ben, back, stares at the watch. Gwen: "DID YOUR WATCH JUST DO THAT BY ITSELF?" Max says nothing for a long moment (the hook into Chapter 9).
+
+**Level sections** (about 420 x 50 tiles, HD):
+
+| Section | What happens | Checkpoint (densities) |
+|---|---|---|
+| The boardwalk (0-34) | The cold open, the Rustbucket, the pier gate | none |
+| The midway (34-110) | Booths, the carousel, the strength tester (card), grey townsfolk, Cacklejack's stage, IRONJAW takes Max | THE MIDWAY (all) |
+| The funhouse (110-140) | The clown mouth, Gwen taken, the spinning barrel, Ricochet's discovery | THE BARREL (all) |
+| The rolling course (140-212) | Kicker ramps, bumpers, bounce pads, the loop, break-away walls, the slide; a card on the loop's crown | THE LOOP (Easy, Normal) |
+| The mirror maze (212-290) | Lying reflections, lit doors, angled mirrors up to the heart, reflections that fight; Gwen freed | THE MIRROR MAZE (all), THE HEART (Easy) |
+| Backstage and the rigging (290-366) | Wagons, cages, the shooting gallery (Upgrade's card), the climb, IRONJAW's watch | BACKSTAGE (Easy, Normal) |
+| The big top (366-420) | CACKLEJACK in three stages (each a hidden checkpoint: retries start at the stage you died in) | THE BIG TOP (all), THE HIGH WIRE, THE BIG HEAD (hidden) |
+
+**Rolling (the chapter's new movement).**
+- **RICOCHET rolls.** K curls him into a ball (K again uncurls). Rolling builds speed slowly and keeps it: there is little friction, turning around takes time, and he goes on rolling when the stick is let go. Fast enough, he hurts whatever he rolls into (damage grows with speed) and smashes break-away walls and cracked walls. Hitting a wall at speed he **ricochets** off it (BONK!) with most of his speed. Jump while rolling is a bounce, higher than any jump; landing from height he bounces again, and **pressing Jump just as he lands** is a PERFECT BOUNCE that goes higher each time (three in a row is the top). Down in the air is a SHELL DROP that smashes what's under him.
+- **The funhouse's toys** work for everyone but best for a ball: **bounce pads** (trampolines), **bumpers** (pinball bumpers that kick anything away with a DING), **kicker ramps** (a fast roll launches up and over), **the loop** (fast enough, the ball goes round it; too slow, he drops out), **angled mirrors** (a ball bounces off at a right angle; a beam does too), **break-away walls** (only a fast roll or a smash).
+
+**Enemies** (all original).
+
+| Enemy | Behaviour | Best answer |
+|---|---|---|
+| Grinner | A clown goon: holds a cream pie up and back (the tell: a red arc), then lobs it. A splat slows Ben | Anything; a roll bowls them over |
+| Jack-in-the-box | Sits on the floor; when Ben is near the crank turns and the tune speeds up (the tell: the box shakes, the lid bulges), then a boxing glove springs out along the floor. Hit it during the wind-up and it jams | A hit during the tune; Diamondhead's shield |
+| Balloon hound | A balloon animal that drifts, stretches (the tell) and swoops in a line. Pops in one hit into a puff of fear gas | Shots from range |
+| Stilt walker | A tall clown on stilts with a sweeping kick. Knock out a stilt (a low hit, a roll) and he topples, open to anything | Ricochet, low attacks |
+| Reflection (the maze) | A dark copy of Ben out of a mirror: it strikes a beat after Ben does (the tell: it copies his wind-up) and shatters | Strike when it isn't copying you |
+
+**Alien unlock: RICOCHET** ("CURL UP. BOUNCE BACK."). An original alien: a stocky, round-backed armoured creature (copper shell plates with teal seams, a pale grey hide, short legs, broad three-fingered hands), who curls into a perfect ball.
+- **J: shell bash.** Hold for a chain of forearm-shell bashes; every third is a full-body SHELL SLAM. Rolling, J is a SPIN BOOST (a burst of speed).
+- **K: curl and roll** (above). **Swap-in:** he arrives already curled, at full speed, bowling through whatever is in front.
+- Heavy: sinks in water (rolls along the bottom), barely flinches.
+- Discovery: the spinning barrel (never a misfire), NEW DNA DETECTED, a title slam whose letters ricochet off the edges of the screen, a metallic boom and rattle sound set, a bouncing music layer.
+
+**Boss: CACKLEJACK** (an original villain): a tall, thin ringmaster with a porcelain-white painted face that never stops grinning, a crooked top hat with a jack-in-the-box spring inside it, a coat of purple and acid-green diamonds, and long gloved fingers. He feeds on fear (the bigger the scare, the bigger he grows) and talks in showman's patter. Max hangs in a cage over the ring; Gwen fights beside Ben and can still SHIELD him.
+- **Stage 1: FEAR GAS** (the ring floor). He springs about the ring on the spring in his hat, lobs fear-gas pies (clouds that hurt and slow) and drops jack-in-the-boxes that wind up and punch along the floor. After every trick he takes a bow and laughs at the crowd: the moment to hit him.
+- **Stage 2: THE HIGH WIRE.** He takes to the trapeze rig: IRONJAW stamps along the ring floor throwing kettlebells (shockwaves where they land), THE TANGLE swings from the trapezes and grabs whoever is under her (a long red stretch first: the tell), and Cacklejack swings across overhead dropping pies. Bounce pads at the ring's edge throw Ben (and a ball, very high) up to the platforms; knocking the acts off the rig drops Cacklejack's guard.
+- **Stage 3: THE BIG HEAD.** He blows himself up into a giant balloon of his own face that fills the ring and pushes everyone to its edges. Its mouth opens to laugh on a beat (the tell: the lips quiver and a red glow inside): the valve deep in its throat is the target. Shots fly in; a rolling ball that goes in bounces round the inside of the head like a pinball, and pops it from inside.
+- Retrying starts at the stage you died in. Tells are the same length on every difficulty; rests and punish windows follow the difficulty. Any alien can win; switching is faster.
+- Defeat: THE SHOW'S OVER!, then the ending.
+
+**Secrets** (7 cards: 6 reachable in Chapter 8, 1 for a later alien). Reachable now: the strength tester's bell (a smash), the carousel's roof, the loop's crown (a ball fast enough), behind a lying mirror, the heart of the maze, and a rigged fair game backstage (Upgrade merges into the shooting gallery and wins). For a later alien: the top of the big top's pole (Wildvine: "THE TOP OF THE TENT... IF I HAD A VINE"). **Ricochet opens older secrets:** Chapter 5's mine-cart loop, Chapter 6's corridor of heavy doors and Chapter 7's rolling chute (each card already waiting there).
+
+**Achievements:** PINBALL WIZARD (ring 20 bumpers as Ricochet), PERFECT BOUNCE (three perfect bounces in a row), THROUGH THE LOOKING GLASS (find every lying mirror in the maze), STANDING OVATION (pop the big head from inside).
 
 ### Chapter 9: Ghostfreak Out (plan only)
 

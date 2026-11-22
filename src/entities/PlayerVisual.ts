@@ -45,6 +45,7 @@ export class PlayerVisual {
 
   applyForm(form: FormDefinition, prefix: string): void {
     this.prefix = prefix;
+    this.sprite.anims.timeScale = 1;
     this.sprite.setTexture(form.texture, 0);
     // Aliens made of fire (or anything glowing) render above the night lightmap.
     this.sprite.setDepth(form.feel.emissive ? DEPTH.emissive - 2 : DEPTH.player);
@@ -158,6 +159,11 @@ export class PlayerVisual {
 
   setFade(alpha: number): void {
     this.fade = alpha;
+  }
+
+  /** The animation plays this many times faster (a ball spinning with its speed). */
+  setAnimRate(scale: number): void {
+    this.sprite.anims.timeScale = scale;
   }
 
   setSpin(radiansPerSecond: number): void {

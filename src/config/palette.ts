@@ -175,6 +175,10 @@ export const PALETTE = {
   ripjaws: 0x5ae0d0,
   ripjawsGlow: 0xd8fff8,
   ripjawsDark: 0x1a5a68,
+  // Ricochet (Chapter 8): copper shell, teal seams.
+  ricochet: 0xe8884a,
+  ricochetGlow: 0xffe0c0,
+  ricochetDark: 0x6a2e14,
   mana: 0xff7ad8,
   manaGlow: 0xffd2f2,
   manaDark: 0x8a2a78,

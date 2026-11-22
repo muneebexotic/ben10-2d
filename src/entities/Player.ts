@@ -177,6 +177,23 @@ export class Player implements PlayerHandle {
     return this.inWater && !this.dead;
   }
 
+  get blockedLeft(): boolean {
+    return this.body.blocked.left || this.body.touching.left;
+  }
+
+  get blockedRight(): boolean {
+    return this.body.blocked.right || this.body.touching.right;
+  }
+
+  /** Curled up and rolling (Ricochet): the level's bumpers, kickers, loops and ball gates react to it. */
+  get rolling(): boolean {
+    return !this.dead && (this.abilities.rolling?.() ?? false);
+  }
+
+  setAnimRate(scale: number): void {
+    this.visual.setAnimRate(scale);
+  }
+
   /** Head under the surface (breath runs down). */
   get underwater(): boolean {
     return this.inWater && this.headUnder && !this.dead;
@@ -594,7 +611,8 @@ export class Player implements PlayerHandle {
   }
 
   private footsteps(dtMs: number, grounded: boolean, moveX: number): void {
-    if (!grounded || moveX === 0) {
+    // A rolling ball has no feet (its rumble is the form's own).
+    if (!grounded || moveX === 0 || this.rolling) {
       this.stepTimer = 0;
       return;
     }

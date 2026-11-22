@@ -14,6 +14,7 @@ import { DIAMONDHEAD_CARTOON } from '../../../config/cartoon/diamondhead';
 import { GHOSTFREAK_CARTOON } from '../../../config/cartoon/ghostfreak';
 import { GREYMATTER_CARTOON } from '../../../config/cartoon/greymatter';
 import { RIPJAWS_CARTOON } from '../../../config/cartoon/ripjaws';
+import { RICOCHET_CARTOON } from '../../../config/cartoon/ricochet';
 import { WARDEN_CARTOON } from '../../../config/cartoon/warden';
 import { GRUNT_CARTOON } from '../../../config/cartoon/grunt';
 import { EEL_CARTOON } from '../../../config/cartoon/eel';
@@ -37,6 +38,7 @@ import { diamondheadRig } from './characters/diamondhead';
 import { ghostfreakRig } from './characters/ghostfreak';
 import { greymatterRig } from './characters/greymatter';
 import { ripjawsRig } from './characters/ripjaws';
+import { ricochetRig } from './characters/ricochet';
 import { wardenRig } from './characters/deep/warden';
 import { gruntRig } from './characters/deep/grunt';
 import { eelRig } from './characters/deep/eel';
@@ -67,6 +69,8 @@ export const CARTOON_CAST: readonly CastRig[] = [
   { manifest: GHOSTFREAK_CARTOON, rig: ghostfreakRig },
   { manifest: GREYMATTER_CARTOON, rig: greymatterRig },
   { manifest: RIPJAWS_CARTOON, rig: ripjawsRig },
+  // Chapter 8's alien (an original design, painted in code).
+  { manifest: RICOCHET_CARTOON, rig: ricochetRig },
   // Chapter 7's enemies.
   { manifest: WARDEN_CARTOON, rig: wardenRig },
   { manifest: GRUNT_CARTOON, rig: gruntRig },

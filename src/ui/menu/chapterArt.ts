@@ -377,7 +377,7 @@ function textureFor(id: string): { key: string; frame: number; h: number } | nul
     const key = SILHOUETTE_KEYS[id as SilhouetteId];
     const heights: Record<SilhouetteId, number> = {
       wildmutt: 26, stinkfly: 30, upgrade: 34, diamondhead: 38, ghostfreak: 35, greymatter: 11,
-      ripjaws: 35, cannonbolt: 33, wildvine: 39, waybig: 64, kevin: 30,
+      ripjaws: 35, ricochet: 33, wildvine: 39, waybig: 64, kevin: 30,
     };
     return { key, frame: 0, h: heights[id as SilhouetteId] };
   }

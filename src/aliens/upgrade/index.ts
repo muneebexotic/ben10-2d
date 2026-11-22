@@ -48,6 +48,7 @@ export const UPGRADE_FORM: FormDefinition = {
         ghostfreak: ['ERROR: GHOST.EXE NOT FOUND.', 'I CAN HAUNT A COMPUTER. KIND OF.'],
         greymatter: ['SMART MACHINE, WRONG KIND OF SMART.', 'I WANTED A BRAIN. GOT A HARD DRIVE.'],
         ripjaws: ['WANTED GILLS. GOT A SHORT CIRCUIT.', 'IS LIQUID METAL WATERPROOF?'],
+        ricochet: ['WANTED A SHELL. GOT A SCREENSAVER.', 'I COULD BE A BALL... IF A BALL WERE GOO.'],
       },
       any: ['ERROR 404: RIGHT ALIEN NOT FOUND.'],
     },

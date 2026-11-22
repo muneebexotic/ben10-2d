@@ -14,7 +14,7 @@ export const ROSTER: Readonly<Record<string, { name: string; chapter: number }>>
   ghostfreak: { name: 'GHOSTFREAK', chapter: 5 },
   greymatter: { name: 'GREY MATTER', chapter: 6 },
   ripjaws: { name: 'RIPJAWS', chapter: 7 },
-  cannonbolt: { name: 'CANNONBOLT', chapter: 8 },
+  ricochet: { name: 'RICOCHET', chapter: 8 },
   wildvine: { name: 'WILDVINE', chapter: 10 },
   waybig: { name: 'WAY BIG', chapter: 12 },
 };

@@ -28,6 +28,9 @@ export interface PlayerHandle {
   readonly swimming: boolean;
   /** Body under water at all (swimming, or a heavy form walking the bottom). */
   readonly submerged: boolean;
+  /** Pressed against a wall on that side this frame (the last physics step stopped it there). */
+  readonly blockedLeft: boolean;
+  readonly blockedRight: boolean;
   setVelocity(vx: number, vy: number): void;
   setVelocityX(vx: number): void;
   setVelocityY(vy: number): void;
@@ -47,6 +50,8 @@ export interface PlayerHandle {
   ride(x: number, feetY: number): void;
   /** Hides the sprite (a form poured inside a machine). Cutscenes hide it separately. */
   setHidden(hidden: boolean): void;
+  /** Plays the form's animation faster or slower (a ball spinning with its speed). 1 is normal; a new form resets it. */
+  setAnimRate(scale: number): void;
 }
 
 /** A projectile an ability fires. `kind` picks the look; `hitKind` decides what it can damage. */
@@ -282,6 +287,8 @@ export interface FormAbilities {
   mirror?(): { x: number; y: number; angle: number; halfLength: number } | null;
   /** A gauge shown by the form (flight stamina): 0..1 and its colour, or null when there's nothing to show. */
   meter?(): { value: number; color: number } | null;
+  /** Curled into a ball and rolling (Ricochet): bumpers, kickers, loops and ball gates react to it. */
+  rolling?(): boolean;
 }
 
 /** How a form moves and reacts, beyond its motor stats. */
@@ -305,7 +312,7 @@ export interface FormFeel {
 }
 
 /** How the alien's name slams onto the screen when it transforms. */
-export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'equation' | 'splash' | 'plain';
+export type SlamStyle = 'blaze' | 'blur' | 'quake' | 'howl' | 'buzz' | 'glitch' | 'shatter' | 'haunt' | 'equation' | 'splash' | 'bounce' | 'plain';
 
 export interface FormTheme {
   /** Main colour: name slam, transform ring, shield bar, dial while active. */

@@ -51,6 +51,8 @@ export const SWIM = {
   greymatter: { speed: 66, accel: 380, drag: 300, sink: 16, stroke: 120, strokeMs: 300, jumpOut: 360, breathMs: 9_000, currentScale: 1.3 },
   /** A torpedo: the fastest thing in the game, in any direction, with momentum. */
   ripjaws: { speed: 260, accel: 900, drag: 360, sink: 0, stroke: 160, strokeMs: 160, jumpOut: 400, breathMs: Infinity, currentScale: 0.35, anyWater: true },
+  /** A shell full of alien: sinks, and rolls along the bottom. */
+  ricochet: { speed: 0, accel: 0, drag: 0, sink: 0, stroke: 0, strokeMs: 0, jumpOut: 340, breathMs: 13_000, currentScale: 0.3, heavy: { gravityScale: 0.45, runScale: 0.7, maxFall: 140 } },
 } as const satisfies Record<string, SwimStats>;
 
 export const SWIM_FEEL = {

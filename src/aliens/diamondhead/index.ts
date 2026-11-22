@@ -48,6 +48,7 @@ export const DIAMONDHEAD_FORM: FormDefinition = {
         ghostfreak: ["CAN'T PHASE THROUGH WALLS. I AM ONE.", 'TOO SOLID FOR GHOST STUFF.'],
         greymatter: ['TOO BIG FOR THE VENT. WAY TOO BIG.', 'WANTED A BRAIN. GOT A ROCK.'],
         ripjaws: ['I WANTED TO SWIM. I SINK LIKE A ROCK.', 'NO GILLS. VERY SHINY, THOUGH.'],
+        ricochet: ['WANTED TO ROLL. I AM A VERY POINTY BALL.', 'CRYSTAL DOES NOT BOUNCE. IT SHATTERS.'],
       },
       any: ["WELL, AT LEAST I'M PRETTY."],
     },
