@@ -128,6 +128,13 @@ export const LIGHTING = {
   ambientPumpHall: 0x8a9ab8,
   ambientContainment: 0x7a86a8,
   ambientMoonPool: 0x5a7298,
+  // Chapter 8: night on the boardwalk under coloured bulbs, the funhouse, the mirror maze, backstage, the big top.
+  ambientBoardwalk: 0x8e8ab8,
+  ambientMidway: 0x9a8ab0,
+  ambientFunhouse: 0x9a7aa8,
+  ambientMirrors: 0x8a98c0,
+  ambientBackstage: 0x6e6c98,
+  ambientBigTop: 0xa8907e,
   ambientBlendMs: 900,
 } as const;
 

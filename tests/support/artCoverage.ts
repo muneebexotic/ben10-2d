@@ -19,6 +19,7 @@ import { EEL_CARTOON } from '../../src/config/cartoon/eel';
 import { JELLY_CARTOON } from '../../src/config/cartoon/jelly';
 import { GNASHER_CARTOON } from '../../src/config/cartoon/gnasher';
 import { DEEPMAW_CARTOON } from '../../src/config/cartoon/deepmaw';
+import { BIGHEAD_CARTOON, CACKLEJACK_CARTOON, GRINNER_CARTOON, HOUND_CARTOON, IRONJAW_CARTOON, JACKBOX_CARTOON, STILTS_CARTOON, TANGLE_CARTOON } from '../../src/config/cartoon/circus';
 import { BEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/ben';
 import { GWEN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/gwen';
 import { KEVIN_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/characters/kevin';
@@ -42,7 +43,7 @@ import { GREYMATTER_FRAME_CLIPS } from '../../src/scenes/preload/cartoon/charact
 import type { FrameClip } from '../../src/scenes/preload/cartoon/cutout/frameRig';
 
 /** Every rigged character, in the cast's order (`scenes/preload/cartoon/cast.ts`, which needs Phaser to load). */
-const CAST = [BEN_CARTOON, GWEN_CARTOON, MAX_CARTOON, KEVIN_CARTOON, HEATBLAST_CARTOON, FOURARMS_CARTOON, XLR8_CARTOON, WILDMUTT_CARTOON, STINKFLY_CARTOON, UPGRADE_CARTOON, DIAMONDHEAD_CARTOON, GHOSTFREAK_CARTOON, GREYMATTER_CARTOON, RIPJAWS_CARTOON, RICOCHET_CARTOON, WARDEN_CARTOON, GRUNT_CARTOON, EEL_CARTOON, JELLY_CARTOON, GNASHER_CARTOON, DEEPMAW_CARTOON];
+const CAST = [BEN_CARTOON, GWEN_CARTOON, MAX_CARTOON, KEVIN_CARTOON, HEATBLAST_CARTOON, FOURARMS_CARTOON, XLR8_CARTOON, WILDMUTT_CARTOON, STINKFLY_CARTOON, UPGRADE_CARTOON, DIAMONDHEAD_CARTOON, GHOSTFREAK_CARTOON, GREYMATTER_CARTOON, RIPJAWS_CARTOON, RICOCHET_CARTOON, WARDEN_CARTOON, GRUNT_CARTOON, EEL_CARTOON, JELLY_CARTOON, GNASHER_CARTOON, DEEPMAW_CARTOON, GRINNER_CARTOON, JACKBOX_CARTOON, HOUND_CARTOON, STILTS_CARTOON, CACKLEJACK_CARTOON, IRONJAW_CARTOON, TANGLE_CARTOON, BIGHEAD_CARTOON];
 
 export const COVERAGE_IDS = CAST.map((m) => m.id);
 

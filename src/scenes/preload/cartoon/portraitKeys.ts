@@ -2,4 +2,7 @@
 export const HD_PORTRAITS = {
   deepmaw: 'hd-portrait-deepmaw',
   korr: 'hd-portrait-korr',
+  cacklejack: 'hd-portrait-cacklejack',
+  ironjaw: 'hd-portrait-ironjaw',
+  tangle: 'hd-portrait-tangle',
 } as const;

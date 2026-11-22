@@ -2,6 +2,7 @@ import { TRAINING_ARENA } from '../levels/training';
 import { registerTracks } from '../systems/audio/Music';
 import { registerBrains } from '../entities/enemies/brains';
 import type { ChapterModule } from './types';
+import { CH8_BUILT } from '../levels/chapters';
 
 /**
  * Each story chapter's code is its own chunk (docs/PERFORMANCE.md, "Loading"):
@@ -16,6 +17,7 @@ const LOADERS: Readonly<Record<string, () => Promise<ChapterModule>>> = {
   ch5: () => import('./ch5').then((m) => m.CHAPTER),
   ch6: () => import('./ch6').then((m) => m.CHAPTER),
   ch7: () => import('./ch7').then((m) => m.CHAPTER),
+  ch8: () => import('./ch8').then((m) => m.CHAPTER),
 };
 
 /** Omnitrix Training is part of the shared code (the title screen's sandbox). */
@@ -24,7 +26,9 @@ const pending = new Map<string, Promise<ChapterModule>>();
 
 /** Every level id the game can load. */
 export function knownLevelIds(): string[] {
-  return [...Object.keys(LOADERS), 'training'];
+  // Chapter 8 waits for the owner's review and recordings (docs/PROGRESS.md): release builds can't start it by URL either.
+  const building = CH8_BUILT ? [] : ['ch8'];
+  return [...Object.keys(LOADERS).filter((id) => !building.includes(id)), 'training'];
 }
 
 /**

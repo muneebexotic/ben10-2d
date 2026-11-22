@@ -4,6 +4,7 @@ import { COMBAT } from '../config/combat';
 import { PALETTE as P } from '../config/palette';
 import { TEX } from '../scenes/preload/assetKeys';
 import { CH5_TEX } from '../scenes/preload/bounty/keys';
+import { CIRCUS_ART } from '../scenes/preload/cartoon/circus/keys';
 import { CH6_TEX } from '../scenes/preload/karachi/keys';
 import type { Fx, BurstKind } from '../systems/Fx';
 import type { Lighting } from '../systems/Lighting';
@@ -11,7 +12,7 @@ import { playSfx } from '../systems/audio/Sfx';
 import type { Damageable, HitKind } from './types';
 import { chance } from '../systems/Pacing';
 
-export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw' | 'mana' | 'spell' | 'bag';
+export type ProjectileKind = 'fireball' | 'laser' | 'bolt' | 'wave' | 'needle' | 'shell' | 'slime' | 'spit' | 'shard' | 'missile' | 'claw' | 'mana' | 'spell' | 'bag' | 'pie' | 'kettlebell';
 export type Team = 'player' | 'enemy';
 
 interface KindStyle {
@@ -43,6 +44,9 @@ const STYLE: Record<ProjectileKind, KindStyle> = {
   // Chapter 6: Hex's violet bolts and Charmcaster's spell bags (their art comes with the chapter).
   spell: { texture: CH6_TEX.spellBolt, anim: 'spell-bolt', trail: 'mana', trailChance: 0.5, light: 36, lightColor: 0xb88aff, impact: 'mana', rotate: false, additive: true },
   bag: { texture: CH6_TEX.spellBag, trail: 'mana', trailChance: 0.3, light: 26, lightColor: 0xff8ad8, impact: 'mana', rotate: true, additive: false },
+  // Chapter 8: the grinners' and Cacklejack's cream pies, IRONJAW's kettlebells (their art comes with the chapter).
+  pie: { texture: CIRCUS_ART.pie, trail: undefined, trailChance: 0, light: 0, lightColor: 0xffffff, impact: 'white', rotate: true, additive: false },
+  kettlebell: { texture: CIRCUS_ART.kettlebell, trail: 'dust', trailChance: 0.3, light: 0, lightColor: 0xffffff, impact: 'debris', rotate: true, additive: false },
 };
 
 /** Extra behaviour for a shot. Defaults match the original fireballs and lasers. */

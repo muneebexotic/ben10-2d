@@ -54,7 +54,7 @@ export type GearKind = 'crabbot' | 'sentry';
  * the palace's enchanted armor, Hex's illusions (ground), stone gargoyles and bewitched kites (flying).
  */
 export type MagicKind = 'rockling' | 'golem' | 'armor' | 'illusion' | 'gargoyle' | 'kite';
-export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind | MagicKind | DeepKind;
+export type EnemyKind = DroneKind | MutantKind | RobotKind | GearKind | MagicKind | DeepKind | CircusKind;
 export type Density = 'sparse' | 'normal' | 'frequent';
 export type FormFilter = 'any' | 'human' | 'alien';
 
@@ -185,7 +185,41 @@ export type EntitySpawn =
   /** A dead base console standing on row `y`: hitting it wakes `wakes` (a section's lights and doors). */
   | { type: 'baseConsole'; id: string; x: number; y: number; wakes: string }
   /** The Plumber base's creatures and machines: walkers stand on row `y`, swimmers and sentries are in it. */
-  | { type: 'deep'; kind: DeepKind; x: number; y: number };
+  | { type: 'deep'; kind: DeepKind; x: number; y: number }
+  // ---- Act 3 (Chapter 8): Cacklejack's circus and its funhouse.
+  /** The circus's acts and traps: walkers and boxes stand on row `y`, balloon hounds float in it. A `reflection` waits inside the mirror at x. */
+  | { type: 'circus'; kind: CircusKind; x: number; y: number }
+  /** A trampoline two tiles wide on floor row `y` (its left tile at x): anyone landing on it is thrown up at `power` px/s (a curled ball higher). */
+  | { type: 'bouncePad'; id: string; x: number; y: number; power: number }
+  /** A pinball bumper centred in tile (x, y): it kicks whatever touches it away (DING). */
+  | { type: 'bumper'; id: string; x: number; y: number }
+  /**
+   * A launch ramp on floor row `y` at tile x, facing `dir`: a rolling ball that hits it fast enough is
+   * thrown up and on (`to`: where it comes down, for reachability). Anyone else steps over it.
+   */
+  | { type: 'kicker'; id: string; x: number; y: number; dir: 1 | -1; to: { x: number; y: number } }
+  /** A loop-de-loop standing on floor row `y`, centred on column x, radius `r` tiles: a ball rolling through its foot fast enough goes round it. */
+  | { type: 'loop'; id: string; x: number; y: number; r: number }
+  /**
+   * An angled mirror in tile (x, y): a rolling ball that touches it is fired off at a right angle (`turn`) at a set
+   * speed; to everyone else it's a solid block. `to`: where the ball ends up (reachability).
+   */
+  | { type: 'deflector'; id: string; x: number; y: number; turn: 'up' | 'down' | 'left' | 'right'; speed: number; to?: { x: number; y: number } }
+  /**
+   * A mirror panel in the maze, one tile wide, rows y..y+h: `real` is glass (solid; it shows Ben's reflection),
+   * `lie` shows a reflection that moves wrong and is really an opening, `door` lights up pink when Ben comes near and opens.
+   */
+  | { type: 'mirror'; id: string; x: number; y: number; h: number; kind: 'real' | 'lie' | 'door' }
+  /** The midway's high striker on floor row `y`: a smash on its pad sends the puck up; ring the bell and it pays out `reward`. */
+  | { type: 'striker'; id: string; x: number; y: number; reward: string }
+  /**
+   * A seal only a rolling ball breaks (shell plates over a chute), `w` x `h` tiles from (x, y). `requires`: it is
+   * only there (cut into the rock) once that alien is on the dial; until then the rock stays whole.
+   */
+  | { type: 'rollGate'; id: string; x: number; y: number; w: number; h: number; requires?: string };
+
+/** Chapter 8's enemies: Cacklejack's grinners, jack-in-the-boxes, balloon hounds and stilt walkers, and the maze's reflections. */
+export type CircusKind = 'grinner' | 'jackbox' | 'hound' | 'stilts' | 'reflection';
 
 /** Chapter 7's enemies: the base's security sentries (wardens), Deepmaw's fishbowl crew, zapper eels, jelly mines, gnasher swarms. */
 export type DeepKind = 'warden' | 'grunt' | 'eel' | 'jelly' | 'gnasher';
@@ -366,7 +400,8 @@ export type AmbientKind =
   | 'downtown' | 'arcade' | 'lair' | 'subway' | 'tunnel' | 'substation'
   | 'ghosttown' | 'saloon' | 'jail' | 'hotel' | 'minehead' | 'mine' | 'cavern' | 'shaft'
   | 'seafront' | 'palace' | 'library' | 'cellar' | 'oldTunnel' | 'clockwork' | 'towerTop'
-  | 'jetty' | 'descent' | 'docking' | 'flooded' | 'reactor' | 'blackout7' | 'opensea' | 'pumphall' | 'containment' | 'moonpool';
+  | 'jetty' | 'descent' | 'docking' | 'flooded' | 'reactor' | 'blackout7' | 'opensea' | 'pumphall' | 'containment' | 'moonpool'
+  | 'boardwalk' | 'midway' | 'funhouse' | 'mirrors' | 'backstage' | 'bigtop';
 
 export interface AmbientZone {
   x: number;
@@ -376,9 +411,9 @@ export interface AmbientZone {
 }
 
 /** Visual set: the night forest, the Omnitrix's training simulation, the desert highway at sundown, the museum at night, downtown and under it, or a ghost town and its mine. */
-export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western' | 'karachi' | 'plumber';
+export type LevelTheme = 'forest' | 'sim' | 'highway' | 'museum' | 'city' | 'western' | 'karachi' | 'plumber' | 'circus';
 
-export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters' | 'hex' | 'deepmaw';
+export type BossKind = 'hunter' | 'roadbreaker' | 'frog' | 'kevin' | 'hunters' | 'hex' | 'deepmaw' | 'cacklejack';
 
 /** Interior back walls (museum halls and lab; the arcade, the laser tag arena, the subway, its tunnels and the substation; Silver Spur's saloon, jail and hotel, the mine, its crystal cavern and shafts). */
 export type InteriorWall =
@@ -469,6 +504,27 @@ export interface StoryPlan {
   magic?: MagicPlan;
   /** Chapter 7: the Plumber base's set pieces. */
   plumber?: PlumberPlan;
+  /** Chapter 8: the circus's set pieces. */
+  circus?: CircusPlan;
+}
+
+/** Chapter 8's set pieces, in the order they play. Positions are tiles. */
+export interface CircusPlan {
+  /** The cold open on the boardwalk: the family walks in from `startX` to `stopX` on row `floor`. */
+  boardwalk: { startX: number; stopX: number; floor: number };
+  /** Cacklejack's show on his stage at `stageX` (row `stageFloor`) once Ben passes `triggerX`; IRONJAW carries Max off toward `exitX`. */
+  show: { triggerX: number; stageX: number; stageFloor: number; floor: number; maxX: number; exitX: number };
+  /** In the funhouse THE TANGLE pulls Gwen into a mirror at `mirrorX` as Ben passes `triggerX`. */
+  gwenTaken: { triggerX: number; mirrorX: number; floor: number };
+  /**
+   * The spinning barrel: walls at `fromX` and `toX` (rows `top`..`floor`-1) slam shut once Ben passes `triggerX`,
+   * the spiked walls close in, and `alien` smashes out through the far wall.
+   */
+  barrel: { triggerX: number; fromX: number; toX: number; top: number; floor: number; alien: string };
+  /** The maze's heart: Gwen in the mirror at `mirrorX` on row `floor`; freed, the wall at `exit` opens. */
+  heart: { mirrorX: number; floor: number; exit: { x: number; y: number; w: number; h: number } };
+  /** Max's cage hangs over the ring at `cageX`, its bottom on row `cageY`. */
+  bigTop: { cageX: number; cageY: number; floor: number };
 }
 
 /** Chapter 7's set pieces, in the order they play. Positions are tiles. */

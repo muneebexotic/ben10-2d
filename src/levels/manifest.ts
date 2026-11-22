@@ -215,6 +215,34 @@ export const LEVEL_META: readonly LevelMeta[] = [
       { id: 'cp-maelstrom', label: 'THE MAELSTROM' },
     ],
   },
+  {
+    id: 'ch8',
+    chapter: 8,
+    name: 'CACKLEJACK',
+    theme: 'circus',
+    parTimeMs: 720_000,
+    look: 'hd',
+    cards: [
+      { id: 'ch8-card-carousel' },
+      { id: 'ch8-card-striker', reward: 'ch8-striker' },
+      { id: 'ch8-card-loop' },
+      { id: 'ch8-card-mirror' },
+      { id: 'ch8-card-heart' },
+      { id: 'ch8-card-gallery' },
+      { id: 'ch8-card-tent', requires: 'wildvine' },
+    ],
+    checkpoints: [
+      { id: 'cp-midway', label: 'THE MIDWAY' },
+      { id: 'cp-barrel', label: 'THE BARREL' },
+      { id: 'cp-loop', label: 'THE LOOP' },
+      { id: 'cp-maze', label: 'THE MIRROR MAZE' },
+      { id: 'cp-heart', label: 'THE HEART' },
+      { id: 'cp-backstage', label: 'BACKSTAGE' },
+      { id: 'cp-bigtop', label: 'THE BIG TOP' },
+      { id: 'cp-highwire', label: 'THE HIGH WIRE' },
+      { id: 'cp-bighead', label: 'THE BIG HEAD' },
+    ],
+  },
 ];
 
 /** The manifest entry a level's data should produce (the test compares them). */

@@ -9,7 +9,8 @@ import { HD_PORTRAITS } from '../../preload/cartoon/portraitKeys';
 export type CastId =
   | 'max' | 'gwen' | 'ben' | 'vilgax' | 'animo' | 'wildmutt' | 'kevin' | 'stranger' | 'sixsix' | 'kraab' | 'tetrax' | 'ghostfreak'
   | 'hex' | 'charmcaster' | 'rauf' | 'rafiq' | 'zain'
-  | 'deepmaw' | 'korr';
+  | 'deepmaw' | 'korr'
+  | 'cacklejack' | 'ironjaw' | 'tangle';
 
 export interface CastMember {
   name: string;
@@ -47,6 +48,10 @@ export const CAST: Record<CastId, CastMember> = {
   deepmaw: { name: 'DEEPMAW', color: PALETTE.deepmaw, portrait: HD_PORTRAITS.deepmaw, voicePitch: 0.5 },
   // The owner's drawing as a hologram (cartoon/plumber/korr.ts).
   korr: { name: 'MAGISTER KORR', color: 0x58d8de, portrait: HD_PORTRAITS.korr, voicePitch: 0.6 },
+  // Chapter 8 (the circus): portraits painted from their rigs.
+  cacklejack: { name: 'CACKLEJACK', color: PALETTE.cacklejack, portrait: HD_PORTRAITS.cacklejack, voicePitch: 1.3 },
+  ironjaw: { name: 'IRONJAW', color: 0xd8324a, portrait: HD_PORTRAITS.ironjaw, voicePitch: 0.5 },
+  tangle: { name: 'THE TANGLE', color: 0x3ac8c0, portrait: HD_PORTRAITS.tangle, voicePitch: 1.5 },
 };
 
 export function isCastId(id: string): id is CastId {

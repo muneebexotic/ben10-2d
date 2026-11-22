@@ -50,6 +50,7 @@ export interface DroneWorldDeps {
   onOverload?(d: Drone): void;
   onFrightened?(d: Drone): void;
   salvo?(x: number, feetY: number, drone: Drone): void;
+  punch?(x: number, y: number, damage: number, push: number): void;
   threat(d: Drone, at: number): void;
   cancelThreat(d: Drone): void;
 }
@@ -82,6 +83,7 @@ export function createDroneWorld(d: DroneWorldDeps): DroneWorld {
     onOverload: (drone) => d.onOverload?.(drone),
     onFrightened: (drone) => d.onFrightened?.(drone),
     salvo: (x, feetY, drone) => d.salvo?.(x, feetY, drone),
+    punch: (x, y, damage, push) => d.punch?.(x, y, damage, push),
     threat: (drone, at) => d.threat(drone, at),
     cancelThreat: (drone) => d.cancelThreat(drone),
   };

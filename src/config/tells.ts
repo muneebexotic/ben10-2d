@@ -27,6 +27,8 @@ export const TELL = {
   /** Chapter 7: the base's sentries in lockdown, and Deepmaw (his crew and the sea's things fight for him). */
   plumber: { core: PALETTE.enemy, edge: PALETTE.plumber },
   deepmaw: { core: PALETTE.enemy, edge: PALETTE.deepmaw },
+  /** Chapter 8: Cacklejack's acid green (his acts and his circus fight for him). */
+  cacklejack: { core: PALETTE.enemy, edge: PALETTE.cacklejack },
 } as const satisfies Record<string, Tell>;
 
 /** A villain's tell for an effect colour (Kevin's purple, Animo's violet...), or plain danger red. */

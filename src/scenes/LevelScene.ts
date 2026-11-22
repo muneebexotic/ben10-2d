@@ -168,6 +168,12 @@ const AMBIENT: Record<AmbientKind, number> = {
   pumphall: LIGHTING.ambientPumpHall,
   containment: LIGHTING.ambientContainment,
   moonpool: LIGHTING.ambientMoonPool,
+  boardwalk: LIGHTING.ambientBoardwalk,
+  midway: LIGHTING.ambientMidway,
+  funhouse: LIGHTING.ambientFunhouse,
+  mirrors: LIGHTING.ambientMirrors,
+  backstage: LIGHTING.ambientBackstage,
+  bigtop: LIGHTING.ambientBigTop,
 };
 
 
@@ -426,6 +432,8 @@ export class LevelScene extends Phaser.Scene {
       onOverload: (d) => this.onOverload(d.x, d.y),
       onFrightened: () => this.achievements.count('frightened'),
       salvo: (x, feetY) => this.hazards?.salvo(x, feetY),
+      // A blow from the side it came from (the push only picks the direction; knockback is the player's own).
+      punch: (x, _y, damage, push) => this.onPlayerHurt(this.player.takeDamage(damage, push >= 0 ? x - 8 : x + 8)),
       threat: (d, at) => this.perfect.register(d, at, d.x, d.y),
       cancelThreat: (d) => this.perfect.cancel(d),
     });

@@ -32,6 +32,14 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | JELLY MINE | 1 | 1 | 0 | 0 | 0 |
 | GNASHER SWARM | 4 | 4 | 0 | 0 | 0 |
 | DEEPMAW | 17 | 17 | 0 | 0 | 0 |
+| GRINNER | 5 | 0 | 0 | 0 | 5 |
+| JACK-IN-THE-BOX | 4 | 0 | 0 | 0 | 4 |
+| BALLOON HOUND | 3 | 0 | 0 | 0 | 3 |
+| STILT WALKER | 5 | 0 | 0 | 0 | 5 |
+| CACKLEJACK | 11 | 0 | 0 | 0 | 11 |
+| IRONJAW | 6 | 0 | 0 | 0 | 6 |
+| THE TANGLE | 5 | 0 | 0 | 0 | 5 |
+| THE BIG HEAD | 4 | 0 | 0 | 0 | 4 |
 
 ## BEN TENNYSON (`ben`)
 
@@ -480,3 +488,86 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | talk | gloating, jaw flapping | drawn | grin |
 | roar | a roar, jaws wide, lure blazing | drawn | roar |
 | laugh | (story pose) | drawn | laugh |
+
+## GRINNER (`grinner`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| idle | rocking on his big shoes, chuckling | painted |  |
+| walk | a flapping waddle | painted |  |
+| windup | the pie held up and back (the tell) | painted |  |
+| throw | the pie flung | painted |  |
+| hurt | knocked back | painted |  |
+
+## JACK-IN-THE-BOX (`jackbox`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| idle | shut, the crank still | painted |  |
+| wind | the crank spinning, the box shaking, the lid bulging (the tell) | painted |  |
+| pop | the lid flung open, the jack out on its spring | painted |  |
+| jammed | the crank snapped off, smoke out of the lid | painted |  |
+
+## BALLOON HOUND (`hound`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| float | bobbing in the air, tail wagging | painted |  |
+| stretch | stretching long, squeaking (the tell) | painted |  |
+| swoop | diving along a line | painted |  |
+
+## STILT WALKER (`stilts`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| walk | long, slow strides on the stilts | painted |  |
+| windup | one stilt drawn back (the tell) | painted |  |
+| kick | the stilt swept along the floor | painted |  |
+| topple | a stilt knocked out: falling over | painted |  |
+| down | down on the floor, crawling | painted |  |
+
+## CACKLEJACK (`cacklejack`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| idle | swaying, twirling his cane | painted |  |
+| walk | a gliding showman's strut | painted |  |
+| laugh | head thrown back, cackling | painted |  |
+| bow | a deep bow, hat off (his punish window) | painted |  |
+| throw | a pie flung overarm | painted |  |
+| pogo | bouncing on his cane, a spring at its foot | painted |  |
+| swing | hanging from a trapeze by his knees | painted |  |
+| hurt | reeling, grin slipping | painted |  |
+| inflate | swelling up, cheeks puffed | painted |  |
+| defeat | deflated in a heap | painted |  |
+| talk | patter | painted |  |
+
+## IRONJAW (`ironjaw`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| idle | flexing | painted |  |
+| walk | a stomping walk | painted |  |
+| throw | a kettlebell hurled | painted |  |
+| stomp | a stomp that shakes the ring | painted |  |
+| carry | carrying someone overhead | painted |  |
+| dazed | flat on his back, stars round his head | painted |  |
+
+## THE TANGLE (`tangle`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| idle | twisting into a knot and out again | painted |  |
+| swing | swinging on a trapeze | painted |  |
+| reach | an arm stretched out long (the tell: a red line first) | painted |  |
+| grab | the arm snapping back with whatever it caught | painted |  |
+| dazed | tangled up in herself | painted |  |
+
+## THE BIG HEAD (`bighead`)
+
+| Animation | What it is | Now | Drawings |
+|---|---|---|---|
+| shut | swelling, grin shut | painted |  |
+| quiver | lips quivering, a red glow inside (the tell) | painted |  |
+| open | the jaw dropped open, the valve showing | painted |  |
+| pop | popped: spinning away as it deflates | painted |  |

@@ -39,6 +39,8 @@ export interface DroneWorld {
   onFrightened?(drone: Drone): void;
   /** A tracker drone's lock landed: Sixsix's missile salvo comes down on (x, feetY) (Chapter 5). */
   salvo?(x: number, feetY: number, drone: Drone): void;
+  /** A close-range blow (a spring-loaded glove, a stilt's kick) lands on Ben at (x, y), pushing him `push` px/s along x. */
+  punch?(x: number, y: number, damage: number, push: number): void;
   /** This drone's attack lands at game time `at` (perfect transform timing). */
   threat(drone: Drone, at: number): void;
   cancelThreat(drone: Drone): void;

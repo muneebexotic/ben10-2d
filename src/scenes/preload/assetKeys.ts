@@ -494,7 +494,7 @@ export const ASSETS: AssetDef[] = [
   ...kevin.CHIMERA_PARTS.map((p) => sheet(chimeraPartKey(p), kevin.CHIMERA_FRAME.w, kevin.CHIMERA_FRAME.h, kevin.CHIMERA_FRAME_COUNT, kevin.drawChimeraPart(p))),
 ];
 
-const benAnims = (prefix: string, texture: string): AnimDef[] => [
+export const benAnims = (prefix: string, texture: string): AnimDef[] => [
   { key: `${prefix}-idle`, texture, frames: BEN_FRAMES.idle, frameRate: 3, repeat: -1 },
   { key: `${prefix}-run`, texture, frames: BEN_FRAMES.run, frameRate: 14, repeat: -1 },
   { key: `${prefix}-jump`, texture, frames: BEN_FRAMES.jump, frameRate: 1, repeat: 0 },

@@ -21,6 +21,7 @@ import { EEL_CARTOON } from '../../../config/cartoon/eel';
 import { JELLY_CARTOON } from '../../../config/cartoon/jelly';
 import { GNASHER_CARTOON } from '../../../config/cartoon/gnasher';
 import { DEEPMAW_CARTOON } from '../../../config/cartoon/deepmaw';
+import { BIGHEAD_CARTOON, CACKLEJACK_CARTOON, GRINNER_CARTOON, HOUND_CARTOON, IRONJAW_CARTOON, JACKBOX_CARTOON, STILTS_CARTOON, TANGLE_CARTOON } from '../../../config/cartoon/circus';
 import type { AnimDef } from '../assetTypes';
 import { makeHdTexture } from './hdTexture';
 import { rigFrames, rigTextureKey, type RigDef } from './rig';
@@ -45,6 +46,8 @@ import { eelRig } from './characters/deep/eel';
 import { jellyRig } from './characters/deep/jelly';
 import { gnasherRig } from './characters/deep/gnasher';
 import { deepmawRig } from './characters/deepmaw';
+import { grinnerRig, houndRig, jackboxRig, stiltsRig } from './characters/circus/goons';
+import { bigHeadRig, cacklejackRig, ironjawRig, tangleRig } from './characters/circus/stars';
 import { mirrorSpec, type MirrorSpec } from '../../../systems/hd/HdMirror';
 
 /** A character the HD chapters can draw: its manifest and its rig. */
@@ -79,6 +82,16 @@ export const CARTOON_CAST: readonly CastRig[] = [
   { manifest: GNASHER_CARTOON, rig: gnasherRig },
   // Chapter 7's boss (drawn by its own actor, not over a game sheet).
   { manifest: DEEPMAW_CARTOON, rig: deepmawRig },
+  // Chapter 8's goons and traps (original designs, painted in code).
+  { manifest: GRINNER_CARTOON, rig: grinnerRig },
+  { manifest: JACKBOX_CARTOON, rig: jackboxRig },
+  { manifest: HOUND_CARTOON, rig: houndRig },
+  { manifest: STILTS_CARTOON, rig: stiltsRig },
+  // Chapter 8's stars and its boss (drawn by their own actors, not over game sheets).
+  { manifest: CACKLEJACK_CARTOON, rig: cacklejackRig },
+  { manifest: IRONJAW_CARTOON, rig: ironjawRig },
+  { manifest: TANGLE_CARTOON, rig: tangleRig },
+  { manifest: BIGHEAD_CARTOON, rig: bigHeadRig },
 ];
 
 const built = new Map<string, RigDef>();

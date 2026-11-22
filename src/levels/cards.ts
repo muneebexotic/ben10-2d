@@ -65,6 +65,13 @@ export const CARDS: readonly CardInfo[] = [
   { id: 'ch7-card-vine', number: 50, name: 'GRAPPLE GHAZALA', flavour: 'NEVER TOUCHES THE MAT. SHE SWINGS OVER IT.', color: 0x4ab84a, holo: true },
   { id: 'ch7-card-tank', number: 51, name: 'DRAINED DANISH', flavour: 'WON A MATCH BY PULLING THE PLUG ON THE POOL.', color: 0x5a6c88 },
   { id: 'ch7-card-chute', number: 52, name: 'BOWLING BALL BABAR', flavour: 'ROLLS INTO THE RING. ROLLS OUT WITH THE BELT.', color: 0xd8a03a, holo: true },
+  { id: 'ch8-card-carousel', number: 53, name: 'MERRY-GO-ROUND MORGAN', flavour: 'SPINS HIS OPPONENTS UNTIL THEY FORGET WHICH WAY IS OUT.', color: 0xf2c24a },
+  { id: 'ch8-card-striker', number: 54, name: 'BELL RINGER BRODY', flavour: 'RANG THE HIGH STRIKER SO HARD THE BELL LANDED IN THE NEXT TOWN.', color: 0xd8324a, holo: true },
+  { id: 'ch8-card-loop', number: 55, name: 'LOOP-THE-LOOP LOGAN', flavour: 'ENTERS THE RING UPSIDE DOWN. LEAVES IT THE SAME WAY.', color: 0x3ac8c0, holo: true },
+  { id: 'ch8-card-mirror', number: 56, name: 'MIRROR IMAGE MILO', flavour: 'WRESTLES HIS OWN REFLECTION EVERY MORNING. IT IS A DRAW.', color: 0xb8c8f0, holo: true },
+  { id: 'ch8-card-heart', number: 57, name: 'GLASS JAW JASPER', flavour: 'NEVER BEEN HIT. NOBODY WANTS TO FIND OUT WHAT HAPPENS.', color: 0xff7ad8 },
+  { id: 'ch8-card-gallery', number: 58, name: 'SHARPSHOOTER SADIE', flavour: 'KNOCKED DOWN EVERY TIN DUCK AT THE FAIR. THE DUCKS FILED A COMPLAINT.', color: 0x6a2a8a, holo: true },
+  { id: 'ch8-card-tent', number: 59, name: 'BIG TOP BARNABY', flavour: 'LIVES AT THE TOP OF THE TENT POLE. COMES DOWN FOR THE MAIN EVENT.', color: 0x9aff3a, holo: true },
 ];
 
 export function cardInfo(id: string): CardInfo | undefined {

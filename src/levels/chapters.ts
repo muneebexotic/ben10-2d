@@ -30,7 +30,13 @@ export const ACTS: Record<number, string> = {
  * Select whatever the save says, so it can be tried without finishing the one before (a preview pane can't always
  * add `?level=`).
  */
-const DEV_OPEN: readonly string[] = import.meta.env.DEV && import.meta.env.MODE === 'development' ? ['ch7'] : [];
+const DEV_OPEN: readonly string[] = import.meta.env.DEV && import.meta.env.MODE === 'development' ? ['ch8'] : [];
+
+/**
+ * Chapter 8 is built but waits for the owner's review and music recordings: dev and bench builds (and the tests)
+ * play it, release builds show it as coming soon until it's released (DECISIONS.md, "A chapter in progress").
+ */
+export const CH8_BUILT: boolean = import.meta.env.DEV || import.meta.env.MODE === 'bench' || import.meta.env.MODE === 'test';
 
 export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 1, act: 1, title: 'CAMP CRASH', levelId: 'ch1', tease: 'A METEOR. A WATCH. A VERY WEIRD SUMMER.', cast: ['heatblast'] },
@@ -40,7 +46,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { number: 5, act: 2, title: 'BOUNTY HUNTERS', levelId: 'ch5', tease: 'THREE HUNTERS. ONE BOUNTY. GUESS WHO.', cast: ['diamondhead', 'ghostfreak'] },
   { number: 6, act: 2, title: 'MAGIC', levelId: 'ch6', tease: "MAGIC ISN'T REAL. RIGHT, GWEN?", cast: ['greymatter'] },
   { number: 7, act: 3, title: 'THE PLUMBERS', levelId: 'ch7', tease: 'GRANDPA MAX HAS BEEN KEEPING SECRETS.', cast: ['ripjaws'] },
-  { number: 8, act: 3, title: 'ZOMBOZO', levelId: null, tease: 'NEVER TRUST A CLOWN WHO LAUGHS LAST.', cast: ['ricochet'] },
+  { number: 8, act: 3, title: 'CACKLEJACK', levelId: CH8_BUILT ? 'ch8' : null, tease: 'NEVER TRUST A CLOWN WHO LAUGHS LAST.', cast: ['ricochet'] },
   { number: 9, act: 3, title: 'GHOSTFREAK OUT', levelId: null, tease: 'SOMETHING IN THE WATCH WANTS OUT.', cast: ['ghostfreak'] },
   { number: 10, act: 4, title: 'FOREVER KNIGHTS', levelId: null, tease: 'KNIGHTS. CASTLES. VERY SHARP THINGS.', cast: ['wildvine'] },
   { number: 11, act: 4, title: 'SELF-DESTRUCT', levelId: null, tease: 'THE OMNITRIX IS COUNTING DOWN.', cast: ['omnitrix'] },
