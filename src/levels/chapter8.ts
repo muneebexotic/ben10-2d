@@ -254,7 +254,7 @@ export const CHAPTER_8: LevelData = {
       gwenTaken: { triggerX: 113, mirrorX: 116, floor: 34 },
       barrel: { triggerX: 121, fromX: 117, toX: 131, top: 26, floor: 34, alien: 'ricochet' },
       heart: { mirrorX: 267, floor: 24, exit: { x: 271, y: 17, w: 1, h: 7 } },
-      bigTop: { cageX: 396, cageY: 15, floor: 38 },
+      bigTop: { cageX: 403, cageY: 23, floor: 38 },
     },
     // The ending (GAME_DESIGN.md, Chapter 8, beat 9): the colour comes back, Max drops into the net, and the watch answers a laugh.
     outro: [

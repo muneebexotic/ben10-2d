@@ -247,7 +247,8 @@ export class BossArena {
 
     music.play(this.kind.music);
     EventBus.emit('boss:show', { name: boss.name, subtitle: boss.subtitle });
-    EventBus.emit('boss:health', { ratio: 1, phase: 0 });
+    // A retry from a stage's checkpoint starts the boss part-way down its bar: show where it really is.
+    EventBus.emit('boss:health', { ratio: boss.maxHp > 0 ? boss.hp / boss.maxHp : 1, phase: boss.phase });
     EventBus.emit('hud:letterbox', { visible: true });
     const clearLetterbox = () => {
       if (boss.introducing) scene.time.delayedCall(100, clearLetterbox);
