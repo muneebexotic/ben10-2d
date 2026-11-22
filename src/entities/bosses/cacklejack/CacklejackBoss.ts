@@ -697,7 +697,7 @@ export class CacklejackBoss implements ArenaBoss {
         playSfx(CIRCUS_SFX.cackle, 0.8, 0.7);
       }
       if (this.mouth === 'open') {
-        this.w.fx.popText(this.midX, this.floorY - 150, 'HA HA HA!', PALETTE.cacklejack);
+        this.w.fx.popText(this.midX, this.floorY - 150, 'HAHAHA!', PALETTE.cacklejack);
         this.w.tip('cackle-open', 'THE GRIN IS OPEN: HIT THE VALVE IN ITS THROAT! (A ROLLING BALL BOUNCES ROUND INSIDE)', 4000);
       }
     }
