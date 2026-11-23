@@ -79,8 +79,8 @@ export class RicochetAbilities implements FormAbilities {
     const { player, combat, fx } = ctx;
     this.bashes++;
     this.slam = this.bashes % B.chain === 0;
-    this.nextBashAt = ctx.now + B.intervalMs * (this.slam ? 1.6 : 1);
-    this.bashAnimLeft = this.slam ? 300 : 200;
+    this.nextBashAt = ctx.now + B.intervalMs * (this.slam ? B.slamRecover : 1);
+    this.bashAnimLeft = this.slam ? B.slamAnimMs : B.animMs;
     const f = player.facing;
     if (player.grounded) player.setVelocityX(f * (this.slam ? B.slamLunge : B.lunge));
     player.squash(this.slam ? 1.3 : 1.12, this.slam ? 0.78 : 0.92);
@@ -197,7 +197,7 @@ export class RicochetAbilities implements FormAbilities {
     if (grounded && speed > 30) {
       this.rumbleMs -= dt;
       if (this.rumbleMs <= 0) {
-        this.rumbleMs = 300 - Math.min(1, speed / R.maxSpeed) * 190;
+        this.rumbleMs = R.rumbleMs - Math.min(1, speed / R.maxSpeed) * R.rumbleFasterMs;
         ctx.sfx(rollRumble, 0.4 + Math.min(1, speed / R.maxSpeed) * 0.5, 0.8 + speed / 800);
         if (speed > R.smashSpeed) fx.burst('dust', player.x - Math.sign(this.v) * 6, player.y, 1);
       }
@@ -216,7 +216,7 @@ export class RicochetAbilities implements FormAbilities {
     fx.burst('spark', player.x + side * BALL_R, player.y - BALL_R, speed > R.bonkSpeed ? 8 : 4);
     if (speed > R.bonkSpeed) {
       fx.shake(FX.shakeLight, 110);
-      fx.hitStop(35);
+      fx.hitStop(R.bonkHitStopMs);
       fx.popText(player.x + side * 6, player.y - 36, 'BONK!', C.seam);
     }
     ctx.sfx(bonk, Math.min(1, 0.4 + speed / R.capSpeed), 0.85 + speed / 1600);
@@ -317,7 +317,7 @@ export class RicochetAbilities implements FormAbilities {
     h.y = player.y - BALL_R;
     h.knockback = R.knockback * Math.min(1.2, speed / R.maxSpeed);
     h.heavy = smash;
-    h.stunMs = smash ? 400 : undefined;
+    h.stunMs = smash ? R.smashStunMs : undefined;
     h.roll = true;
     const hits = combat.meleeOnce(a, h, this.rollKey);
     if (hits <= 0) return;

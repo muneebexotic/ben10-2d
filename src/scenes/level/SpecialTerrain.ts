@@ -1,7 +1,9 @@
 import type Phaser from 'phaser';
 import { RollGate } from '../../entities/props/RollGate';
 import { playSfx } from '../../systems/audio/Sfx';
+import { damp } from '../../systems/Pacing';
 import { TILE } from '../../config/constants';
+import { RICOCHET } from '../../config/aliens/ricochet';
 import type { Player } from '../../entities/Player';
 import type { Projectiles } from '../../entities/Projectiles';
 import { GlassFloor } from '../../entities/museum/GlassFloor';
@@ -59,8 +61,6 @@ function disguise(grid: TileGrid, door: Extract<EntitySpawn, { type: 'hiddenDoor
  * mutant vines fire burns away, skylight glass a big smash breaks, and the
  * mutagen puddles spit leaves behind. Each blocks like terrain until it's gone.
  */
-const GATE_BREAK_SPEED = 170;
-
 export class SpecialTerrain {
   readonly doors: HiddenDoor[] = [];
   readonly vines: Vines[] = [];
@@ -113,18 +113,19 @@ export class SpecialTerrain {
   /** A rolling ball that hits a gate hard enough (rolling into it, or bouncing up under it) breaks through. */
   private updateGates(): void {
     const p = this.d.player;
+    const cfg = RICOCHET.gate;
     const speed = Math.hypot(p.vx, p.vy);
-    this.recentSpeed = Math.max(speed, this.recentSpeed * 0.85);
-    if (!p.rolling || this.recentSpeed < GATE_BREAK_SPEED) return;
-    const by = p.y - 11;
+    this.recentSpeed = Math.max(speed, damp(this.recentSpeed, cfg.speedMemory));
+    if (!p.rolling || this.recentSpeed < cfg.breakSpeed) return;
+    const by = p.centerY;
     for (const g of this.gates) {
-      if (g.broken || !g.touches(p.x, by, 12)) continue;
+      if (g.broken || !g.touches(p.x, by, cfg.reach)) continue;
       g.break();
       const r = g.rect;
       this.d.world.clearCells({ x: r.x / TILE, y: r.y / TILE, w: r.w / TILE, h: r.h / TILE });
       this.d.fx.burst('debris', r.x + r.w / 2, r.y + r.h / 2, 16);
       this.d.fx.burst('spark', r.x + r.w / 2, r.y + r.h / 2, 10);
-      this.d.fx.shake(0.008, 180);
+      this.d.fx.shake(cfg.shake, cfg.shakeMs);
       this.d.fx.popText(r.x + r.w / 2, r.y - 10, 'BREAKTHROUGH!', 0xe8884a);
       playSfx('rockBreak');
     }

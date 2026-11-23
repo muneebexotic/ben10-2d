@@ -48,6 +48,10 @@ export const RICOCHET = {
     /** He shoves forward a little with each bash, more with the slam. */
     lunge: 60,
     slamLunge: 140,
+    /** How long each bash's pose holds (he slows while it does), and the wait after a slam (x the interval). */
+    animMs: 200,
+    slamAnimMs: 300,
+    slamRecover: 1.6,
   },
   /** K: curl into a ball and roll (K again uncurls). */
   roll: {
@@ -81,12 +85,18 @@ export const RICOCHET = {
     /** A brief guard after a hit at speed (his shell took it). */
     guardMs: 260,
     hitStopMs: 40,
+    /** A smash at speed stuns what it hits this long. */
+    smashStunMs: 400,
+    /** The shell's rumble on the floor: this far apart at rest, this much closer at top speed. */
+    rumbleMs: 300,
+    rumbleFasterMs: 190,
     /** Into a wall at least this fast he ricochets off it: BONK. */
     ricochetMin: 110,
     /** The speed he keeps off a wall. */
     restitution: 0.78,
     /** Ricochets this hard shake the screen and say BONK! */
     bonkSpeed: 220,
+    bonkHitStopMs: 35,
     /** Jump while rolling: a bounce, higher than a jump. */
     bounceJump: 420,
     /** Landing from a fall this fast, he bounces back up on his own. */
@@ -123,4 +133,10 @@ export const RICOCHET = {
   swapIn: { speed: 380, radius: 34, damage: 2.5, knockback: 360, stunMs: 500 },
   /** His seams glow faintly. */
   light: { radius: 54, color: 0x6ae8d0, intensity: 0.55 },
+  /**
+   * Ball gates (shell plates in older chapters' rock): a roll or bounce this fast breaks one.
+   * The speed is remembered briefly (`speedMemory` kept per 60 Hz frame), since a bounce into a
+   * ceiling plate stops dead before the plate is checked.
+   */
+  gate: { breakSpeed: 170, speedMemory: 0.85, reach: 12, shake: 0.008, shakeMs: 180 },
 } as const;

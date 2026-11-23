@@ -323,7 +323,8 @@ export class CacklejackBoss implements ArenaBoss {
       this.die();
       return 'killed';
     }
-    const want = stageFor(this.hp / this.maxHp);
+    // One stage at a time: a huge hit (a pinball run) never skips THE HIGH WIRE.
+    const want = Math.min(stageFor(this.hp / this.maxHp), this.stage + 1) as CackleStage;
     if (want > this.stage) this.beginStage(want);
     return 'hit';
   }

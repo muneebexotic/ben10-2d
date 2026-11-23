@@ -152,12 +152,14 @@ export class JackboxBrain implements DroneBrain {
       case 'wind': {
         // The tune speeds up as it winds; the lane it will punch along shows.
         const k = d.stateT / J.windMs;
-        if (Math.floor(d.stateT / (140 - k * 90)) !== Math.floor((d.stateT - dtMs) / (140 - k * 90))) playSfx(CIRCUS_SFX.tune, 0.35, 1 + k * 0.6);
+        const step = J.tuneStepMs - k * J.tuneFasterMs;
+        if (Math.floor(d.stateT / step) !== Math.floor((d.stateT - dtMs) / step)) playSfx(CIRCUS_SFX.tune, 0.35, 1 + k * 0.6);
         const dir = faceOf(d);
         const y = d.y + J.body.height / 2 - 6;
         w.telegraph.line(d.x + dir * 8, y, d.x + dir * J.reach, y, TELL.cacklejack, 0.3 + k * 0.6, 2);
         if (d.stateT >= J.windMs) {
           d.setState('pop');
+          d.memo.hitDone = 0;
           playSfx(CIRCUS_SFX.boing, 0.9);
         }
         break;
@@ -185,7 +187,7 @@ export class JackboxBrain implements DroneBrain {
       case 'jammed':
         if (d.stateT >= J.jamMs) {
           d.setState('idle');
-          d.nextActionAt = w.now + 600;
+          d.nextActionAt = w.now + J.jamRecoverMs;
         }
         break;
     }
@@ -211,6 +213,9 @@ export class JackboxBrain implements DroneBrain {
   }
 
   onRecover(d: Drone): void {
+    // Knocked about mid-punch: the glove snaps back in, ready to land next time.
+    d.memo.hitDone = 0;
+    d.memo.reach = 0;
     if (d.state !== 'jammed') d.setState('idle');
   }
 
@@ -370,6 +375,7 @@ export class StiltsBrain implements DroneBrain {
         w.telegraph.line(d.x, feet - 6, d.x + dir * S.kickReach, feet - 6, TELL.cacklejack, 0.3 + k * 0.6, 2);
         if (d.stateT >= S.windupMs) {
           d.setState('kick');
+          d.memo.kicked = 0;
           playSfx(CIRCUS_SFX.whoosh, 0.9, 0.7);
         }
         break;
@@ -391,14 +397,14 @@ export class StiltsBrain implements DroneBrain {
       }
       case 'topple':
         d.vx = 0;
-        if (d.stateT >= 700) d.setState('down');
+        if (d.stateT >= S.toppleMs) d.setState('down');
         break;
       case 'down':
         d.vx = 0;
         if (d.stateT >= S.downMs) {
           d.memo.stilts = S.stiltHits;
           d.setState('idle');
-          d.nextActionAt = w.now + 800;
+          d.nextActionAt = w.now + S.upRecoverMs;
         }
         break;
     }
@@ -433,6 +439,8 @@ export class StiltsBrain implements DroneBrain {
   }
 
   onRecover(d: Drone): void {
+    // Knocked out of a kick: the next one can land.
+    d.memo.kicked = 0;
     if (d.state !== 'topple' && d.state !== 'down') d.setState('idle');
   }
 

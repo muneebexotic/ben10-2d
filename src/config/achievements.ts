@@ -1,3 +1,5 @@
+import { CH8_BUILT } from '../levels/chapters';
+
 /**
  * Achievements: each is either a lifetime counter reaching a goal, or a
  * one-off moment the game reports (`event`). Counters live in the save file
@@ -36,9 +38,11 @@ export interface AchievementDef {
   goal?: number;
   /** Hidden on the list until unlocked (shows as ???). */
   secret?: boolean;
+  /** Only earnable in this chapter: left off the list while it's held out of a release. */
+  level?: string;
 }
 
-export const ACHIEVEMENTS: readonly AchievementDef[] = [
+const ALL_ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'hero-time', title: "IT'S HERO TIME", text: 'TRANSFORM FOR THE FIRST TIME', icon: 'omnitrix', counter: 'transforms', goal: 1 },
   { id: 'pyromaniac', title: 'PYROMANIAC', text: 'DEFEAT 100 ENEMIES WITH FIRE', icon: 'heatblast', counter: 'fireKOs', goal: 100 },
   { id: 'deflector', title: 'DEFLECTOR', text: 'PARRY 25 LASERS AS BEN', icon: 'ben', counter: 'parries', goal: 25 },
@@ -75,11 +79,14 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'deep-breath', title: 'DEEP BREATH', text: 'SWIM THE FLOODED RING AS BEN, NEVER OUT OF AIR', icon: 'ben' },
   { id: 'bait-and-switch', title: 'BAIT AND SWITCH', text: "STUN DEEPMAW'S LURE AS 3 FORMS IN ONE FIGHT", icon: 'boss' },
   // Chapter 8 (the circus).
-  { id: 'pinball-wizard', title: 'PINBALL WIZARD', text: 'RING 20 BUMPERS AS RICOCHET IN ONE RUN', icon: 'ricochet' },
-  { id: 'perfect-bounce', title: 'PERFECT BOUNCE', text: 'THREE PERFECT BOUNCES IN A ROW AS RICOCHET', icon: 'ricochet' },
-  { id: 'looking-glass', title: 'THROUGH THE LOOKING GLASS', text: 'WALK THROUGH EVERY LYING MIRROR IN THE MAZE', icon: 'star' },
-  { id: 'standing-ovation', title: 'STANDING OVATION', text: "POP CACKLEJACK'S BIG HEAD FROM THE INSIDE", icon: 'boss' },
+  { id: 'pinball-wizard', title: 'PINBALL WIZARD', text: 'RING 20 BUMPERS AS RICOCHET IN ONE RUN', icon: 'ricochet', level: 'ch8' },
+  { id: 'perfect-bounce', title: 'PERFECT BOUNCE', text: 'THREE PERFECT BOUNCES IN A ROW AS RICOCHET', icon: 'ricochet', level: 'ch8' },
+  { id: 'looking-glass', title: 'THROUGH THE LOOKING GLASS', text: 'WALK THROUGH EVERY LYING MIRROR IN THE MAZE', icon: 'star', level: 'ch8' },
+  { id: 'standing-ovation', title: 'STANDING OVATION', text: "POP CACKLEJACK'S BIG HEAD FROM THE INSIDE", icon: 'boss', level: 'ch8' },
 ];
+
+/** The list as this build shows it: a chapter held out of a release (Chapter 8) keeps its achievements back too. */
+export const ACHIEVEMENTS: readonly AchievementDef[] = ALL_ACHIEVEMENTS.filter((a) => a.level !== 'ch8' || CH8_BUILT);
 
 /** Thrown enemies that bowl over this many in one throw: STEE-RIKE! */
 export const STRIKE_ACHIEVEMENT_HITS = 3;

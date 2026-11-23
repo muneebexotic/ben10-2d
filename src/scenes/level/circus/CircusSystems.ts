@@ -132,6 +132,7 @@ export class CircusSystems implements SetPiece {
   private chute: { x: number; speed: number; ms: number } | null = null;
   /** A ball going round a loop right now. */
   private ride: { loop: number; angle: number; dir: 1 | -1; speed: number } | null = null;
+  private loopReadyAt = 0;
   private striker: StrikerPad | null = null;
   private strikerArt: { puck: Phaser.GameObjects.Image; x: number; foot: number; top: number } | null = null;
   private bumps = 0;
@@ -228,7 +229,7 @@ export class CircusSystems implements SetPiece {
       const top = pad.e.y * TILE;
       if (p.x < x0 - 2 || p.x > x0 + 2 * TILE + 2 || Math.abs(p.y - top) > 3 || p.vy < -1 || this.now < pad.readyAt) continue;
       pad.readyAt = this.now + TOYS.padCooldownMs;
-      pad.squashLeft = 180;
+      pad.squashLeft = TOYS.padSquashMs;
       const power = pad.e.power * (p.rolling ? TOYS.padBallScale : 1);
       p.launch(Math.min(p.vy, -power), false);
       p.squash(0.75, 1.3);
@@ -247,18 +248,18 @@ export class CircusSystems implements SetPiece {
       const dy = cy - b.y;
       const d = Math.hypot(dx, dy);
       if (d > TOYS.bumperRadius + (p.rolling ? BALL_R : 8) || this.now < b.readyAt) continue;
-      b.readyAt = this.now + 200;
+      b.readyAt = this.now + TOYS.bumperCooldownMs;
       b.litLeft = TOYS.bumperLitMs;
       const nx = d > 0.1 ? dx / d : p.facing;
       const ny = d > 0.1 ? dy / d : -1;
-      p.setVelocity(nx * TOYS.bumperKick, Math.min(-120, ny * TOYS.bumperKick));
+      p.setVelocity(nx * TOYS.bumperKick, Math.min(-TOYS.bumperMinUp, ny * TOYS.bumperKick));
       this.kit.fx.ring(b.x, b.y, 0xff5ac8, 22, 200);
       this.kit.fx.shake(FX.shakeLight * 0.6, 80);
       this.kit.fx.popText(b.x, b.y - 18, '100', 0xffe08a);
       playSfx(CIRCUS_SFX.ding, 0.9, 0.9 + Math.random() * 0.25);
       if (p.rolling && p.form.id === 'ricochet') {
         this.bumps++;
-        if (this.bumps >= 20 && !this.bumpsAwarded) {
+        if (this.bumps >= TOYS.pinballWizardHits && !this.bumpsAwarded) {
           this.bumpsAwarded = true;
           this.kit.achievement('pinball-wizard');
         }
@@ -278,7 +279,7 @@ export class CircusSystems implements SetPiece {
       if (Math.sign(p.vx) !== k.e.dir || Math.abs(p.vx) < TOYS.kickerMinSpeed) continue;
       p.launch(-TOYS.kickerVy, false);
       p.setVelocityX(k.e.dir * Math.max(Math.abs(p.vx), TOYS.kickerMinOut));
-      k.flashLeft = 220;
+      k.flashLeft = TOYS.kickerFlashMs;
       this.kit.fx.burst('spark', p.x, top - 4, 10);
       this.kit.fx.speedLine(p.x, p.y - BALL_R, (-k.e.dir) as 1 | -1, 0xffe08a);
       playSfx(CIRCUS_SFX.boing, 1, 1.3);
@@ -289,14 +290,14 @@ export class CircusSystems implements SetPiece {
 
   private stepLoopFeet(): void {
     const p = this.kit.player;
-    if (!p.rolling || !p.grounded) return;
+    if (!p.rolling || !p.grounded || this.now < this.loopReadyAt) return;
     for (let i = 0; i < this.loops.length; i++) {
       const L = this.loops[i];
       if (Math.abs(p.x - L.footX) > 6 || Math.abs(p.y - L.floorY) > 3) continue;
       const speed = Math.abs(p.vx);
       if (speed < TOYS.loopMinSpeed) continue;
       this.ride = { loop: i, angle: 0, dir: p.vx > 0 ? 1 : -1, speed };
-      p.setInvulnerable(1200);
+      p.setInvulnerable(TOYS.loopGuardMs);
       playSfx(CIRCUS_SFX.whoosh, 1, 0.8);
       return;
     }
@@ -316,6 +317,7 @@ export class CircusSystems implements SetPiece {
       p.ride(L.footX + r.dir * 4, L.floorY);
       p.setVelocity(r.dir * r.speed, 0);
       this.ride = null;
+      this.loopReadyAt = this.now + TOYS.loopCooldownMs;
       this.kit.fx.popText(L.cx, L.cy - L.R - 20, 'LOOP!', 0xffe08a);
       playSfx(CIRCUS_SFX.ding, 1, 1.4);
       return;
@@ -338,7 +340,7 @@ export class CircusSystems implements SetPiece {
       const x0 = d.e.x * TILE - 3;
       const y0 = d.e.y * TILE - 3;
       if (bx + BALL_R < x0 || bx - BALL_R > x0 + TILE + 6 || by + BALL_R < y0 || by - BALL_R > y0 + TILE + 6 || this.now < d.readyAt) continue;
-      d.readyAt = this.now + 300;
+      d.readyAt = this.now + TOYS.deflectorCooldownMs;
       d.flashLeft = TOYS.deflectorFlashMs;
       const cx = d.e.x * TILE + TILE / 2;
       const cy = d.e.y * TILE + TILE / 2;
@@ -353,7 +355,7 @@ export class CircusSystems implements SetPiece {
       } else {
         const dir = d.e.turn === 'right' ? 1 : -1;
         p.ride(cx + dir * (TILE / 2 + BALL_R + 1), cy + BALL_R + 2);
-        p.setVelocity(dir * s, -60);
+        p.setVelocity(dir * s, -TOYS.deflectorLift);
         this.chute = null;
       }
       this.kit.fx.flash(cx, cy, 0xd8f0ff, 24, 160);
@@ -421,10 +423,10 @@ export class CircusSystems implements SetPiece {
     s.setData('hdClip', src.getData('hdClip') ?? null);
     const side = p.x < m.x ? -1 : 1;
     const offset = Math.min(TILE * 0.6, Math.abs(p.x - m.x) * 0.25);
-    const lag = lie ? Math.sin(this.now * 0.004) * 3 : 0;
+    const lag = lie ? Math.sin(this.now * 0.004) * TOYS.lieSway : 0;
     s.setVisible(true)
       .setOrigin(src.originX, src.originY)
-      .setPosition(m.x + side * 2 - side * offset * (lie ? -1 : 1) + lag, Math.min(p.y, m.bottom) + (lie ? Math.sin(this.now * 0.006) * 2 : 0))
+      .setPosition(m.x + side * 2 - side * offset * (lie ? -1 : 1) + lag, Math.min(p.y, m.bottom) + (lie ? Math.sin(this.now * 0.006) * TOYS.lieBob : 0))
       .setScale(0.55 * src.scaleX, src.scaleY)
       .setFlipX(lie ? src.flipX : !src.flipX)
       .setAlpha(lie ? 0.5 : 0.6);
