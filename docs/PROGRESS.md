@@ -4,11 +4,13 @@ Short on purpose. Decisions that still apply: [DECISIONS.md](DECISIONS.md). Each
 
 ## Status
 
-**Milestone 4 part 6 built Chapter 7, The Plumbers, and opened Act 3 in an HD cartoon look.** Seven story chapters (Camp Crash, Road Trip, Dr. Animo, Kevin 11, Bounty Hunters, Magic, The Plumbers), ten aliens (Ripjaws joins, and every form swims), seven bosses (DEEPMAW is new). In Chapter 7 every character is the owner's own drawings played frame by frame (Ben, Gwen, Max, Kevin, all ten aliens, the enemies and DEEPMAW), the dialogue faces change with each line's mood, the HUD and the Chapter Select card are the owner's art, and the music is the owner's four recordings, looped on the beat. Chapters 1-6 are unchanged. The full record is [history/milestone-4-part-6-chapter-7.md](history/milestone-4-part-6-chapter-7.md).
+**Milestone 4 part 7 built Chapter 8, Cacklejack** (held out of release builds until the owner has played it: `CH8_BUILT`; the dev server opens it). Driftwood Bay's boardwalk and CACKLEJACK'S CIRCUS OF FRIGHTS in the HD look: the midway, the funhouse and its spinning barrel, a rolling course, the mirror maze, backstage and the big top. Eleven aliens: **Ricochet** joins (he curls into a ball and rolls, bounces and ricochets off walls). Eight bosses: CACKLEJACK is new, in three stages. Chapter 8's new characters (CACKLEJACK, IRONJAW, THE TANGLE, RICOCHET, the goons) are original designs painted in code; the family and the older aliens play the owner's drawings as in Chapter 7. Music: existing tracks until the owner's recordings arrive. The full record is [history/milestone-4-part-7-chapter-8.md](history/milestone-4-part-7-chapter-8.md).
+
+**Milestone 4 part 6 built Chapter 7, The Plumbers, and opened Act 3 in an HD cartoon look** ([history/milestone-4-part-6-chapter-7.md](history/milestone-4-part-6-chapter-7.md)).
 
 **Also during Chapter 7: a UX pass and bug hunt** over the shared menus and HUD ([history/ux-pass-and-bug-hunt.md](history/ux-pass-and-bug-hunt.md), BUGS.md U1-U11): menus pick a row only on a fresh press, MUSIC and EFFECTS volume sliders, cutscene dialogue a line per press (Enter, Esc or SKIP >> skips), the pause menu says where you are, Chapter 6's Ferris wheel fixed.
 
-Next, when asked: Chapter 8, Zombozo (Cannonbolt). Proposals waiting for approval are in IDEAS.md (among them the cartoon look for Chapters 1-6 as a Settings choice). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge; Milestone 7 holds DEEP DIVE ATTACK.
+Next, when asked: releasing Chapter 8 (after the owner plays it; recordings and drawings if wanted), then Chapter 9, Ghostfreak Out. Proposals waiting for approval are in IDEAS.md (among them the cartoon look for Chapters 1-6 as a Settings choice). Still deferred: Training trials, Chapter 1 Hard Remix, perfect-transform boss counterplay, the no-transform badge; Milestone 7 holds DEEP DIVE ATTACK.
 
 ## How to run
 
@@ -35,6 +37,7 @@ URL switches for playtesting:
 | `?level=ch5` | Play Chapter 5 directly (a practice run). Combine with `&start=`: `cp-street`, `cp-hotel`, `cp-minehead`, `cp-tunnels`, `cp-crystals` (Easy and Normal), `cp-jail`, `cp-dive` (THE DEEP DIVE), `cp-cavern`, `cp-lift`, `cp-hunters` (THE HUNTERS) |
 | `?level=ch6` | Play Chapter 6 directly (a practice run). Combine with `&start=`: `cp-fair`, `cp-palace` (Easy only), `cp-hall`, `cp-library`, `cp-cellar`, `cp-cage`, `cp-tunnel`, `cp-engine` (the Spell Engine), `cp-engine-2` (its second half, Easy only), `cp-wrap` (THE TOWER WRAP), `cp-towertop` (HEX AND CHARMCASTER) |
 | `?level=ch7` | Play Chapter 7 directly (a practice run). Combine with `&start=`: `cp-docking`, `cp-flooded`, `cp-reactor`, `cp-sea`, `cp-pump`, `cp-tank3`, `cp-containment`, `cp-moonpool`, `cp-drydock` (DEEPMAW's second stage), `cp-maelstrom` (his third) |
+| `?level=ch8` | Play Chapter 8 directly (dev and bench builds only until it's released). Combine with `&start=`: `cp-midway`, `cp-barrel`, `cp-loop` (Easy and Normal), `cp-maze`, `cp-heart` (Easy only), `cp-backstage` (Easy and Normal), `cp-bigtop` (CACKLEJACK), `cp-highwire` (his second stage), `cp-bighead` (his third) |
 | `?training=1` | Straight into Omnitrix Training (with the last file's aliens and difficulty) |
 | `?aliens=fourarms,xlr8` | Adds aliens to the dial (a practice run). With Four Arms the Chapter 1 vault card spawns and counts; `?aliens=diamondhead,ghostfreak` opens the older chapters' new secrets |
 | `?mute=1` | Start muted |
@@ -78,6 +81,9 @@ What ATTACK and SPECIAL do depends on the form (the touch buttons change icon wi
 | Diamondhead | Crystal shards (hold; every 3rd a fan; Up aims high) | Hold: crystal shield, reflects shots and laser beams (Up/Down while holding tilts it; with the shield up, W and Up only tilt, Space jumps; a bounced beam finds a receiver it nearly meets). Up+K: a crystal platform (two at a time) | Swap-in crystal spikes |
 | Grey Matter | Bite (hold; every 3rd hops and chomps) | ANALYZE: marks a weak point for a few seconds; any alien hits it x3 | One tile tall: vents and gaps a tile high. Swap-in: everything nearby gets a weak point |
 | Ripjaws | Bite (hold; every 3rd a lunging CHOMP) | In water: RIP DASH, a torpedo that bites through a line. On land: tail whip | The fastest swimmer. On land he hops and the Omnitrix runs down 2.5x as fast |
+| Ricochet | Shell bash (hold; every 3rd a SHELL SLAM). Rolling: SPIN BOOST | Curl up and roll (K again uncurls): speed builds and keeps; fast rolls smash; walls: BONK | Rolling, Jump bounces; Jump right as he lands is a PERFECT BOUNCE (three in a row the highest). Down in the air: SHELL DROP |
+
+**The funhouse (Chapter 8):** bounce pads throw anyone high (a ball higher); bumpers kick; a ball fast enough rides kicker ramps and the loop; angled mirrors fire a ball off at a right angle; in the maze a mirror that lights up is a door and a reflection that moves wrong is a hole.
 
 **Swimming (Chapter 7, every form):** the stick or arrows swim any way, Jump strokes upward (at the surface: jumps out). Under water the breath meter runs down; air pockets and bubble vents refill it. Heavy forms (Four Arms, Diamondhead) sink and walk the bottom.
 
@@ -115,22 +121,20 @@ On-screen controls show only on touch devices (Settings → TOUCH CONTROLS: AUTO
 - **The romanised Urdu was written carefully but not checked by a native speaker;** every word and its gloss is in `config/urdu.ts`.
 - **ALIEN FILES' demos are scripted inputs**, so a demo can look clumsy after an alien is retuned (`config/alienFiles.ts`); the window shows the real game.
 - **Chapter 7 is tuned by scripted playtests, not people.** DEEPMAW (120 HP, `config/deepmaw.ts`), swimming and breath (`config/swim.ts`) and Ripjaws (`config/aliens/ripjaws.ts`) are the first things to check. Max and Kevin still have stand-ins for a few poses Chapter 7 doesn't use (`docs/ART_COVERAGE.md`).
+- **Chapter 8 is tuned by scripted playtests, not people.** CACKLEJACK (120 HP, `config/cacklejack.ts`), the roll's feel (`config/aliens/ricochet.ts`) and the funhouse's toys (`config/circus.ts`) are the first things to check. Its music is Chapter 6's fair and clockwork tracks and the shared boss theme until the owner's recordings arrive. Chapter 7's chute and Chapter 6's heavy-door corridor don't open for Ricochet yet (IDEAS.md).
 - **Cards and first drinks pause the game** to show themselves (once per card per file). Settings: NEW FINDS: QUICK turns that into a banner (for speedruns; the benchmarks run with it).
 
 ## How to test the latest chapter
 
-**Chapter 7, desktop** (`npm run dev`). Chapter 6's steps are in [history/milestone-5-chapter-6.md](history/milestone-5-chapter-6.md).
+**Chapter 8, desktop** (`npm run dev`; Chapter 7's steps are in [history/milestone-4-part-6-chapter-7.md](history/milestone-4-part-6-chapter-7.md)).
 
-1. **Get there:** a file that has cleared Chapter 6, Chapter Select: THE PLUMBERS > PLAY (the dev server opens it without Chapter 6). Sections on their own: `?level=ch7&start=<checkpoint>` (see the URL switches).
-2. **The opening:** the pixel jetty, the glass car, the world and the family turning HD at the beacon's pings, ACT 3: SECRETS with the owner's sting, then the base's theme. Any key skips.
-3. **The docking ring:** Max's reveal and badge, his locker, the sentries' lockdown, Gwen running at Ben's side, the split at the hub.
-4. **The reactor:** Kevin's shadow at the porthole, the drain, CONTAINMENT FAILURE, the flood; hold on as Ben until NEW DNA; smash the glass as Ripjaws.
-5. **The open sea:** swim out and back across the hull (the music turns each way); the coral cave's card.
-6. **The pump hall:** every pump and the valve (ALL SYSTEMS GO); the flooded ring as Ben without running out of air (DEEP BREATH).
-7. **Containment:** fight beside Max (his blaster) to Cell 7.
-8. **DEEPMAW:** stun his lure as three different forms (BAIT AND SWITCH), bounce his flash back with Diamondhead's shield, throw him as Four Arms while he's dazed or beached, ride out THE MAELSTROM.
-9. **The ending:** Magister Korr's hologram, the surface camera on Kevin's getaway, the smoothie; NEXT: CHAPTER 8 (COMING SOON).
-10. **Faces:** the dialogue faces change with each line's mood.
-11. **Older chapters:** unchanged; Ripjaws swims their water once he's unlocked.
+1. **Get there:** Chapter Select: CACKLEJACK > PLAY (the dev server opens it whatever the save says). Sections on their own: `?level=ch8&start=<checkpoint>` (see the URL switches).
+2. **The opening and the show:** the family on the boardwalk past the grey townsfolk; Cacklejack on his stage drinks a scream; IRONJAW carries Max off.
+3. **The funhouse:** THE TANGLE pulls Gwen into a mirror; the barrel spins, the spiked walls close, the watch finds Ricochet and he smashes out (BOUNCE name slam).
+4. **The rolling course:** roll fast at the kicker, the bumpers (PINBALL WIZARD), the loop (its crown card), the break-away wall; time a PERFECT BOUNCE three times running.
+5. **The mirror maze:** wait by a pink-edged mirror (it lights and opens), walk through the reflections that move wrong (THROUGH THE LOOKING GLASS), beat the reflections that step out, roll into the angled mirror (the tube up to the heart), free Gwen.
+6. **Backstage:** Upgrade into the gallery's shutter (its card); the rigging up to the big top.
+7. **CACKLEJACK:** hit him while he bows; drop him off the wire by knocking down IRONJAW or THE TANGLE; roll into the big head's open grin (PINBALL!, STANDING OVATION). Max's cage drops into the net; the watch flickers to Ghostfreak by itself.
+8. **Ricochet in older chapters:** `?level=ch5&start=cp-tunnels&aliens=ricochet`: the shell plates in tunnel 3's ceiling and the loop's card. Chapters 1-7 otherwise unchanged.
 
-**Phone (emulated wide phone or real):** the owner's icons on the touch Omnitrix button, swimming with the stick, the dialogue box and the camera feed. `?autobench=1` plays THE OPEN SEA and THE MAELSTROM too.
+**Phone (emulated wide phone or real):** rolling with the stick, the touch SPECIAL button curls and uncurls (its icon is a ball), the dialogue box with the painted portraits. `?autobench=1` plays THE MIRROR MAZE and THE BIG HEAD too.

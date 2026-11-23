@@ -170,3 +170,10 @@ Measured against how top games handle the same moments (the comparison is in `hi
 - **TEXT SPEED** (slow, normal, instant) for the typewriter, a common story-game option that helps younger readers and speedrunners alike.
 - **The current alien's moves in the story pause menu:** the pause screen lists the generic keys; showing the form Ben is in (ATTACK, SPECIAL, its extra) the way Training's pause already does would answer "what does this alien do?" mid-chapter without leaving it.
 - **Hold-to-skip ring for cinematics without dialogue** (the descents and drives): they still skip on any press; a short hold with a filling ring is the standard guard against skipping a story beat by accident.
+
+### From Chapter 8
+
+- **Ricochet's older secrets, finished:** Chapter 7's rolling chute card sits in a sealed pocket 16 rows over the pump hall's last room, out of any bounce's reach; a ball gate at floor level leading into a chute up to it (or a kicker on the room's floor) would open it. Chapter 6 needs its "corridor of heavy doors" built (a short corridor off the palace cellars, doors only a fast roll knocks open, a card at its end). Both edit released chapters, so they wait for the owner.
+- **THE RING OF FIRE:** a Ricochet score attack in the rolling course (bumpers worth points, the loop a multiplier, a time limit), with a ghost and a share line: the funhouse is already a pinball table.
+- **The owner's drawings for Chapter 8's cast:** CACKLEJACK, IRONJAW, THE TANGLE, RICOCHET and the goons are painted in code; model and animation sheets from the prompt pack would let them play frame by frame like Chapter 7's cast (`docs/ART_COVERAGE.md` lists every clip they need).
+- **Cacklejack's fear meter:** the townsfolk he drained (grey all over) get their colour back one by one as Ben beats his goons near them, and a full set before the big top unlocks an encore (a harder fourth stage).
