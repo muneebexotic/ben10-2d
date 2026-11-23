@@ -149,7 +149,7 @@ export class Barrel implements SetPiece {
     if (this.phase === 'done') return;
     this.t += dtMs;
     // The drum's stripes run round; the floor throws Ben about.
-    const f = Math.floor(this.t / 70) % 4;
+    const f = Math.floor(this.t / B.stripeMs) % 4;
     if (f !== this.spinFrame) {
       this.spinFrame = f;
       this.drum.setFrame(String(f));
@@ -163,11 +163,11 @@ export class Barrel implements SetPiece {
       // The spiked walls shove him back toward the middle (they never pin him).
       const left = this.spikes[0].x + 12;
       const right = this.spikes[1].x - 12;
-      if (p.x < left) p.setVelocityX(Math.max(p.vx, 120));
-      if (p.x > right) p.setVelocityX(Math.min(p.vx, -120));
+      if (p.x < left) p.setVelocityX(Math.max(p.vx, B.shoveSpeed));
+      if (p.x > right) p.setVelocityX(Math.min(p.vx, -B.shoveSpeed));
       if (this.t % 900 < dtMs) kit.fx.shake(FX.shakeLight * 0.5, 120);
       const quick = !this.beat || this.beat.done;
-      if (this.t >= (quick ? B.spinMs * 0.4 : B.spinMs)) this.answer();
+      if (this.t >= (quick ? B.spinMs * B.replayShare : B.spinMs)) this.answer();
     }
   }
 
@@ -209,7 +209,7 @@ export class Barrel implements SetPiece {
     playSfx(CIRCUS_SFX.timber, 1, 1.4);
     // The ball goes on through, rolling (a nudge his way).
     const p = kit.player;
-    p.setVelocityX(Math.max(p.vx, 260));
+    p.setVelocityX(Math.max(p.vx, CH8_BEATS.barrel.exitSpeed));
     for (const s of this.spikes) kit.scene.tweens.add({ targets: s, alpha: 0, duration: 400, onComplete: () => s.setVisible(false) });
   }
 

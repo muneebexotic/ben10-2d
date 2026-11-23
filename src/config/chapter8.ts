@@ -14,7 +14,20 @@ export const CH8_BEATS = {
   /** THE TANGLE's arm out of the mirror and back with Gwen. */
   gwenTaken: { reachMs: 600, pullMs: 700 },
   /** The barrel: how long it spins (and the spiked walls close) before the watch answers; how far the walls close. */
-  barrel: { spinMs: 4200, closeTiles: 3, throwVx: 140, alienEveryMs: 900 },
+  barrel: {
+    spinMs: 4200,
+    closeTiles: 3,
+    throwVx: 140,
+    alienEveryMs: 900,
+    /** The spiked walls shove Ben back toward the middle this fast (they never pin him). */
+    shoveSpeed: 120,
+    /** On a replay (Ricochet already on the dial) it spins only this share of the time. */
+    replayShare: 0.4,
+    /** Smashing out, the ball leaves at least this fast. */
+    exitSpeed: 260,
+    /** The drum's stripes step every this many ms. */
+    stripeMs: 70,
+  },
   /** The heart: hits to crack Gwen's mirror. */
   heart: { hits: 3 },
   /** Max's cage over the ring drops into the net after the fight. */
