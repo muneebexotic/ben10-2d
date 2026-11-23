@@ -77,6 +77,10 @@ export function blockedCells(level: LevelData, caps: Capabilities): Set<string> 
     if (e.type === 'crystalGate' && !caps.canReflect) {
       for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) blocked.add(`${x},${y}`);
     }
+    // Chapter 8's maze: glass is a wall (a lying mirror is an opening; a door opens as Ben comes near), and an
+    // angled mirror is a solid block to everyone.
+    if (e.type === 'mirror' && e.kind === 'real') for (let y = e.y; y < e.y + e.h; y++) blocked.add(`${e.x},${y}`);
+    if (e.type === 'deflector') blocked.add(`${e.x},${e.y}`);
   }
   return blocked;
 }
@@ -97,6 +101,11 @@ export function openedCells(level: LevelData, caps: Capabilities): Set<string> {
   // Chapter 6: the Rustbucket knocks the palace gate in.
   const gate = level.story?.magic?.gate;
   if (gate) open({ x: gate.gateX, y: gate.top, w: 2, h: gate.floor - gate.top });
+  // A rolling ball breaks a ball gate (Ricochet).
+  if (caps.canRoll) for (const e of level.entities) if (e.type === 'rollGate') open(e);
+  // Chapter 8: the barrel's far door (Ricochet smashes out) and the heart's wall (Gwen freed) open in the story.
+  const circus = level.story?.circus;
+  if (circus) open(circus.heart.exit);
   return opened;
 }
 
@@ -126,6 +135,24 @@ function rides(level: LevelData, caps: Capabilities): Array<{ from: (p: Pos) => 
   // THE TOWER WRAP: out of the clock room's door and up the outside of the tower to its top (anyone).
   const tower = level.story?.magic?.tower;
   if (tower) out.push({ from: (p) => p.x >= tower.x && p.x <= tower.x + 1 && p.y === tower.floor - 1, to: { x: tower.endX, y: tower.endY - 1 } });
+  // A curled ball rides the funhouse's toys (Chapter 8) and bounces up into ball gates.
+  if (caps.canRoll) {
+    for (const e of level.entities) {
+      if ((e.type === 'deflector' || e.type === 'kicker') && e.to) {
+        const to = e.to;
+        const reach = e.type === 'kicker' ? -e.dir * 4 : -4;
+        const lo = Math.min(e.x, e.x + reach);
+        const hi = Math.max(e.x, e.x + reach);
+        // Rolling into it along the floor beside it (a deflector sits on the floor row; a kicker's foot is the floor).
+        out.push({ from: (p) => p.x >= lo && p.x <= hi && (p.y === e.y - 1 || (e.type === 'deflector' && p.y === e.y)), to: { x: to.x, y: to.y - 1 } });
+      } else if (e.type === 'loop') {
+        out.push({ from: (p) => Math.abs(p.x - e.x) <= 2 && p.y === e.y - 1, to: { x: e.x, y: e.y - 2 * e.r - 2 } });
+      } else if (e.type === 'rollGate') {
+        // Bouncing up from the floor under it (a few rows below).
+        out.push({ from: (p) => p.x >= e.x && p.x < e.x + e.w && p.y > e.y + e.h && p.y <= e.y + e.h + 7, to: { x: e.x + Math.floor(e.w / 2), y: e.y } });
+      }
+    }
+  }
   if (!caps.canMerge) return out;
   for (const e of level.entities) {
     if (e.type === 'lift') {
@@ -218,7 +245,8 @@ export function reachableFrom(level: LevelData, baseGrid: TileGrid, start: Pos, 
         if (isSwimWater(level, nx, ny + 1) && isOpen(grid, blocked, nx, ny + 1)) visit({ x: nx, y: ny + 1 });
       }
     }
-    for (let dy = -caps.jumpUp; dy <= MAX_FALL; dy++) {
+    const up = Math.max(caps.jumpUp, padJump(level, x, y, caps));
+    for (let dy = -up; dy <= MAX_FALL; dy++) {
       const across = dy <= 0 ? caps.jumpAcross + 1 : caps.jumpAcross + 1 + Math.ceil(dy / 2);
       if (dy < 0 && !headroom(grid, blocked, x, y, -dy, caps.tiny)) continue;
       for (let dx = -across; dx <= across; dx++) {
@@ -234,6 +262,18 @@ export function reachableFrom(level: LevelData, baseGrid: TileGrid, start: Pos, 
     }
   }
   return seen;
+}
+
+/** Rows a bounce pad under (x, y) throws this form (0: not on a pad). A ball goes higher. */
+function padJump(level: LevelData, x: number, y: number, caps: Capabilities): number {
+  for (const e of level.entities) {
+    if (e.type !== 'bouncePad' || y !== e.y - 1 || x < e.x || x > e.x + 1) continue;
+    const power = e.power * (caps.canRoll ? 1.25 : 1);
+    // Capped by the body's top speed (640 px/s), under gravity (1150 px/s²), less a row for the body itself.
+    const v = Math.min(power, 640);
+    return Math.max(0, Math.floor((v * v) / (2 * 1150) / 16) - 1);
+  }
+  return 0;
 }
 
 /** Rejects moves that would pass through solid walls at the traversal height. */

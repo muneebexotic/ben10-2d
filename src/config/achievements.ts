@@ -24,7 +24,7 @@ export type LifetimeCounter =
   | 'weakHits'
   | 'dryKOs';
 
-export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'greymatter' | 'ripjaws' | 'ben' | 'gwen' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
+export type AchievementIcon = 'heatblast' | 'fourarms' | 'xlr8' | 'wildmutt' | 'stinkfly' | 'upgrade' | 'diamondhead' | 'ghostfreak' | 'greymatter' | 'ripjaws' | 'ricochet' | 'ben' | 'gwen' | 'smoothy' | 'card' | 'boss' | 'clock' | 'skull' | 'omnitrix' | 'star' | 'laugh' | 'heart';
 
 export interface AchievementDef {
   id: string;
@@ -74,6 +74,11 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'all-systems-go', title: 'ALL SYSTEMS GO', text: 'WAKE EVERY CONSOLE IN THE PLUMBER BASE', icon: 'omnitrix' },
   { id: 'deep-breath', title: 'DEEP BREATH', text: 'SWIM THE FLOODED RING AS BEN, NEVER OUT OF AIR', icon: 'ben' },
   { id: 'bait-and-switch', title: 'BAIT AND SWITCH', text: "STUN DEEPMAW'S LURE AS 3 FORMS IN ONE FIGHT", icon: 'boss' },
+  // Chapter 8 (the circus).
+  { id: 'pinball-wizard', title: 'PINBALL WIZARD', text: 'RING 20 BUMPERS AS RICOCHET IN ONE RUN', icon: 'ricochet' },
+  { id: 'perfect-bounce', title: 'PERFECT BOUNCE', text: 'THREE PERFECT BOUNCES IN A ROW AS RICOCHET', icon: 'ricochet' },
+  { id: 'looking-glass', title: 'THROUGH THE LOOKING GLASS', text: 'WALK THROUGH EVERY LYING MIRROR IN THE MAZE', icon: 'star' },
+  { id: 'standing-ovation', title: 'STANDING OVATION', text: "POP CACKLEJACK'S BIG HEAD FROM THE INSIDE", icon: 'boss' },
 ];
 
 /** Thrown enemies that bowl over this many in one throw: STEE-RIKE! */

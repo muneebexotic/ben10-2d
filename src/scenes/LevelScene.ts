@@ -838,6 +838,7 @@ export class LevelScene extends Phaser.Scene {
       projectiles: this.projectiles,
       player: this.player,
       tilesKey: this.world.tilesKey,
+      aliens: this.dialAliens,
       onSecretFound: (id) => this.onHiddenPath(id),
     });
     this.tech = this.createTech(resumeX);
@@ -1302,6 +1303,8 @@ export class LevelScene extends Phaser.Scene {
       this.emitFormHealth(DIAMONDHEAD.absorb.shield);
     }
     if (action === 'pounceHit') this.achievements.count('pounceHits');
+    // Ricochet: three perfect bounces in a row.
+    if (action === 'perfectBounce3') this.achievements.unlock('perfect-bounce');
     if (action === 'swapStrike' && this.player.isAlien) EventBus.emit('alien:swapStrike', { alienId: this.player.form.id, hits: 1 });
   }
 

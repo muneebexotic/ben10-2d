@@ -1,4 +1,6 @@
 import type Phaser from 'phaser';
+import { RollGate } from '../../entities/props/RollGate';
+import { playSfx } from '../../systems/audio/Sfx';
 import { TILE } from '../../config/constants';
 import type { Player } from '../../entities/Player';
 import type { Projectiles } from '../../entities/Projectiles';
@@ -25,6 +27,8 @@ export interface SpecialTerrainDeps {
   player: Player;
   /** The tileset hidden doors are disguised as. */
   tilesKey: string;
+  /** Aliens on the dial (a ball gate only shows once the alien it waits for is). */
+  aliens: readonly string[];
   onSecretFound(id: string): void;
 }
 
@@ -55,10 +59,15 @@ function disguise(grid: TileGrid, door: Extract<EntitySpawn, { type: 'hiddenDoor
  * mutant vines fire burns away, skylight glass a big smash breaks, and the
  * mutagen puddles spit leaves behind. Each blocks like terrain until it's gone.
  */
+const GATE_BREAK_SPEED = 170;
+
 export class SpecialTerrain {
   readonly doors: HiddenDoor[] = [];
   readonly vines: Vines[] = [];
   readonly glass: GlassFloor[] = [];
+  readonly gates: RollGate[] = [];
+  /** The ball's speed a moment ago (a bounce into a ceiling gate stops dead before the gate is checked). */
+  private recentSpeed = 0;
   readonly puddles: Puddles;
 
   constructor(private readonly d: SpecialTerrainDeps) {
@@ -78,6 +87,10 @@ export class SpecialTerrain {
         combat.addTarget(v);
         scene.physics.add.collider(player.zone, v.body);
         this.vines.push(v);
+      } else if (e.type === 'rollGate') {
+        // Until the alien it waits for is on the dial, the rock stays plain rock.
+        if (e.requires && !d.aliens.includes(e.requires)) continue;
+        this.gates.push(new RollGate(scene, e.id, e.x, e.y, e.w, e.h));
       } else if (e.type === 'glassFloor') {
         const g = new GlassFloor(scene, e.id, e.x, e.y, e.w, fx);
         world.addSolid(g.rect);
@@ -97,7 +110,28 @@ export class SpecialTerrain {
     };
   }
 
+  /** A rolling ball that hits a gate hard enough (rolling into it, or bouncing up under it) breaks through. */
+  private updateGates(): void {
+    const p = this.d.player;
+    const speed = Math.hypot(p.vx, p.vy);
+    this.recentSpeed = Math.max(speed, this.recentSpeed * 0.85);
+    if (!p.rolling || this.recentSpeed < GATE_BREAK_SPEED) return;
+    const by = p.y - 11;
+    for (const g of this.gates) {
+      if (g.broken || !g.touches(p.x, by, 12)) continue;
+      g.break();
+      const r = g.rect;
+      this.d.world.clearCells({ x: r.x / TILE, y: r.y / TILE, w: r.w / TILE, h: r.h / TILE });
+      this.d.fx.burst('debris', r.x + r.w / 2, r.y + r.h / 2, 16);
+      this.d.fx.burst('spark', r.x + r.w / 2, r.y + r.h / 2, 10);
+      this.d.fx.shake(0.008, 180);
+      this.d.fx.popText(r.x + r.w / 2, r.y - 10, 'BREAKTHROUGH!', 0xe8884a);
+      playSfx('rockBreak');
+    }
+  }
+
   update(dtMs: number): void {
+    if (this.gates.length > 0) this.updateGates();
     const p = this.d.player;
     for (const door of this.doors) door.update(dtMs, p.x, p.centerY, p.senseRadius);
     for (const v of this.vines) v.update(dtMs);

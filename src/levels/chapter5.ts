@@ -293,6 +293,8 @@ export const CHAPTER_5: LevelData = {
     { type: 'rockfall', id: 't1-rocks', x: 262, w: 6, ceiling: 25 },
     { type: 'rockfall', id: 't3-rocks', x: 306, w: 13, ceiling: 34 },
     { type: 'card', id: 'ch5-card-loop', x: 318, y: 33, requires: 'ricochet' },
+    // The loop's mouth in the tunnel's ceiling: shell plates only a bouncing ball breaks (there once Ricochet is on the dial).
+    { type: 'rollGate', id: 'ch5-loop-gate', x: 316, y: 33, w: 5, h: 1, requires: 'ricochet' },
     { type: 'alienHint', id: 'ch5-loop-hint', alien: 'ricochet', x: 314, y: 34, w: 8, h: 6, line: 'THE RAILS LOOP UP INTO THE ROCK... ONLY SOMETHING ROUND COULD RIDE THAT.' },
     { type: 'smoothy', x: 275, y: 34 },
     { type: 'smoothy', x: 300, y: 36 },
