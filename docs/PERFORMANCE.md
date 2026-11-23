@@ -511,3 +511,20 @@ The four-scenario rerun still flagged ch4-arcade (+19.7%) on one fast main round
 
 - **The HD chapter's cost on a phone is fill rate and memory, not the CPU:** render scale up to 3x, art at up to 4 texels per game pixel (`CH7_HD`), 4.7 MB of WebP atlases for the cast and 3.1 MB of AAC music, all loaded with the chapter. `?autobench=1` plays THE OPEN SEA and THE MAELSTROM; the phone's report is the final word.
 - The Diamondhead shield fix (BUGS.md R1, a flag check in the player's step and an aim check on a beam's bounce) was in the rerun's build.
+
+## Chapter 8 check (Milestone 4 part 7)
+
+**The gate** (`npm run bench`, this build against main 8a5c89e, 4x on the emulated wide phone; Chapter 8 plays in bench builds only, so its two scenes are held to main's heaviest scenario). The full run on the final tree (two rounds) flagged one scenario, ch5-street (+19.7%, 14.35 against 11.99 ms). Chapter 5 plays the same as on main in the bench: Ricochet's shell plates appear only once he's on the dial, and the bench's file doesn't have him. Rerun alone over four rounds, mean CPU ms per frame, best round:
+
+| Scenario | main | this | change |
+|---|---|---|---|
+| ch5-street (alone, 4 rounds) | 16.35 | 14.87 | -9.1% |
+| ch8-maze (new) | - | 18.04 | p95 33 |
+| ch8-bighead (new) | - | 18.90 | p95 38.1 |
+
+The rest passed the full run, from ch4-arcade -9% to ch6-fair +13.5% (inside the budget). **No leaks:** flat over seven chapter cycles (62 EventBus listeners, 423 textures, 6-10 audio sources with none held, heap 16.5 to 18.3 MB).
+
+- **Main Street's noise is main's.** Across eleven rounds this session, main measured 11.99 to 17.44 ms (median 16.35) and this build 14.35 to 16.81 (median 14.87). The driver walks the street on wall-clock time, so a run that goes faster gets further and draws less, and only main ever had the fast rounds the best-of-two rule picks. Update and render rose together in those rounds, which is a different scene on screen, not different code.
+- **THE TOWER WRAP** was a few tenths of a millisecond slower in 9 of 10 paired rounds of the earlier runs (inside the budget). Nothing in the tower or what it imports changed (two texture keys aside), and the final run measured it at -2.1%.
+- **The new scenes are the game's heaviest moments on the CPU**, next to THE MAELSTROM: the mirror maze (its glass, the reflections that copy Ben, the goons) and the big head (CACKLEJACK's rig, IRONJAW and THE TANGLE, the crowd). Held to main's heaviest scenario (ch7-maelstrom, 17.58 ms in the same run) with the usual margin, both pass. `?autobench=1` plays both; the phone's report is the final word.
+- **A per-frame allocation on main, fixed:** the level built a ghost sample (an array of the whole roster and an object) every frame, though the recorder keeps one every 100 ms. It now asks the recorder first (`GhostRecorder.due`). It was in the final run's build.
