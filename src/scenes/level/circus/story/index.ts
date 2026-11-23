@@ -11,26 +11,33 @@ import { Heart } from './Heart';
 import { Opening } from './Opening';
 import { Show } from './Show';
 
-/** The music turns as Ben goes indoors and out (only on a crossing, so the boss's own music is never touched). */
+/**
+ * The music turns as Ben goes indoors and out, either way (only when he crosses into another zone, so the
+ * boss's own music in the big top is never touched). Zones are in order of their left edge (tiles).
+ */
 class MusicZones implements SetPiece {
   readonly cinematic = false;
   readonly storyLock = false;
-  private lastX: number;
+  private zone: number;
 
   constructor(
     private readonly kit: StoryKit,
     private readonly zones: ReadonlyArray<{ x: number; track: TrackName }>,
   ) {
-    this.lastX = kit.player.x;
+    this.zone = this.zoneAt(kit.player.x);
+  }
+
+  private zoneAt(px: number): number {
+    let z = 0;
+    for (let i = 0; i < this.zones.length; i++) if (px >= this.zones[i].x * TILE) z = i;
+    return z;
   }
 
   update(): void {
-    const x = this.kit.player.x;
-    for (const z of this.zones) {
-      const edge = z.x * TILE;
-      if (this.lastX < edge && x >= edge) this.kit.playMusic(z.track);
-    }
-    this.lastX = x;
+    const z = this.zoneAt(this.kit.player.x);
+    if (z === this.zone) return;
+    this.zone = z;
+    this.kit.playMusic(this.zones[z].track);
   }
 
   destroy(): void {}
@@ -51,6 +58,7 @@ export function buildCircusStory(kit: StoryKit, resumePx: number, unlockBeats: R
   // A checkpoint start between the opening and the funhouse: Gwen is already at Ben's side.
   if (!fresh && resumeX < plan.gwenTaken.triggerX) kit.gwen?.join(false, resumeX * TILE - 24);
   const music = new MusicZones(kit, [
+    { x: 0, track: 'fair' },
     { x: 102, track: 'engine' },
     { x: 290, track: 'fair' },
   ]);
