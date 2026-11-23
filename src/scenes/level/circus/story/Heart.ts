@@ -6,6 +6,9 @@ import type { Damageable, Hit, HitKind, HitResult, Rect } from '../../../../enti
 import type { CircusPlan } from '../../../../levels/types';
 import { playSfx } from '../../../../systems/audio/Sfx';
 import { CIRCUS_ART } from '../../../preload/cartoon/circus/circusArt';
+import { TEX } from '../../../preload/assetKeys';
+import { GWEN_FRAME, GWEN_FRAMES } from '../../../preload/family';
+import { FamilyActor } from '../../family/FamilyActor';
 import type { SetPiece, StoryKit } from '../../story/StoryKit';
 import { CH8_HEART } from './lines';
 
@@ -50,6 +53,8 @@ export class Heart implements SetPiece {
   private phase: 'wait' | 'talk' | 'done' = 'wait';
   private readonly mirror: Phaser.GameObjects.Image;
   private readonly glass: HeartGlass;
+  /** Gwen inside the glass: her own actor (the companion keeps hers hidden while she isn't walking with Ben). */
+  private readonly trapped: FamilyActor;
   private readonly x: number;
   private readonly floor: number;
   private t = 0;
@@ -65,10 +70,13 @@ export class Heart implements SetPiece {
     this.floor = h.floor * TILE;
     this.mirror = kit.scene.add.image(this.x, this.floor, CIRCUS_ART.heart).setOrigin(0.5, 1).setDepth(DEPTH.props);
     this.glass = new HeartGlass({ x: this.x - 16, y: this.floor - 90, w: 32, h: 86 }, (hit) => this.crack(hit));
+    const look = { texture: TEX.gwen, prefix: 'gwen', frameWidth: GWEN_FRAME.w, frameHeight: GWEN_FRAME.h, feetY: GWEN_FRAME.feetY, frames: GWEN_FRAMES, handHeight: 15 };
+    this.trapped = new FamilyActor(kit.scene, look, DEPTH.props + 1);
     if (resumeX > h.exit.x) {
       this.phase = 'done';
       this.glass.alive = false;
       this.mirror.setVisible(false);
+      this.trapped.hide();
       kit.collapse(h.exit);
       kit.gwen?.join(false, resumeX * TILE - 24);
       return;
@@ -87,18 +95,13 @@ export class Heart implements SetPiece {
   update(dtMs: number): void {
     if (this.phase !== 'wait') return;
     this.t += dtMs;
-    const g = this.kit.gwen;
-    if (!g) return;
-    // Gwen in the glass: pale pink, banging on it (shown while Ben is near).
-    const near = Math.abs(this.kit.player.x - this.x) < 20 * TILE;
-    const a = g.actor;
-    if (near) {
-      if (!a.visible) a.place(this.x, this.floor - 8);
-      a.place(this.x + Math.sin(this.t * 0.003) * 3, this.floor - 8);
-      a.face(-1);
-      a.pose(Math.floor(this.t / 600) % 2 ? 'surprise' : 'idle');
-      a.sprite.setTint(0xffb8f0).setAlpha(0.75).setDepth(DEPTH.props - 1);
-    }
+    // Gwen in the glass: pale pink, banging on it.
+    const a = this.trapped;
+    a.place(this.x + Math.sin(this.t * 0.003) * 3, this.floor - 8);
+    a.face(-1);
+    a.pose(Math.floor(this.t / 600) % 2 ? 'surprise' : 'idle');
+    a.sprite.setTint(0xffb8f0).setAlpha(0.7);
+    a.update(dtMs);
   }
 
   private crack(hit: Hit): void {
@@ -128,11 +131,8 @@ export class Heart implements SetPiece {
     const p = kit.player;
     p.controlsEnabled = false;
     p.setVelocityX(0);
-    const g = kit.gwen;
-    if (g) {
-      g.actor.sprite.clearTint().setAlpha(1).setDepth(DEPTH.player - 2);
-      g.join(true, this.x);
-    }
+    this.trapped.hide();
+    kit.gwen?.join(true, this.x);
     kit.dialogue.play(CH8_HEART, { onDone: () => this.finish() });
   }
 
@@ -146,5 +146,6 @@ export class Heart implements SetPiece {
 
   destroy(): void {
     this.mirror.destroy();
+    this.trapped.destroy();
   }
 }
