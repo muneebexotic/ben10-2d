@@ -179,7 +179,8 @@ export class CircusSystems implements SetPiece {
       }
     }
     for (let i = 0; i < 4; i++) {
-      const sprite = scene.add.sprite(0, 0, kit.player.visual.sprite.texture.key, 0).setVisible(false).setDepth(DEPTH.terrain + 0.5).setAlpha(0.55).setTint(0xb8c8ff);
+      // Over the glass (squeezed to fit it, half see-through), under Ben.
+      const sprite = scene.add.sprite(0, 0, kit.player.visual.sprite.texture.key, 0).setVisible(false).setDepth(DEPTH.terrain + 1.5).setAlpha(0.55).setTint(0xb8c8ff);
       this.reflections.push({ sprite, anim: '' });
     }
     circusEnv.gas = (x, y) => this.gas(x, y);
