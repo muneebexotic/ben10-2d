@@ -802,7 +802,8 @@ export class CacklejackBoss implements ArenaBoss {
     const s = headScale(this.headT);
     const R = C.bigHead.radius * s;
     this.balloon.on = big;
-    this.balloon.harmful = big;
+    // While the grin is open he's laughing, not pushing: Ben can stand at the mouth and hit the valve.
+    this.balloon.harmful = big && this.mouth !== 'open';
     this.balloon.w = R * 1.7;
     this.balloon.h = R * 1.7;
     this.balloon.x = this.midX;
