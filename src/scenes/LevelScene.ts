@@ -1135,7 +1135,7 @@ export class LevelScene extends Phaser.Scene {
     this.stats.swaps = this.omni.swaps;
     this.perfect.prune(this.gameNow);
     if (this.bossDamageAtStart === null && this.arena?.fighting) this.bossDamageAtStart = this.stats.damageTaken;
-    if (this.recorder && this.state === 'play') this.recorder.sample(this.stats.timeMs, this.ghostSample());
+    if (this.recorder && this.state === 'play' && this.recorder.due(this.stats.timeMs)) this.recorder.sample(this.stats.timeMs, this.ghostSample());
     this.ghostRunner?.update(this.stats.timeMs);
     this.statsTimer -= realDt;
     if (this.statsTimer <= 0) {

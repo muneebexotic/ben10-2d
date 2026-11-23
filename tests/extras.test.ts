@@ -212,6 +212,23 @@ describe('ghost of your best run', () => {
     expect(rec.samples.length).toBe(2);
   });
 
+  it('says a sample is due only when one would be recorded (the level builds one only then)', () => {
+    const rec = new GhostRecorder('ch1', 'normal', 100);
+    const xs: number[] = [];
+    for (let t = 0; t <= 400; t += 16) {
+      if (rec.due(t)) rec.sample(t, sample(t, 0));
+      else xs.push(t);
+    }
+    expect(rec.samples.length).toBe(5);
+    expect(rec.due(400)).toBe(false);
+    expect(rec.due(500)).toBe(true);
+    // Gated by due, it records what calling sample every frame would have.
+    const every = new GhostRecorder('ch1', 'normal', 100);
+    for (let t = 0; t <= 400; t += 16) every.sample(t, sample(t, 0));
+    expect(rec.samples).toEqual(every.samples);
+    expect(xs.length).toBeGreaterThan(15);
+  });
+
   it('packs and unpacks samples exactly, big jumps included', () => {
     const samples = [sample(100, 400, 0, 3), sample(140, 380, 1, 12, true), sample(6000, 90, 5, 22), sample(5990, 95, 5, 21, true), sample(0, 0)];
     expect(decodeGhost(encodeGhost(samples))).toEqual(samples);

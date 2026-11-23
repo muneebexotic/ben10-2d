@@ -26,7 +26,16 @@ Chapter 8's new characters are original designs (DECISIONS.md, "Act 3 / Chapter 
 
 - `npm run typecheck`, `npm run build`, `npm test` (604 tests: `tests/chapter8.test.ts` (layout, story order, the barrel and heart walls, the arena, the manifest, every checkpoint and card reachable, Ricochet alone reaching the big top, the loop card a ball's), `tests/ricochet.test.ts` (the roll's speed, ricochets, damage, bounces and perfect chains, the shell drop, misfire lines, Chapter 5's loop), CACKLEJACK's stage, bow, trick and grin rules).
 - Playtested in headless Chromium (about a third of real speed): the opening, the show, the barrel and the unlock beat, the shaft up to the heart, every boss stage from its checkpoint and the defeat into the outro. Bugs found and fixed on the way: every set piece thought play had resumed past it (the level hands the resume point over in pixels, the pieces compared tiles); the shaft's launch was clipped by the body's speed cap (now a tube); fear gas asked for frame -1 as it ran out; the hound and stilt walker lacked the idle animation the Drone plays on spawn; the funhouse's face hung over the room (now a solid block it covers); the boss bar showed full on a stage retry.
-- `npm run qa -- --fuzz` and `npm run bench`: see PROGRESS.md for the results of the release gates.
+- A review pass for logic bugs (not looks) found and fixed:
+  - On a 120 Hz screen the loop could take a ball straight back in the frame after letting it go. Its foot now waits `TOYS.loopCooldownMs`.
+  - A jack-in-the-box or stilt walker hit mid-attack never hurt Ben again: the blow's "already landed" flag stayed set through the stun. It's now reset on each attack and on recovery.
+  - A big hit could skip CACKLEJACK straight past a stage (from the stage to the big head, missing the high wire and its set-up). Stages now advance one at a time.
+  - In a release build (Chapter 8 hidden), its four achievements still counted toward the list, so 100% couldn't be reached. They stay off the list until the chapter ships.
+  - A ball gate's speed check read a fixed per-frame decay. It now goes through `Pacing.damp`, so it breaks the same at 60 and 120 Hz.
+  - Leftover literals in the toys, goons, barrel and Ricochet moved to config.
+  - Shared code (already on main): the level built a ghost sample (an array of the roster and an object) every frame, though the recorder keeps one every 100 ms. It's now built only when one is due (`GhostRecorder.due`).
+- `npm run qa -- --fuzz`: 87 checkpoints and boss fights (Chapter 8's ten checkpoints and CACKLEJACK through all three stages), 0 failures, 0 page errors.
+- `npm run bench`: see PERFORMANCE.md, "Chapter 8 check".
 
 ## How to test it
 

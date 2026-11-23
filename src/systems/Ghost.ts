@@ -24,7 +24,12 @@ export class GhostRecorder {
     readonly intervalMs: number = GHOST.intervalMs,
   ) {}
 
-  /** Called every frame with the run time. */
+  /** Whether a sample is owed at this run time (so the caller builds one only then, not every frame). */
+  due(timeMs: number): boolean {
+    return this.samples.length * this.intervalMs <= timeMs;
+  }
+
+  /** Called with the run time whenever `due`. */
   sample(timeMs: number, s: GhostSample): void {
     while (this.samples.length * this.intervalMs <= timeMs) this.samples.push({ ...s });
   }
