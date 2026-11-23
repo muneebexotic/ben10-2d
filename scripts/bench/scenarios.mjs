@@ -217,6 +217,26 @@ export const SCENARIOS = [
     play: (page, ms) => brawl(page, ms),
   },
   {
+    id: 'ch8-maze',
+    title: 'Ch8 THE MIRROR MAZE (mirror panels with live reflections of Ben, the maze\'s reflections, a balloon hound, fear gas)',
+    query: 'level=ch8&start=cp-maze',
+    setup: async (page) => {
+      await sleep(600);
+      await skipCinematics(page, 2);
+    },
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
+    id: 'ch8-bighead',
+    title: 'Ch8 CACKLEJACK, THE BIG HEAD (the balloon head filling the ring, fear gas, the big top\'s canvas, Max\'s cage)',
+    query: 'level=ch8&start=cp-bighead',
+    setup: async (page) => {
+      await sleep(600);
+      await skipCinematics(page, 3);
+    },
+    play: (page, ms) => brawl(page, ms),
+  },
+  {
     id: 'ch6-hex',
     title: 'Ch6 HEX AND CHARMCASTER, phase 3 (illusions, ward threads, cataclysm, Max, rocklings)',
     query: 'level=ch6&start=cp-towertop',

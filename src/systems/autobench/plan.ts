@@ -37,6 +37,8 @@ export const BENCH_SCENARIOS: readonly BenchScenario[] = [
   // maelstrom (the whirlpool, the debris, the pool's water).
   { id: 'ch7-sea', title: 'Ch7 THE OPEN SEA', levelId: 'ch7', checkpoint: 'cp-sea', driver: 'brawlNoSwap' },
   { id: 'ch7-maelstrom', title: 'Ch7 DEEPMAW: THE MAELSTROM', levelId: 'ch7', checkpoint: 'cp-maelstrom', driver: 'brawl' },
+  { id: 'ch8-maze', title: 'Ch8 THE MIRROR MAZE', levelId: 'ch8', checkpoint: 'cp-maze', driver: 'brawl' },
+  { id: 'ch8-bighead', title: 'Ch8 CACKLEJACK: THE BIG HEAD', levelId: 'ch8', checkpoint: 'cp-bighead', driver: 'brawl' },
 ];
 
 export interface BenchVariant {
