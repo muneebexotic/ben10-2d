@@ -72,11 +72,15 @@ export class Player implements PlayerHandle {
   now = 0;
   /** Cutscene auto-walk direction; overrides input when set. */
   scriptedMove: -1 | 0 | 1 | null = null;
+  /** A story pose (his drawing for a line: 'point', 'shrug'...) held while he stands still as Ben in a cutscene; null for none. */
+  storyPose: string | null = null;
   dropThroughUntil = 0;
   readonly lastSafe = { x: 0, y: 0 };
 
   private readonly motor: MotorState = createMotorState();
   private invulnUntil = 0;
+  /** Invulnerable without the blink until this game time (a won fight's ending). */
+  private quietUntil = 0;
   /** A ward (Gwen's shield) eats the next hit until this game time. */
   private wardUntil = 0;
   private onWardHit: (() => void) | null = null;
@@ -241,8 +245,10 @@ export class Player implements PlayerHandle {
     this.visual.squash(x, y);
   }
 
-  setInvulnerable(ms: number): void {
+  /** `blink: false` keeps him solid on screen (a won fight's ending isn't a hit to recover from). */
+  setInvulnerable(ms: number, blink = true): void {
     this.invulnUntil = Math.max(this.invulnUntil, this.now + ms);
+    if (!blink) this.quietUntil = Math.max(this.quietUntil, this.now + ms);
   }
 
   /** The next hit within `ms` is absorbed instead (and `onHit` hears about it); 0 drops the ward. */
@@ -561,7 +567,7 @@ export class Player implements PlayerHandle {
       this.deathVy += 900 * (dtMs / 1000);
       this.deathY += this.deathVy * (dtMs / 1000);
     }
-    this.visual.setBlink(this.now < this.invulnUntil && !this.dead);
+    this.visual.setBlink(this.now < this.invulnUntil && this.now >= this.quietUntil && !this.dead);
     this.visual.setFade(this.dead ? 1 : (this.abilities.fade?.() ?? 1));
     this.visual.setMeter(this.dead ? null : (this.abilities.meter?.() ?? null));
     this.visual.update(this.x, this.y + this.deathY, this.facing, dtMs, visualNow);
@@ -587,6 +593,10 @@ export class Player implements PlayerHandle {
       return;
     }
     const moving = Math.abs(this.body.velocity.x) > 12;
+    if (!moving && this.storyPose !== null && !this.controlsEnabled && this.form.kind === 'human') {
+      this.visual.playClip(this.storyPose, 'idle');
+      return;
+    }
     this.visual.play(moving ? 'run' : 'idle');
   }
 

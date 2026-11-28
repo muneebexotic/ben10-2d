@@ -115,6 +115,8 @@ export interface GameEvents {
   'hud:still': { key: string | null };
   /** The line being typed shows in full at once (the player pressed to read on). */
   'hud:dialogFill': undefined;
+  /** A line with a cue started: the set piece on screen acts on it (Chapter 8's ending drops Max's cage on his line). */
+  'story:cue': { cue: string };
   /** A whisper in the corner of the screen (Ghostfreak). */
   'hud:whisper': { text: string; color: number };
   'hud:visible': { visible: boolean; omnitrix?: boolean };

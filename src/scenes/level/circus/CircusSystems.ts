@@ -227,7 +227,8 @@ export class CircusSystems implements SetPiece {
       pad.squashLeft = Math.max(0, pad.squashLeft - dtMs);
       const x0 = pad.e.x * TILE;
       const top = pad.e.y * TILE;
-      if (p.x < x0 - 2 || p.x > x0 + 2 * TILE + 2 || Math.abs(p.y - top) > 3 || p.vy < -1 || this.now < pad.readyAt) continue;
+      // Not while a cutscene holds Ben (he'd bounce on the spot through it: a fight won standing on a pad).
+      if (!p.controlsEnabled || p.x < x0 - 2 || p.x > x0 + 2 * TILE + 2 || Math.abs(p.y - top) > 3 || p.vy < -1 || this.now < pad.readyAt) continue;
       pad.readyAt = this.now + TOYS.padCooldownMs;
       pad.squashLeft = TOYS.padSquashMs;
       const power = pad.e.power * (p.rolling ? TOYS.padBallScale : 1);

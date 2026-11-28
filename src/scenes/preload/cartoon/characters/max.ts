@@ -231,6 +231,8 @@ export const MAX_FRAME_CLIPS: Readonly<Record<string, FrameClip>> = {
   angry: { frames: ['stern'], ms: 2600, loop: true, motion: breathe(0.005) },
   // A big laugh, his belly shaking.
   laugh: { frames: ['laugh'], ms: 360, loop: true, motion: (t, p) => p.move('body', 0, -Math.abs(wave(t)) * 0.6) },
+  // An arm out, holding the kids back behind him (his story sheet's last drawing, which his hurt borrows).
+  guard: { frames: ['hurt'], ms: 1800, loop: true, motion: breathe(0.006) },
 };
 
 const BOUNDS = { left: -14, right: 16, top: -38, bottom: 2 };

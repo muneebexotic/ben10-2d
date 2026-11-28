@@ -4,6 +4,9 @@ import { CACKLEJACK as C } from '../../../config/cacklejack';
 
 export type CackleStage = 0 | 1 | 2;
 
+/** The cues his ending acts on (the outro's lines in chapter8.ts): Max's cage comes down, his last laugh, the watch answers. */
+export const ENDING_CUES = ['cage', 'laugh', 'watch'] as const;
+
 /** The stage his health puts him in: FEAR GAS, THE HIGH WIRE, THE BIG HEAD. */
 export function stageFor(ratio: number): CackleStage {
   if (ratio <= C.stageAt[1]) return 2;

@@ -9,8 +9,12 @@ export const CH8_BEATS = {
   indoorMusicFrom: 102,
   /** The cold open: the family walks the boardwalk, then the lines play. */
   opening: { walkMs: 2600, holdMs: 400 },
-  /** The show: Cacklejack's patter, the scream he drinks, IRONJAW striding off with Max. */
-  show: { scareMs: 1400, carrySpeed: 70, ironjawFromX: 100 },
+  /**
+   * The show: Cacklejack's patter, the scream he drinks, IRONJAW striding off with Max. A player who gets there
+   * before Max does (he strolls over from the boardwalk) sees him hurry in at `maxHurry` px/s. While the show holds
+   * Ben nothing can hurt him (a goon he ran past still lobs pies), and for `heldGraceMs` after.
+   */
+  show: { scareMs: 1400, carrySpeed: 70, ironjawFromX: 100, maxHurry: 110, kevinLaughMs: 1400, heldGraceMs: 300 },
   /** THE TANGLE's arm out of the mirror and back with Gwen. */
   gwenTaken: { reachMs: 600, pullMs: 700 },
   /** The barrel: how long it spins (and the spiked walls close) before the watch answers; how far the walls close. */

@@ -12,6 +12,7 @@ import { loadCutouts } from '../scenes/preload/cartoon/cutout/cutout';
 import { BEN_FRAMES } from '../scenes/preload/cartoon/cutout/benFrames';
 import { GWEN_FRAMES } from '../scenes/preload/cartoon/cutout/gwenFrames';
 import { MAX_FRAMES } from '../scenes/preload/cartoon/cutout/maxFrames';
+import { KEVIN_FRAMES } from '../scenes/preload/cartoon/cutout/kevinFrames';
 import { HEATBLAST_FRAMES } from '../scenes/preload/cartoon/cutout/heatblastFrames';
 import { FOURARMS_FRAMES } from '../scenes/preload/cartoon/cutout/fourarmsFrames';
 import { XLR8_FRAMES } from '../scenes/preload/cartoon/cutout/xlr8Frames';
@@ -35,8 +36,8 @@ const indoors = (x: number): boolean => !CIRCUS_OUTDOORS.some((o) => x >= o.from
 /** Chapter 8, Cacklejack: the circus on Driftwood Bay's pier (HD). */
 export const CHAPTER: ChapterModule = {
   level: CHAPTER_8,
-  // The family and the older aliens frame by frame from the owner's drawings; Chapter 8's own cast is painted in code.
-  prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, HEATBLAST_FRAMES, FOURARMS_FRAMES, XLR8_FRAMES, WILDMUTT_FRAMES, STINKFLY_FRAMES, UPGRADE_FRAMES, DIAMONDHEAD_FRAMES, GHOSTFREAK_FRAMES, GREYMATTER_FRAMES, RIPJAWS_FRAMES, HUD_ICONS, HUD_PROPS, FAMILY_PORTRAITS]),
+  // The family, Kevin (a face in the show's crowd) and the older aliens frame by frame from the owner's drawings; Chapter 8's own cast is painted in code.
+  prepare: () => loadCutouts([BEN_FRAMES, GWEN_FRAMES, MAX_FRAMES, KEVIN_FRAMES, HEATBLAST_FRAMES, FOURARMS_FRAMES, XLR8_FRAMES, WILDMUTT_FRAMES, STINKFLY_FRAMES, UPGRADE_FRAMES, DIAMONDHEAD_FRAMES, GHOSTFREAK_FRAMES, GREYMATTER_FRAMES, RIPJAWS_FRAMES, HUD_ICONS, HUD_PROPS, FAMILY_PORTRAITS]),
   // The HD look, with the ringmaster's, his acts' and the watch's whisper's portraits painted from their rigs.
   enter: (scene) => {
     enterCircus(scene);

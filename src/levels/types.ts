@@ -452,8 +452,11 @@ export interface StoryPlan {
    */
   chase?: { boardX: number; boardY: number; arenaX: number; roadY: number; endX: number; endY: number; checkpoint: string };
   /** Lines after the boss falls. */
-  /** `still`: a picture under the dialogue box while that line plays (a texture key the chapter makes); `mood`: the speaker's face. */
-  outro?: Array<{ who: string; text: string; ms: number; still?: string; mood?: 'neutral' | 'happy' | 'angry' | 'shocked' | 'hurt' | 'talk' }>;
+  /**
+   * `still`: a picture under the dialogue box while that line plays (a texture key the chapter makes); `mood`: the speaker's face;
+   * `pose`: the speaker's drawing in the world; `cue`: sent as `story:cue` when the line starts (the boss's ending acts on it).
+   */
+  outro?: Array<{ who: string; text: string; ms: number; still?: string; mood?: 'neutral' | 'happy' | 'angry' | 'shocked' | 'hurt' | 'talk'; pose?: string; cue?: string }>;
   /** Chapter 3's opening: the Rustbucket parked outside the museum at night (`x`, `y`: where it stands). */
   museumIntro?: { x: number; y: number };
   /**
@@ -512,8 +515,11 @@ export interface StoryPlan {
 export interface CircusPlan {
   /** The cold open on the boardwalk: the family walks in from `startX` to `stopX` on row `floor`. */
   boardwalk: { startX: number; stopX: number; floor: number };
-  /** Cacklejack's show on his stage at `stageX` (row `stageFloor`) once Ben passes `triggerX`; IRONJAW carries Max off toward `exitX`. */
-  show: { triggerX: number; stageX: number; stageFloor: number; floor: number; maxX: number; exitX: number };
+  /**
+   * Cacklejack's show on his stage at `stageX` (row `stageFloor`) once Ben passes `triggerX`; IRONJAW carries Max off toward `exitX`.
+   * Kevin watches from the crowd at `kevinX` until it's over.
+   */
+  show: { triggerX: number; stageX: number; stageFloor: number; floor: number; maxX: number; exitX: number; kevinX: number };
   /** In the funhouse THE TANGLE pulls Gwen into a mirror at `mirrorX` as Ben passes `triggerX`. */
   gwenTaken: { triggerX: number; mirrorX: number; floor: number };
   /**

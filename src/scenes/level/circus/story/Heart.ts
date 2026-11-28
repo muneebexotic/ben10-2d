@@ -95,11 +95,11 @@ export class Heart implements SetPiece {
   update(dtMs: number): void {
     if (this.phase !== 'wait') return;
     this.t += dtMs;
-    // Gwen in the glass: pale pink, banging on it.
+    // Gwen in the glass: pale pink, fists clenched and banging on it, then calling out (her own drawings).
     const a = this.trapped;
     a.place(this.x + Math.sin(this.t * 0.003) * 3, this.floor - 8);
     a.face(-1);
-    a.pose(Math.floor(this.t / 600) % 2 ? 'surprise' : 'idle');
+    a.pose(Math.floor(this.t / 600) % 2 ? 'surprise' : 'angry');
     a.sprite.setTint(0xffb8f0).setAlpha(0.7);
     a.update(dtMs);
   }

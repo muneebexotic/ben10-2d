@@ -21,5 +21,7 @@ export interface ArenaBoss extends Damageable, Hazard {
   readonly extraTargets: readonly Damageable[];
   readonly extraHazards: readonly Hazard[];
   readonly liftables: readonly Liftable[];
+  /** Its ending plays across the whole arena (CACKLEJACK's net): the camera stays on the arena after it falls instead of following Ben. */
+  readonly endingInArena?: boolean;
   update(dtMs: number): void;
 }

@@ -14,6 +14,13 @@ export interface Line {
   still?: string;
   /** The speaker's face, where their portrait has one drawn (Chapter 7's family); else their usual portrait. */
   mood?: Mood;
+  /**
+   * The speaker's drawing in the world while the line plays (a story pose of their rig: 'point', 'shrug',
+   * 'folded'...), when they stand still (`Talkers`). Gwen and Max default to their talk drawing; Ben only poses when a line names one.
+   */
+  pose?: string;
+  /** Sent as `story:cue` when the line starts, for the set piece on screen to act on. */
+  cue?: string;
 }
 
 /** The faces a portrait can show (the owner's model-sheet close-ups). */
@@ -56,6 +63,12 @@ export class Dialogue {
   get speaker(): string | null {
     const r = this.run;
     return r && r.index >= 0 ? (r.lines[r.index]?.who ?? null) : null;
+  }
+
+  /** The pose the line on screen names for its speaker, or null. */
+  get speakerPose(): string | null {
+    const r = this.run;
+    return r && r.index >= 0 ? (r.lines[r.index]?.pose ?? null) : null;
   }
 
   play(lines: readonly Line[], opts: { skippable?: boolean; onDone?: () => void } = {}): void {
@@ -123,6 +136,7 @@ export class Dialogue {
     }
     r.left = line.ms;
     this.showStill(line.still ?? null);
+    if (line.cue) EventBus.emit('story:cue', { cue: line.cue });
     if (line.bubble || !isCastId(line.who)) {
       EventBus.emit('hud:dialogClear');
       this.speech.show(line.text, line.ms);

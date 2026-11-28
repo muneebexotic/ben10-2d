@@ -13,7 +13,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 |---|---|---|---|---|---|
 | BEN TENNYSON | 26 | 25 | 1 | 0 | 0 |
 | GWEN TENNYSON | 23 | 22 | 1 | 0 | 0 |
-| GRANDPA MAX | 27 | 17 | 3 | 7 | 0 |
+| GRANDPA MAX | 28 | 17 | 4 | 7 | 0 |
 | KEVIN LEVIN | 27 | 10 | 4 | 13 | 0 |
 | HEATBLAST | 13 | 13 | 0 | 0 | 0 |
 | FOUR ARMS | 21 | 21 | 0 | 0 | 0 |
@@ -131,6 +131,7 @@ The prompts for every sheet still needed are in the Animation Sheet Prompts page
 | tread | treading water | waiting |  |
 | drown | out of air | waiting |  |
 | laugh | (story pose) | drawn | laugh |
+| guard | (story pose) | stand-in | hurt |
 
 ## KEVIN LEVIN (`kevin`)
 

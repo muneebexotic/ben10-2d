@@ -10,6 +10,7 @@ import { CIRCUS_ART } from '../../../scenes/preload/cartoon/circus/keys';
 import { TEX } from '../../../scenes/preload/assetKeys';
 import { MAX_FRAME, MAX_FRAMES } from '../../../scenes/preload/family';
 import { FamilyActor } from '../../../scenes/level/family/FamilyActor';
+import { talker } from '../../../scenes/level/plumber/story/talkers';
 import { cameraZoom } from '../../../systems/CameraZoom';
 import { pace } from '../../../systems/Difficulty';
 import { EventBus } from '../../../systems/EventBus';
@@ -21,7 +22,7 @@ import type { Damageable, Hazard, Hit, HitResult, Liftable, Rect } from '../../t
 import type { ArenaBoss } from '../ArenaBoss';
 import type { BossWorld } from '../HunterDrone';
 import { CACKLE_AGAIN, CACKLE_BIGHEAD, CACKLE_FALL_TAUNTS, CACKLE_HIGHWIRE, CACKLE_INTRO } from './lines';
-import { bodyMultiplier, headScale, mouthAt, stageFor, stageStartHp, trickAt, type CackleStage, type FearGasTrick } from './rules';
+import { bodyMultiplier, ENDING_CUES, headScale, mouthAt, stageFor, stageStartHp, trickAt, type CackleStage, type FearGasTrick } from './rules';
 
 type State = 'intro' | 'idle' | 'tell' | 'act' | 'bow' | 'transition' | 'fall' | 'dying' | 'dead';
 const STAGE_NAMES = ['FEAR GAS', 'THE HIGH WIRE', 'THE BIG HEAD'] as const;
@@ -109,6 +110,8 @@ export class CacklejackBoss implements ArenaBoss {
   readonly maxHp = C.maxHp;
   readonly phase2Title = STAGE_NAMES[1];
   readonly defeatTitle = "THE SHOW'S OVER!";
+  /** The ending plays across the ring (the net in the middle, the family wherever the fight ended): the camera stays on all of it. */
+  readonly endingInArena = true;
   readonly countsAsEnemy = true;
   readonly extraTargets: readonly Damageable[];
   readonly extraHazards: readonly Hazard[];
@@ -145,7 +148,11 @@ export class CacklejackBoss implements ArenaBoss {
   private pinballActive = false;
   private dropIn = 0;
   private readonly cage: Phaser.GameObjects.Image;
+  /** The safety net, unfurled under the cage at the end. */
+  private readonly net: Phaser.GameObjects.Image;
   private readonly max: FamilyActor;
+  /** Max: in his cage over the ring, dropping with it, in the net, then out on the ring floor. */
+  private maxState: 'caged' | 'falling' | 'net' | 'free' = 'caged';
   private readonly bars: Phaser.GameObjects.Image[] = [];
   private readonly left: number;
   private readonly right: number;
@@ -187,9 +194,14 @@ export class CacklejackBoss implements ArenaBoss {
     const cx = plan.cageX * TILE;
     const cy = plan.cageY * TILE;
     this.cage = scene.add.image(cx, cy, CIRCUS_ART.cage).setOrigin(0.5, 62 / 64).setDepth(DEPTH.boss - 3);
-    this.max = new FamilyActor(scene, { texture: TEX.max, prefix: 'max', frameWidth: MAX_FRAME.w, frameHeight: MAX_FRAME.h, feetY: MAX_FRAME.feetY, frames: MAX_FRAMES, handHeight: 18 }, DEPTH.boss - 4);
+    // He waits with his arms folded (his stern drawing, which his angry clip plays), and talks with his own drawings in the ending (`Talkers`).
+    this.max = talker(scene, 'max', new FamilyActor(scene, { texture: TEX.max, prefix: 'max', frameWidth: MAX_FRAME.w, frameHeight: MAX_FRAME.h, feetY: MAX_FRAME.feetY, frames: MAX_FRAMES, handHeight: 18 }, DEPTH.boss - 4));
     this.max.place(cx, cy - 3);
     this.max.face(-1);
+    this.max.pose('angry');
+    this.net = scene.add.image(cx, this.floorY - C.outro.netHeight, CIRCUS_ART.net).setOrigin(0.5, 2 / 18).setDepth(DEPTH.boss - 2).setVisible(false);
+    // The ending plays on the outro's lines (chapter8.ts): listeners die with the scene (LevelScene's offContext).
+    EventBus.on('story:cue', (e) => this.onCue(e.cue), scene);
     for (const tx of [382, 410]) this.bars.push(scene.add.image(tx * TILE, C.highWire.row * TILE - 30, CIRCUS_ART.trapeze).setOrigin(0.5, 0).setDepth(DEPTH.decorBack + 3));
     // The ring is wider than a screen at the chapter's zoom: the camera pulls back for the fight.
     cameraZoom.base = CH7_HD.arenaZoom;
@@ -351,6 +363,8 @@ export class CacklejackBoss implements ArenaBoss {
   private beginStage(stage: CackleStage): void {
     this.stage = stage;
     this.w.reachStage?.(stage);
+    // Max cheers from his cage: one act down.
+    if (this.maxState === 'caged') this.max.hold('cheer', C.outro.cheerMs);
     if (stage === 1) this.w.onPhase2();
     this.banner();
     this.w.cancelThreat();
@@ -412,6 +426,8 @@ export class CacklejackBoss implements ArenaBoss {
         this.updateDying(dtMs);
         break;
       case 'dead':
+        // No ending played its lines (a level without the outro): Max still comes down.
+        if (this.stateT >= C.outro.fallbackMs) this.dropCage();
         break;
       default:
         if (this.stage === 0) this.updateFearGas(dtMs);
@@ -762,32 +778,107 @@ export class CacklejackBoss implements ArenaBoss {
       this.y = this.floorY;
     }
     this.clip = 'defeat';
-    // Max's cage comes down into the safety net.
-    if (t >= 1000 && t - dtMs < 1000) {
-      this.scene.tweens.add({ targets: this.cage, y: this.floorY - 6, duration: 700, ease: 'Bounce.Out' });
-      this.scene.tweens.add({ targets: this.max.sprite, y: this.floorY - 9, duration: 700, ease: 'Bounce.Out' });
-    }
-    // His last laugh, and the watch answers it: Ghostfreak, for a breath, all on its own.
-    if (t >= 1600 && !this.ghost) this.ghostFlicker();
+    // The cage, his last laugh and the watch's answer wait for the ending's lines (`onCue`).
     if (t >= C.dyingMs) {
+      // The camera stays pulled back on the whole ring (`endingInArena`): the net, Max and the family all play in it.
       this.set('dead');
-      this.ghost?.destroy();
-      this.ghost = null;
-      cameraZoom.base = CH7_HD.zoom;
-      this.scene.tweens.add({ targets: this.scene.cameras.main, zoom: CH7_HD.zoom, duration: 900, ease: 'Sine.InOut' });
       this.w.onDefeated(this.x, this.y);
     }
   }
 
-  /** Ghostfreak's shape over Ben for a moment (the owner's drawing of him, through his rig), the picture glitching. */
+  // ------------------------------------------------------------ The ending, line by line
+
+  private onCue(cue: string): void {
+    if (this.alive) return;
+    const c = cue as (typeof ENDING_CUES)[number];
+    if (c === 'cage') this.dropCage();
+    else if (c === 'laugh') {
+      // His last laugh, from the floor of the ring.
+      playSfx(CIRCUS_SFX.cackle, 1, 0.5);
+      this.w.fx.shake(FX.shakeLight, 300);
+    } else if (c === 'watch') this.ghostFlicker();
+  }
+
+  /** The net unfurls under the cage and the cage drops into it, Max inside (his surprised drawing). */
+  private dropCage(): void {
+    if (this.maxState !== 'caged') return;
+    this.maxState = 'falling';
+    const O = C.outro;
+    this.net.setVisible(true).setAlpha(0).setScale(0.2, 1);
+    this.scene.tweens.add({ targets: this.net, scaleX: 1, alpha: 1, duration: O.netMs, ease: 'Back.Out' });
+    this.max.hold('surprise', O.netMs + O.dropMs);
+    this.scene.tweens.add({
+      targets: this.cage,
+      y: this.net.y + O.netSag,
+      delay: O.netMs,
+      duration: O.dropMs,
+      ease: 'Quad.In',
+      onComplete: () => this.cageLands(),
+    });
+  }
+
+  /** The net sags and throws it back up a little; the old cage bursts open. Max laughs (his line's pose). */
+  private cageLands(): void {
+    const O = C.outro;
+    this.maxState = 'net';
+    playSfx(CIRCUS_SFX.boing, 1, 0.6);
+    playSfx(CIRCUS_SFX.clunk, 0.8);
+    this.w.fx.shake(FX.shakeLight, 200);
+    this.w.fx.burst('debris', this.cage.x, this.cage.y - 18, 12);
+    this.scene.tweens.add({ targets: this.net, scaleY: 1.6, duration: 160, yoyo: true, ease: 'Sine.Out' });
+    this.scene.tweens.add({ targets: this.cage, alpha: 0, duration: 200, onComplete: () => this.cage.setVisible(false) });
+    // Where the cage came to rest (its last step lands after the frame that last moved him).
+    this.max.feetY = this.cage.y - 3;
+    this.max.faceTo(this.w.player.x);
+    this.max.release();
+    this.max.pose('idle');
+    this.scene.time.delayedCall(O.hopOutMs, () => this.hopOut());
+  }
+
+  /** Out of the net onto the ring floor (his cheering drawing in the air), then over to the family. */
+  private hopOut(): void {
+    const O = C.outro;
+    const p = this.w.player;
+    const side = p.x >= this.max.x ? 1 : -1;
+    const fromX = this.max.x;
+    const fromY = this.max.feetY;
+    const toX = fromX + side * O.hopOutX;
+    const arc = { t: 0 };
+    this.max.face(side);
+    this.max.hold('cheer', O.hopMs);
+    this.scene.tweens.add({
+      targets: arc,
+      t: 1,
+      duration: O.hopMs,
+      onUpdate: () => {
+        this.max.x = fromX + (toX - fromX) * arc.t;
+        this.max.feetY = fromY + (this.floorY - fromY) * arc.t - Math.sin(arc.t * Math.PI) * O.hopHeight;
+      },
+      onComplete: () => {
+        this.maxState = 'free';
+        this.max.release();
+        this.max.pose('idle');
+        this.max.x = toX;
+        this.max.feetY = this.floorY;
+        this.w.fx.burst('dust', toX, this.floorY, 6);
+        const stop = Math.max(this.left + TILE, Math.min(this.right - TILE, p.x - side * O.standOff));
+        if (Math.abs(stop - toX) > 8 && Math.sign(stop - toX) === side) this.max.runTo(stop, O.walkSpeed, () => this.max.faceTo(this.w.player.x), 'walk');
+        else this.max.faceTo(p.x);
+      },
+    });
+  }
+
+  /** The watch answers the laugh: Ghostfreak's shape over Ben for a breath (the owner's drawing of him, through his rig), the picture glitching, the dial jumping. */
   private ghostFlicker(): void {
+    if (this.ghost) return;
     const p = this.w.player;
     this.w.fx.glitch(700);
-    playSfx(CIRCUS_SFX.cackle, 1, 0.5);
-    this.ghost = this.scene.add.sprite(p.x, p.y, 'ghostfreak', 0).setOrigin(0.5, 1).setDepth(DEPTH.player + 1).setAlpha(0.85);
-    if (this.scene.anims.exists('ghostfreak-idle')) this.ghost.play('ghostfreak-idle');
-    this.scene.tweens.add({ targets: this.ghost, alpha: 0, delay: 600, duration: 300 });
-    this.w.fx.popText(p.x, p.y - 50, 'SOON.', PALETTE.ghostfreakEye);
+    playSfx(CIRCUS_SFX.cackle, 0.6, 0.4);
+    EventBus.emit('omnitrix:hesitating', { alienId: 'ghostfreak', ms: 900 });
+    const ghost = this.scene.add.sprite(p.x, p.y, 'ghostfreak', 0).setOrigin(0.5, 1).setDepth(DEPTH.player + 1).setAlpha(0.85);
+    if (this.scene.anims.exists('ghostfreak-idle')) ghost.play('ghostfreak-idle');
+    this.ghost = ghost;
+    this.scene.tweens.add({ targets: ghost, alpha: 0, delay: 600, duration: 300, onComplete: () => ghost.destroy() });
   }
 
   // ------------------------------------------------------------ Drawing
@@ -841,6 +932,8 @@ export class CacklejackBoss implements ArenaBoss {
       a.actor.container.scaleX = a.facing;
       a.actor.update(dtMs);
     }
+    if (this.maxState === 'caged') this.max.pose('angry');
+    else if (this.maxState === 'falling') this.max.feetY = this.cage.y - 3;
     this.max.update(dtMs);
   }
 

@@ -47,4 +47,26 @@ export const CACKLEJACK = {
   dyingMs: 2600,
   /** Max's cage over the ring (tiles: its middle, and the row its bottom hangs at), in view of the fight's camera. */
   cage: { cageX: 403, cageY: 23 },
+  /**
+   * The ending, on the outro's cues (chapter8.ts): the safety net unfurls under the cage and the cage drops into it,
+   * bursts open, and Max hops out and walks over to the family. Max cheers in his cage when a stage falls.
+   */
+  outro: {
+    /** The net's top line over the ring's floor, and how far into its sag the cage's bottom settles (px). */
+    netHeight: 26,
+    netSag: 12,
+    netMs: 260,
+    dropMs: 650,
+    /** After the cage lands: the hop out of the net, to this far beside it, this high. */
+    hopOutMs: 1500,
+    hopMs: 520,
+    hopOutX: 30,
+    hopHeight: 22,
+    /** Where Max stops walking, this far short of Ben (px), and how fast he walks there (px/s). */
+    standOff: 34,
+    walkSpeed: 70,
+    cheerMs: 1600,
+    /** Dead this long with no cue (no outro played): the cage comes down anyway. */
+    fallbackMs: 9000,
+  },
 } as const;

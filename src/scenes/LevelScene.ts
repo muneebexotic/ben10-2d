@@ -1712,7 +1712,8 @@ export class LevelScene extends Phaser.Scene {
     this.achievements.flush();
     this.state = 'complete';
     this.player.controlsEnabled = false;
-    this.player.setInvulnerable(99999);
+    // Safe for the rest of the scene, without the hurt blink through the family's last words.
+    this.player.setInvulnerable(99999, false);
     this.projectiles.clear('enemy', true);
     for (const d of this.drones) if (d.alive) d.kill();
     flashCamera(this.cameras.main, 600, 255, 255, 255);
@@ -1725,24 +1726,37 @@ export class LevelScene extends Phaser.Scene {
       this.speech.show('AND THAT IS HOW IT\'S DONE!', 2400);
       EventBus.emit('hud:banner', { title: this.arena?.boss?.defeatTitle ?? 'BOSS DOWN!', subtitle: `${this.level.name} COMPLETE`, color: PALETTE.gold, durationMs: 2600, style: 'slam' });
     });
-    // The family's last word (portraits in the box) before the results.
-    if (outro.length > 0) this.time.delayedCall(STORY_BEATS.bossOutroAt, () => this.dialogue.play(outro));
     const outroMs = outro.reduce((sum, line) => sum + line.ms, 0);
     // Chapter 5's last beat: the dial clicks to Ghostfreak on its own for a moment, and a whisper.
     const epilogueMs = this.level.story?.bounty ? STORY_BEATS.ghostEpilogueMs : 0;
-    if (epilogueMs > 0) {
-      this.time.delayedCall(STORY_BEATS.bossOutroAt + outroMs + 200, () => {
-        EventBus.emit('omnitrix:hesitating', { alienId: 'ghostfreak', ms: 900 });
-        EventBus.emit('hud:whisper', { text: 'SOON...', color: PALETTE.ghostfreakEye });
-      });
-    }
-    this.flushPlayTime();
-    this.time.delayedCall(outro.length > 0 ? STORY_BEATS.bossOutroAt + outroMs + 500 + epilogueMs : 3800, () => {
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
       EventBus.emit('level:complete', { stats: cloneRunStats(this.stats) });
       this.scene.stop(SCENES.ui);
       this.scene.stop(SCENES.touch);
       this.scene.start(SCENES.chapterComplete, { levelId: this.level.id, stats: cloneRunStats(this.stats) });
-    });
+    };
+    const afterOutro = () => {
+      if (epilogueMs > 0) {
+        this.time.delayedCall(200, () => {
+          EventBus.emit('omnitrix:hesitating', { alienId: 'ghostfreak', ms: 900 });
+          EventBus.emit('hud:whisper', { text: 'SOON...', color: PALETTE.ghostfreakEye });
+        });
+      }
+      this.time.delayedCall(500 + epilogueMs, finish);
+    };
+    this.flushPlayTime();
+    if (outro.length === 0) {
+      this.time.delayedCall(3800, finish);
+      return;
+    }
+    // The family's last word (portraits in the box) before the results: the results wait for its last line
+    // (the lines run on frame time, slower than this clock on a struggling phone), or for twice its length if
+    // something cut the conversation off.
+    this.time.delayedCall(STORY_BEATS.bossOutroAt, () => this.dialogue.play(outro, { onDone: afterOutro }));
+    this.time.delayedCall(STORY_BEATS.bossOutroAt + outroMs * 2 + 500 + epilogueMs, finish);
   }
 
   /** The frame-rate governor stepped down: at the lowest level drop the full-screen vignette pass too. */

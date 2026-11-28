@@ -265,7 +265,7 @@ export class BossArena {
     this.hazards?.clear();
     this.d.setAlarm(false);
     for (const w of this.walls) w.disableBody(true, true);
-    this.d.camera.unlock();
+    if (!this.boss?.endingInArena) this.d.camera.unlock();
     for (const s of this.wallSprites) s.setVisible(false);
     EventBus.emit('boss:hide');
     this.d.onDefeated(x, y);

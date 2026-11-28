@@ -94,6 +94,11 @@ export class FamilyActor {
     this.show(name);
   }
 
+  /** Ends a held pose now (a set piece moves on before its hold runs out). */
+  release(): void {
+    this.holdMs = 0;
+  }
+
   face(dir: 1 | -1): void {
     this.facing = dir;
   }

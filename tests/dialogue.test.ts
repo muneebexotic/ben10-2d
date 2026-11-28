@@ -136,4 +136,25 @@ describe('cinematic dialogue', () => {
     expect(stills).toEqual(['feed', null, 'feed', null]);
     EventBus.offContext(ctx);
   });
+
+  it("a line's pose is its speaker's while it plays, and its cue goes out once as it starts", () => {
+    const cues: string[] = [];
+    const ctx = {};
+    EventBus.on('story:cue', (p) => cues.push(p.cue), ctx);
+    const d = new Dialogue({ show: vi.fn() } as never);
+    const lines: Line[] = [{ ...LINES[0], pose: 'point', cue: 'cage' }, LINES[1], { ...LINES[2], cue: 'watch' }];
+    d.play(lines);
+    expect(d.speaker).toBe('max');
+    expect(d.speakerPose).toBe('point');
+    expect(cues).toEqual(['cage']);
+    for (let ms = 0; ms < 3000; ms += 50) d.update(50, blank());
+    expect(d.speaker).toBe('gwen');
+    expect(d.speakerPose).toBeNull();
+    for (let ms = 0; ms < 2000; ms += 50) d.update(50, blank());
+    expect(cues).toEqual(['cage', 'watch']);
+    for (let ms = 0; ms < 2100; ms += 50) d.update(50, blank());
+    expect(d.speakerPose).toBeNull();
+    expect(cues).toEqual(['cage', 'watch']);
+    EventBus.offContext(ctx);
+  });
 });

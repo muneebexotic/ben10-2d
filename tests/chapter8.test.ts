@@ -10,6 +10,12 @@ import { pendingUnlocks, storyAliens } from '../src/systems/Unlocks';
 import { bodyMultiplier, headScale, mouthAt, stageFor, stageStartHp, trickAt, FEAR_GAS_TRICKS } from '../src/entities/bosses/cacklejack/rules';
 import { metaOf, LEVEL_META } from '../src/levels/manifest';
 import { CARDS } from '../src/levels/cards';
+import { ENDING_CUES } from '../src/entities/bosses/cacklejack/rules';
+import { CH8_BARREL, CH8_GWEN_TAKEN, CH8_HEART, CH8_OPENING, CH8_SHOW } from '../src/scenes/level/circus/story/lines';
+import { BEN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/ben';
+import { GWEN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/gwen';
+import { MAX_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/max';
+import { KEVIN_FRAME_CLIPS } from '../src/scenes/preload/cartoon/characters/kevin';
 
 const level = CHAPTER_8;
 const grid = buildCells(level);
@@ -164,3 +170,38 @@ describe('the funhouse toys', () => {
 function getAlienTop(): number {
   return 330;
 }
+
+describe("chapter 8 uses the owner's drawings", () => {
+  const CLIPS: Record<string, Readonly<Record<string, unknown>>> = { ben: BEN_FRAME_CLIPS, gwen: GWEN_FRAME_CLIPS, max: MAX_FRAME_CLIPS, kevin: KEVIN_FRAME_CLIPS };
+  const lines = [...CH8_OPENING, ...CH8_SHOW, ...CH8_GWEN_TAKEN, ...CH8_BARREL, ...CH8_HEART, ...(CHAPTER_8.story?.outro ?? [])];
+
+  it("every pose a line names is one of its speaker's drawn clips", () => {
+    const posed = lines.filter((l) => l.pose !== undefined);
+    expect(posed.length).toBeGreaterThan(10);
+    for (const l of posed) {
+      const clips = CLIPS[l.who];
+      expect(clips, `${l.who} has no drawings`).toBeDefined();
+      expect(clips[l.pose!], `${l.who}: ${l.pose}`).toBeDefined();
+    }
+  });
+
+  it('the set pieces pose the family and Kevin with clips they have drawings for', () => {
+    // CACKLEJACK's cage (Max), the heart's glass (Gwen), the show's crowd (Kevin).
+    for (const pose of ['angry', 'cheer', 'surprise', 'laugh', 'sad', 'guard', 'walk', 'run']) expect(MAX_FRAME_CLIPS[pose], pose).toBeDefined();
+    for (const pose of ['angry', 'surprise', 'point', 'folded']) expect(GWEN_FRAME_CLIPS[pose], pose).toBeDefined();
+    for (const pose of ['smirk', 'laugh']) expect(KEVIN_FRAME_CLIPS[pose], pose).toBeDefined();
+    for (const pose of ['lookHands', 'shrug', 'cheer', 'point', 'talk']) expect(BEN_FRAME_CLIPS[pose], pose).toBeDefined();
+  });
+
+  it("the ending's cues are the ones CACKLEJACK acts on, each once, in story order", () => {
+    const cues = (CHAPTER_8.story?.outro ?? []).flatMap((l) => (l.cue ? [l.cue] : []));
+    expect(cues).toEqual([...ENDING_CUES]);
+  });
+
+  it("Kevin watches the show from the crowd, short of where it starts and clear of Max's spot", () => {
+    const s = CHAPTER_8.story!.circus!.show;
+    expect(s.kevinX).toBeLessThan(s.triggerX - 2);
+    expect(Math.abs(s.kevinX - s.maxX)).toBeGreaterThan(4);
+  });
+});
+

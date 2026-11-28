@@ -81,7 +81,8 @@ export class AlienHints implements SetPiece {
         if (chance(0.03)) fx.trail('gold', h.ghostX + (Math.random() - 0.5) * 12, h.ghostY + (Math.random() - 0.5) * 14);
       }
       const s = h.spawn;
-      const inside = player.x >= s.x * TILE && player.x < (s.x + s.w) * TILE && player.y >= s.y * TILE && player.y <= (s.y + s.h) * TILE;
+      // Not while a cutscene holds Ben (a boss's intro, the ending's lines): the hint waits for play.
+      const inside = player.controlsEnabled && player.x >= s.x * TILE && player.x < (s.x + s.w) * TILE && player.y >= s.y * TILE && player.y <= (s.y + s.h) * TILE;
       if (inside && !h.shown) {
         h.shown = true;
         h.root.setVisible(true).setAlpha(0).setScale(0.6);

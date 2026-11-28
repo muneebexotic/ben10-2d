@@ -250,23 +250,24 @@ export const CHAPTER_8: LevelData = {
     unlocks: [{ alien: 'ricochet', x: 124, line: 'NEW DNA DETECTED!', scripted: true }],
     circus: {
       boardwalk: { startX: 4, stopX: 14, floor: 34 },
-      show: { triggerX: 84, stageX: 96, stageFloor: 31, floor: 34, maxX: 89, exitX: 105 },
+      show: { triggerX: 84, stageX: 96, stageFloor: 31, floor: 34, maxX: 89, exitX: 105, kevinX: 78.6 },
       gwenTaken: { triggerX: 113, mirrorX: 116, floor: 34 },
       barrel: { triggerX: 121, fromX: 117, toX: 131, top: 26, floor: 34, alien: 'ricochet' },
       heart: { mirrorX: 267, floor: 24, exit: { x: 271, y: 17, w: 1, h: 7 } },
       bigTop: { cageX: 403, cageY: 23, floor: 38 },
     },
     // The ending (GAME_DESIGN.md, Chapter 8, beat 9): the colour comes back, Max drops into the net, and the watch answers a laugh.
+    // Cues drive CACKLEJACK's ending (the cage, his laugh, the watch); poses are the family's drawings in the ring.
     outro: [
-      { who: 'gwen', text: 'LOOK! THE COLOR\'S COMING BACK. EVERYONE\'S WAKING UP.', ms: 2400, mood: 'happy' },
-      { who: 'max', text: 'AND I\'M COMING DOWN. NICE NET, BY THE WAY.', ms: 2000, mood: 'happy' },
-      { who: 'ben', text: 'ONE CLOWN DOWN. ZERO FUNNEL CAKES. WORST CIRCUS EVER.', ms: 2400, mood: 'happy' },
-      { who: 'cacklejack', text: 'HEE... HEE... HAAA! THE SHOW... NEVER... ENDS...', ms: 2400 },
-      { who: 'ben', text: 'WAIT. WHAT IS THE WATCH DOING?! I DIDN\'T PICK ANYTHING!', ms: 2200, mood: 'shocked' },
+      { who: 'gwen', text: 'LOOK! THE COLOR\'S COMING BACK. EVERYONE\'S WAKING UP.', ms: 2400, mood: 'happy', pose: 'point' },
+      { who: 'max', text: 'AND I\'M COMING DOWN. NICE NET, BY THE WAY.', ms: 2400, mood: 'happy', pose: 'laugh', cue: 'cage' },
+      { who: 'ben', text: 'ONE CLOWN DOWN. ZERO FUNNEL CAKES. WORST CIRCUS EVER.', ms: 2400, mood: 'happy', pose: 'shrug' },
+      { who: 'cacklejack', text: 'HEE... HEE... HAAA! THE SHOW... NEVER... ENDS...', ms: 2400, cue: 'laugh' },
+      { who: 'ben', text: 'WAIT. WHAT IS THE WATCH DOING?! I DIDN\'T PICK ANYTHING!', ms: 2200, mood: 'shocked', pose: 'lookHands', cue: 'watch' },
       { who: 'ghostfreak', text: 'SOON.', ms: 1600 },
-      { who: 'gwen', text: 'BEN? DID YOUR WATCH JUST DO THAT BY ITSELF?', ms: 2200, mood: 'shocked' },
-      { who: 'ben', text: '...IT DOES THAT SOMETIMES. RIGHT, GRANDPA?', ms: 2000, mood: 'neutral' },
-      { who: 'max', text: '...', ms: 1600, mood: 'neutral' },
+      { who: 'gwen', text: 'BEN? DID YOUR WATCH JUST DO THAT BY ITSELF?', ms: 2200, mood: 'shocked', pose: 'surprise' },
+      { who: 'ben', text: '...IT DOES THAT SOMETIMES. RIGHT, GRANDPA?', ms: 2000, mood: 'neutral', pose: 'talk' },
+      { who: 'max', text: '...', ms: 1600, mood: 'neutral', pose: 'sad' },
     ],
   },
 };
