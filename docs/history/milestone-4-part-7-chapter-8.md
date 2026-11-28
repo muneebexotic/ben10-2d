@@ -1,6 +1,6 @@
 # Milestone 4 part 7: Chapter 8, Cacklejack
 
-Act 3's second chapter, in the HD cartoon look: Driftwood Bay's boardwalk at night and CACKLEJACK'S CIRCUS OF FRIGHTS on its pier. Built in one session (2026-11-22/23). Held out of release builds (`CH8_BUILT`) until the owner has played it; the dev server opens it on Chapter Select.
+Act 3's second chapter, in the HD cartoon look: Driftwood Bay's boardwalk at night and CACKLEJACK'S CIRCUS OF FRIGHTS on its pier. Built in one session (2026-11-22/23), held out of release builds (`CH8_BUILT`) until the owner's go-ahead, and released on 2026-11-28 with the owner's drawings worked through every beat (the last section).
 
 Chapter 8's new characters are original designs (DECISIONS.md, "Act 3 / Chapter 8"): CACKLEJACK, IRONJAW, THE TANGLE, RICOCHET and the goons. The family and the older aliens play the owner's drawings as in Chapter 7.
 
@@ -53,3 +53,24 @@ Chapter 8's new characters are original designs (DECISIONS.md, "Act 3 / Chapter 
 - The owner's recordings for `midway`, `bigtop` and `cacklejack`; the owner's drawings for Chapter 8's cast, if wanted (ART_COVERAGE.md).
 - Tuning with real players: CACKLEJACK's health and windows (`config/cacklejack.ts`), the roll's feel (`config/aliens/ricochet.ts`), the toys (`config/circus.ts`).
 - Chapter 7's chute and Chapter 6's heavy-door corridor for Ricochet (IDEAS.md).
+
+## Release: the owner's drawings, beat by beat (2026-11-28)
+
+The owner asked for Chapter 8 to use the drawings the game already has (Ben, Gwen, Max, Kevin and the rest) and then to ship. The family and the older aliens already played their drawings frame by frame and spoke with the owner's portraits; going through every beat on screen found where they didn't, and some bugs on the way.
+
+- **Story poses on the lines** (`Line.pose`, `Talkers`): Gwen points at the grey townsfolk and folds her arms ("THAT IS NOT A PLAN"), Ben cheers and shrugs, Max thinks; at the show Max's arm goes out ("GET BEHIND ME", a new `guard` clip on his story sheet's last drawing) and Ben points at IRONJAW; at the heart Gwen folds her arms and points; in the ending Gwen points and gasps, Ben shrugs, stares at his watch (`lookHands`), and Max goes quiet in his worried drawing. Ben poses only where a line names it and a cutscene holds him (`Player.storyPose`).
+- **Max:** waits in his cage over the ring with his arms folded and cheers each time a stage falls; Gwen in the heart's glass bangs on it with her fists clenched (her angry drawing) between her surprised one.
+- **Kevin** watches the show from the crowd in his own drawings (smirking, then laughing at the scream) and slips away when Ben looks away (DECISIONS.md). His drawings now load with the chapter.
+- **The ending, restaged on its lines** (`Line.cue`): the safety net unfurls and Max's cage drops into it on his "NICE NET" line, bursts open, and Max laughs, hops out and walks to the family; Cacklejack's last laugh on his line; the Ghostfreak flicker (Ghostfreak's own drawing over Ben, the dial jumping) on Ben's "WAIT. WHAT IS THE WATCH DOING?!". The camera holds the whole ring.
+
+Bugs found and fixed:
+
+- **Max never moved before the show.** Nothing updated the story's Max between the opening and the show, so his sprite stayed where the opening placed it: he walked on the spot at the left edge of the boardwalk through the opening's talk and was missing at the stage, then popped onto IRONJAW's head. The show now updates him; and a player who runs ahead sees him hurry over before his line.
+- **Max stayed in the air when his cage fell** (the tween moved his sprite, which his actor puts back every frame), and so missed the whole ending. Now he rides the cage down, lands in the net where it stops, and steps out.
+- **The watch's Ghostfreak flicker fired a dozen seconds before the line about it**, during the boss's fall; it's now on that line.
+- **The ending's last lines could be cut off** (every chapter): the results came on a fixed timer while the lines run on frame time, which a struggling phone clamps. Headless runs lost Ben's "RIGHT, GRANDPA?" and Max's "...". The results now wait for the last line (or twice its length if something cut it off).
+- **Ben blinked through every chapter's ending** (the invulnerability after a win is now without the blink); **bounced on the spot through it** if the fight ended with him on a bounce pad; and **the Wildvine hint** popped up with Ben's quip over the ending when he stood under the pole. Hints and pads now wait for play.
+- **A goon Ben ran past could hit him during the show** while it held him still; nothing hurts him while it does.
+- A test now checks every pose a line names is a drawing its speaker has. It caught Max's arms-folded pose named after the drawing instead of the clip that plays it (his cage pose would have shown him just standing).
+
+Tested: typecheck, build, 610 tests, the opening, the show (fresh start), the cage and the ending recorded line by line in headless Chromium, `npm run qa -- --fuzz` and `npm run bench` (PERFORMANCE.md, "Chapter 8 release").
